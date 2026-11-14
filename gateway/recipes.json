@@ -1,0 +1,1099 @@
+{
+ "about": "The kitchen's own recipe cards and pantry. Cards are per portion and hand-checked against Valio Aimo's catalogue: every ingredient names a pantry item, every pantry item lists the products this kitchen buys for it, most preferred first. fat_pct is grams of fat per 100 g from the manufacturers' GS1 nutrition data in the catalogue; the role rules in gateway/menu.py use it.",
+ "waste_pct_default": 5,
+ "pantry": {
+  "whipping cream": {
+   "unit": "ml",
+   "prefer": ["469346", "464194", "464699"],
+   "family": "cream",
+   "milk_free": "plant whipping cream"
+  },
+  "cooking cream": {
+   "unit": "ml",
+   "prefer": ["464249", "467297", "463797"],
+   "family": "cream",
+   "milk_free": "oat cooking cream"
+  },
+  "plant whipping cream": {
+   "unit": "ml",
+   "prefer": ["473941", "472243"],
+   "family": "cream"
+  },
+  "oat cooking cream": {
+   "unit": "ml",
+   "prefer": ["473956", "460697"],
+   "family": "cream"
+  },
+  "milk": {
+   "unit": "ml",
+   "prefer": ["469549", "464201", "464306"],
+   "family": "milk",
+   "milk_free": "oat drink"
+  },
+  "coffee milk": {
+   "unit": "ml",
+   "prefer": ["464237", "469549"],
+   "family": "milk",
+   "milk_free": "oat drink"
+  },
+  "oat drink": {
+   "unit": "ml",
+   "prefer": ["468465", "470863", "473609"],
+   "family": "milk"
+  },
+  "butter": {
+   "unit": "g",
+   "prefer": ["464411", "475797", "463437", "462421"],
+   "family": "fat",
+   "milk_free": "margarine"
+  },
+  "margarine": {
+   "unit": "g",
+   "prefer": ["466090", "460684", "466799"],
+   "family": "fat"
+  },
+  "rapeseed oil": {
+   "unit": "ml",
+   "prefer": ["464187", "474614", "466608"],
+   "family": "fat"
+  },
+  "olive oil": {
+   "unit": "ml",
+   "prefer": ["472258", "474124"],
+   "family": "fat"
+  },
+  "parmesan": {
+   "unit": "g",
+   "prefer": ["469440", "476080", "474912"]
+  },
+  "grated cheese": {
+   "unit": "g",
+   "prefer": ["476753", "474912", "466302"]
+  },
+  "cheese slices": {
+   "unit": "g",
+   "prefer": ["463400", "462613", "463971"]
+  },
+  "yoghurt": {
+   "unit": "g",
+   "prefer": ["476743", "468197", "466317"]
+  },
+  "egg": {
+   "unit": "g",
+   "prefer": ["475201", "468520", "468269"]
+  },
+  "eggs in shell": {
+   "unit": "g",
+   "prefer": ["467880", "467676"]
+  },
+  "potato": {
+   "unit": "g",
+   "prefer": ["471970", "460596", "460573"]
+  },
+  "carrot": {
+   "unit": "g",
+   "prefer": ["460824", "460811", "462929"]
+  },
+  "onion": {
+   "unit": "g",
+   "prefer": ["462903", "462411", "460195"]
+  },
+  "leek": {
+   "unit": "g",
+   "prefer": ["460354", "475688"]
+  },
+  "dill": {
+   "unit": "g",
+   "prefer": ["460437", "460395"]
+  },
+  "lettuce": {
+   "unit": "g",
+   "prefer": ["460276", "460198", "460026"]
+  },
+  "cucumber": {
+   "unit": "g",
+   "prefer": ["460131"]
+  },
+  "tomato": {
+   "unit": "g",
+   "prefer": ["460065", "460027"]
+  },
+  "mushroom": {
+   "unit": "g",
+   "prefer": ["461266", "461287", "461223"]
+  },
+  "garlic": {
+   "unit": "g",
+   "prefer": ["460335", "460257"]
+  },
+  "lemon": {
+   "unit": "g",
+   "prefer": ["460846", "460937"]
+  },
+  "strawberry": {
+   "unit": "g",
+   "prefer": ["461315"]
+  },
+  "banana": {
+   "unit": "g",
+   "prefer": ["461010", "460947"]
+  },
+  "apple": {
+   "unit": "g",
+   "prefer": ["460955", "460853"]
+  },
+  "white cabbage": {
+   "unit": "g",
+   "prefer": ["460211", "467549"]
+  },
+  "beetroot": {
+   "unit": "g",
+   "prefer": ["460837", "470912"]
+  },
+  "parsley": {
+   "unit": "g",
+   "prefer": ["460472", "460545"]
+  },
+  "chives": {
+   "unit": "g",
+   "prefer": ["460471", "460469"]
+  },
+  "shallot": {
+   "unit": "g",
+   "prefer": ["460204"]
+  },
+  "salmon fillet": {
+   "unit": "g",
+   "prefer": ["462150", "471555", "474066"]
+  },
+  "saithe fillet": {
+   "unit": "g",
+   "prefer": ["463337", "460377"]
+  },
+  "fish fingers": {
+   "unit": "g",
+   "prefer": ["468332", "468885"]
+  },
+  "chicken breast": {
+   "unit": "g",
+   "prefer": ["462281", "470908"]
+  },
+  "minced beef": {
+   "unit": "g",
+   "prefer": ["470418", "475632"]
+  },
+  "meatballs": {
+   "unit": "g",
+   "prefer": ["464039", "475498"]
+  },
+  "bacon": {
+   "unit": "g",
+   "prefer": ["464357", "470925", "472225"]
+  },
+  "ham": {
+   "unit": "g",
+   "prefer": ["476768", "476554", "464148"]
+  },
+  "frankfurters": {
+   "unit": "g",
+   "prefer": ["476788", "474257"]
+  },
+  "macaroni": {
+   "unit": "g",
+   "prefer": ["462863", "460001", "461424"],
+   "gluten_free": "gluten-free pasta"
+  },
+  "gluten-free pasta": {
+   "unit": "g",
+   "prefer": ["460293"]
+  },
+  "rice": {
+   "unit": "g",
+   "prefer": ["463511", "473775"]
+  },
+  "risotto rice": {
+   "unit": "g",
+   "prefer": ["468926", "476015"]
+  },
+  "wheat flour": {
+   "unit": "g",
+   "prefer": ["460791", "467005"],
+   "gluten_free": "potato flour"
+  },
+  "potato flour": {
+   "unit": "g",
+   "prefer": ["475953", "475903"]
+  },
+  "pancake flour mix": {
+   "unit": "g",
+   "prefer": ["469830"]
+  },
+  "oat flakes": {
+   "unit": "g",
+   "prefer": ["466983", "461577"],
+   "gluten_free": "gluten-free oat flakes"
+  },
+  "gluten-free oat flakes": {
+   "unit": "g",
+   "prefer": ["471353"]
+  },
+  "muesli": {
+   "unit": "g",
+   "prefer": ["473401", "472368"],
+   "gluten_free": "gluten-free muesli"
+  },
+  "gluten-free muesli": {
+   "unit": "g",
+   "prefer": ["469269", "460529"]
+  },
+  "sugar": {
+   "unit": "g",
+   "prefer": ["460325", "460460"]
+  },
+  "sugar cubes": {
+   "unit": "g",
+   "prefer": ["468160", "462172"]
+  },
+  "vanilla sugar": {
+   "unit": "g",
+   "prefer": ["476755", "465687"]
+  },
+  "baking powder": {
+   "unit": "g",
+   "prefer": ["476689", "466228"]
+  },
+  "salt": {
+   "unit": "g",
+   "prefer": ["464419", "460453"]
+  },
+  "black pepper": {
+   "unit": "g",
+   "prefer": ["476634", "465659"]
+  },
+  "white pepper": {
+   "unit": "g",
+   "prefer": ["476865"]
+  },
+  "allspice": {
+   "unit": "g",
+   "prefer": ["465419", "476759"]
+  },
+  "bay leaf": {
+   "unit": "g",
+   "prefer": ["476752"]
+  },
+  "thyme": {
+   "unit": "g",
+   "prefer": ["476789", "460890"]
+  },
+  "curry powder": {
+   "unit": "g",
+   "prefer": ["476582", "465650"]
+  },
+  "fish bouillon": {
+   "unit": "g",
+   "prefer": ["475132", "470740"]
+  },
+  "chicken bouillon": {
+   "unit": "g",
+   "prefer": ["475145", "461317"]
+  },
+  "vegetable bouillon": {
+   "unit": "g",
+   "prefer": ["475207", "461219"]
+  },
+  "brown sauce base": {
+   "unit": "g",
+   "prefer": ["466580"]
+  },
+  "white wine vinegar": {
+   "unit": "ml",
+   "prefer": ["475913", "470609"]
+  },
+  "mustard": {
+   "unit": "g",
+   "prefer": ["460158", "467890"]
+  },
+  "ketchup": {
+   "unit": "g",
+   "prefer": ["463943", "475887"]
+  },
+  "honey": {
+   "unit": "g",
+   "prefer": ["460822", "460304"]
+  },
+  "strawberry jam": {
+   "unit": "g",
+   "prefer": ["466384", "460047"]
+  },
+  "lingonberry jam": {
+   "unit": "g",
+   "prefer": ["466552", "460157"]
+  },
+  "pea soup concentrate": {
+   "unit": "g",
+   "prefer": ["470250"]
+  },
+  "rye bread": {
+   "unit": "g",
+   "prefer": ["470108", "461747", "472236"],
+   "gluten_free": "gluten-free bread"
+  },
+  "gluten-free bread": {
+   "unit": "g",
+   "prefer": ["467032", "473328"]
+  },
+  "crisp bread": {
+   "unit": "g",
+   "prefer": ["476031", "462317", "461136"],
+   "gluten_free": "gluten-free crisp bread"
+  },
+  "gluten-free crisp bread": {
+   "unit": "g",
+   "prefer": ["475693"]
+  },
+  "croissant": {
+   "unit": "g",
+   "prefer": ["467337", "460768"]
+  },
+  "coffee": {
+   "unit": "g",
+   "prefer": ["462090", "466999"]
+  },
+  "tea": {
+   "unit": "g",
+   "prefer": ["470508", "471328"]
+  },
+  "orange juice": {
+   "unit": "ml",
+   "prefer": ["465262", "472560"]
+  },
+  "apple juice": {
+   "unit": "ml",
+   "prefer": ["465158", "472751"]
+  }
+ },
+ "cards": [
+  {
+   "id": "salmon_soup",
+   "name": "Creamy salmon soup",
+   "aliases": ["salmon soup", "lohikeitto", "laxsoppa", "creamy salmon soup"],
+   "portion": "3 dl",
+   "ingredients": [
+    {"item": "salmon fillet", "role": "main", "amount": 80, "unit": "g", "waste_pct": 8},
+    {"item": "potato", "role": "body", "amount": 120, "unit": "g", "waste_pct": 15},
+    {"item": "leek", "role": "vegetable", "amount": 20, "unit": "g", "waste_pct": 15},
+    {"item": "carrot", "role": "vegetable", "amount": 20, "unit": "g", "waste_pct": 15},
+    {"item": "whipping cream", "role": "soup base", "amount": 50, "unit": "ml"},
+    {"item": "fish bouillon", "role": "stock", "amount": 4, "unit": "g"},
+    {"item": "butter", "role": "frying fat", "amount": 5, "unit": "g"},
+    {"item": "dill", "role": "herb", "amount": 3, "unit": "g", "waste_pct": 10},
+    {"item": "allspice", "role": "seasoning", "amount": 0.2, "unit": "g"},
+    {"item": "bay leaf", "role": "seasoning", "amount": 0.05, "unit": "g"},
+    {"item": "salt", "role": "seasoning", "amount": 1.5, "unit": "g"}
+   ]
+  },
+  {
+   "id": "green_salad",
+   "name": "Green salad with vinaigrette",
+   "aliases": ["green salad", "side salad", "mixed salad", "vihersalaatti", "salad"],
+   "portion": "110 g",
+   "ingredients": [
+    {"item": "lettuce", "role": "leaf", "amount": 50, "unit": "g", "waste_pct": 15},
+    {"item": "cucumber", "role": "vegetable", "amount": 30, "unit": "g"},
+    {"item": "tomato", "role": "vegetable", "amount": 30, "unit": "g"},
+    {"item": "rapeseed oil", "role": "dressing", "amount": 8, "unit": "ml"},
+    {"item": "white wine vinegar", "role": "dressing", "amount": 3, "unit": "ml"},
+    {"item": "mustard", "role": "dressing", "amount": 1, "unit": "g"},
+    {"item": "salt", "role": "seasoning", "amount": 0.3, "unit": "g"}
+   ]
+  },
+  {
+   "id": "chicken_thyme_cream",
+   "name": "Chicken breast with thyme cream sauce",
+   "aliases": ["chicken breast with thyme cream sauce", "chicken with thyme cream sauce", "chicken breast in cream sauce", "chicken with cream sauce", "broilerinrinta ja timjamikermakastike"],
+   "portion": "150 g chicken, 1 dl sauce",
+   "ingredients": [
+    {"item": "chicken breast", "role": "main", "amount": 150, "unit": "g"},
+    {"item": "whipping cream", "role": "sauce base", "amount": 80, "unit": "ml"},
+    {"item": "chicken bouillon", "role": "stock", "amount": 2, "unit": "g"},
+    {"item": "onion", "role": "vegetable", "amount": 15, "unit": "g", "waste_pct": 10},
+    {"item": "garlic", "role": "seasoning", "amount": 2, "unit": "g"},
+    {"item": "thyme", "role": "herb", "amount": 0.5, "unit": "g"},
+    {"item": "butter", "role": "frying fat", "amount": 6, "unit": "g"},
+    {"item": "black pepper", "role": "seasoning", "amount": 0.2, "unit": "g"},
+    {"item": "salt", "role": "seasoning", "amount": 1, "unit": "g"}
+   ]
+  },
+  {
+   "id": "roast_potatoes",
+   "name": "Roasted potatoes and carrots",
+   "aliases": ["roasted potatoes and carrots", "roast potatoes", "roasted potatoes", "roasted root vegetables", "oven potatoes", "uunijuurekset", "uuniperunat"],
+   "portion": "220 g",
+   "ingredients": [
+    {"item": "potato", "role": "body", "amount": 180, "unit": "g", "waste_pct": 15},
+    {"item": "carrot", "role": "vegetable", "amount": 70, "unit": "g", "waste_pct": 15},
+    {"item": "rapeseed oil", "role": "roasting fat", "amount": 8, "unit": "ml"},
+    {"item": "thyme", "role": "herb", "amount": 0.3, "unit": "g"},
+    {"item": "salt", "role": "seasoning", "amount": 1, "unit": "g"}
+   ]
+  },
+  {
+   "id": "mushroom_risotto",
+   "name": "Mushroom risotto",
+   "aliases": ["mushroom risotto", "sienirisotto", "risotto"],
+   "portion": "300 g",
+   "ingredients": [
+    {"item": "risotto rice", "role": "body", "amount": 80, "unit": "g"},
+    {"item": "mushroom", "role": "main", "amount": 100, "unit": "g", "waste_pct": 10},
+    {"item": "onion", "role": "vegetable", "amount": 20, "unit": "g", "waste_pct": 10},
+    {"item": "parmesan", "role": "cheese", "amount": 20, "unit": "g"},
+    {"item": "butter", "role": "finishing fat", "amount": 12, "unit": "g"},
+    {"item": "vegetable bouillon", "role": "stock", "amount": 4, "unit": "g"},
+    {"item": "garlic", "role": "seasoning", "amount": 2, "unit": "g"},
+    {"item": "black pepper", "role": "seasoning", "amount": 0.2, "unit": "g"},
+    {"item": "salt", "role": "seasoning", "amount": 0.5, "unit": "g"}
+   ]
+  },
+  {
+   "id": "strawberry_cream_cake",
+   "name": "Strawberry cream cake",
+   "aliases": ["strawberry cream cake", "cream cake", "strawberry cake", "mansikkakakku", "kermakakku", "taytekakku", "wedding cake"],
+   "portion": "1 slice, 1/12 of a cake",
+   "ingredients": [
+    {"item": "egg", "role": "sponge", "amount": 35, "unit": "g"},
+    {"item": "sugar", "role": "sponge", "amount": 28, "unit": "g"},
+    {"item": "wheat flour", "role": "sponge", "amount": 20, "unit": "g"},
+    {"item": "potato flour", "role": "sponge", "amount": 8, "unit": "g"},
+    {"item": "baking powder", "role": "sponge", "amount": 0.5, "unit": "g"},
+    {"item": "whipping cream", "role": "whipped topping", "amount": 60, "unit": "ml"},
+    {"item": "strawberry jam", "role": "filling", "amount": 20, "unit": "g"},
+    {"item": "strawberry", "role": "topping", "amount": 30, "unit": "g", "waste_pct": 10},
+    {"item": "milk", "role": "moistening", "amount": 12, "unit": "ml"},
+    {"item": "vanilla sugar", "role": "seasoning", "amount": 1, "unit": "g"}
+   ]
+  },
+  {
+   "id": "coffee_tea",
+   "name": "Coffee and tea",
+   "aliases": ["coffee and tea", "coffee & tea", "coffee, tea", "coffee", "kahvi ja tee", "kahvi"],
+   "portion": "1.5 cups",
+   "ingredients": [
+    {"item": "coffee", "role": "drink", "amount": 10, "unit": "g"},
+    {"item": "tea", "role": "drink", "amount": 0.8, "unit": "g"},
+    {"item": "coffee milk", "role": "coffee milk", "amount": 20, "unit": "ml"},
+    {"item": "sugar cubes", "role": "sweetener", "amount": 4, "unit": "g"}
+   ]
+  },
+  {
+   "id": "bread_butter",
+   "name": "Rye bread and butter",
+   "aliases": ["rye bread and butter", "bread and butter", "bread & butter", "rye bread", "bread", "leipa ja voi", "ruisleipa"],
+   "portion": "1.5 slices",
+   "ingredients": [
+    {"item": "rye bread", "role": "bread", "amount": 45, "unit": "g"},
+    {"item": "butter", "role": "spread", "amount": 10, "unit": "g"}
+   ]
+  },
+  {
+   "id": "macaroni_casserole",
+   "name": "Macaroni casserole",
+   "aliases": ["macaroni casserole", "makaronilaatikko", "minced meat macaroni casserole", "macaroni and minced meat casserole"],
+   "portion": "300 g",
+   "ingredients": [
+    {"item": "macaroni", "role": "body", "amount": 55, "unit": "g"},
+    {"item": "minced beef", "role": "main", "amount": 60, "unit": "g"},
+    {"item": "milk", "role": "custard base", "amount": 120, "unit": "ml"},
+    {"item": "egg", "role": "custard base", "amount": 20, "unit": "g"},
+    {"item": "onion", "role": "vegetable", "amount": 12, "unit": "g", "waste_pct": 10},
+    {"item": "grated cheese", "role": "topping", "amount": 8, "unit": "g"},
+    {"item": "salt", "role": "seasoning", "amount": 1.5, "unit": "g"},
+    {"item": "white pepper", "role": "seasoning", "amount": 0.1, "unit": "g"},
+    {"item": "ketchup", "role": "condiment", "amount": 10, "unit": "g"}
+   ]
+  },
+  {
+   "id": "chicken_sauce_rice",
+   "name": "Chicken sauce and rice",
+   "aliases": ["chicken sauce and rice", "chicken sauce with rice", "creamy chicken and rice", "chicken curry and rice", "broilerikastike ja riisi", "chicken sauce"],
+   "portion": "150 g sauce, 150 g rice",
+   "ingredients": [
+    {"item": "chicken breast", "role": "main", "amount": 80, "unit": "g"},
+    {"item": "cooking cream", "role": "sauce base", "amount": 50, "unit": "ml"},
+    {"item": "rice", "role": "body", "amount": 60, "unit": "g"},
+    {"item": "onion", "role": "vegetable", "amount": 10, "unit": "g", "waste_pct": 10},
+    {"item": "chicken bouillon", "role": "stock", "amount": 2, "unit": "g"},
+    {"item": "curry powder", "role": "seasoning", "amount": 0.5, "unit": "g"},
+    {"item": "rapeseed oil", "role": "frying fat", "amount": 3, "unit": "ml"},
+    {"item": "salt", "role": "seasoning", "amount": 0.8, "unit": "g"}
+   ]
+  },
+  {
+   "id": "meatballs_mash",
+   "name": "Meatballs, mashed potatoes and brown sauce",
+   "aliases": ["meatballs and mashed potatoes", "meatballs and mash", "meatballs with mashed potatoes", "meatballs, mash and brown sauce", "lihapullat ja perunamuusi", "meatballs"],
+   "portion": "100 g meatballs, 200 g mash",
+   "ingredients": [
+    {"item": "meatballs", "role": "main", "amount": 100, "unit": "g"},
+    {"item": "potato", "role": "body", "amount": 200, "unit": "g", "waste_pct": 15},
+    {"item": "milk", "role": "mash liquid", "amount": 40, "unit": "ml"},
+    {"item": "butter", "role": "mash fat", "amount": 6, "unit": "g"},
+    {"item": "brown sauce base", "role": "sauce", "amount": 5, "unit": "g"},
+    {"item": "lingonberry jam", "role": "condiment", "amount": 20, "unit": "g"},
+    {"item": "salt", "role": "seasoning", "amount": 1.5, "unit": "g"}
+   ]
+  },
+  {
+   "id": "pea_soup",
+   "name": "Pea soup",
+   "aliases": ["pea soup", "hernekeitto", "artsoppa"],
+   "portion": "3 dl",
+   "ingredients": [
+    {"item": "pea soup concentrate", "role": "main", "amount": 150, "unit": "g"},
+    {"item": "onion", "role": "vegetable", "amount": 8, "unit": "g", "waste_pct": 10},
+    {"item": "mustard", "role": "condiment", "amount": 4, "unit": "g"}
+   ]
+  },
+  {
+   "id": "oven_pancake",
+   "name": "Oven pancake with strawberry jam",
+   "aliases": ["oven pancake with strawberry jam", "oven pancake", "pancake and jam", "pancake with jam", "pannukakku", "pannari", "pancakes"],
+   "portion": "120 g",
+   "ingredients": [
+    {"item": "pancake flour mix", "role": "batter", "amount": 30, "unit": "g"},
+    {"item": "milk", "role": "batter liquid", "amount": 110, "unit": "ml"},
+    {"item": "egg", "role": "batter", "amount": 20, "unit": "g"},
+    {"item": "butter", "role": "tin fat", "amount": 4, "unit": "g"},
+    {"item": "sugar", "role": "batter", "amount": 3, "unit": "g"},
+    {"item": "strawberry jam", "role": "topping", "amount": 25, "unit": "g"}
+   ]
+  },
+  {
+   "id": "fish_fingers_potatoes",
+   "name": "Fish fingers and boiled potatoes",
+   "aliases": ["fish fingers and potatoes", "fish fingers and boiled potatoes", "fish fingers with potatoes", "fish fingers", "kalapuikot ja perunat", "kalapuikot"],
+   "portion": "4 fish fingers, 180 g potatoes",
+   "ingredients": [
+    {"item": "fish fingers", "role": "main", "amount": 100, "unit": "g"},
+    {"item": "potato", "role": "body", "amount": 180, "unit": "g", "waste_pct": 15},
+    {"item": "butter", "role": "finishing fat", "amount": 4, "unit": "g"},
+    {"item": "dill", "role": "herb", "amount": 1, "unit": "g", "waste_pct": 10},
+    {"item": "lemon", "role": "garnish", "amount": 8, "unit": "g"}
+   ]
+  },
+  {
+   "id": "carrot_salad",
+   "name": "Grated carrot",
+   "aliases": ["grated carrot", "carrot salad", "grated carrot salad", "porkkanaraaste"],
+   "portion": "40 g",
+   "ingredients": [
+    {"item": "carrot", "role": "main", "amount": 45, "unit": "g", "waste_pct": 15}
+   ]
+  },
+  {
+   "id": "crispbread_spread",
+   "name": "Crisp bread and spread",
+   "aliases": ["crisp bread and spread", "crispbread and spread", "crisp bread and margarine", "crisp bread", "crispbread", "nakkileipa ja levite", "nakkileipa"],
+   "portion": "1 piece",
+   "ingredients": [
+    {"item": "crisp bread", "role": "bread", "amount": 12, "unit": "g"},
+    {"item": "margarine", "role": "spread", "amount": 6, "unit": "g"}
+   ]
+  },
+  {
+   "id": "milk_drink",
+   "name": "Milk to drink",
+   "aliases": ["milk to drink", "milk", "glass of milk", "maito", "ruokajuoma maito"],
+   "portion": "2 dl",
+   "ingredients": [
+    {"item": "milk", "role": "drink", "amount": 200, "unit": "ml"}
+   ]
+  },
+  {
+   "id": "scrambled_eggs",
+   "name": "Scrambled eggs",
+   "aliases": ["scrambled eggs", "munakokkeli"],
+   "portion": "100 g",
+   "ingredients": [
+    {"item": "egg", "role": "main", "amount": 90, "unit": "g"},
+    {"item": "cooking cream", "role": "cooking liquid", "amount": 15, "unit": "ml"},
+    {"item": "butter", "role": "frying fat", "amount": 3, "unit": "g"},
+    {"item": "salt", "role": "seasoning", "amount": 0.5, "unit": "g"}
+   ]
+  },
+  {
+   "id": "bacon",
+   "name": "Fried bacon",
+   "aliases": ["bacon", "fried bacon", "crispy bacon", "pekoni"],
+   "portion": "2 slices",
+   "ingredients": [
+    {"item": "bacon", "role": "main", "amount": 30, "unit": "g"}
+   ]
+  },
+  {
+   "id": "sausages",
+   "name": "Breakfast sausages",
+   "aliases": ["sausages", "breakfast sausages", "frankfurters", "nakit", "small sausages"],
+   "portion": "2 pieces",
+   "ingredients": [
+    {"item": "frankfurters", "role": "main", "amount": 45, "unit": "g"},
+    {"item": "mustard", "role": "condiment", "amount": 3, "unit": "g"},
+    {"item": "ketchup", "role": "condiment", "amount": 5, "unit": "g"}
+   ]
+  },
+  {
+   "id": "oat_porridge",
+   "name": "Oat porridge",
+   "aliases": ["oat porridge", "porridge", "kaurapuuro", "puuro"],
+   "portion": "2.5 dl",
+   "ingredients": [
+    {"item": "oat flakes", "role": "body", "amount": 35, "unit": "g"},
+    {"item": "milk", "role": "serving milk", "amount": 30, "unit": "ml"},
+    {"item": "honey", "role": "topping", "amount": 5, "unit": "g"},
+    {"item": "salt", "role": "seasoning", "amount": 0.5, "unit": "g"}
+   ]
+  },
+  {
+   "id": "boiled_eggs",
+   "name": "Boiled eggs",
+   "aliases": ["boiled eggs", "boiled egg", "keitetyt kananmunat", "eggs"],
+   "portion": "1 egg",
+   "ingredients": [
+    {"item": "eggs in shell", "role": "main", "amount": 60, "unit": "g"}
+   ]
+  },
+  {
+   "id": "croissants",
+   "name": "Croissants",
+   "aliases": ["croissants", "croissant", "butter croissants", "voisarvet"],
+   "portion": "1 small croissant",
+   "ingredients": [
+    {"item": "croissant", "role": "bread", "amount": 50, "unit": "g"}
+   ]
+  },
+  {
+   "id": "cheese_ham",
+   "name": "Cheese, ham and vegetables",
+   "aliases": ["cheese and ham", "cheese, ham and vegetables", "cold cuts and cheese", "cheese and cold cuts", "ham and cheese", "leikkeleet ja juusto", "cold cuts"],
+   "portion": "100 g",
+   "ingredients": [
+    {"item": "cheese slices", "role": "cheese", "amount": 25, "unit": "g"},
+    {"item": "ham", "role": "main", "amount": 25, "unit": "g"},
+    {"item": "cucumber", "role": "vegetable", "amount": 25, "unit": "g"},
+    {"item": "tomato", "role": "vegetable", "amount": 25, "unit": "g"}
+   ]
+  },
+  {
+   "id": "yoghurt_muesli",
+   "name": "Yoghurt, muesli and jam",
+   "aliases": ["yoghurt and muesli", "yogurt and muesli", "yoghurt, muesli and jam", "yoghurt with muesli", "jogurtti ja mysli", "yoghurt", "yogurt"],
+   "portion": "150 g",
+   "ingredients": [
+    {"item": "yoghurt", "role": "main", "amount": 120, "unit": "g"},
+    {"item": "muesli", "role": "topping", "amount": 25, "unit": "g"},
+    {"item": "strawberry jam", "role": "topping", "amount": 12, "unit": "g"}
+   ]
+  },
+  {
+   "id": "fruit",
+   "name": "Fresh fruit",
+   "aliases": ["fresh fruit", "fruit", "fruit basket", "hedelmat", "bananas and apples"],
+   "portion": "120 g",
+   "ingredients": [
+    {"item": "banana", "role": "fruit", "amount": 60, "unit": "g"},
+    {"item": "apple", "role": "fruit", "amount": 60, "unit": "g"}
+   ]
+  },
+  {
+   "id": "orange_juice",
+   "name": "Orange juice",
+   "aliases": ["orange juice", "juice", "appelsiinimehu", "tuoremehu"],
+   "portion": "1.5 dl",
+   "ingredients": [
+    {"item": "orange juice", "role": "drink", "amount": 150, "unit": "ml"}
+   ]
+  }
+ ],
+ "fat_pct": {
+  "460024": 100.0,
+  "460394": 18.2,
+  "460396": 0.0,
+  "460416": 1.7,
+  "460443": 1.1,
+  "460509": 1.7,
+  "460684": 60.0,
+  "460686": 60.0,
+  "460697": 13.0,
+  "460718": 60.0,
+  "460752": 100.0,
+  "460802": 100.0,
+  "460825": 0.5,
+  "460829": 70.0,
+  "461112": 100.0,
+  "461174": 1.5,
+  "461273": 35.0,
+  "461277": 60.0,
+  "461360": 1.1,
+  "461490": 35.0,
+  "461548": 10.0,
+  "461668": 3.5,
+  "461675": 5.5,
+  "461904": 80.0,
+  "461962": 60.0,
+  "461999": 35.0,
+  "462085": 69.0,
+  "462322": 17.0,
+  "462421": 80.0,
+  "462626": 2.0,
+  "462652": 27.0,
+  "462703": 15.0,
+  "462744": 3.5,
+  "462775": 0.0,
+  "462792": 80.0,
+  "462921": 1.5,
+  "462933": 1.5,
+  "463034": 91.4,
+  "463038": 1.5,
+  "463040": 91.4,
+  "463047": 3.5,
+  "463056": 75.0,
+  "463095": 91.4,
+  "463149": 0.0,
+  "463171": 0.0,
+  "463203": 1.5,
+  "463218": 24.0,
+  "463254": 15.0,
+  "463263": 21.8,
+  "463290": 1.0,
+  "463299": 33.5,
+  "463313": 1.5,
+  "463335": 3.0,
+  "463359": 1.5,
+  "463366": 38.0,
+  "463373": 0.0,
+  "463379": 10.0,
+  "463380": 3.0,
+  "463390": 92.0,
+  "463403": 92.0,
+  "463422": 0.0,
+  "463435": 80.0,
+  "463437": 80.0,
+  "463439": 2.5,
+  "463442": 10.0,
+  "463520": 91.6,
+  "463568": 80.0,
+  "463573": 91.6,
+  "463589": 100.0,
+  "463623": 80.0,
+  "463729": 70.0,
+  "463744": 82.0,
+  "463770": 10.0,
+  "463775": 1.5,
+  "463779": 1.5,
+  "463797": 10.0,
+  "463798": 80.0,
+  "463810": 4.2,
+  "463812": 27.0,
+  "463825": 10.0,
+  "463828": 15.0,
+  "463830": 10.0,
+  "463837": 38.0,
+  "463850": 10.0,
+  "463856": 15.0,
+  "463886": 10.0,
+  "463893": 91.6,
+  "463894": 72.0,
+  "463938": 0.0,
+  "463975": 15.0,
+  "464013": 1.8,
+  "464042": 1.5,
+  "464047": 35.0,
+  "464056": 1.9,
+  "464073": 3.5,
+  "464076": 80.0,
+  "464094": 70.0,
+  "464097": 1.5,
+  "464114": 3.5,
+  "464119": 0.0,
+  "464154": 80.0,
+  "464164": 70.0,
+  "464173": 18.0,
+  "464176": 91.6,
+  "464179": 1.5,
+  "464187": 100.0,
+  "464194": 38.0,
+  "464198": 1.5,
+  "464201": 1.5,
+  "464203": 91.6,
+  "464205": 82.0,
+  "464217": 20.0,
+  "464221": 10.0,
+  "464223": 10.0,
+  "464226": 1.5,
+  "464237": 2.0,
+  "464249": 15.0,
+  "464250": 91.6,
+  "464262": 100.0,
+  "464268": 75.0,
+  "464306": 1.5,
+  "464320": 3.0,
+  "464338": 72.0,
+  "464368": 91.4,
+  "464396": 15.0,
+  "464398": 1.5,
+  "464399": 1.5,
+  "464401": 0.0,
+  "464411": 82.0,
+  "464440": 1.5,
+  "464473": 2.5,
+  "464490": 35.0,
+  "464495": 98.0,
+  "464549": 97.0,
+  "464669": 91.6,
+  "464699": 35.0,
+  "464715": 10.0,
+  "464722": 24.4,
+  "464727": 35.0,
+  "464745": 14.0,
+  "464761": 83.0,
+  "464768": 3.5,
+  "464855": 91.6,
+  "464874": 72.0,
+  "464924": 23.0,
+  "464980": 100.0,
+  "464987": 72.0,
+  "465039": 1.5,
+  "465056": 57.0,
+  "465058": 0.0,
+  "465132": 72.0,
+  "465149": 1.5,
+  "465193": 35.0,
+  "465244": 1.5,
+  "465269": 14.0,
+  "465283": 1.5,
+  "465302": 72.0,
+  "465596": 57.0,
+  "465747": 57.0,
+  "465765": 0.0,
+  "465793": 1.2,
+  "465876": 91.6,
+  "465894": 91.6,
+  "465909": 91.6,
+  "465980": 91.0,
+  "465984": 91.6,
+  "466002": 91.6,
+  "466013": 91.6,
+  "466016": 1.4,
+  "466068": 91.0,
+  "466090": 60.0,
+  "466121": 91.6,
+  "466217": 91.0,
+  "466238": 10.0,
+  "466285": 100.0,
+  "466288": 1.5,
+  "466290": 91.0,
+  "466313": 0.0,
+  "466510": 21.0,
+  "466542": 100.0,
+  "466608": 100.0,
+  "466625": 75.0,
+  "466799": 80.0,
+  "466977": 69.0,
+  "466989": 16.0,
+  "467036": 92.0,
+  "467091": 90.6,
+  "467142": 30.0,
+  "467150": 10.0,
+  "467169": 36.0,
+  "467173": 29.0,
+  "467244": 18.0,
+  "467297": 15.0,
+  "467356": 91.0,
+  "467377": 91.0,
+  "467496": 24.0,
+  "467499": 91.6,
+  "467543": 31.0,
+  "467567": 100.0,
+  "467709": 91.4,
+  "467748": 91.4,
+  "467778": 80.0,
+  "467974": 1.5,
+  "468319": 3.0,
+  "468359": 18.0,
+  "468417": 1.7,
+  "468465": 1.0,
+  "468521": 10.0,
+  "468881": 18.0,
+  "468887": 18.0,
+  "468967": 24.0,
+  "468983": 3.0,
+  "469040": 1.5,
+  "469050": 35.0,
+  "469094": 13.0,
+  "469118": 25.4,
+  "469119": 0.0,
+  "469126": 35.0,
+  "469153": 1.5,
+  "469160": 15.0,
+  "469162": 15.0,
+  "469165": 10.0,
+  "469178": 0.0,
+  "469181": 3.5,
+  "469192": 0.0,
+  "469194": 1.5,
+  "469198": 1.5,
+  "469209": 0.0,
+  "469210": 35.0,
+  "469224": 0.0,
+  "469235": 40.0,
+  "469266": 1.0,
+  "469272": 1.5,
+  "469287": 1.5,
+  "469288": 26.0,
+  "469316": 18.0,
+  "469330": 1.5,
+  "469331": 0.4,
+  "469337": 0.0,
+  "469345": 18.0,
+  "469346": 36.0,
+  "469363": 1.5,
+  "469380": 24.0,
+  "469386": 0.0,
+  "469401": 3.5,
+  "469415": 17.0,
+  "469431": 100.0,
+  "469452": 15.0,
+  "469457": 2.5,
+  "469477": 0.0,
+  "469491": 0.0,
+  "469512": 3.0,
+  "469519": 1.5,
+  "469524": 100.0,
+  "469541": 1.5,
+  "469543": 15.0,
+  "469549": 1.5,
+  "469556": 3.5,
+  "469587": 100.0,
+  "469664": 57.0,
+  "469752": 13.0,
+  "469955": 70.0,
+  "470308": 59.0,
+  "470340": 11.0,
+  "470341": 23.0,
+  "470453": 78.0,
+  "470562": 17.0,
+  "470611": 3.0,
+  "470789": 2.3,
+  "470794": 1.5,
+  "470863": 1.5,
+  "470889": 2.8,
+  "471043": 75.0,
+  "471306": 70.0,
+  "471374": 57.0,
+  "471424": 3.0,
+  "471490": 100.0,
+  "471690": 1.5,
+  "471694": 3.0,
+  "471715": 59.0,
+  "471743": 60.0,
+  "471792": 82.0,
+  "471797": 100.0,
+  "471824": 75.0,
+  "471825": 75.0,
+  "471840": 38.0,
+  "471881": 3.0,
+  "471907": 60.0,
+  "472091": 72.0,
+  "472127": 100.0,
+  "472145": 1.5,
+  "472218": 75.0,
+  "472243": 26.0,
+  "472270": 3.0,
+  "472303": 3.0,
+  "472372": 1.5,
+  "472387": 3.0,
+  "472405": 59.0,
+  "472492": 0.0,
+  "472516": 1.9,
+  "472540": 91.0,
+  "472598": 2.8,
+  "472833": 1.2,
+  "472879": 3.0,
+  "472933": 15.0,
+  "472966": 15.0,
+  "472974": 1.0,
+  "472980": 15.0,
+  "473045": 15.0,
+  "473063": 15.0,
+  "473113": 1.1,
+  "473142": 2.0,
+  "473205": 0.1,
+  "473278": 3.0,
+  "473424": 1.0,
+  "473432": 99.85,
+  "473458": 92.0,
+  "473461": 0.9,
+  "473485": 2.1,
+  "473496": 15.0,
+  "473609": 3.0,
+  "473812": 1.5,
+  "473847": 28.0,
+  "473920": 92.0,
+  "473925": 100.0,
+  "473941": 26.0,
+  "473956": 13.0,
+  "474043": 75.0,
+  "474045": 100.0,
+  "474124": 92.0,
+  "474136": 1.5,
+  "474206": 35.0,
+  "474497": 91.4,
+  "474674": 3.2,
+  "474681": 97.0,
+  "474686": 1.0,
+  "474697": 80.0,
+  "474724": 3.0,
+  "474774": 1.7,
+  "474794": 100.0,
+  "474799": 10.0,
+  "474864": 2.0,
+  "474929": 0.8,
+  "474937": 100.0,
+  "474957": 3.0,
+  "475027": 3.0,
+  "475224": 3.0,
+  "475350": 3.0,
+  "475433": 0.0,
+  "475534": 0.4,
+  "475604": 75.0,
+  "475708": 100.0,
+  "475797": 80.0,
+  "476065": 99.8,
+  "476240": 0.0,
+  "476324": 91.4,
+  "476559": 75.0,
+  "476560": 0.0,
+  "476584": 80.0,
+  "476608": 1.5,
+  "476612": 1.5,
+  "476644": 3.5,
+  "476679": 0.0,
+  "476731": 80.0,
+  "476740": 80.0,
+  "476756": 75.0,
+  "476771": 0.0,
+  "476797": 0.0,
+  "476815": 82.0,
+  "476821": 80.0,
+  "476844": 3.5,
+  "476849": 75.0,
+  "476855": 1.5,
+  "476856": 1.0,
+  "476863": 10.0,
+  "476880": 15.0,
+  "476886": 75.0,
+  "476927": 1.5,
+  "476957": 1.0,
+  "477050": 0.0
+ }
+}

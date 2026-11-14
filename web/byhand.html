@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The same order by hand</title>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+main{max-width:1240px;margin:0 auto;padding:0 var(--s5) var(--s8)}
+@media (max-width:640px){main{padding:0 var(--s4) var(--s7)}}
+.page-head{padding-bottom:var(--s4)}
+.page-head .lead{font-size:var(--t4);max-width:70ch}
+
+/* The stopwatch */
+.watch{position:sticky;top:56px;z-index:5;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 22px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-l);padding:12px 18px;margin-bottom:var(--s4);box-shadow:0 1px 0 var(--line)}
+.watch .clock{display:flex;align-items:center;gap:12px}
+.watch .dot{width:10px;height:10px;border-radius:50%;background:var(--faint);flex:none}
+.watch.on .dot{background:var(--deny);animation:blink 1.2s steps(2,start) infinite}
+.watch.stopped .dot{background:var(--ink)}
+@keyframes blink{50%{opacity:.25}}
+.watch b#t{font-size:44px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.03em;line-height:1;min-width:4.2ch}
+.watch #t-note{font-size:var(--t4);color:var(--ink-2);line-height:1.4}
+.watch.idle #t-note{color:var(--muted)}
+.agent{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;justify-content:flex-end;font-size:var(--t3);color:var(--muted);text-align:right;line-height:1.35}
+.agent b{font-size:var(--t6);font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:-.015em}
+.agent .sm{display:none}
+.bs{display:inline-flex;align-items:center;gap:5px;font-size:var(--t2);font-weight:500;color:var(--pass)}
+.bs::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+@media (prefers-reduced-motion:reduce){.watch.on .dot{animation:none}}
+
+/* Work area */
+.cols{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s4)}
+@media (min-width:1000px){.cols{grid-template-columns:380px minmax(0,1fr);align-items:start}.cols>.stack:first-child{position:sticky;top:150px;max-height:calc(100vh - 170px);overflow:auto;border-radius:var(--r-l)}}
+.stack{display:flex;flex-direction:column;gap:var(--s4);min-width:0}
+.card h2{font-size:var(--t4);font-weight:600;letter-spacing:-.005em;color:var(--ink);margin:0 0 var(--s3);display:flex;gap:var(--s2);align-items:center;justify-content:space-between;min-height:24px}
+.task{font-size:var(--t3);color:var(--ink-2);line-height:1.5}
+.task .notes{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.task .notes span{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:var(--r-s);background:var(--soft);box-shadow:inset 0 0 0 1px var(--line-2);color:var(--ink);font-size:var(--t2);font-weight:500}
+#result{scroll-margin-top:150px}
+.need{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:var(--t4);align-items:baseline;cursor:pointer}
+.need:last-child{border-bottom:0}
+.need small{grid-column:2/-1;color:var(--muted);font-size:var(--t2);line-height:1.4}
+.need input{margin:0;width:16px;height:16px;accent-color:var(--ink);transform:translateY(2px)}
+.need.done b,.need.done span{text-decoration:line-through;color:var(--muted)}
+.need b{font-weight:500;color:var(--ink)}
+.need span{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.hint{font-size:var(--t2);color:var(--muted);line-height:1.5;margin:10px 0 0}
+
+/* Webshop */
+.shop h2{margin-bottom:var(--s2)}
+.card h2 .muted{font-weight:400}
+.search{position:relative}
+.search svg{position:absolute;left:14px;top:50%;width:18px;height:18px;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+#q{width:100%;height:48px;font-size:var(--t4);padding-left:42px}
+.prod{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t4);align-items:center}
+.prod:last-child{border-bottom:0}
+.prod b{font-weight:500;display:block;line-height:1.35}
+.prod small{display:block;color:var(--muted);font-size:var(--t2);line-height:1.45;margin-top:2px}
+.prod small.al{color:var(--ink-2)}
+.qty{display:flex;gap:6px;align-items:center}
+.qty input{width:80px;height:36px;text-align:right}
+.qty .btn{height:36px;min-width:64px}
+.brow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:var(--t3)}
+.brow:last-child{border-bottom:0}
+.brow input{width:80px;height:32px;text-align:right}
+.brow .u{color:var(--muted);font-size:var(--t2)}
+.checkout{margin-top:14px;display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap}
+.checkout .btn{height:44px;padding:0 20px;font-size:var(--t4)}
+.small{font-size:var(--t2);color:var(--muted);line-height:1.5}
+.bad{color:var(--deny)}
+
+/* The result */
+.res{margin-bottom:var(--s4);padding:var(--s5)}
+.res .lbl{font-size:var(--t3);font-weight:600;color:var(--muted);margin:0 0 6px}
+.res .big{font-size:var(--t7);font-weight:600;letter-spacing:-.02em;line-height:1.2}
+.cmp{display:grid;gap:14px;margin:var(--s4) 0 var(--s3)}
+.cr{display:grid;grid-template-columns:220px minmax(0,1fr) 92px;gap:6px 16px;align-items:center}
+.cr .who{font-size:var(--t3);color:var(--ink-2);line-height:1.35}
+.cr .who small{display:block;color:var(--muted);font-size:var(--t2)}
+.cr .bar{height:14px;border-radius:4px;background:var(--soft);overflow:hidden}
+.cr .bar i{display:block;height:100%;background:var(--ink);border-radius:4px;transform-origin:left;animation:grow .9s cubic-bezier(.2,.7,.2,1) both}
+.cr.est .bar i{background:transparent;border:1.5px dashed var(--muted)}
+.cr b{font-size:var(--t6);font-weight:600;font-variant-numeric:tabular-nums;text-align:right;letter-spacing:-.015em}
+@keyframes grow{from{transform:scaleX(0)}}
+@media (prefers-reduced-motion:reduce){.cr .bar i{animation:none}}
+.res p{margin:8px 0 0;font-size:var(--t3);line-height:1.55;color:var(--ink-2);max-width:80ch}
+.res .acts{margin-top:var(--s4);display:flex;gap:var(--s3);flex-wrap:wrap}
+
+@media (max-width:760px){
+  /* One slim row on a phone, so the list stays in view under it. */
+  .watch{top:57px;grid-template-columns:auto minmax(0,1fr);padding:6px 12px;gap:0 12px}
+  .watch .clock{gap:8px;grid-row:1/span 2}
+  .watch .dot{width:8px;height:8px}
+  .watch b#t{font-size:24px;min-width:3.6ch}
+  .watch #t-note{font-size:var(--t1);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .agent{grid-column:2;justify-content:flex-start;text-align:left;gap:0 5px}
+  .agent b{font-size:var(--t2)}
+  .agent .lg,.agent .bs{display:none}
+  .agent .sm{display:inline}
+  .cr{grid-template-columns:minmax(0,1fr) auto}
+  .cr .bar{grid-column:1/-1;grid-row:2}
+  .prod{grid-template-columns:minmax(0,1fr)}
+  #result{scroll-margin-top:250px}
+  #list{max-height:46vh;overflow:auto;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .agent{font-size:var(--t1)}
+  .qty{justify-content:flex-end}
+}
+</style>
+</head>
+<body>
+<div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
+<header id="site"></header>
+<main>
+<div class="page-head">
+  <h1>The same order by hand</h1>
+  <p class="lead">This is what the agent does in seconds, done the usual way: read the list, search the webshop, check pack size and allergens, add to the basket. The clock starts at your first key press and stops at checkout. Nothing is ordered.</p>
+</div>
+
+<div class="watch idle" id="watch" role="timer" aria-live="off">
+  <div class="clock"><span class="dot" aria-hidden="true"></span><b id="t">0:00</b></div>
+  <span id="t-note">The clock has not started. It starts when you type.</span>
+  <div class="agent" id="agent"></div>
+</div>
+
+<div id="result"></div>
+
+<div class="cols" id="work">
+  <div class="stack">
+    <div class="card"><h2>Shopping list <span class="muted" id="l-count"></span></h2><div class="task" id="task-head"></div><div id="list" style="margin-top:8px"></div>
+      <p class="hint">Tick an item when you have it. The ticks are only for you. Amounts are what the kitchen needs; you work out how many packs that is.</p></div>
+  </div>
+  <div class="stack">
+    <div class="card shop"><h2>Webshop</h2>
+      <div class="search"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.6"/><path d="m10.5 10.5 3.5 3.5"/></svg><input type="search" id="q" name="q" placeholder="Search products" autocomplete="off" aria-label="Search products"></div>
+      <div id="found" style="margin-top:8px"><div class="empty">Type a product name to search Valio Aimo's catalogue.</div></div></div>
+    <div class="card"><h2>Basket <span class="muted" id="b-count"></span></h2><div id="basket"><div class="empty">The basket is empty.</div></div>
+      <div class="checkout"><button class="btn primary" id="out" disabled>Check out and stop the clock</button><span class="small">Prices and stock are checked at checkout, like the agent's order. Nothing is ordered.</span></div></div>
+  </div>
+</div>
+</main>
+<script src="/static/lib.js"></script>
+<script>
+const run = new URLSearchParams(location.search).get("run") || "";
+const B = new Map();   // product id -> {id, title, unit, units}
+let attempt = null, starting = null, t0 = 0, ticker = null, task = null, done = false, seq = 0, typing = null, agent = null;
+const n = x => Number(x).toLocaleString("en-IE", { maximumFractionDigits: 2 });
+const mmss = s => Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0");
+const errOf = r => r && r.messages && r.messages.find(m => m.type === "error");
+const secs = s => s < 60 ? `${n(Math.round(s * 10) / 10)} s` : mmss(s);
+const watch = st => { $("#watch").classList.remove("idle", "on", "stopped"); $("#watch").classList.add(st); };
+
+function start() {
+  if (starting || done) return;
+  t0 = performance.now();
+  ticker = setInterval(() => { $("#t").textContent = mmss((performance.now() - t0) / 1000); }, 250);
+  watch("on");
+  $("#t-note").textContent = "Running. It stops when you check out.";
+  starting = api("/api/byhand/start", { run }).then(r => { attempt = r.attempt; });
+}
+document.addEventListener("keydown", start);
+
+// The agent's time for the same kind of job: this run if it is yours, else the last real one on the server.
+async function loadAgent() {
+  try {
+    if (run) {
+      const r = await api("/api/menu/run/" + encodeURIComponent(run));
+      const s = r && r.seconds;
+      if (s && s.read != null && s.plan != null) agent = { checked: s.read + s.plan, total: s.total, lines: r.plan && r.plan.totals ? r.plan.totals.lines : null, eur: r.usage ? r.usage.eur : null, ordered: !!r.order, of: "this menu" };
+    }
+    if (!agent) {
+      const l = await api("/api/menu/latest");
+      if (l.real) agent = { checked: l.phases && l.phases.read != null ? l.phases.read + l.phases.plan : null, total: l.seconds, lines: l.line_count, eur: l.cost ? l.cost.eur : null, ordered: true, of: "the last menu ordered here" };
+    }
+  } catch (e) { agent = null; }
+  $("#agent").innerHTML = agent && agent.checked != null ? `<span class="lg">The agent, photo to checked order:</span><span class="sm">The agent:</span><b>${esc(secs(agent.checked))}</b><span>for ${esc(agent.lines)} lines</span><span class="bs">measured</span>`
+    : '<span>No menu photo has become an order on this server yet.</span>';
+}
+
+async function loadTask() {
+  task = await api("/api/byhand/task" + (run ? "?run=" + encodeURIComponent(run) : ""));
+  const title = /[a-z]/.test(task.title) ? task.title : String(task.title).charAt(0) + String(task.title).slice(1).toLowerCase();
+  $("#task-head").innerHTML = `<b>${esc(title)}</b>, ${n(task.guests)} guests, delivery ${esc(day(task.delivery_date))}. From ${esc(task.from)}.` +
+    (task.notes.length ? `<div style="margin-top:6px">Notes on the menu. Keep to them:</div><div class="notes">${task.notes.map(x => `<span>${esc(x)}</span>`).join("")}</div>` : "");
+  $("#l-count").textContent = task.list.length + " items";
+  $("#list").innerHTML = task.list.map((x, i) => `<label class="need" for="n${i}"><input type="checkbox" id="n${i}" name="have"><b>${esc(x.item.charAt(0).toUpperCase() + x.item.slice(1))}</b><span class="tnum">${n(x.amount)} ${esc(x.unit)}</span><small>${x.dishes.map(esc).join(", ")}</small></label>`).join("");
+  document.querySelectorAll(".need input").forEach(c => c.onchange = () => c.parentElement.classList.toggle("done", c.checked));
+}
+
+function search() {
+  const q = $("#q").value.trim(), mine = ++seq;
+  if (!q) { $("#found").innerHTML = '<div class="empty">Type a product name to search Valio Aimo\'s catalogue.</div>'; return; }
+  api("/api/byhand/search?q=" + encodeURIComponent(q)).then(r => {
+    if (mine !== seq) return;
+    const ps = r.products || [];
+    $("#found").innerHTML = ps.length ? ps.map(p => `<div class="prod"><div><b>${esc(p.title)}</b>
+        <small>Sold by the ${esc(p.unit)}${p.step !== 1 ? ", in steps of " + n(p.step) : ""}. Pack: ${esc(p.pack)}.</small>
+        <small class="al">${p.contains.length ? "Contains " + p.contains.map(esc).join(", ") + "." : "No allergens listed."}${p.may_contain.length ? " May contain " + p.may_contain.map(esc).join(", ") + "." : ""}${p.claims.length ? " " + p.claims.map(esc).join(", ") + "." : ""}</small></div>
+      <div class="qty"><input type="number" name="qty" min="${p.step}" max="9999" step="${p.step}" value="${p.step}" aria-label="Quantity of ${esc(p.title)}"><button class="btn small" data-id="${esc(p.id)}" data-title="${esc(p.title)}" data-unit="${esc(p.unit)}">Add</button></div></div>`).join("")
+      : '<div class="empty">Nothing found for that. Try another word.</div>';
+    document.querySelectorAll("#found .btn").forEach(b => b.onclick = () => {
+      start();
+      const u = parseFloat(b.previousElementSibling.value) || 0;
+      if (u <= 0) return;
+      const cur = B.get(b.dataset.id);
+      B.set(b.dataset.id, { id: b.dataset.id, title: b.dataset.title, unit: b.dataset.unit, units: (cur ? cur.units : 0) + u });
+      b.textContent = "Added"; setTimeout(() => { b.textContent = "Add"; }, 800);
+      basket();
+    });
+  });
+}
+$("#q").oninput = () => { clearTimeout(typing); typing = setTimeout(search, 180); };
+
+function basket() {
+  $("#b-count").textContent = B.size ? B.size + (B.size === 1 ? " line" : " lines") : "";
+  $("#out").disabled = !B.size || done;
+  $("#basket").innerHTML = B.size ? [...B.values()].map(x => `<div class="brow"><span>${esc(x.title)}</span><span><input type="number" name="units" min="0" max="9999" step="any" value="${x.units}" data-id="${esc(x.id)}" aria-label="Quantity of ${esc(x.title)}"> <span class="u">${esc(x.unit)}</span></span><button class="btn small ghost" data-rm="${esc(x.id)}">Remove</button></div>`).join("") : '<div class="empty">The basket is empty.</div>';
+  document.querySelectorAll("#basket input").forEach(i => i.onchange = () => { const u = parseFloat(i.value) || 0; if (u > 0) B.get(i.dataset.id).units = u; else B.delete(i.dataset.id); basket(); });
+  document.querySelectorAll("#basket [data-rm]").forEach(b => b.onclick = () => { B.delete(b.dataset.rm); basket(); });
+}
+
+$("#out").onclick = async () => {
+  if (!B.size || done) return;
+  start();
+  $("#out").disabled = true;
+  await starting;
+  const r = await api("/api/byhand/checkout", { attempt, basket: [...B.values()].map(x => ({ id: x.id, units: x.units })) });
+  if (errOf(r) || r.seconds == null) { $("#out").disabled = false; $("#t-note").textContent = (errOf(r) || {}).content || "The checkout did not answer. Try again."; return; }
+  done = true; clearInterval(ticker);
+  watch("stopped");
+  $("#t").textContent = mmss(r.seconds);
+  $("#t-note").textContent = "Stopped at checkout. Timed on the server.";
+  const last = await api("/api/menu/latest");
+  const bad = r.rows.filter(x => x.breaks || !x.orderable);
+  const bh = r.by_hand || {};
+  const a = agent && agent.checked != null ? agent : null;
+  const pace = a && a.lines && r.lines && r.lines < a.lines * 0.8 ? r.seconds / r.lines * a.lines : null;  // only when the basket is far from complete
+  const top = Math.max(r.seconds, pace || 0), pc = v => Math.max(0.4, v / top * 100).toFixed(2);
+  $("#result").innerHTML = `<section class="card res"><p class="lbl">Your time</p>
+    <div class="big">${n(r.minutes)} min for ${r.lines} line${r.lines === 1 ? "" : "s"}, by hand.</div>
+    ${a ? `<div class="cmp" role="img" aria-label="You took ${esc(mmss(r.seconds))} by hand; the agent took ${esc(secs(a.checked))} from photo to checked order.">
+      <div class="cr"><span class="who">You, by hand<small>${r.lines} line${r.lines === 1 ? "" : "s"}, timed on the server</small></span><div class="bar"><i style="width:${pc(r.seconds)}%"></i></div><b>${esc(mmss(r.seconds))}</b></div>
+      ${pace ? `<div class="cr est"><span class="who">You, for ${esc(a.lines)} lines<small>estimate: your pace × ${esc(a.lines)} lines</small></span><div class="bar"><i style="width:${pc(pace)}%"></i></div><b>${esc(mmss(pace))}</b></div>` : ""}
+      <div class="cr"><span class="who">The agent<small>photo to checked order, ${esc(a.lines)} lines, measured</small></span><div class="bar"><i style="width:${pc(a.checked)}%"></i></div><b>${esc(secs(a.checked))}</b></div>
+    </div>` : ""}
+    <p>${last.real ? `The agent's last real order from a menu photo took ${n(last.seconds)} s for ${last.line_count} lines, model cost €${last.cost.eur.toFixed(4)}${last.phases && last.phases.person ? `, including ${n(last.phases.person)} s for a person to approve it` : ""}.` : "No menu photo has become an order on this server yet, so there is no agent time to put next to yours."} The list has ${r.list_lines} items; the agent's order for it has ${r.agent_lines} lines.</p>
+    <p>${esc(r.counts)}${bh.basis === "measured" ? ` By hand so far: ${n(bh.minutes)} min, the middle of ${bh.attempts} finished attempt${bh.attempts === 1 ? "" : "s"} by ${bh.n} ${bh.n === 1 ? "person" : "people"}.` : ""}</p>
+    ${bad.length ? `<p><b>${bad.length} line${bad.length === 1 ? "" : "s"} would not have gone through:</b></p>${bad.map(x => `<div class="small bad">${esc(x.title)}: ${esc([x.breaks, x.orderable ? null : x.why].filter(Boolean).join("; "))}</div>`).join("")}` : `<p>Every line in your basket can be ordered for that day and keeps to the notes on the menu. Basket ${eur(r.subtotal)} ex VAT.</p>`}
+    <div class="acts"><a class="btn" href="/menu">Back to the menu page</a><a class="btn ghost" href="${location.pathname + location.search}">Time it again</a></div></section>`;
+  $("#result").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth", block: "start" });
+  basket();
+};
+
+loadTask();
+loadAgent();
+</script>
+</body>
+</html>

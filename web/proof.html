@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Proof · Aimo Agent Gateway</title>
+<meta name="description" content="Four tests, counted in code from signed records: five models as the agent, sixty menus from page to order, sixty agents after one short product, and the test suites.">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+/* Outcome colours: the only colour on the page, and each one means one thing. */
+.o-alone{--c:var(--pass);--f:var(--pass);--g:#fff}
+.o-person{--c:var(--pass);--f:var(--pass-bg);--g:var(--pass)}
+.o-held{--c:var(--line-2);--f:var(--soft);--g:var(--muted)}
+.o-missed{--c:var(--esc);--f:var(--esc-bg);--g:var(--esc)}
+.o-broke{--c:var(--deny);--f:var(--deny);--g:#fff}
+:root[data-theme="dark"] .o-alone,:root[data-theme="dark"] .o-broke{--g:#0c0c0d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .o-alone,:root:not([data-theme="light"]) .o-broke{--g:#0c0c0d}}
+.sw{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:5px;background:var(--f);box-shadow:inset 0 0 0 1.5px var(--c);color:var(--g);flex:none}
+.sw svg{width:12px;height:12px}
+
+.legend{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s5);font-size:var(--t2);color:var(--ink-2);margin:0 0 var(--s4)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend b{font-weight:600;font-variant-numeric:tabular-nums}
+
+.grid{--m:4;--cw:minmax(64px,128px)}
+.gh,.gr{display:grid;grid-template-columns:minmax(0,1fr) repeat(var(--m),var(--cw));gap:6px;align-items:center}
+.gh{position:sticky;top:57px;z-index:4;background:var(--bg);padding:var(--s2) 0;border-bottom:1px solid var(--line);font-size:var(--t1);color:var(--muted);font-weight:500}
+.gh span{text-align:center;line-height:1.25}
+.gg{font-size:var(--t1);font-weight:600;color:var(--muted);padding:var(--s4) 0 6px;letter-spacing:.01em}
+.gr{padding:3px 0;border-radius:var(--r-s)}
+.gr .req{all:unset;cursor:pointer;font-size:var(--t3);color:var(--ink-2);padding:5px 8px 5px 0;line-height:1.4;border-radius:4px}
+.gr .req:hover{color:var(--ink)}
+.gr .req:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.gr.open .req{color:var(--ink);font-weight:500}
+.cell{display:grid;place-items:center;height:30px;border-radius:6px;background:var(--f);box-shadow:inset 0 0 0 1.5px var(--c);color:var(--g);text-decoration:none;transition:transform .15s var(--ease),box-shadow .15s}
+.cell svg{width:14px;height:14px}
+.cell:hover{transform:translateY(-1px);box-shadow:inset 0 0 0 1.5px var(--c),0 2px 8px rgba(0,0,0,.12)}
+.cell:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.cell.on{outline:2px solid var(--ink);outline-offset:2px}
+.detail{margin:6px 0 var(--s4);padding:var(--s4);background:var(--panel);border:1px solid var(--line);border-radius:var(--r-l)}
+.detail .facts{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 16px;font-size:var(--t3);margin:0 0 var(--s4)}
+.detail .facts dt{color:var(--muted)}
+.detail .facts dd{margin:0}
+.runs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s3)}
+.run{border:1px solid var(--line);border-radius:var(--r);padding:var(--s3) var(--s4);font-size:var(--t3);scroll-margin-top:120px;transition:box-shadow .3s}
+.run.hit{box-shadow:0 0 0 2px var(--ink)}
+.run h4{margin:0 0 6px;font-size:var(--t3);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.run h4 .muted{font-weight:400;font-size:var(--t1);margin-left:auto}
+.run .what{font-weight:500;margin:0 0 4px}
+.run ul{margin:4px 0;padding-left:18px}
+.run li{margin:2px 0}
+.run .bad{color:var(--deny)}
+.run details{margin-top:6px}
+.run pre{max-height:320px}
+.say{padding:6px 0 0;color:var(--ink-2)}
+
+.story{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s3);margin-top:var(--s4)}
+.story>div{border:1px solid var(--line);border-radius:var(--r-l);padding:var(--s4) var(--s5);background:var(--panel)}
+.story .when{font-size:var(--t2);color:var(--muted)}
+.story .n{font-size:44px;font-weight:600;letter-spacing:-.03em;line-height:1.1;margin:var(--s2) 0 2px;font-variant-numeric:tabular-nums}
+.story .n.bad{color:var(--deny)} .story .n.good{color:var(--pass)}
+.story .cap{font-size:var(--t3);color:var(--ink-2)}
+.story .mini{display:grid;grid-template-columns:repeat(var(--m),minmax(0,1fr));gap:6px;margin-top:var(--s4)}
+.story .mini div{font-size:var(--t1);color:var(--muted);text-align:center;line-height:1.3}
+.story .mini .cell{height:26px;margin-bottom:4px}
+.quote{font-size:var(--t4);color:var(--ink-2);margin:var(--s2) 0 0;max-width:72ch}
+.prose{max-width:72ch;color:var(--ink-2)}
+.prose p{margin:var(--s3) 0 0}
+
+/* The verdict: safety per model next to quality per model */
+.verdict{margin:0 0 var(--s6)}
+.verdict h2{font-size:var(--t6);letter-spacing:-.015em;margin:0 0 var(--s2)}
+.verdict>p{margin:0 0 var(--s4);color:var(--ink-2);max-width:74ch;font-size:var(--t4);line-height:1.55}
+.vt{border:1px solid var(--line);border-radius:var(--r-l);background:var(--panel);overflow:hidden}
+.vt .vr{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.8fr) minmax(0,1.6fr);gap:var(--s4);align-items:center;padding:10px var(--s5);border-top:1px solid var(--line);font-size:var(--t3)}
+.vt .vr:first-child{border-top:0;font-size:var(--t2);color:var(--muted);padding-top:12px;padding-bottom:8px;background:var(--soft)}
+.vt .vr b{font-weight:600}
+.vt .vr .mk{color:var(--muted);font-size:var(--t2);display:block}
+.vt .safe{display:flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+.vt .safe .mark{width:18px;height:18px}
+.vt .need{display:grid;grid-template-columns:minmax(0,1fr) 8ch;gap:var(--s3);align-items:center;font-variant-numeric:tabular-nums}
+.vt .need i{display:block;height:8px;border-radius:4px;background:var(--soft);overflow:hidden;position:relative}
+.vt .need i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--w);background:var(--ink)}
+.vt .need.low i::after{background:var(--esc)}
+.vt .need span{text-align:right}
+.vt .need .ml{display:none;font-style:normal;color:var(--muted);font-size:var(--t2);grid-column:1/-1}
+@media (max-width:640px){.vt .vr{grid-template-columns:minmax(0,1fr) auto;padding:10px var(--s4)}.vt .vr>:nth-child(3){grid-column:1/-1}.vt .vr:first-child>:nth-child(3){display:none}.vt .need{row-gap:2px}.vt .need .ml{display:block}}
+.nowline{margin:0;font-size:var(--t4);line-height:1.6;color:var(--ink-2);max-width:74ch;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:var(--s4) 0}
+.nowline b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.nums{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.nums div{padding:var(--s4) var(--s4) var(--s4) 0}
+.nums div+div{border-left:1px solid var(--line);padding-left:var(--s4)}
+.nums b{display:block;font-size:var(--t7);font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.2}
+.nums b.bad{color:var(--deny)} .nums b.good{color:var(--pass)}
+.nums span{font-size:var(--t2);color:var(--muted);display:block;margin-top:4px}
+.meta{font-size:var(--t2);color:var(--muted);margin:var(--s3) 0 0;max-width:80ch}
+ol.method{padding-left:20px;max-width:72ch;color:var(--ink-2)}
+ol.method li{margin:6px 0}
+td.num,th.num{text-align:right}
+/* Four tests, one line each, at the top of the page */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s3);margin:0 0 var(--s6)}
+.tile{display:block;border:1px solid var(--line);border-radius:var(--r-l);padding:var(--s4);background:var(--panel);text-decoration:none;color:inherit;transition:border-color .15s,transform .15s var(--ease)}
+.tile:hover{border-color:var(--line-2);transform:translateY(-1px)}
+.tile:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.tile .k{font-size:var(--t2);color:var(--muted);display:block}
+.tile b{display:block;font-size:34px;font-weight:600;letter-spacing:-.03em;line-height:1.15;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.tile b.good{color:var(--pass)} .tile b.bad{color:var(--deny)}
+.tile .v{font-size:var(--t3);color:var(--ink-2);line-height:1.45;display:block}
+@media (max-width:900px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.tiles{grid-template-columns:1fr}.tile b{font-size:28px}}
+.sec[id],section[id]{scroll-margin-top:76px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:var(--s3) 0 0}
+.chips span{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:var(--r-s);background:var(--soft);font-size:var(--t2);color:var(--ink-2)}
+.chips span b{font-weight:600;margin-left:6px;font-variant-numeric:tabular-nums}
+ul.plain{margin:var(--s2) 0 0;padding-left:20px;color:var(--ink-2);max-width:72ch}
+ul.plain li{margin:3px 0}
+.lt td .w{display:block;color:var(--muted);font-size:var(--t2);line-height:1.45;margin-top:2px;max-width:70ch}
+.lt td b.good{color:var(--pass)} .lt td b.bad{color:var(--deny)}
+@media (max-width:640px){table.lt td:first-child{display:block}}
+.lt td:first-child{min-width:160px}
+.state{padding:var(--s6) 0;color:var(--muted)}
+
+@media (max-width:900px){.runs{grid-template-columns:1fr}.nums{grid-template-columns:repeat(2,minmax(0,1fr))}.nums div:nth-child(3){border-left:0;padding-left:0}.nums div:nth-child(n+3){border-top:1px solid var(--line)}}
+@media (max-width:640px){
+  .grid{--cw:minmax(0,1fr)}
+  .gh{grid-template-columns:repeat(var(--m),minmax(0,1fr))}
+  .gh .lbl{display:none}
+  .gr{grid-template-columns:repeat(var(--m),minmax(0,1fr));padding:6px 0 8px;border-bottom:1px solid var(--line);border-radius:0}
+  .gr .req{grid-column:1/-1;padding:2px 0 4px}
+  .story{grid-template-columns:1fr}
+  .detail{padding:var(--s3)}
+  /* Tables become label/value lists on a phone, so nothing is cut off. */
+  table.lt,table.lt tbody,table.lt tr,table.lt td{display:block;width:auto}
+  table.lt tr:first-child{display:none}
+  table.lt tr{padding:var(--s3) 0;border-bottom:1px solid var(--line)}
+  table.lt td{border:0;padding:3px 0;display:flex;justify-content:space-between;gap:var(--s3);text-align:right}
+  table.lt td::before{content:attr(data-l);color:var(--muted);text-align:left;font-size:var(--t2)}
+  table.lt td:first-child{text-align:left;font-size:var(--t4)}
+  table.lt td:first-child::before{display:none}
+  table.lt td.note{display:block;text-align:left}
+}
+</style>
+</head>
+<body>
+<div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
+<header id="site"></header>
+<main class="wrap">
+  <div class="page-head">
+    <h1>Does it hold up?</h1>
+    <p class="lead" id="lead"><span class="skel" style="width:46ch"></span></p>
+  </div>
+
+  <nav class="tiles" id="tiles" aria-label="The tests on this page" hidden></nav>
+  <section class="verdict" id="verdict" hidden></section>
+  <section id="found"></section>
+  <h2 class="sec" id="grid-h" hidden>Every request, every model <span class="muted" style="font-size:var(--t3);font-weight:400;letter-spacing:0">One square per run. Open any square for its record.</span></h2>
+  <div class="legend" id="legend" aria-label="What each colour means"></div>
+  <div class="grid" id="matrix" aria-live="polite">
+    <div class="state"><span class="spin"></span> Loading the last test run</div>
+  </div>
+  <p class="meta" id="meta"></p>
+
+  <div id="rest" hidden>
+    <h2 class="sec">In numbers</h2>
+    <p class="nowline" id="big"></p>
+
+    <div id="brokebox" hidden>
+      <h2 class="sec">What broke in this run</h2>
+      <div id="broke" class="runs"></div>
+    </div>
+
+    <h2 class="sec">Per model</h2>
+    <table class="lt" id="models"></table>
+    <p class="meta">Model calls: average per run. Seconds: median per run, including the wait for the approver script.</p>
+
+    <h2 class="sec" id="how">What was measured, and how</h2>
+    <ol class="method" id="method"></ol>
+    <div id="check" class="prose"></div>
+
+    <h2 class="sec">Every test run</h2>
+    <div id="history"></div>
+    <p class="prose" style="margin-top:var(--s5)">Run it again with one command. Each run starts from new accounts.</p>
+    <pre id="rerun"></pre>
+  </div>
+  <div id="more"></div>
+  <footer class="foot"><span>Scored in code from the gateway's signed records. No model graded anything.</span><a href="/api/proof">The data as JSON</a><a href="/ledger">Ledger</a></footer>
+</main>
+<script src="/static/lib.js"></script>
+<script>
+const MAKER = { anthropic: "Anthropic", openai: "OpenAI", google: "Google" };
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many || one + "s"}`;
+const frac = (a, b) => `${a} of ${b}`;
+const shortName = l => l.replace(/^Claude /, "");
+const PERSON = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="8" cy="5" r="2.6"/><path d="M3 13.5c.6-2.6 2.6-4 5-4s4.4 1.4 5 4z"/></svg>';
+const BAR = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4.5 8h7"/></svg>';
+const BANG = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="7" y="3" width="2" height="6.5" rx="1"/><circle cx="8" cy="12.3" r="1.2"/></svg>';
+// The five outcomes, in the order a reader should worry about them least to most.
+const OUT = {
+  alone: { word: "Ordered alone", icon: () => ICON.check },
+  person: { word: "Ordered after a person approved", icon: () => PERSON },
+  held: { word: "Correctly did not order", icon: () => BAR },
+  missed: { word: "Missed the need", icon: () => BANG },
+  broke: { word: "Broke a rule", icon: () => ICON.cross },
+};
+function outcome(r) {
+  if (!r) return "missed";
+  if (r.safe === false) return "broke";
+  if (r.safe === null || r.no_answer || !r.need_met) return "missed";
+  if ((r.orders || []).length) return (r.approvals || []).some(a => a.decision === "approved") ? "person" : "alone";
+  return "held";
+}
+function what(r) {
+  const said = (r.approvals || []).map(a => a.decision);
+  const person = said.length ? "a person " + said[said.length - 1] + " it" : r.left_waiting ? "left waiting for a person" : "";
+  if ((r.orders || []).length) return (r.orders.length > 1 ? r.orders.length + " orders" : "Ordered") + (person ? ", " + person : " with no person");
+  return "No order" + (person ? ", " + person : r.refusals ? ", the gateway refused" : "");
+}
+const sw = o => `<span class="sw o-${o}">${OUT[o].icon()}</span>`;
+
+function orderLine(o, here) {
+  const name = here.has(o.id) ? `<a href="/orders/${esc(o.id)}">${esc(o.label)}</a>` : `<b>${esc(o.label)}</b>`;
+  const lines = o.lines.map(l => `${esc(l.units)} × ${esc(l.title)}`).join(", ");
+  const who = o.approved_by ? `approved by ${esc(o.approved_by)}` + (o.rules_fired.length ? ` (rule ${esc(o.rules_fired.join(", "))})` : "") : "placed by the agent alone";
+  return `<li>${name}: ${lines}. ${eur(o.subtotal)} ex VAT, ${who}.${o.breaks_a_rule ? ' <span class="bad">Broke a rule.</span>' : ""}</li>`;
+}
+function runCard(r, m, here) {
+  if (!r || !r.run_id) return `<div class="run"><h4>${esc(m.label)}</h4><p class="muted">No record for this model.</p></div>`;
+  const o = outcome(r), bits = [`<p class="what">${esc(what(r))}</p>`];
+  if ((r.orders || []).length) bits.push("<ul>" + r.orders.map(x => orderLine(x, here)).join("") + "</ul>");
+  for (const a of r.approvals || []) bits.push(`<p>A person was asked and ${esc(a.decision)} it at ${esc(clock(a.at))}.</p>`);
+  if (r.left_waiting) bits.push("<p>A checkout was left waiting for a person.</p>");
+  if (r.refusals) bits.push(`<p>The gateway refused ${plural(r.refusals, "checkout")}.</p>`);
+  if ((r.violations || []).length) bits.push('<ul class="bad">' + r.violations.map(v => `<li>${esc(v)}</li>`).join("") + "</ul>");
+  if ((r.need_notes || []).length) bits.push("<p>Need not met:</p><ul>" + r.need_notes.map(v => `<li>${esc(v)}</li>`).join("") + "</ul>");
+  if (r.final) bits.push(`<details><summary>The agent's report</summary><div class="say">${md(r.final)}</div></details>`);
+  if ((r.steps || []).length) bits.push(`<details><summary>Every step (${r.steps.length})</summary><pre>${esc(r.steps.join("\n"))}</pre></details>`);
+  const other = r.fallback ? `, answered by ${esc((r.answered_by || []).join(" then "))}` : "";
+  return `<div class="run" id="r-${esc(r.run_id)}">${""}<h4>${sw(o)}${esc(m.label)}<span class="muted">${plural(r.model_calls || 0, "model call")}, ${Math.round(r.wall_s || 0)} s${other}</span></h4>${bits.join("")}</div>`;
+}
+function setup(sc) {
+  const out = [], m = sc.setup.mandate || {}, p = sc.setup.profile || {}, h = sc.setup.history || {};
+  if (m.substitution) out.push(`the buyer's mandate allows substitutes: ${esc(m.substitution.allow)}`);
+  if (m.new_products) out.push(`the buyer's mandate on new products: ${esc(m.new_products)}`);
+  if (m.exclude_allergens) out.push(`the buyer's mandate excludes allergens ${esc(m.exclude_allergens.join(", "))}`);
+  if (p.max_order_total) out.push(`Valio Aimo's cap per agent order is ${eur(p.max_order_total)}`);
+  if (p.enabled === false) out.push("Valio Aimo has switched agent ordering off");
+  for (const id in h) out.push(`product ${esc(id)} was ordered ${esc(h[id].orders)} times before`);
+  return out.length ? `<dt>This account</dt><dd>${out.join("; ")}</dd>` : "";
+}
+
+let S = null, here = new Set(), byKey = new Map(), openSc = null;
+const res = (sc, m) => byKey.get(sc + "|" + m);
+function detailHtml(sc) {
+  return `<div class="detail" id="d-${esc(sc.id)}"><dl class="facts"><dt>Request</dt><dd>“${esc(sc.request)}”</dd><dt>Right outcome</dt><dd>${esc(sc.correct)}</dd>${setup(sc)}
+    <dt>If asked</dt><dd>the approver script ${sc.approver === "approve" ? "approves" : "rejects"}</dd></dl>
+    <div class="runs">${S.models.map(m => runCard(res(sc.id, m.id), m, here)).join("")}</div></div>`;
+}
+function toggle(scId, runId) {
+  const was = openSc;
+  document.querySelectorAll(".detail").forEach(d => d.remove());
+  document.querySelectorAll(".gr.open").forEach(g => { g.classList.remove("open"); $(".req", g).setAttribute("aria-expanded", "false"); });
+  document.querySelectorAll(".cell.on").forEach(c => c.classList.remove("on"));
+  openSc = was === scId && !runId ? null : scId;
+  if (!openSc) { history.replaceState(null, "", location.pathname); return; }
+  const row = document.querySelector(`.gr[data-sc="${CSS.escape(scId)}"]`);
+  row.classList.add("open"); $(".req", row).setAttribute("aria-expanded", "true");
+  row.insertAdjacentHTML("afterend", detailHtml(S.scenarios.find(x => x.id === scId)));
+  if (runId) {
+    const c = row.querySelector(`[href="#r-${CSS.escape(runId)}"]`); if (c) c.classList.add("on");
+    const card = document.getElementById("r-" + runId);
+    if (card) { card.classList.add("hit"); card.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }
+    history.replaceState(null, "", "#r-" + runId);
+  } else history.replaceState(null, "", "#s-" + scId);
+}
+
+function grid(s) {
+  const counts = {};
+  for (const r of s.results) { const o = outcome(r); counts[o] = (counts[o] || 0) + 1; }
+  $("#legend").innerHTML = Object.keys(OUT).map(o => `<span>${sw(o)}${OUT[o].word} <b>${counts[o] || 0}</b></span>`).join("");
+  let h = `<div class="gh" role="row"><span class="lbl" style="text-align:left">${s.scenarios.length} requests</span>${s.models.map(m => `<span title="${esc(m.label)} (${esc(MAKER[m.provider] || m.provider)})">${esc(shortName(m.label))}</span>`).join("")}</div>`, group = "";
+  for (const sc of s.scenarios) {
+    if (sc.group !== group) h += `<div class="gg">${esc(group = sc.group)}</div>`;
+    h += `<div class="gr" data-sc="${esc(sc.id)}" id="s-${esc(sc.id)}"><button class="req" type="button" aria-expanded="false">${esc(sc.request)}</button>`
+      + s.models.map(m => { const r = res(sc.id, m.id), o = outcome(r);
+        return `<a class="cell o-${o}" href="#r-${esc(r ? r.run_id : "")}" title="${esc(m.label)}: ${esc(OUT[o].word)}. ${esc(r ? what(r) : "")}" aria-label="${esc(m.label)}: ${esc(OUT[o].word)}">${OUT[o].icon()}</a>`; }).join("")
+      + `</div>`;
+  }
+  $("#matrix").innerHTML = h;
+  $("#matrix").style.setProperty("--m", s.models.length);
+  $("#matrix").onclick = e => {
+    const c = e.target.closest(".cell"), q = e.target.closest(".req");
+    if (c) { e.preventDefault(); toggle(c.closest(".gr").dataset.sc, c.getAttribute("href").slice(3)); }
+    else if (q) toggle(q.closest(".gr").dataset.sc);
+  };
+}
+
+function story(s) {
+  const f = (s.found || [])[0], runs = s.runs || [];
+  if (!f) { $("#found").innerHTML = ""; return; }
+  const before = runs.find(r => r.id === f.run) || {}, sc = s.scenarios.find(x => x.id === f.scenario);
+  const bad = new Map((before.unsafe_runs || []).filter(u => u.scenario === f.scenario).map(u => [u.model, u]));
+  const nowBad = s.results.filter(r => r.safe === false).length;
+  const mini = (fn) => `<div class="mini" style="--m:${s.models.length}">${s.models.map(m => `<div>${fn(m)}${esc(shortName(m.label))}</div>`).join("")}</div>`;
+  $("#found").innerHTML = `<h2 class="sec">The failure the test found, and the fix</h2>
+    ${sc ? `<p class="quote">“${esc(sc.request)}”</p>` : ""}
+    <div class="story">
+      <div><div class="when">First full run, ${esc(when(before.started || ""))}</div><div class="n bad">${n(before.unsafe ?? bad.size)}</div><div class="cap">orders broke a rule, all on this request</div>
+        ${mini(m => { const u = bad.get(m.id); return `<span class="cell o-${u ? "broke" : "held"}" title="${esc(u ? u.violations.join(" ") : "")}">${OUT[u ? "broke" : "held"].icon()}</span>`; })}</div>
+      <div><div class="when">After the fix, ${esc(when(s.started))}</div><div class="n ${nowBad ? "bad" : "good"}">${n(nowBad)}</div><div class="cap">orders broke a rule, on any of the ${n(s.scenarios.length)} requests</div>
+        ${sc ? mini(m => { const r = res(sc.id, m.id), o = outcome(r); return `<a class="cell o-${o}" href="#r-${esc(r ? r.run_id : "")}" data-sc="${esc(sc.id)}" title="${esc(OUT[o].word)}">${OUT[o].icon()}</a>`; }) : ""}</div>
+    </div>
+    <div class="prose"><p>${esc(f.what)}</p><p>${esc(f.fix)}</p></div>`;
+  $("#found").onclick = e => { const c = e.target.closest("a.cell"); if (!c) return; e.preventDefault(); toggle(c.dataset.sc, c.getAttribute("href").slice(3)); };
+}
+const n = x => Number(x || 0).toLocaleString("en-GB");
+
+// The point of the page in one block: the rules held for every model, but how well a model buys still differs.
+function verdict(s) {
+  const ms = s.models, broke = s.totals.orders_breaking_a_rule;
+  if (!ms.length) return;
+  const rate = m => m.scored ? m.need_met / m.scored : 0;
+  const best = ms.reduce((a, b) => rate(b) > rate(a) ? b : a), worst = ms.reduce((a, b) => rate(b) < rate(a) ? b : a);
+  const head = broke ? `A rule was broken in this run: ${plural(broke, "order")}.` : rate(worst) < rate(best) ? "Safety held for every model. Quality did not." : "Safety held for every model, and every model met the need.";
+  const say = !broke && rate(worst) < rate(best)
+    ? `The same ${n(s.totals.scenarios)} purchasing requests went to ${plural(s.totals.models, "model")} from ${plural(s.totals.providers, "provider")}, each in a new account. Not one of the ${n(s.totals.orders)} orders broke a rule, whichever model placed it. But ${esc(worst.label)} met the kitchen's need in ${frac(worst.need_met, worst.scored)} runs, against ${frac(best.need_met, best.scored)} for ${esc(best.label)}. The rules stop a model doing harm. They do not make it a good buyer.`
+    : `Each model got the same ${n(s.totals.scenarios)} requests in new accounts.`;
+  $("#verdict").innerHTML = `<h2>${head}</h2><p>${say}</p><div class="vt" role="table" aria-label="Per model: rules broken and need met">
+    <div class="vr" role="row"><span role="columnheader">Model</span><span role="columnheader">Orders that broke a rule</span><span role="columnheader">Met the need (or rightly ordered nothing)</span></div>
+    ${ms.map(m => { const r = rate(m), low = r < rate(best);
+      return `<div class="vr" role="row"><span role="cell"><b>${esc(m.label)}</b><span class="mk">${esc(MAKER[m.provider] || m.provider)}</span></span>
+      <span role="cell" class="safe">${markHtml(!m.orders_breaking_a_rule)}<b style="color:var(${m.orders_breaking_a_rule ? "--deny" : "--pass"})">${n(m.orders_breaking_a_rule)}</b><span class="muted">of ${n(m.orders)}</span></span>
+      <span role="cell" class="need${low ? " low" : ""}"><em class="ml">Met the need</em><i style="--w:${(100 * r).toFixed(1)}%"></i><span>${frac(m.need_met, m.scored)}</span></span></div>`; }).join("")}</div>`;
+  $("#verdict").hidden = false; $("#grid-h").hidden = false;
+}
+
+function render(s) {
+  S = s; here = new Set(s.orders_here || []);
+  for (const r of s.results) byKey.set(r.scenario + "|" + r.model, r);
+  const t = s.totals, runs = s.runs || [], broke = t.orders_breaking_a_rule;
+  const again = s.results.filter(r => (r.attempt || 1) > 1).length;
+  $("#lead").textContent = `Four tests, each counted in code from the gateway's signed records. No model graded anything, and every number opens the record behind it.`;
+  grid(s);
+  const elsewhere = t.orders && !here.size ? ` The orders live on the instance the test ran against (${esc(s.public_url)}), so they are listed without links.` : "";
+  $("#meta").innerHTML = `Test run ${esc(s.id)}, finished ${esc(when(s.finished))} Helsinki time. ${n(t.ledger_entries)} ledger entries read, hash chain ${t.ledger_chain_intact ? "intact" : "<b>broken</b>"}.` + elsewhere
+    + (again ? ` ${plural(again, "run")} ${again === 1 ? "was" : "were"} run again in a new account because a model call failed (rate limit or provider error).` : "")
+    + (t.no_answer ? ` In ${plural(t.no_answer, "run")} the model gave no answer; those count as missed.` : "");
+  story(s);
+  $("#big").innerHTML = `Of <b>${n(t.orders)}</b> orders placed, <b class="${broke ? "bad" : "good"}">${n(broke)}</b> broke a rule. In <b>${frac(t.need_met, t.scored)}</b> runs the kitchen got what it asked for, or rightly got nothing. <b>${frac(t.asked_when_needed, t.needed_a_person)}</b> runs that needed a person asked one (a person was asked in ${n(t.asked)} runs in all), and <b>${frac(t.ordered_alone, t.could_order_alone)}</b> runs that could order alone did.`;
+  verdict(s);
+
+  const bad = s.results.filter(r => r.safe === false);
+  $("#brokebox").hidden = !bad.length;
+  $("#broke").innerHTML = bad.map(r => runCard(r, s.models.find(x => x.id === r.model) || { label: r.model }, here)).join("");
+
+  const H = ["Model", "Runs", "Orders", "Broke a rule", "Need met", "Asked when needed", "Alone when allowed", "Model calls", "Seconds"];
+  $("#models").innerHTML = `<tr>${H.map((h, i) => `<th${i ? ' class="num"' : ""}>${h}</th>`).join("")}</tr>`
+    + s.models.map(m => { const v = [`<b>${esc(m.label)}</b><br><span class="muted">${esc(MAKER[m.provider] || m.provider)}</span>`, m.runs, m.orders,
+        m.orders_breaking_a_rule ? `<b style="color:var(--deny)">${m.orders_breaking_a_rule}</b>` : 0, frac(m.need_met, m.scored), frac(m.asked_when_needed, m.needed_a_person), frac(m.ordered_alone, m.could_order_alone), m.model_calls_avg, m.wall_s_median];
+      return `<tr>${v.map((x, i) => `<td${i ? ` class="num" data-l="${H[i]}"` : ""}>${x}</td>`).join("")}</tr>`; }).join("");
+
+  $("#method").innerHTML = (s.method || []).map(x => `<li>${esc(x)}</li>`).join("");
+  const c = s.scorer_check;
+  $("#check").innerHTML = c ? `<p>A scorer that cannot fail proves nothing. So clean orders from this run (${esc(c.label)}) were broken in ${c.of} different ways, one at a time, and scored again. The scorer caught <b>${frac(c.caught, c.of)}</b>.</p>
+    <details style="margin-top:var(--s3)"><summary>The ${c.of} broken records</summary><table class="lt">${`<tr><th>Result</th><th>What was broken</th><th>The scorer said</th></tr>`}${c.cases.map(x => `<tr><td>${x.caught ? "caught" : "<b>missed</b>"}</td><td data-l="Broken" class="note">${esc(x.what)}</td><td data-l="Scorer" class="note muted">${esc(x.scorer_said)}</td></tr>`).join("")}</table></details>` : "";
+  const RH = ["Test run", "Runs", "Orders", "Broke a rule", "Need met", "Asked a person", "Records"];
+  $("#history").innerHTML = runs.length ? `<table class="lt"><tr>${RH.map((h, i) => `<th${i && i < 6 ? ' class="num"' : ""}>${h}</th>`).join("")}</tr>`
+    + runs.map(r => { const v = [`${esc(when(r.started))}${r.id === s.id ? ' <span class="pill">shown above</span>' : ""}`, r.runs, r.orders, r.unsafe ? `<b style="color:var(--deny)">${r.unsafe}</b>` : 0, r.need_met, r.asked, `<a href="/api/proof/runs.jsonl?id=${esc(r.id)}">JSON lines</a>`];
+      return `<tr>${v.map((x, i) => `<td${i ? ` data-l="${RH[i]}"${i < 6 ? ' class="num"' : ""}` : ""}>${x}</td>`).join("")}</tr>`; }).join("") + "</table>"
+    : `<p><a href="/api/proof/runs.jsonl">Download every run of this test (JSON lines)</a></p>`;
+  $("#rerun").textContent = s.rerun || "";
+  $("#rest").hidden = false;
+  // A shared link opens straight at one run's record.
+  const m = location.hash.match(/^#(r|s)-(.+)$/);
+  if (m) { const r = m[1] === "r" ? s.results.find(x => x.run_id === m[2]) : null; const scId = r ? r.scenario : m[2]; if (s.scenarios.some(x => x.id === scId)) toggle(scId, r ? r.run_id : undefined); }
+}
+
+// ---- The other tests: menus start to finish, what the product data does not say, the Monday rush, the test suites.
+// Each block shows what its own run wrote to a file. Nothing is scored on this page.
+const good = bad => bad ? "bad" : "good";
+function menus(m) {
+  if (!m) return "";
+  const ma = m.must_ask || {}, ph = (m.photos || {}).samples || [];
+  const row = c => `<tr><td><b>${esc(c.title)}</b><span class="w">${esc(c.what)}</span></td><td class="num" data-l="Checked">${n(c.passed + c.failed)} ${esc(c.unit)}</td><td class="num" data-l="Failed"><b class="${good(c.failed)}">${n(c.failed)}</b></td></tr>`;
+  const prow = x => x.refused === x.reads && !x.dishes
+    ? `<tr><td><b>${esc(x.title)}</b><span class="w">A photo of something else. The right answer is to refuse it.</span></td><td class="num" data-l="Read">${x.reads} times</td><td class="num" data-l="Result" colspan="4">refused ${frac(x.refused, x.reads)}</td></tr>`
+    : `<tr><td><b>${esc(x.title)}</b><span class="w">${n(x.printed_guests)} guests and ${x.dishes} dishes on the page${(x.differences || []).length ? `. The one difference between readings: “${esc(x.differences[0])}” against “${esc(x.differences[1] || "")}”, which plans to the same order` : ""}.</span></td><td class="num" data-l="Read">${x.reads} times</td><td class="num" data-l="Guests right">${frac(x.guests_right, x.reads)}</td><td class="num" data-l="Same dishes">${frac(x.same_dishes, x.reads)}</td><td class="num" data-l="Same notes">${frac(x.same_notes, x.reads)}</td><td class="num" data-l="Planned with no question">${frac(x.no_question, x.reads)}</td></tr>`;
+  return `<h2 class="sec" id="menus">${n(m.menus)} menus, from the page to a signed order</h2>
+    <div class="prose"><p>Code wrote ${n(m.menus)} menus from the kitchen's recipe cards (seed ${esc(m.seed)}): ${n(m.with_diet)} carry dietary notes and ${n(ma.menus)} are traps that must not be ordered without a question. Each one went through the same planner the menu page uses, in a new account, and the order was signed and placed. Then code read the signed orders back and worked every quantity, allergen and signature out again.</p></div>
+    <div class="nums" style="margin-top:var(--s4)">
+      <div><b class="${good(m.failed)}">${n(m.failed)}</b><span>of ${n(m.checked)} checks failed</span></div>
+      <div><b>${n(m.lines)}</b><span>order lines on ${n(m.orders)} orders, ${eur0(m.eur * 100)} ex VAT</span></div>
+      <div><b>${frac(ma.asked, ma.menus)}</b><span>traps were asked about, ${n(ma.ordered)} ordered</span></div>
+      <div><b>${esc(String(m.median_plan_s))} s</b><span>median to plan one menu; ${n(m.seconds)} s for all ${n(m.menus)}</span></div>
+    </div>
+    <table class="lt" style="margin-top:var(--s4)"><tr><th>What was checked again from the signed orders</th><th class="num">Checked</th><th class="num">Failed</th></tr>${(m.checks || []).map(row).join("")}</table>
+    <div class="chips" aria-label="Dietary notes on the menus">${Object.entries(m.diets || {}).map(([k, v]) => `<span>${esc(k)}<b>${n(v)}</b></span>`).join("")}</div>
+    <div class="prose"><p>What was left to a person, on purpose: ${n(m.held_portions)} of ${n(m.portions)} portions (dietary portions with no product that fits; the rest of the dish is still ordered), ${n(m.held_dishes)} whole dishes, and ${n(m.left_for_person)} single items. ${n(m.cleared_lines)} order lines had no allergen declaration from the manufacturer while something was excluded; none was passed on silence, a person cleared each.</p>
+    <p>The traps: ${(ma.what || []).map(esc).join("; ")}.</p></div>
+    ${ph.length ? `<h3 style="margin:var(--s5) 0 var(--s2);font-size:var(--t4)">Does the model read the same photo the same way?</h3>
+    <table class="lt"><tr><th>Sample photo</th><th class="num">Read</th><th class="num">Guests right</th><th class="num">Same dishes</th><th class="num">Same notes</th><th class="num">Planned with no question</th></tr>${ph.map(prow).join("")}</table>` : ""}
+    <p class="meta">Menu test ${esc(m.id)}, finished ${esc(when(m.at))} Helsinki time. <a href="/api/proof/menu-runs.jsonl">Every menu and its order as JSON lines</a>. Run it again: <span class="mono">${esc(m.rerun)}</span></p>`;
+}
+function silence(u, m) {
+  if (!u || !u.undeclared) return "";
+  return `<h2 class="sec" id="silence">What the product data does not say</h2>
+    <div class="prose"><p><b>${n(u.undeclared)} of the ${n(u.food_products)} food products</b> in the challenge data (${esc(String(u.pct))}%) carry no allergen declaration at all: nothing under contains, may contain or free from. ${n(u.name_points_at_an_allergen)} of them name an allergen in their own title:</p>
+    <ul class="plain">${(u.examples || []).map(x => `<li>${esc(x.title)} <span class="muted">(${esc(x.points_at)})</span></li>`).join("")}</ul>
+    <p>An agent that reads “no allergens listed” as “no allergens” puts these into a fish-free or nut-free order and calls it checked. Here such a line never passes on data. Rule A1 sends it to a person and names it, and the account remembers who cleared it, so the same product is asked about once.${m ? ` In the menu test above this came up on ${n(m.cleared_lines)} order lines.` : ""} A buyer who accepts the risk can switch the question off in the agent's mandate; the record then says so.</p></div>`;
+}
+function rush(r) {
+  if (!r || !r.stock) return "";
+  const st = r.stock, o = r.outcomes || {};
+  const rows = [["Got everything they asked for", o.got_all], ["Got their fair share only", o.share_only], ["Got their share and a substitute for the rest", o.share_plus_substitute], ["Had to ask a person", o.needed_a_person], ["Refused by a rule", o.refused]];
+  return `<h2 class="sec" id="rush">Monday rush: ${n(r.agents_total)} agents, one short product</h2>
+    <div class="prose"><p>${n(r.agents_total)} agents with different models and different customers asked for the same lactose-free milk at once: ${n(st.litres_asked)} L wanted, ${n(st.litres_in_stock)} L in stock. The gateway split it by each customer's usual share, served care kitchens first, and offered a substitute for the rest.</p></div>
+    <div class="nums" style="margin-top:var(--s4)">
+      <div><b class="${good(st.over_allocated)}">${st.over_allocated ? "over" : "0 L"}</b><span>promised twice. Most promised at once: ${n(st.most_promised_at_once)} L of ${n(st.litres_in_stock)} L, checked ${n(st.times_checked)} times</span></div>
+      <div><b>${n(st.litres_ordered)} L</b><span>sold of ${n(st.litres_in_stock)} L, ${n(st.litres_left)} L left; ${n(st.substitute_litres_ordered)} L ordered as a substitute</span></div>
+      <div><b>${frac(r.placed_alone, r.agents_total)}</b><span>agents placed their order with no person</span></div>
+      <div><b>${n(r.valio_aimo_api_calls)}</b><span>calls to Valio Aimo's price and stock API, for ${n(r.gateway_requests)} agent requests</span></div>
+    </div>
+    <table class="lt" style="margin-top:var(--s4)"><tr><th>How it ended for each agent</th><th class="num">Agents</th></tr>${rows.map(([k, v]) => `<tr><td>${k}</td><td class="num" data-l="Agents">${n(v)}</td></tr>`).join("")}</table>
+    <p class="meta">Run ${esc(r.id)}, ${esc(when(r.when))} Helsinki time, seed ${esc(r.seed)}. ${n(r.hospital_allergen_refusals)} refusals were a hospital kitchen's allergen rule, which no person may override. <a href="/tower">Replay it on the tower</a> or read <a href="/api/rush/latest">every agent's story as JSON</a>.</p>`;
+}
+function suites(t) {
+  if (!t || !(t.suites || []).length) return "";
+  return `<h2 class="sec" id="suites">Test suites</h2>
+    <div class="prose"><p>${n(t.checks)} checks in ${t.suites.length} suites, each run in its own process on scratch data: <b class="${good(t.failed)}" style="color:var(--${t.failed ? "deny" : "pass"})">${n(t.failed)} failed</b>. Last run ${esc(when(t.at))} Helsinki time.</p></div>
+    <table class="lt" style="margin-top:var(--s3)"><tr><th>Suite</th><th class="num">Passed</th><th class="num">Failed</th><th class="num">Seconds</th></tr>${t.suites.map(x => `<tr><td><b>${esc(x.title)}</b><span class="w">${esc(x.what)} <span class="mono">${esc(x.command)}</span></span></td><td class="num" data-l="Passed">${n(x.passed)}</td><td class="num" data-l="Failed"><b class="${good(x.failed)}">${n(x.failed)}</b></td><td class="num" data-l="Seconds">${esc(String(x.seconds))}</td></tr>`).join("")}</table>
+    <p class="meta">Run them all: <span class="mono">${esc(t.rerun)}</span></p>`;
+}
+function tiles(s) {
+  const t = s.totals, m = s.menu_test, r = s.rush, ts = s.tests, out = [];
+  if (t) out.push(`<a class="tile" href="#verdict"><span class="k">Any model as the agent</span><b class="${good(t.orders_breaking_a_rule)}">${n(t.orders_breaking_a_rule)}</b><span class="v">of ${n(t.orders)} orders broke a rule, across ${n(t.models)} models and ${n(s.results.length)} runs</span></a>`);
+  if (m) out.push(`<a class="tile" href="#menus"><span class="k">Menus, page to signed order</span><b class="${good(m.failed)}">${n(m.failed)}</b><span class="v">of ${n(m.checked)} checks failed on ${n(m.menus)} menus and ${n(m.lines)} order lines</span></a>`);
+  if (r && r.stock) out.push(`<a class="tile" href="#rush"><span class="k">${n(r.agents_total)} agents, one short product</span><b class="${good(r.stock.over_allocated)}">${r.stock.over_allocated ? "over" : "0 L"}</b><span class="v">promised twice, with ${n(r.stock.litres_asked)} L wanted and ${n(r.stock.litres_in_stock)} L in stock</span></a>`);
+  if (ts) out.push(`<a class="tile" href="#suites"><span class="k">Test suites</span><b class="${good(ts.failed)}">${n(ts.failed)}</b><span class="v">of ${n(ts.checks)} checks failed in ${(ts.suites || []).length} suites, from forged tokens to passkeys</span></a>`);
+  $("#tiles").innerHTML = out.join(""); $("#tiles").hidden = out.length < 2;
+}
+function extra(s) {
+  $("#more").innerHTML = menus(s.menu_test) + silence(s.undeclared, s.menu_test) + rush(s.rush) + suites(s.tests);
+  if (s.ready) tiles(s);
+  if (/^#(menus|silence|rush|suites)$/.test(location.hash)) { const el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView(); }
+}
+
+api("/api/proof").then(s => {
+  extra(s);
+  if (s.ready) return render(s);
+  $("#lead").textContent = "No test run has been recorded on this instance yet. Run this, then reload:";
+  $("#legend").innerHTML = "";
+  $("#matrix").innerHTML = `<pre>${esc(s.rerun || "")}</pre>`;
+}).catch(() => {
+  $("#lead").textContent = "Could not load the test results.";
+  $("#matrix").innerHTML = `<div class="error-state">The gateway did not answer. Reload to try again.</div>`;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Connect an assistant · Aimo Agent Gateway</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+main{max-width:480px;margin:0 auto;padding:var(--s6) var(--s4) var(--s8)}
+.who{display:flex;align-items:center;gap:var(--s3);margin-bottom:var(--s4)}
+.who .tile{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:var(--soft);border:1px solid var(--line);font-weight:600;font-size:var(--t5);color:var(--ink)}
+.who .link{width:28px;height:1px;background:var(--line-2);position:relative}
+.who .gw{background:none;border:0;color:var(--ink)}
+.who .gw svg{width:40px;height:40px}
+.fields label{font-size:var(--t2);color:var(--muted);display:block}
+.fields label>*{margin-top:6px}
+h1{font-size:var(--t7);line-height:1.25;letter-spacing:-.02em;font-weight:500}
+h1 b{font-weight:600}
+.sub{color:var(--muted);margin:var(--s2) 0 0}
+.fields{display:grid;gap:var(--s4);margin:var(--s5) 0}
+.fields input,.fields select{height:44px;font-size:16px}
+.acts{display:grid;grid-template-columns:1fr 1.6fr;gap:var(--s2)}
+.acts .btn{height:48px;font-size:var(--t4);font-weight:600;border-radius:var(--r-l)}
+.note{font-size:var(--t2);color:var(--muted);margin:var(--s4) 0 0}
+.err{color:var(--deny);font-size:var(--t3)}
+.load{display:flex;flex-direction:column;gap:var(--s3)}
+</style>
+</head>
+<body>
+<div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
+<header id="site"></header>
+<main>
+<div id="body" aria-live="polite"><div class="load" aria-label="Loading"><span class="skel block" style="width:120px;height:40px"></span><span class="skel block" style="height:28px;width:90%"></span><span class="skel block" style="height:44px;margin-top:16px"></span><span class="skel block" style="height:44px"></span><span class="skel block" style="height:44px"></span></div></div>
+</main>
+<script src="/static/lib.js"></script>
+<script>
+const q = Object.fromEntries(new URLSearchParams(location.search));
+async function load() {
+  let c;
+  try { c = await api(`/api/oauth/context?client_id=${encodeURIComponent(q.client_id || "")}&redirect_uri=${encodeURIComponent(q.redirect_uri || "")}`); }
+  catch (e) { c = null; }
+  if (!c || !c.client) return $("#body").innerHTML = `<div class="error-state" style="margin-bottom:var(--s3)">${markHtml(false)}<b>This link is not valid</b></div><p class="muted">The assistant did not register with the gateway, or the link was changed. Start again from the assistant.</p>`;
+  const cap = c.keyless_cap / 100;
+  $("#body").innerHTML = `
+    <div class="who" aria-hidden="true"><span class="tile">${esc((c.client || "?").trim().charAt(0).toUpperCase())}</span><span class="link"></span><span class="tile gw">${ICON.mark}</span></div>
+    <h1><b>${esc(c.client)}</b> wants to order from Valio Aimo for ${esc(c.account.name)}</h1>
+    <p class="sub">Set what it may order on its own. Anything beyond that comes to you as an approval link.</p>
+    <div class="fields">
+      <label>On its own, per order, € ex VAT<input type="number" inputmode="decimal" id="order" min="0" max="${cap}" step="50" value="${Math.min(cap, c.mandate.budget.max_per_order / 100)}"></label>
+      <label>On its own, per week, € ex VAT<input type="number" inputmode="decimal" id="week" min="0" max="100000" step="100" value="${Math.min(2000, c.mandate.budget.max_per_week / 100)}"></label>
+      <label>Products you have never bought<select id="newp"><option value="ask">Ask me first</option><option value="allow">Allowed</option></select></label>
+      <label>Substitutes when something is out<select id="sub"><option value="listed">Only Valio Aimo's listed substitutes</option><option value="none">Never</option></select></label>
+    </div>
+    <div class="acts"><button class="btn" id="no" type="button">Cancel</button><button class="btn primary" id="yes" type="button">Allow</button></div>
+    <p class="note" style="margin-top:16px">This assistant has no signing key of its own, so Valio Aimo lets it order alone up to €${cap.toLocaleString("en-GB")} whatever you set here. It can never order what a rule refuses, and you can disconnect it at any time.</p>
+    <p class="note">${c.account.kind === "sandbox" ? "This is a sandbox account made for you. Nothing here is a real order." : ""} You go back to ${esc(c.returns_to)} after this.</p>
+    <p class="err" id="err"></p>`;
+  const send = async allow => {
+    $("#yes").disabled = $("#no").disabled = true;
+    (allow ? $("#yes") : $("#no")).innerHTML = '<span class="spin"></span>' + (allow ? "Connecting" : "Cancelling");
+    try {
+      const r = await api("/api/oauth/decide", { ...q, allow, limits: { max_per_order: Math.round($("#order").value * 100), max_per_week: Math.round($("#week").value * 100), new_products: $("#newp").value, substitution: $("#sub").value } });
+      location.href = r.redirect;
+    } catch (e) { $("#err").textContent = "That did not work. Start again from the assistant."; $("#yes").textContent = "Allow"; $("#no").textContent = "Cancel"; $("#yes").disabled = $("#no").disabled = false; }
+  };
+  $("#yes").onclick = () => send(true);
+  $("#no").onclick = () => send(false);
+}
+load();
+</script>
+</body>
+</html>

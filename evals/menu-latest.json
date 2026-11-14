@@ -1,0 +1,169 @@
+{
+ "id": "20261114T061657Z",
+ "at": "2026-11-14T06:17:56Z",
+ "seconds": 59,
+ "seed": 2026,
+ "menus": 60,
+ "orders": 60,
+ "lines": 1334,
+ "eur": 61849,
+ "asked": 0,
+ "nothing": 0,
+ "refused": 0,
+ "errors": 0,
+ "must_ask": {
+  "menus": 6,
+  "asked": 6,
+  "ordered": 0,
+  "what": [
+   "10,000 guests",
+   "a note for more people than there are guests",
+   "a note that is not a dietary rule",
+   "a dish with no recipe",
+   "a note about an ingredient the menu does not have",
+   "5,000 portions of one dish for 180 guests"
+  ]
+ },
+ "with_diet": 52,
+ "diets": {
+  "egg-free": 4,
+  "gluten-free": 16,
+  "lactose-free": 16,
+  "milk-free": 8,
+  "nut-free": 16,
+  "vegan": 4,
+  "vegetarian": 8
+ },
+ "held_dishes": 4,
+ "held_portions": 1659,
+ "portions": 85860,
+ "left_for_person": 58,
+ "approved_by_person": 60,
+ "cleared_lines": 216,
+ "median_plan_s": 0.87,
+ "checks": [
+  {
+   "id": "allergen",
+   "title": "No excluded allergen on any order",
+   "unit": "order lines",
+   "what": "Every line of every order with an order-wide exclusion (a nut-free kitchen), against the manufacturer's contains and may-contain data.",
+   "passed": 335,
+   "failed": 0,
+   "examples": []
+  },
+  {
+   "id": "diet",
+   "title": "Dietary portions get a product that fits",
+   "unit": "dietary lines",
+   "what": "Each line that serves lactose-free, gluten-free, milk-free, egg-free, vegan or vegetarian portions, against the manufacturer's data and claims.",
+   "passed": 956,
+   "failed": 0,
+   "examples": []
+  },
+  {
+   "id": "quantity",
+   "title": "Enough is ordered, and at most one pack too much",
+   "unit": "ingredients",
+   "what": "Portions times the recipe card's amount plus its waste allowance, worked out again here, against pack size times packs ordered.",
+   "passed": 1182,
+   "failed": 0,
+   "examples": []
+  },
+  {
+   "id": "coverage",
+   "title": "Nothing is dropped silently",
+   "unit": "dish ingredients",
+   "what": "Every ingredient of every dish is on an order line or named under not ordered. A refused dish is named once and none of it is ordered.",
+   "passed": 1512,
+   "failed": 0,
+   "examples": []
+  },
+  {
+   "id": "signed",
+   "title": "The order is the plan, and every signature verifies",
+   "unit": "orders",
+   "what": "Lines and quantities on the signed order equal the plan. Valio Aimo's, the buyer's, the agent's and the approver's signatures are checked.",
+   "passed": 60,
+   "failed": 0,
+   "examples": []
+  },
+  {
+   "id": "silence",
+   "title": "No allergen pass without data",
+   "unit": "orders",
+   "what": "Where a product has no allergen declaration and something is excluded, the signed record shows a person cleared it. It never says the line passed.",
+   "passed": 35,
+   "failed": 0,
+   "examples": []
+  },
+  {
+   "id": "substitute",
+   "title": "A substitute is marked as one",
+   "unit": "substitute lines",
+   "what": "A product that differs from what the recipe names is marked on the signed order with what it replaces.",
+   "passed": 44,
+   "failed": 0,
+   "examples": []
+  }
+ ],
+ "checked": 4124,
+ "failed": 0,
+ "file": "evals/menu-runs/20261114T061657Z.jsonl",
+ "rerun": "AIMO_DATA=/tmp/aimo-menu-eval uv run -q python -m agent.menu_evals",
+ "photos": {
+  "reads_each": 10,
+  "samples": [
+   {
+    "id": "wedding",
+    "title": "Wedding dinner",
+    "printed_guests": 180,
+    "reads": 10,
+    "failed_calls": 0,
+    "refused": 0,
+    "guests_right": 10,
+    "same_dishes": 10,
+    "same_notes": 10,
+    "no_question": 10,
+    "dishes": 8,
+    "differences": [],
+    "median_s": 7.5
+   },
+   {
+    "id": "school",
+    "title": "School lunch week",
+    "printed_guests": 420,
+    "reads": 10,
+    "failed_calls": 0,
+    "refused": 0,
+    "guests_right": 10,
+    "same_dishes": 10,
+    "same_notes": 10,
+    "no_question": 10,
+    "dishes": 9,
+    "differences": [],
+    "median_s": 8.1
+   },
+   {
+    "id": "hotel",
+    "title": "Hotel breakfast",
+    "printed_guests": 240,
+    "reads": 10,
+    "failed_calls": 0,
+    "refused": 0,
+    "guests_right": 10,
+    "same_dishes": 10,
+    "same_notes": 10,
+    "no_question": 10,
+    "dishes": 14,
+    "differences": [],
+    "median_s": 11.2
+   },
+   {
+    "id": "notmenu",
+    "title": "Not a menu",
+    "reads": 10,
+    "refused": 10
+   }
+  ]
+ }
+}

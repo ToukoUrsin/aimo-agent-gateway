@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Valio Aimo control tower</title>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+main.tw{max-width:1440px;margin:0 auto;padding:0 var(--s5) var(--s8);display:flex;flex-direction:column;gap:var(--s4)}
+.tw .page-head{padding:var(--s6) 0 0;display:flex;gap:var(--s2) var(--s5);align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+.tw .page-head .lead{margin-top:var(--s2)}
+.clock{font-size:var(--t2);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;display:flex;gap:8px;align-items:center}
+.clock i{width:7px;height:7px;border-radius:50%;background:var(--pass);flex:none}
+.clock.lost i{background:var(--deny)}
+.alarm{background:var(--deny-bg);color:var(--deny);font-weight:600;padding:12px 16px;border-radius:var(--r-l);font-size:var(--t4)}
+/* Status and the operator's switches */
+.ops{display:flex;gap:var(--s3) var(--s5);align-items:center;justify-content:space-between;flex-wrap:wrap;padding:var(--s3) var(--s4);border:1px solid var(--line);border-radius:var(--r-l);background:var(--soft)}
+.ops .grp{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
+.ops select{width:auto;height:28px;padding:0 8px;font-size:var(--t2)}
+.ops label{font-size:var(--t2);display:flex;gap:6px;align-items:center}
+.state{font-size:var(--t3);color:var(--ink-2);min-width:0;flex:1 1 320px}
+.state b{color:var(--ink)}
+.lock{font-size:var(--t2);color:var(--muted);display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.lock svg{width:13px;height:13px}
+.msg{flex:1 1 100%;font-size:var(--t3);display:flex;gap:8px;align-items:center}
+.msg.bad{color:var(--deny)} .msg.ok{color:var(--pass)}
+.msg:empty{display:none}
+.card h2{font-size:var(--t3);font-weight:600;color:var(--ink);margin:0 0 var(--s3);display:flex;gap:var(--s2);align-items:center;justify-content:space-between;flex-wrap:wrap;min-height:24px}
+.card h2 .muted{font-weight:400;font-size:var(--t2)}
+/* Today */
+.today .say{font-size:var(--t5);line-height:1.5;margin:0 0 var(--s4);max-width:90ch;color:var(--ink-2)}
+.today .say b{color:var(--ink);font-variant-numeric:tabular-nums}
+.today .say .bad{color:var(--deny)}
+.share .bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--soft);gap:2px}
+.share .bar i{display:block;height:100%;min-width:0;transition:flex-grow .5s var(--ease)}
+.k-alone{background:var(--ink)} .k-ok{background:var(--pass)} .k-no{background:var(--esc)} .k-ref{background:var(--deny)}
+.legend{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s5);margin-top:var(--s3);font-size:var(--t3);color:var(--muted)}
+.legend div{display:flex;gap:8px;align-items:center;min-width:0}
+.legend .dot{width:9px;height:9px;border-radius:2px;flex:none}
+.legend b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600}
+/* The working grid */
+.grid{display:grid;gap:var(--s4);align-items:start;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,.92fr);grid-template-rows:auto 1fr;grid-template-areas:"acc feed stock" "acc feed rules"}
+.a-acc{grid-area:acc} .a-stock{grid-area:stock} .a-rules{grid-area:rules}
+.a-feed{grid-area:feed;align-self:stretch;display:flex;flex-direction:column;min-height:440px}
+.limits{font-size:var(--t2);color:var(--muted);margin:-4px 0 var(--s3);line-height:1.45}
+.limits b{color:var(--ink-2);font-weight:500}
+.acct{border-top:1px solid var(--line);padding:12px 0}
+.acct:first-child{border-top:0;padding-top:2px}
+.acct .head{display:flex;gap:6px 12px;align-items:center;flex-wrap:wrap}
+.acct .who{flex:1 1 200px;min-width:0}
+.acct .name{font-weight:600;font-size:var(--t4);line-height:1.3}
+.acct .nums{color:var(--muted);font-variant-numeric:tabular-nums;font-size:var(--t2)}
+.acct .nums b{color:var(--ink);font-weight:500}
+.acct .ctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.acct .ctl select{width:auto;height:28px;padding:0 6px;font-size:var(--t2)}
+.acct .ctl input{width:84px;height:28px;padding:0 6px;font-size:var(--t2);text-align:right}
+.acct .ctl .unit{font-size:var(--t1);color:var(--muted)}
+.capl{font-size:var(--t1);color:var(--muted);white-space:nowrap}
+.capl b{color:var(--ink-2);font-weight:500;font-variant-numeric:tabular-nums}
+.sw{min-width:64px}
+.sw.off{background:var(--deny-bg);color:var(--deny);border-color:transparent}
+.acct.off .name{color:var(--deny)}
+.ag{display:grid;grid-template-columns:minmax(0,1.3fr) 104px minmax(0,1.15fr) 84px;gap:10px;align-items:center;font-size:var(--t3);padding:3px 0 3px 12px;border-left:1px solid var(--line);margin-top:4px}
+.ag .btn{width:100%}
+.ag .an{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ag .an i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--line-2);margin-right:7px;vertical-align:1px}
+.ag .an i.live{background:var(--pass)}
+.ag .rec{color:var(--muted);font-variant-numeric:tabular-nums;font-size:var(--t2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ag.sus .an{color:var(--deny);font-weight:600}
+.cls{font-size:var(--t1);color:var(--muted);white-space:nowrap}
+.ag .rec .c2{display:none}
+.feed{flex:1 1 auto;height:0;min-height:0;overflow:auto;scrollbar-width:thin}
+.ev{display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.ev:last-child{border-bottom:0}
+.ev .t{font-size:var(--t1);color:var(--muted);padding-top:3px;font-variant-numeric:tabular-nums}
+.ev .who{display:flex;gap:0 8px;align-items:center;min-width:0}
+.ev .who b{font-weight:600;font-size:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;min-width:0}
+.ev .who .by{color:var(--muted);font-size:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1 1 0;min-width:0}
+.ev .txt{color:var(--muted);font-size:var(--t2);overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:2px}
+.ev.new{animation:flash 2.2s ease-out}
+.tag{display:inline-flex;align-items:center;height:20px;flex:none;padding:0 7px;border-radius:var(--r-s);font-size:var(--t1);font-weight:500;white-space:nowrap;background:var(--soft);color:var(--muted)}
+.tag.order{background:var(--pass-bg);color:var(--pass)} .tag.ask,.tag.short{background:var(--esc-bg);color:var(--esc)}
+.tag.deny,.tag.no{background:var(--deny-bg);color:var(--deny)} .tag.human{background:var(--human-bg);color:var(--human)} .tag.control{background:var(--seller-bg);color:var(--seller)}
+.st{padding:9px 0;border-bottom:1px solid var(--line)}
+.st:last-of-type{border-bottom:0}
+.st .row{display:flex;gap:10px;justify-content:space-between;align-items:baseline;font-size:var(--t3)}
+.st .ti{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.st .left{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--muted);font-size:var(--t2)}
+.st .left.out{color:var(--deny);font-weight:500}
+.st .bar{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--soft);margin-top:6px;box-shadow:inset 0 0 0 1px var(--line)}
+.st .bar i{display:block;height:100%}
+.st .o{background:var(--ink)} .st .h{background:var(--faint)}
+.key{font-size:var(--t1);color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
+.key i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.rl{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:var(--t3)}
+.rl:last-child{border-bottom:0}
+.rl .id{font:500 var(--t2) var(--mono);color:var(--ink-2)}
+.rl .ti{min-width:0}
+.rl .cnt{font-size:var(--t5);font-weight:600;font-variant-numeric:tabular-nums;text-align:right;line-height:1.1}
+.rl .split{font-size:var(--t1);color:var(--muted);text-align:right;white-space:nowrap}
+.rep{flex:none;font-size:var(--t1);font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+.slim{display:flex;gap:6px 18px;align-items:baseline;flex-wrap:wrap;font-size:var(--t3);color:var(--ink-2)}
+.slim h2{margin:0}
+.slim .fig{font-variant-numeric:tabular-nums;flex:1 1 400px}
+/* Monday rush */
+.rush{padding:var(--s5) var(--s6) var(--s5)}
+.rush .rh{display:flex;gap:var(--s2) var(--s4);align-items:center;justify-content:space-between;flex-wrap:wrap}
+.rush .rh h2{font-size:var(--t6);letter-spacing:-.014em;margin:0}
+.rush .mode{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:var(--t2);color:var(--muted)}
+.rush .mode .pill{height:24px}
+.rush .mode .live{background:var(--deny-bg);color:var(--deny)}
+.rush .mode select{width:auto;height:28px;padding:0 6px;font-size:var(--t2)}
+.rsay{font-size:var(--t5);line-height:1.55;max-width:78ch;margin:var(--s3) 0 0;color:var(--ink-2)}
+.rsay b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.rsay .p{color:var(--human)} .rsay .r{color:var(--deny)} .rsay .a{color:var(--pass)}
+.prog{height:2px;background:var(--line);border-radius:1px;margin:var(--s5) 0 var(--s3);overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--ink)}
+.rnum{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s5);align-items:baseline;margin-bottom:var(--s3);font-size:var(--t2);color:var(--muted)}
+.rnum div{display:flex;gap:6px;align-items:baseline;white-space:nowrap}
+.rnum b{font-size:var(--t7);font-weight:600;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--ink)}
+.rnum .p b{color:var(--human)} .rnum .r b{color:var(--deny)} .rnum .a b{color:var(--pass)}
+.rnum .c b{min-width:3.6ch}
+.milk .row{display:flex;gap:4px 14px;justify-content:space-between;align-items:baseline;flex-wrap:wrap;font-size:var(--t3);color:var(--muted)}
+.milk .row b{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:600}
+.milk .bar{display:flex;height:14px;border-radius:4px;overflow:hidden;background:var(--soft);margin:8px 0;box-shadow:inset 0 0 0 1px var(--line)}
+.milk .bar i{display:block;height:100%;transition:width .35s linear}
+.milk .o{background:var(--ink)} .milk .h{background:var(--faint)}
+.rgrid{margin-top:var(--s4)}
+.cells{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px}
+.cell .ws{display:none}
+.rlog{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:6px 18px;margin-top:var(--s4);align-items:start;font-size:var(--t3);min-width:0}
+.cell{position:relative;display:flex;flex-direction:column;gap:1px;min-width:0;padding:6px 7px 6px 9px;border:1px solid var(--line);border-radius:var(--r-s);background:var(--panel);color:var(--muted);font:inherit;text-align:left;cursor:pointer;transition:background-color .25s,color .25s,border-color .25s}
+.cell:hover{border-color:var(--line-2)}
+.cell .cn{font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cell .cq{font-size:var(--t1);font-variant-numeric:tabular-nums;white-space:nowrap}
+.cell .cq b{font-size:18px;line-height:1.1;color:inherit;font-weight:600}
+.cell .cs{font-size:11px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell .ct{position:absolute;top:5px;right:5px;font:600 10px var(--mono);line-height:1}
+.cell.care{box-shadow:inset 3px 0 0 currentColor}
+.cell.m::after{content:"";position:absolute;right:5px;bottom:6px;width:6px;height:6px;border-radius:2px;background:currentColor}
+.cell.m .cs{padding-right:11px}
+.cell.s-asked{border-color:var(--line-2);color:var(--ink)}
+.cell.s-share,.cell.s-offer,.cell.s-sub{background:var(--buyer-bg);border-color:transparent;color:var(--buyer)}
+.cell.s-person{background:var(--human-bg);border-color:transparent;color:var(--human)}
+.cell.s-ordered{background:var(--pass-bg);border-color:transparent;color:var(--pass)}
+.cell.s-refused,.cell.s-rejected{background:var(--deny-bg);border-color:transparent;color:var(--deny)}
+.cell.t-deny .ct{color:var(--deny)} .cell.t-human .ct{color:var(--human)}
+.cell.t-deny .cn,.cell.t-human .cn{padding-right:17px}
+.rkey .k-care{border-radius:0;width:3px;background:var(--muted)} .rkey .k-m{width:7px;height:7px;border-radius:2px;background:var(--muted);vertical-align:1px}
+.cell.sel{outline:2px solid var(--ink);outline-offset:1px}
+.cell.pop{animation:pop .5s var(--ease)}
+@keyframes pop{from{transform:scale(1.07)}to{transform:none}}
+.rlog .one{border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;min-height:66px;color:var(--ink-2)}
+.rlog .one .muted{display:block}
+.rlog .one b{display:block;color:var(--ink)}
+.rlog .ln{display:grid;grid-template-columns:52px minmax(0,1fr);gap:8px;padding:6px 0;border-top:1px solid var(--line);color:var(--muted)}
+.rlog .ln:first-of-type{border-top:0}
+.rlog .ln .t{font-size:var(--t1);padding-top:2px;font-variant-numeric:tabular-nums}
+.rlog .ln b{color:var(--ink);font-weight:600}
+.rlog .ln.deny b{color:var(--deny)} .rlog .ln.human b{color:var(--human)}
+.rkey{display:flex;gap:6px 16px;flex-wrap:wrap;font-size:var(--t1);color:var(--muted);margin-top:10px}
+.rkey i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.rush details{margin-top:var(--s4);border-top:1px solid var(--line);padding-top:var(--s3)}
+.rush .tbl{max-height:340px;overflow:auto;margin-top:8px;scrollbar-width:thin}
+.rush table{font-size:var(--t2);font-variant-numeric:tabular-nums}
+.rush th,.rush td{text-align:right;padding:5px 8px;white-space:nowrap}
+.rush th{position:sticky;top:0;background:var(--panel)}
+.rush th:first-child,.rush td:first-child{text-align:left;white-space:normal;padding-left:0}
+.rush td small{color:var(--muted)}
+.rsum{margin-top:var(--s3);font-size:var(--t2);color:var(--muted);line-height:1.55}
+.rsum b{color:var(--ink-2);font-weight:500}
+.note{color:var(--muted);font-size:var(--t2)}
+@media (prefers-reduced-motion:reduce){.share .bar i,.cell,.milk .bar i{transition:none}}
+@media (max-width:1500px){.grid{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);grid-template-rows:auto auto;grid-template-areas:"acc feed" "stock rules"}}
+@media (max-width:1250px){.cells{grid-template-columns:repeat(10,minmax(0,1fr))}}
+@media (max-width:940px){.rlog{grid-template-columns:minmax(0,1fr)}.rlog .one{min-height:0}.cells{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .grid{grid-template-columns:minmax(0,1fr);grid-template-rows:none;grid-template-areas:"feed" "acc" "stock" "rules"}.a-feed{min-height:0}.feed{height:auto;max-height:420px}}
+@media (max-width:640px){
+  main.tw{padding:0 var(--s4) var(--s7);gap:var(--s3)}
+  .tw .page-head{padding-top:var(--s5);order:-3}
+  .alarm{order:-2}
+  .rush{order:-1}
+  .rush{padding:var(--s4) var(--s4) var(--s5)}
+  .rsay,.today .say{font-size:var(--t4)}
+  .ops{padding:var(--s3)}
+  .cells{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}.cell .wl{display:none}.cell .ws{display:inline}.cell{padding:5px 4px 5px 7px}.cell .cn{font-size:10.5px}.cell .cq b{font-size:15px}.cell .cq{font-size:10.5px}.cell .cs{font-size:10px}
+  .rnum{gap:var(--s2) var(--s4)}.rnum b{font-size:var(--t6)}
+  .ag{grid-template-columns:minmax(0,1fr) 86px;gap:0 10px}.ag .cls{display:none}.ag .rec{grid-column:1;grid-row:2;white-space:normal}.ag .rec .c2{display:inline}.ag>div:last-child{grid-column:2;grid-row:1/span 2;align-self:center}
+  .ev{grid-template-columns:minmax(0,1fr);gap:0}.ev .t{padding:0}.ev .who{flex-wrap:wrap}.ev .who .by{flex:1 1 100%}
+  .acct .ctl{width:100%}.acct .ctl select{flex:1 1 0;min-width:0}
+}
+</style>
+</head>
+<body>
+<div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
+<header id="site"></header>
+<main class="tw">
+  <div class="page-head">
+    <div><h1>Control tower</h1><p class="lead">Valio Aimo's live view of every customer's agents: each order, approval and refusal as it happens.</p></div>
+    <div class="clock" id="clockw"><i></i><span id="clock">Connecting</span></div>
+  </div>
+  <div class="alarm" id="alarm" hidden>Valio Aimo has paused agent ordering on every account.</div>
+  <div class="ops">
+    <div class="state" id="floor"><span class="skel" style="width:30ch"></span></div>
+    <div class="grp" id="opctl">
+      <span class="grp" id="floorctl" hidden>
+        <select id="mins" aria-label="Length of the floor run"><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option></select>
+        <label title="One real model agent orders next to the bots"><input type="checkbox" id="llm"> one model agent</label>
+        <button class="btn small" id="start">Start the floor</button>
+        <button class="btn small" id="stop">Stop</button>
+        <button class="btn small" id="reset">Reset floor</button>
+      </span>
+      <label id="rmodl" hidden title="12 of the 60 agents are real models: 4 each from three providers. The rest are scripted bots."><input type="checkbox" id="rmod" checked> 12 model agents</label>
+      <button class="btn small primary" id="rstart" hidden>Start a live Monday rush</button>
+      <button class="btn small" id="rstop" hidden>Stop the rush</button>
+      <button class="btn small danger" id="pause">Pause all agent ordering</button>
+      <span class="lock" id="viewer" hidden><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3.5" y="7" width="9" height="6.5" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>Valio Aimo's operator only</span>
+    </div>
+    <div class="msg" id="msg" role="status" aria-live="polite"></div>
+  </div>
+  <section class="card rush" id="rush" aria-labelledby="rush-h">
+    <div class="rh"><h2 id="rush-h">The Monday rush</h2><span class="mode" id="rmode"></span></div>
+    <p class="rsay" id="rsay"><span class="skel" style="width:60ch"></span></p>
+    <div id="rbody" hidden>
+      <div class="prog" aria-hidden="true"><i id="rprog"></i></div>
+      <div class="rnum" id="rnum"></div>
+      <div class="milk" id="rmilk"></div>
+      <div class="rgrid">
+        <div><div class="cells" id="cells"></div><div class="rkey" id="rkey"></div></div>
+        <div class="rlog"><div class="one" id="rone"></div><div id="rlines"></div></div>
+      </div>
+      <details id="rsplit"><summary>The split by contract share. Only Valio Aimo sees this; each agent is told its own share.</summary><div class="tbl"><table id="rtable"></table></div></details>
+      <div class="rsum" id="rsum"></div>
+    </div>
+    <div class="empty" id="rempty" hidden></div>
+  </section>
+  <section class="card today share"><h2>Today</h2><p class="say" id="tiles"><span class="skel" style="width:50ch"></span></p><div class="bar" id="bar"></div><div class="legend" id="legend"></div></section>
+  <section class="card slim" id="seller" hidden></section>
+  <div class="grid">
+    <section class="card a-acc"><h2><span>Accounts and their agents</span><span class="muted" id="sand"></span></h2>
+      <p class="limits">Two different limits apply to every order. <b>Valio Aimo's cap per agent order</b> is set here, per account (rule W3). <b>The buyer's own limit</b> is in the mandate the buyer signs for its agent (rule B1). Above either, a person decides.</p>
+      <div id="accounts"></div></section>
+    <section class="card a-feed"><h2>Latest, newest first</h2><div class="feed" id="feed"></div></section>
+    <section class="card a-stock"><h2>Stock under pressure</h2><div id="stock"></div></section>
+    <section class="card a-rules"><h2>What the rules stopped today</h2><div id="rules"></div></section>
+  </div>
+</main>
+<script src="/static/lib.js"></script>
+<script>
+let OP = false, D = null, seen = 0, first = true, busy = false;
+const n0 = x => (x || 0).toLocaleString("en-IE");
+const hms = iso => iso ? new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: TZ }) : "";
+const TIER = { order: "Orders alone", reorder: "Re-orders only", read: "Look up only" };
+const plural = (n, one, many) => `${n0(n)} ${n === 1 ? one : many || one + "s"}`;
+const qty = x => (Math.round(x * 10) / 10).toLocaleString("en-IE");
+const UNIT = { piece: "pcs", case: "cases" };
+
+function tiles(d) {
+  const t = d.today, L = d.ledger;
+  const parts = [
+    `<b>${n0(t.agents_active)}</b> ${t.agents_active === 1 ? "agent" : "agents"} called today${t.agents_now ? ` (${n0(t.agents_now)} in the last 2 minutes)` : ""}`,
+    `<b>${plural(t.orders, "order")}</b> worth <b>${eur0(t.ordered)}</b> ex VAT were placed`,
+    `<b>${n0(t.waiting)}</b> ${t.waiting === 1 ? "waits" : "wait"} for a person`,
+  ];
+  $("#tiles").innerHTML = parts.join(", ").replace(/, ([^,]*)$/, " and $1") + `. ${t.agents_suspended ? `<b class="bad">${plural(t.agents_suspended, "agent")}</b> ${t.agents_suspended === 1 ? "is" : "are"} suspended. ` : ""}`
+    + (L.intact ? `The ledger's <b>${n0(L.events)}</b> entries check out.` : `<b class="bad">The ledger chain breaks at entry ${n0(L.first_bad_seq)}.</b>`);
+}
+
+function share(d) {
+  const t = d.today, parts = [["k-alone", t.alone, "placed by an agent alone"], ["k-ok", t.approved, "placed after a person approved"], ["k-no", t.rejected, "a person said no"], ["k-ref", t.refused, "refused by the rules"]];
+  const sum = parts.reduce((a, p) => a + p[1], 0);
+  $("#bar").innerHTML = sum ? parts.map(p => `<i class="${p[0]}" style="flex:${p[1]} 0 0" title="${p[1]} ${p[2]}"></i>`).join("") : "";
+  $("#legend").innerHTML = parts.map(p => `<div><i class="dot ${p[0]}"></i><span><b>${n0(p[1])}</b> ${p[2]}${sum ? ` <span class="tnum">(${Math.round(100 * p[1] / sum)}%)</span>` : ""}</span></div>`).join("");
+}
+
+function accounts(d) {
+  const box = $("#accounts"), a = document.activeElement;
+  if (a && box.contains(a) && (a.tagName === "SELECT" || a.tagName === "INPUT")) return;  // do not redraw under someone's hand
+  $("#sand").textContent = d.today.sandboxes ? `plus ${plural(d.today.sandboxes, "visitor sandbox", "visitor sandboxes")}` : "";
+  const rushN = d.accounts.filter(x => x.kind === "rush").length;
+  const note = rushN ? `<div class="empty">${rushN} more accounts belong to the Monday rush (simulated). ${RU.cells.length ? 'Each is <a href="#rush">one cell in the rush above</a>.' : "They show in the rush above once one has been recorded."}</div>` : "";
+  box.innerHTML = d.accounts.filter(x => x.kind !== "rush").map(x => {
+    const ctl = OP
+      ? `<button class="btn small sw ${x.enabled ? "" : "off"}" data-act="enabled" data-slug="${esc(x.slug)}" data-v="${x.enabled ? 0 : 1}" title="${x.enabled ? "Pause agent ordering for this account" : "Switch agent ordering back on"}">${x.enabled ? "On" : "Paused"}</button>
+         <select name="tier-${esc(x.slug)}" data-act="tier" data-slug="${esc(x.slug)}" aria-label="What this account's agents may do">${Object.entries(TIER).map(([k, v]) => `<option value="${k}" ${k === x.tier ? "selected" : ""}>${v}</option>`).join("")}</select>
+         <span class="capl">Valio Aimo's cap €</span><input type="number" min="0" max="1000000" step="100" value="${Math.round((x.cap || 0) / 100)}" name="cap-${esc(x.slug)}" data-act="cap" data-slug="${esc(x.slug)}" aria-label="Valio Aimo's cap per agent order, euros ex VAT">`
+      : `<span class="pill ${x.enabled ? "pass" : "deny"}">${x.enabled ? "On" : "Paused"}</span><span class="pill">${TIER[x.tier] || esc(x.tier)}</span><span class="capl">Valio Aimo's cap <b>${eur0(x.cap)}</b></span>`;
+    const ags = x.agents.map(g => `<div class="ag ${g.status === "suspended" ? "sus" : ""}">
+        <div class="an" title="${esc(g.id)}"><i class="${g.now && g.status !== "suspended" ? "live" : ""}"></i>${esc(g.name)}</div>
+        <div class="cls">${g.kind === "keyless" ? "signed in, no key" : "own key"}</div>
+        <div class="rec" title="${esc(g.reason || "")}"><span class="c2">${g.kind === "keyless" ? "no key" : "own key"} · </span>${g.status === "suspended" ? (/^suspended/i.test(g.reason || "suspended") ? "Suspended by Valio Aimo" : "Cut off by the rules") : `${plural(g.orders, "order")} · ${n0(g.asked)} asked · ${n0(g.refused)} refused`}</div>
+        <div>${OP ? `<button class="btn small" data-act="agent" data-id="${esc(g.id)}" data-v="${g.status === "suspended" ? 0 : 1}">${g.status === "suspended" ? "Reinstate" : "Suspend"}</button>` : (g.status === "suspended" ? '<span class="pill deny">suspended</span>' : "")}</div>
+      </div>`).join("");
+    return `<div class="acct ${x.enabled ? "" : "off"}"><div class="head">
+        <div class="who"><div class="name">${esc(x.name)}</div>
+        <div class="nums">${x.kind === "stage" ? "Stage account · " : ""}<b>${plural(x.orders, "order")}</b> · ${eur0(x.ordered)}${x.waiting ? ` · <b>${x.waiting} waiting for a person</b>` : ""}</div></div>
+        <div class="ctl">${ctl}</div></div>${ags || `<div class="ag" style="display:block"><div class="muted">${x.orders ? "No agent is registered on this account right now. The numbers above are from agents whose keys were reset since." : "No agent has called on this account yet. Each agent shows here from its first call, with its orders and refusals."}</div></div>`}</div>`;
+  }).join("") + note || '<div class="empty">No accounts yet. Customer accounts show here with their agents, switches and caps.</div>';
+}
+
+function feed(d) {
+  const top = d.feed.length ? d.feed[0].seq : 0, rows = [];
+  for (const e of d.feed) {  // the same line again is counted on the line above it, never shown twice in a row
+    const p = rows[rows.length - 1];
+    if (p && p.account === e.account && p.agent === e.agent && p.head === e.head && p.text === e.text) p.n = (p.n || 1) + (e.n || 1);
+    else rows.push({ ...e });
+  }
+  $("#feed").innerHTML = rows.map(e => `<div class="ev ${!first && e.seq > seen ? "new" : ""}"><div class="t">${hms(e.ts)}</div><div><div class="who"><span class="tag ${esc(e.tone)}">${esc(e.head)}</span>${e.n > 1 ? `<span class="rep" title="The same thing ${e.n} times in a row">x${e.n}</span>` : ""}<b>${esc(e.account)}</b>${e.agent ? `<span class="by">${esc(e.agent)}</span>` : ""}</div><div class="txt">${esc(e.text)}</div></div></div>`).join("")
+    || '<div class="empty">Nothing yet today. Orders, approvals and refusals show up here as they happen.</div>';
+  seen = Math.max(seen, top);
+}
+
+// The unit the data is in: an allocated product says its own unit; a 1 L carton counted in pieces is a litre each.
+function stockUnit(s, d) {
+  const a = (d.allocations || []).find(x => x.product === s.id);
+  if (a && a.unit) return a.unit;
+  if (s.unit === "piece" && /\b1\s?l\b/i.test(s.title)) return "L";
+  return UNIT[s.unit] || s.unit;
+}
+function stock(d) {
+  $("#stock").innerHTML = d.stock.length ? d.stock.map(s => `<div class="st"><div class="row"><div class="ti" title="${esc(s.title)}">${esc(s.title)}</div><div class="left ${s.left <= 0 ? "out" : ""}">${s.left <= 0 ? `all ${qty(s.source)} ${esc(stockUnit(s, d))} taken` : `${qty(s.left)} of ${qty(s.source)} ${esc(stockUnit(s, d))} left`}</div></div>
+      <div class="bar"><i class="o" style="width:${100 * s.ordered / s.source}%"></i><i class="h" style="width:${100 * s.held / s.source}%"></i></div></div>`).join("")
+    + '<div class="key"><span><i style="background:var(--ink)"></i>ordered</span><span><i style="background:var(--faint)"></i>held by an open offer</span><span><i style="background:var(--soft);box-shadow:inset 0 0 0 1px var(--line)"></i>left at Valio Aimo</span></div>'
+    : '<div class="empty">No product with limited stock is held or ordered right now. When agents order one, its bar shows here: ordered, held by an open offer, left at Valio Aimo.</div>';
+}
+
+function rules(d) {
+  $("#rules").innerHTML = d.rules.length ? d.rules.map(r => `<div class="rl"><div class="id">${esc(r.id)}</div><div class="ti">${esc(r.title)}</div>
+      <div><div class="cnt">${n0(r.asked + r.refused)}</div><div class="split">${[r.asked ? `${n0(r.asked)} to a person` : "", r.refused ? `${n0(r.refused)} refused` : ""].filter(Boolean).join(" · ")}</div></div></div>`).join("")
+    : '<div class="empty">No rule has stopped anything today. A rule is counted here each time it sends an order to a person or refuses it.</div>';
+}
+
+function ops(d) {
+  const f = d.floor || {}, s = f.summary, ru = d.rush || {};
+  const replay = RU.mode === "replay" ? " The Monday rush on this page is a replay of a recorded run." : "";
+  $("#alarm").hidden = !d.paused_all;
+  $("#floor").innerHTML = f.running
+    ? `<b>The floor is ${f.stopping ? "stopping" : "running"}.</b> ${esc(f.note || "")}${f.agents ? `, ${f.agents} agents` : ""}.`
+    : ru.running ? `<b>The Monday rush is ${ru.stopping ? "stopping" : "running live"}.</b> ${esc(ru.note || "")}.`
+    : s ? `Nothing is running live.${replay} Last floor run: <b>${n0(s.orders)} orders</b>, ${n0(s.alone)} alone, ${n0(s.approved)} approved by a person, ${n0(s.refused + s.said_no)} stopped.`
+    : `Nothing is running live.${replay}${f.note && /^Stopped:/.test(f.note) ? " " + esc(f.note) : ""}`;
+  // A visitor sees what Valio Aimo's operator can do, switched off, and why.
+  $("#floorctl").hidden = !OP;
+  $("#rmodl").hidden = !OP || !d.rush;
+  $("#viewer").hidden = OP;
+  const why = OP ? "" : "Only Valio Aimo's operator can do this";
+  $("#start").disabled = !!f.running || !!ru.running;
+  $("#reset").disabled = !!f.running || !!ru.running;
+  $("#stop").disabled = !f.running || !!f.stopping;
+  $("#rstart").hidden = !d.rush || !!ru.running;
+  $("#rstop").hidden = !OP || !ru.running;
+  $("#rstart").disabled = !OP || !!f.running || !!ru.running;
+  $("#rstart").classList.toggle("primary", OP);
+  $("#rstop").disabled = !ru.running || !!ru.stopping;
+  const p = $("#pause");
+  p.textContent = d.paused_all ? "Switch agent ordering back on" : "Pause all agent ordering";
+  p.className = "btn small " + (d.paused_all ? "primary" : "danger");
+  p.disabled = !OP;
+  for (const b of [$("#rstart"), p]) b.title = why;
+}
+
+function render(d) {
+  D = d; OP = !!d.operator;
+  $("#clock").textContent = "Live · " + hms(d.now) + " Helsinki";
+  tiles(d); share(d); accounts(d); feed(d); stock(d); rules(d); ops(d);
+  first = false;
+  if (d.rush && d.rush.running && RU.mode !== "live") rushLive();
+}
+
+async function tick(once) {
+  try { render(await api("/api/tower")); $("#clockw").classList.remove("lost"); }
+  catch (e) { $("#clock").textContent = "Lost contact with the gateway. Trying again."; $("#clockw").classList.add("lost"); }
+  if (!once) setTimeout(tick, 1500);
+}
+
+// Every action says on the page what happened. A refusal names the reason; a busy server is retried.
+function say(text, kind) {
+  const m = $("#msg");
+  m.className = "msg " + (kind || "");
+  m.innerHTML = text ? (kind === "wait" ? '<span class="spin"></span>' : kind === "bad" ? '<span class="mark bad">' + ICON.cross + "</span>" : kind === "ok" ? '<span class="mark ok">' + ICON.check + "</span>" : "") + `<span>${esc(text)}</span>` : "";
+  clearTimeout(say.t);
+  if (text && kind !== "wait") say.t = setTimeout(() => say(""), kind === "bad" ? 9000 : 4000);
+}
+async function act(path, body, done) {
+  if (busy) return;
+  busy = true;
+  say("Sending", "wait");
+  try {
+    const res = await fetch(path, { method: "POST", headers: { "content-type": "application/json", accept: "application/json" }, body: JSON.stringify(body || {}) });
+    const r = await res.json().catch(() => ({}));
+    const err = (r.messages || []).find(m => m.type === "error");
+    if (res.status === 403) say("Only Valio Aimo's operator can do this. Nothing was changed.", "bad");
+    else if (err || !res.ok) say((err && err.content) || `The gateway said no (${res.status}). Nothing was changed.`, "bad");
+    else say(done || "Done.", "ok");
+  } catch (e) { say("That did not reach the gateway. Nothing was changed; try again.", "bad"); }
+  busy = false;
+  tick(true);
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.id === "start") act("/api/tower/floor/start", { minutes: +$("#mins").value, llm: $("#llm").checked ? 1 : 0 }, "The floor is starting.");
+  else if (b.id === "stop") act("/api/tower/floor/stop", null, "The floor is stopping.");
+  else if (b.id === "reset") act("/api/tower/floor/reset", null, "The floor was reset.");
+  else if (b.id === "rstart") act("/api/tower/rush/start", { models: $("#rmod").checked ? 12 : 0 }, "A live Monday rush is starting. The grid below switches to it in a moment.");
+  else if (b.id === "rstop") act("/api/tower/rush/stop", null, "The rush is stopping.");
+  else if (b.id === "rplay") rushRestart();
+  else if (b.classList.contains("cell")) { RU.sel = RU.sel === +b.dataset.i ? null : +b.dataset.i; RU.dirty = true; rushPaint(); }
+  else if (b.id === "pause") act("/api/tower/pause-all", { paused: !(D && D.paused_all) }, D && D.paused_all ? "Agent ordering is back on." : "Agent ordering is paused on every account.");
+  else if (b.dataset.act === "enabled") act("/api/tower/account", { slug: b.dataset.slug, enabled: b.dataset.v === "1" });
+  else if (b.dataset.act === "agent") act("/api/tower/agent", { id: b.dataset.id, suspended: b.dataset.v === "1" });
+});
+document.addEventListener("change", e => {
+  const x = e.target;
+  if (x.id === "rspeed") { RU.speed = +x.value; rushMode(); return; }
+  if (x.dataset.act === "tier") { x.blur(); act("/api/tower/account", { slug: x.dataset.slug, tier: x.value }); }
+  else if (x.dataset.act === "cap" && x.value !== "") { x.blur(); act("/api/tower/account", { slug: x.dataset.slug, max_order_total: Math.round(+x.value * 100) }); }
+});
+// ------------------------------------------------------------ Monday rush
+// One picture for a live run and for the replay of the last recorded one: the same events, applied in order.
+const RU = { mode: "", run: null, cells: [], evs: [], k: 0, T: 0, end: 0, speed: 2, at: 0, hold: 0, n: 0, S: 0, o: 0, h: 0, exp: 0, log: [], sel: null, dirty: true, gun: false, gunAt: 0, done: 0,
+             status: {}, split: null, title: "", floor: false, manual: false, busy: false, table: 0, onAlloc: false };
+const lit = x => qty(x || 0);
+const SEG = { restaurant: "restaurant", hotel: "hotel", caterer: "caterer", school: "school kitchen", hospital: "hospital kitchen", elderly_care: "care home kitchen" };
+const KIND = { standing: "standing-order bot (scripted)", planner: "planner bot (scripted, asks for a sourcing plan)", model: "model agent" };
+
+async function get(path) {
+  try { const r = await fetch(path, { headers: { accept: "application/json" } }); return r.ok ? await r.json() : null; } catch (e) { return null; }
+}
+
+function rushSetup(cast, S, exp) {
+  Object.assign(RU, { k: 0, T: 0, o: 0, h: 0, S: S || 0, exp: exp || 0, log: [], sel: null, dirty: true, gun: false, hold: 0, onAlloc: false, table: 0 });
+  RU.cells = cast.map(c => ({ ...c, st: "idle", got: 0, sub: 0, extra: 0, offered: null, orders: 0, person: null, rules: [], refused: null, over: false, why: "", wait: 0, what: "", by: "", err: "", el: null, sig: "", pop: false }));
+  $("#cells").innerHTML = RU.cells.map(c => `<button class="cell" data-i="${c.i}"></button>`).join("");
+  RU.cells.forEach((c, i) => { c.el = $("#cells").children[i]; });
+  $("#rkey").innerHTML = `<span><i style="background:var(--buyer-bg)"></i>offer in hand</span><span><i style="background:var(--pass-bg)"></i>ordered</span><span><i style="background:var(--human-bg)"></i>waiting for a person</span><span><i style="background:var(--deny-bg)"></i>refused</span><span><i class="k-care"></i>care kitchen, guaranteed minimum</span><span><i class="k-m"></i>real model agent</span><span><b class="mono">A1</b> the rule that refused it or sent it to a person</span>`;
+}
+
+function rushApply(e) {
+  const say = (k, b, x) => RU.log.unshift({ t: e.t, k, b, x });
+  RU.dirty = true;
+  if (e.g) {
+    if (e.g === "gun") RU.gun = true;
+    else if (e.g === "allocation") {
+      RU.S = e.stock; RU.exp = e.expected; RU.onAlloc = true;
+      say("", "The milk goes on allocation.", `Its stock is under the demand expected from order history (seeded): ${lit(e.stock)} L against ${lit(e.expected)} L. Each kitchen can take its contract share, and no more. Shares nobody claims are released after ${lit(e.release_in)} s.`);
+    } else if (e.g === "stock") { RU.o = e.o; RU.h = e.h; }
+    else if (e.g === "release" && (e.released > 0 || e.round === 1))
+      say("", e.released > 0 ? `${lit(e.released)} L of unclaimed shares released.` : "Release time. Nothing was left unclaimed.", e.released > 0 ? `They go to the ${e.to} kitchens on the waiting list, by contract share.` : "Every share had been taken.");
+    return;
+  }
+  const c = RU.cells[e.a];
+  if (!c) return;
+  const rules = (e.rules || []).join(", ");
+  if (e.s === "asked") c.st = "asked";
+  else if (e.s === "offer") { c.offered = e.l; c.st = e.rest > 0 ? "share" : "offer"; }
+  else if (e.s === "sub") { if (c.st !== "person") c.st = "sub"; c.what = e.what; }
+  else if (e.s === "later") c.wait = e.l;
+  else if (e.s === "person") { c.st = "person"; c.person = "asked"; c.rules = e.rules || []; c.why = e.why; say("human", `${c.name}: sent to a person (rule ${rules}).`, e.why); }
+  else if (e.s === "approved") { c.person = "approved"; c.by = e.by; say("human", `${c.name}: approved.`, `${e.by || "The approver"} (simulated) said yes.`); }
+  else if (e.s === "rejected") { c.person = "rejected"; c.st = "rejected"; c.by = e.by; say("human", `${c.name}: a person said no.`, `${e.by || "The approver"} (simulated) turned the substitute down. The agent orders the share alone.`); }
+  else if (e.s === "refused") { c.st = "refused"; c.refused = e.rules || []; c.over = !!e.p; c.why = e.why; say("deny", `${c.name}: refused by rule ${rules}.`, `${e.why}${e.p ? "" : " No person can override this."}`); }
+  else if (e.s === "ordered" || e.s === "more") { c.st = "ordered"; c.orders++; c.got += e.l; if (e.s === "more") { c.extra += e.l; c.wait = 0; } if (e.sub) c.sub += e.sub; }
+  else if (e.s === "error") c.err = e.why;
+  c.pop = true;
+}
+
+function cellStory(c) {
+  const out = [`Usual Monday order ${lit(c.usual)} L (seeded history). Asked for ${lit(c.ask)} L.`, `What this agent does: ${c.does}.`];
+  if (c.offered != null) out.push(c.offered < c.ask ? `Offered ${lit(c.offered)} L, its contract share${c.care ? ", which includes the guaranteed minimum for a care kitchen" : ""}.` : `Offered all ${lit(c.offered)} L: inside its contract share.`);
+  if (c.refused) out.push(`Refused by rule ${c.refused.join(", ")}: ${c.why}${c.over ? "" : " No person can override this."}`);
+  if (c.person) out.push(`Sent to a person by rule ${c.rules.join(", ")}: ${c.why}${c.person === "approved" ? ` ${c.by} (simulated) approved.` : c.person === "rejected" ? ` ${c.by} (simulated) said no.` : " Waiting for the answer."}`);
+  if (c.orders) out.push(`Ordered ${lit(c.got)} L of the milk${c.extra ? `, ${lit(c.extra)} L of it from released shares` : ""}${c.sub ? `, plus ${lit(c.sub)} L of ${c.what || "a substitute"}` : ""}.`);
+  if (c.wait && c.st === "ordered") out.push(`On the waiting list for ${lit(c.wait)} L more.`);
+  if (c.err) out.push(`Error: ${c.err}`);
+  return out;
+}
+
+function cellPaint(c) {
+  let w = { idle: ["ready", "ready"], asked: ["asking", "asking"], share: ["share offered", "share"], offer: ["offered in full", "in full"], sub: ["adds a substitute", "+ subst."], person: ["needs a person", "person?"],
+            rejected: ["person said no", "said no"], refused: ["refused", "refused"] }[c.st];
+  if (c.st === "ordered") w = c.got >= c.ask ? ["got all", "got all"] : c.sub ? [`+ ${lit(c.sub)} L substitute`, `+${lit(c.sub)} L sub`] : c.wait ? ["on waiting list", "waiting"] : c.extra ? [`${lit(c.extra)} L released`, `+${lit(c.extra)} rel.`] : ["share only", "share only"];
+  if (c.err) w = ["error", "error"];
+  const num = c.orders ? c.got : c.offered, tag = c.refused ? c.refused.join(" ") : c.person ? c.rules.join(" ") : "";
+  const cls = `cell s-${c.st}${c.care ? " care" : ""}${c.kind === "model" ? " m" : ""}${c.refused ? " t-deny" : c.person ? " t-human" : ""}${RU.sel === c.i ? " sel" : ""}`;
+  const html = `<span class="cn">${esc(c.name.split(" ")[0])}</span><span class="cq"><b>${num == null ? "·" : lit(num)}</b>/${lit(c.ask)} L</span><span class="cs"><span class="wl">${esc(w[0])}</span><span class="ws">${esc(w[1])}</span></span>${tag ? `<span class="ct">${esc(tag)}</span>` : ""}`;
+  if (cls + html !== c.sig) {
+    c.sig = cls + html;
+    c.el.className = cls + (c.pop && RU.gun ? " pop" : "");
+    c.el.innerHTML = html;
+    c.el.title = `${c.name}, ${SEG[c.segment] || c.segment}, ${KIND[c.kind] || c.kind}${c.model ? " " + c.model : ""}. ${cellStory(c).slice(2).join(" ")}`;
+  }
+  c.pop = false;
+}
+
+function rushMode() {
+  const r = RU.run, box = $("#rmode");
+  if (RU.mode === "replay")
+    box.innerHTML = `<span>Recorded ${esc(when(r.when))}${RU.ended ? "" : `, playing at ${RU.speed === 1 ? "real time" : RU.speed + "x"}`}</span>`
+      + (RU.ended ? "" : `<select id="rspeed" aria-label="Replay speed">${[1, 2, 4].map(x => `<option value="${x}" ${x === RU.speed ? "selected" : ""}>${x === 1 ? "real time" : x + "x"}</option>`).join("")}</select>`)
+      + `<button class="btn small${RU.ended ? " primary" : ""}" id="rplay" type="button">${ICON.play}<span>${RU.ended ? "Replay" : "From the start"}</span></button>`;
+  else if (RU.mode === "live") box.innerHTML = `<span class="pill live">Live now</span><span class="note" id="rnote"></span>`;
+  else if (RU.mode === "done") box.innerHTML = `<span class="pill">${esc(RU.status.note || "Finished")} just now. Live run, not a replay.</span>`;
+  else box.innerHTML = "";
+}
+
+function rushSum(r, m) {
+  const mix = m ? `Who the agents are: ${n0(m.scripted_standing_order_bots)} standing-order bots and ${n0(m.scripted_planner_bots)} planner bots (scripted), ${n0(m.model_agents)} model agents${(m.models || []).length ? " (" + m.models.map(x => `${x.agents} x ${esc(x.label || x.model)}`).join(", ") + ")" : ""}. The 60 accounts, their order history and their approvers are simulated; the order history is seeded.` : "";
+  if (!r || !r.outcomes) return mix;
+  const o = r.outcomes, s = r.seconds, st = r.stock, p = r.people, ref = Object.entries(r.refused_by_rule || {}).map(([k, v]) => `${esc(k)} ${v}`).join(", ");
+  return `<b>Measured by this run.</b> ${r.answered} of ${r.agents_total} agents answered. First requests within ${s.first_requests_within} s, all answered within ${s.all_answered_within} s, last order ${s.first_request_to_last_order} s after the first request. `
+    + `${lit(st.litres_ordered)} of ${lit(st.litres_in_stock)} L ordered, ${st.over_allocated ? "<b>over-allocated</b>" : `never over-allocated (checked ${n0(st.times_checked)} times)`}. `
+    + `Got all ${o.got_all}, share only ${o.share_only}, share plus substitute ${o.share_plus_substitute}, needed a person ${o.needed_a_person} (${p.approved} approved, ${p.said_no} said no), refused by a rule ${o.refused}${ref ? ` (${ref})` : ""}${o.no_order ? `, no order ${o.no_order}` : ""}. `
+    + `${r.placed_alone} placed with nobody involved. ${n0(r.ledger.entries_written)} ledger entries, chain ${r.ledger.chain_intact ? "intact" : "broken"}. ${r.errors} errors.<br>${mix}`;
+}
+
+function rushTable() {
+  const by = Object.fromEntries(RU.cells.map(c => [c.name, c])), live = RU.mode !== "replay";
+  $("#rtable").innerHTML = `<tr><th>Kitchen</th><th>Usual Monday order, seeded</th><th>Contract share</th><th>Released later</th><th>Asked for</th><th>Ordered</th></tr>`
+    + (RU.split || []).map(x => { const c = by[x.name] || {}; return `<tr><td>${esc(x.name)} <small>${esc(SEG[x.segment] || "")}${x.care ? `, guaranteed ${lit(x.floor)} L` : ""}</small></td><td>${lit(x.usual)} L</td><td><b>${lit(x.share)} L</b></td><td>${x.extra ? lit(live ? x.extra : c.extra) + " L" : ""}</td><td>${c.st && c.st !== "idle" ? lit(c.ask) + " L" : ""}</td><td>${lit(live ? x.ordered : c.got)} L</td></tr>`; }).join("")
+    || `<tr><td>The split shows here as soon as the milk goes on allocation.</td></tr>`;
+}
+
+function rushPaint() {
+  if (!RU.cells.length || !RU.dirty) return;
+  RU.dirty = false;
+  const cs = RU.cells, n = cs.length, asked = cs.reduce((a, c) => a + c.ask, 0);
+  const ans = cs.filter(c => c.st !== "idle" && c.st !== "asked").length, alone = cs.filter(c => c.orders && c.person !== "approved").length, person = cs.filter(c => c.person).length, ref = cs.filter(c => c.refused).length;
+  $("#rsay").innerHTML = rushSay(n, asked);
+  $("#rprog").style.width = RU.mode === "replay" && RU.end ? Math.min(100, 100 * RU.T / RU.end) + "%" : "0";
+  $("#rnum").innerHTML = [["c", RU.ended && RU.run.seconds ? lit(RU.run.seconds.first_request_to_last_order) + " s" : RU.gun ? RU.T.toFixed(1) + " s" : "0.0 s", RU.ended ? "first request to last order" : RU.gun ? "since the first request" : "not started yet"], ["", `${ans}/${n}`, "agents answered"], ["a", alone, "placed with nobody involved"], ["p", person, "needed a person"], ["r", ref, "refused by a rule"]]
+    .map(([k, b, s]) => `<div class="${k}"><b>${b}</b><span>${s}</span></div>`).join("");
+  const S = RU.S || 1, free = Math.max(0, RU.S - RU.o - RU.h);
+  $("#rmilk").innerHTML = `<div class="row"><span><b>${esc(RU.title || "The short milk")}</b>, for Monday</span><span><b>${RU.S ? lit(RU.S) + " L" : "Stock"}</b> at Valio Aimo${RU.onAlloc ? ", split by contract share" : ""}</span></div>
+    <div class="bar"><i class="o" style="width:${100 * RU.o / S}%"></i><i class="h" style="width:${100 * RU.h / S}%"></i></div>
+    <div class="row"><span><b>${lit(RU.o)} L</b> ordered · <b>${lit(RU.h)} L</b> held by signed offers · <b>${lit(free)} L</b> not claimed</span><span>${RU.exp ? `${lit(RU.exp)} L expected from order history (seeded)` : ""}</span></div>`;
+  cs.forEach(cellPaint);
+  const c = RU.sel == null ? null : cs[RU.sel];
+  $("#rone").innerHTML = c ? `<b>${esc(c.name)}</b><span class="muted">${esc(SEG[c.segment] || c.segment)}${c.care ? ", care kitchen" : ""} · ${esc(KIND[c.kind] || c.kind)}${c.model ? " " + esc(c.model) : ""}</span><br>${cellStory(c).map(esc).join(" ")}`
+    : `<b>One cell is one kitchen's agent.</b>The number is the litres of milk it has, of the litres it asked for. Click a cell for its story. An agent is told its own share only, never the stock or what the others asked for.`;
+  $("#rlines").innerHTML = RU.log.slice(0, 6).map(l => `<div class="ln ${l.k}"><span class="t">${l.t.toFixed(1)} s</span><span><b>${esc(l.b)}</b> ${esc(l.x)}</span></div>`).join("")
+    || `<div class="ln"><span class="t"></span><span>Refusals, orders sent to a person and released shares are listed here as they happen.</span></div>`;
+  if ($("#rsplit").open && performance.now() - RU.table > 500) { RU.table = performance.now(); rushTable(); }
+  const note = $("#rnote");
+  if (note) note.textContent = RU.status.note && RU.status.note !== "Running" ? RU.status.note + "." : "";
+  $("#rsum").innerHTML = RU.mode === "replay" ? rushSum(RU.run, RU.run.mix) : rushSum(RU.status.summary, (RU.status.summary || {}).mix || RU.status.mix);
+}
+
+function rushShow() {
+  const none = RU.mode === "none" || RU.mode === "error";
+  $("#rbody").hidden = none;
+  $("#rempty").hidden = !none;
+  if (RU.mode === "none") { $("#rsay").textContent = "No Monday rush has been recorded on this server yet."; $("#rempty").textContent = "When one runs, this shows one cell for each of the 60 kitchens' agents, the stock of the short milk draining to its allocation, and the split by contract share."; }
+  if (RU.mode === "error") { $("#rsay").textContent = "The recorded Monday rush did not load."; $("#rempty").innerHTML = '<span class="error-state"><span class="spin"></span>Trying again in a few seconds.</span>'; }
+  return !none;
+}
+
+// The headline: the whole run in one sentence, readable before the replay has played a second.
+function rushSay(n, asked) {
+  const r = RU.mode === "replay" ? RU.run : (RU.status.summary || null), st = r && r.stock, o = r && r.outcomes;
+  if (st && o) {
+    const sec = r.seconds && r.seconds.first_request_to_last_order;
+    return `<b>${n0(r.agents_total || n)}</b> kitchens' agents asked for <b>${lit(st.litres_asked || asked)}&nbsp;L</b> of the same lactose-free milk for Monday, at the same second. Valio Aimo had <b>${lit(st.litres_in_stock)}&nbsp;L</b>. `
+      + `${sec != null ? `In <b>${lit(sec)}&nbsp;s</b>` : "In the end"} ${st.over_allocated ? `<b class="r">it was over-allocated</b>` : `every litre was split by contract share and <b>never over-allocated</b>`}: `
+      + `<b class="a">${n0(r.placed_alone)}</b> ordered with nobody involved, <b class="p">${n0(o.needed_a_person)}</b> needed a person, <b class="r">${n0(o.refused)}</b> had a request refused by a rule${r.refused_then_ordered_share ? ` (${n0(r.refused_then_ordered_share)} of them then ordered their share, so their cell ends green)` : ""}.`;
+  }
+  return `<b>${n0(n)}</b> kitchens' agents ask for <b>${lit(asked)}&nbsp;L</b> of the same lactose-free milk for Monday, at the same second. Valio Aimo has <b>${RU.S ? lit(RU.S) + "&nbsp;L" : "less"}</b>.`;
+}
+
+function rushReplay(run) {
+  const label = Object.fromEntries(((run.mix || {}).models || []).map(m => [m.model, m.label]));
+  Object.assign(RU, { mode: "replay", ended: false, run, evs: run.events, end: run.events.length ? run.events[run.events.length - 1].t : 0, split: run.split, title: (run.product || {}).title, status: {} });
+  rushSetup(run.agents.map(a => ({ i: a.i, name: a.name, segment: a.segment, care: a.care, kind: a.kind, model: a.model ? label[a.model] || a.model : "", usual: a.usual, ask: a.asked, does: a.does })),
+            run.stock.litres_in_stock, run.stock.litres_expected_from_seeded_history);
+  rushMode();
+}
+
+async function rushRestart() {
+  if (!RU.run) return;
+  rushReplay(RU.run);
+  const x = await get("/api/rush/latest?events=0");   // a newer run has been recorded since: play that one
+  if (x && x.ready && RU.mode === "replay" && x.id !== RU.run.id) rushBoot();
+}
+
+function rushTake(v) {
+  RU.status = v.status || {};
+  const evs = v.events || [];
+  evs.forEach(rushApply);
+  if (!RU.gunAt && RU.gun && evs.length) RU.gunAt = Date.now() - 1000 * evs[evs.length - 1].t;
+  RU.n = v.n;
+  const a = v.allocation;
+  if (a) { RU.S = a.stock; RU.exp = a.expected; RU.o = a.ordered; RU.h = a.held + a.other; RU.onAlloc = a.on; RU.split = a.customers; RU.title = a.title; }
+  RU.dirty = true;
+}
+
+async function rushLive() {
+  if (RU.busy) return;
+  RU.busy = true;
+  const v = await get("/api/tower/rush?since=0");
+  RU.busy = false;
+  if (!v || !v.running) return;
+  const old = RU.cells || [];
+  Object.assign(RU, { mode: "live", run: null, id: v.id, n: 0, done: 0, gunAt: 0, split: null, cells: [], cast: false, title: "", manual: false, status: v.status || {} });
+  rushMode();
+  if ((v.cast || []).length) { rushSetup(v.cast.map(a => ({ ...a, model: a.model || "" })), 0, 0); RU.cast = true; rushTake(v); }
+  else if (old.length) rushSetup(old, 0, 0);   // the same 60 kitchens, blank, until the server has its cast ready
+  rushShow(); rushPaint();
+}
+
+async function rushPoll() {
+  if (RU.mode === "done" && performance.now() - RU.done > 12000) return rushBoot();
+  if (RU.mode !== "live" || RU.busy) return;
+  RU.busy = true;
+  const v = await get(`/api/tower/rush?since=${RU.cast ? RU.n : 0}`);
+  RU.busy = false;
+  if (!v || RU.mode !== "live") return;
+  if (v.id !== RU.id) return rushLive();
+  if (!RU.cast) { if ((v.cast || []).length) { rushSetup(v.cast.map(a => ({ ...a, model: a.model || "" })), 0, 0); RU.cast = true; } else { RU.status = v.status || {}; RU.dirty = true; return; } }
+  rushTake(v);
+  if (!v.running) { RU.mode = "done"; RU.done = performance.now(); rushMode(); }
+}
+
+async function rushBoot() {
+  const [live, last] = await Promise.all([get("/api/tower/rush?since=0"), get("/api/rush/latest?events=1")]);
+  if (live && live.running) return rushLive();
+  if (last && last.ready && (last.events || []).length && (last.agents || []).length) return rushReplay(last);
+  if (!live && !last) { RU.mode = "error"; rushShow(); setTimeout(rushBoot, 4000); return; }   // a failed fetch: say so, try again
+  RU.mode = "none";
+  rushShow();
+}
+
+function rushTick() {
+  const now = performance.now(), dt = Math.min(2, (now - RU.at) / 1000);
+  RU.at = now;
+  if (!RU.mode || !rushShow()) return;
+  if (RU.mode === "replay") {
+    if (RU.ended) return;
+    else {
+      RU.T += dt * RU.speed;
+      while (RU.k < RU.evs.length && RU.evs[RU.k].t <= RU.T) rushApply(RU.evs[RU.k++]);
+      if (RU.k >= RU.evs.length && RU.T > RU.end + 1) { RU.T = RU.end; RU.ended = true; RU.dirty = true; rushMode(); rushPaint(); return; }
+      RU.dirty = true;
+    }
+  } else if (RU.mode === "live") {
+    if (RU.gunAt) { RU.T = (Date.now() - RU.gunAt) / 1000; RU.dirty = true; }
+    if (!RU.cells.length) { $("#rbody").hidden = true; $("#rempty").hidden = false; $("#rempty").innerHTML = `<span class="spin"></span> A live Monday rush is starting: ${esc(RU.status.note || "setting up the 60 accounts")}. The 60 cells appear here in a moment.`; return; }
+  }
+  rushPaint();
+}
+
+async function seller() {
+  const s = await get("/api/seller/summary"), box = $("#seller");
+  if (!s || !s.total) { box.hidden = true; return; }   // no selling agent on this server: no card
+  const t = s.total, took = (t.accepted_alone || 0) + (t.approved_by_person || 0);
+  box.hidden = false;
+  box.innerHTML = `<h2>Valio Aimo's agent</h2><span class="fig">${t.made
+    ? `<b>${plural(t.made, "proposal")}</b> made to kitchens: ${n0(t.open)} open, ${n0(took)} accepted (${n0(t.accepted_alone)} by an agent alone, ${n0(t.approved_by_person)} after a person approved), ${n0(t.declined)} declined, ${n0(t.refused_before_leaving)} stopped by the rules before leaving. ${eur0(t.euros_added_ex_vat)} ex VAT ordered from them.`
+    : "Valio Aimo's own agent proposes orders to kitchens. What it proposed and what the kitchens answered is on its page."}</span><a href="/seller">Open Valio Aimo's agent</a>`;
+}
+
+RU.at = performance.now();
+rushBoot();
+setInterval(rushTick, 100);
+setInterval(rushPoll, 600);
+seller();
+setInterval(seller, 20000);
+tick();
+</script>
+</body>
+</html>

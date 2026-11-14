@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Enrol an approver's device</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+main{max-width:560px;margin:0 auto;padding:var(--s5) var(--s4) var(--s7);display:flex;flex-direction:column;gap:var(--s4)}
+.from{font-size:var(--t2);color:var(--muted)}
+h1{font-size:var(--t7);line-height:1.2;margin-top:6px;letter-spacing:-.02em}
+.lead{color:var(--ink-2);font-size:var(--t4);line-height:1.5;margin:var(--s2) 0 0}
+.go{height:52px;font-size:var(--t5);font-weight:600;border-radius:var(--r-l);width:100%}
+.state{text-align:center;padding:var(--s6) var(--s4)}
+.state .big-mark{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;margin:0 auto var(--s4);animation:land .6s var(--ease) both}
+.state .big-mark svg{width:26px;height:26px}
+.state .big-mark.ok{background:var(--pass-bg);color:var(--pass)}
+.state .big-mark.idle{background:var(--soft);color:var(--muted)}
+@keyframes land{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.state .big-mark{animation:none}}
+.state h2{font-size:var(--t6);letter-spacing:-.015em}
+.state p{margin:var(--s2) 0 0}
+.devs{list-style:none;margin:0;padding:0}
+.devs li{display:flex;justify-content:space-between;gap:var(--s3);padding:10px 0;border-top:1px solid var(--line);font-size:var(--t3)}
+.devs li:first-child{border-top:0}
+.devs code{font-size:var(--t1);color:var(--muted)}
+#err{color:var(--deny);font-size:var(--t3);margin:var(--s3) 0 0}
+</style>
+</head>
+<body>
+<div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
+<header id="site"></header>
+<main id="main" aria-live="polite"><span class="skel block" style="width:40%"></span><span class="skel block" style="height:28px;width:85%"></span><span class="skel block" style="height:120px;margin-top:16px"></span></main>
+<script src="/static/lib.js"></script>
+<script src="/static/passkey.js"></script>
+<script>
+const Q = new URLSearchParams(location.search), t = Q.get("t") || "";
+// Where the person came from, when it is a page on this site: they are sent back there after enrolling.
+const next = /^\/[a-z0-9/_-]*(\?[\w=&.%-]*)?$/i.test(Q.get("next") || "") ? Q.get("next") : "";
+const NEXT = { "/menu": "Back to the menu", "/demo": "Back to the demo" };
+const back = () => next ? `<p><a class="btn primary" href="${esc(next)}" style="margin-top:var(--s3)">${esc(NEXT[next.split("?")[0]] || (next.startsWith("/approve/") ? "Back to the approval" : "Back"))}</a></p>` : "";
+const big = (kind, icon) => `<div class="big-mark ${kind}">${icon}</div>`;
+const devList = ds => ds.length ? `<div class="card"><h3>Approver devices on this account</h3><ul class="devs">${ds.map(d => `<li><span>${esc(d.name)}</span><code>key ${esc(d.thumbprint)}</code></li>`).join("")}</ul></div>` : "";
+
+async function load() {
+  let s;
+  try { s = await api("/api/passkey" + (t ? "?t=" + encodeURIComponent(t) : "")); }
+  catch (e) { $("#main").innerHTML = `<div class="card state">${big("idle", ICON.close)}<h2>Could not reach the gateway</h2><p class="muted">Check your connection and open the link again.</p></div>`; return; }
+  if (!s.account || !s.can_enrol) {
+    $("#main").innerHTML = `<div class="card state">${big("idle", ICON.close)}<h2>${t ? "This enrolment link has expired" : "Open this from your account"}</h2><p class="muted">${t ? "Make a new one on the account's page. A link works for 15 minutes." : "Only the account itself can add an approver's device."}</p></div>`;
+    return;
+  }
+  const can = await PK.builtIn(), any = PK.supported();
+  $("#main").innerHTML = `<div><div class="from">${esc(s.account)}</div><h1>Make this device an approver</h1>
+    <p class="lead">When the purchasing agent needs a person, this device signs the yes or no with its fingerprint, face or screen lock. The key is made here and stays here. After this, a link alone can no longer approve for ${esc(s.account)}.</p></div>
+    ${any ? `<button class="btn primary go" id="go" type="button">Enrol this device</button>${can ? "" : `<p class="muted" style="font-size:var(--t2);margin:0">This device has no fingerprint, face or screen lock of its own. It can still use a security key or a nearby phone.</p>`}` : `<div class="card"><p style="margin:0">This browser cannot make a passkey. Open this link on a phone or laptop with a screen lock.</p></div>`}
+    <p id="err" hidden></p>${devList(s.devices)}`;
+  if (any) $("#go").onclick = enrol;
+}
+
+async function enrol() {
+  const b = $("#go"), err = $("#err");
+  b.disabled = true; b.innerHTML = '<span class="spin"></span>Waiting for this device'; err.hidden = true;
+  try {
+    const d = await PK.enrol(t);
+    const s = await api("/api/passkey" + (t ? "?t=" + encodeURIComponent(t) : "")).catch(() => ({ devices: [d], account: "" }));
+    $("#main").innerHTML = `<div class="card state">${big("ok", ICON.check)}<h2>This device now approves for ${esc(s.account || "the account")}</h2><p class="muted">${next ? "From now on an approval for this account is signed here, with this device's fingerprint, face or screen lock." : "Next time the agent asks, open the approval link on this device. You can close this page."}</p>${back()}</div>${devList(s.devices || [d])}`;
+  } catch (e) {
+    b.disabled = false; b.textContent = "Try again";
+    err.hidden = false;
+    err.textContent = e && e.name === "NotAllowedError" ? "Nothing was enrolled: the device prompt was closed or timed out." : e && e.name === "InvalidStateError" ? "This device is already enrolled." : (e && e.message) || "This device could not be enrolled.";
+  }
+}
+load();
+</script>
+</body>
+</html>

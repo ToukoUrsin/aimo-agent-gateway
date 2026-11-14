@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Approval needed</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+main{max-width:560px;margin:0 auto;padding:var(--s5) var(--s4) 140px;display:flex;flex-direction:column;gap:var(--s4)}
+.from{font-size:var(--t2);color:var(--muted);display:flex;align-items:center;gap:8px}
+.from i{width:8px;height:8px;border-radius:50%;background:var(--esc);display:inline-block;flex:none}
+h1{font-size:var(--t7);line-height:1.2;margin-top:6px;letter-spacing:-.02em}
+.amount{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s3);padding:var(--s4) 0 0}
+.amount .big{font-size:40px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+.amount .sub{color:var(--muted);font-size:var(--t2);text-align:right}
+.why{background:var(--esc-bg);border-radius:var(--r-l);padding:var(--s4)}
+.why b{color:var(--esc);font-weight:600;font-size:var(--t3)}
+.why ul{margin:var(--s2) 0 0;padding:0;list-style:none}
+.why li{padding:6px 0 6px 18px;position:relative;font-size:var(--t4);line-height:1.45}
+.why li::before{content:"";position:absolute;left:2px;top:14px;width:6px;height:6px;border-radius:50%;background:var(--esc)}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:var(--s3) var(--s4) calc(var(--s3) + env(safe-area-inset-bottom))}
+.bar .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:1fr 1.6fr;gap:var(--s2)}
+.bar .btn{height:52px;font-size:var(--t5);font-weight:600;border-radius:var(--r-l)}
+.bar .btn.danger{color:var(--deny)}
+.bar .hint{grid-column:1/-1;text-align:center;font-size:var(--t1);color:var(--muted);margin-top:2px}
+.state{text-align:center;padding:var(--s6) var(--s4)}
+.state .big-mark{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;margin:0 auto var(--s4);animation:land .6s var(--ease) both}
+.state .big-mark svg{width:26px;height:26px}
+.state .big-mark.ok{background:var(--pass-bg);color:var(--pass)}
+.state .big-mark.bad{background:var(--deny-bg);color:var(--deny)}
+.state .big-mark.idle{background:var(--soft);color:var(--muted)}
+@keyframes land{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+.state h2{font-size:var(--t6);letter-spacing:-.015em}
+.state p{margin:var(--s2) 0 0}
+blockquote{margin:6px 0 0;padding:0;color:var(--ink-2);font-size:var(--t4)}
+.q-label{font-size:var(--t1);color:var(--muted);font-weight:500}
+.fields{display:grid;gap:var(--s3)}
+.fields input{height:44px;font-size:16px}
+details.card>summary{display:flex;width:100%;font-size:var(--t3);color:var(--ink);font-weight:600;min-height:28px}
+details.card[open]>summary{margin-bottom:var(--s2)}
+.load{display:flex;flex-direction:column;gap:var(--s3)}
+.more-lines>summary{cursor:pointer;color:var(--muted);font-size:var(--t2);padding:10px 0;border-bottom:1px solid var(--line)}
+.more-lines>summary:hover{color:var(--ink)}
+.more-lines .lhead{display:none}
+.und{margin:6px 0 2px}
+.und>summary{cursor:pointer;font-size:var(--t3);color:var(--esc);font-weight:500}
+.und ul{margin:6px 0 0}
+.und li{font-size:var(--t3);padding:4px 0 4px 18px}
+.und li::before{top:11px;width:5px;height:5px;opacity:.6}
+.und li span{color:var(--esc);font-weight:500}
+.und p{margin:8px 0 0;font-size:var(--t3);line-height:1.5}
+.pk{font-size:var(--t2);margin:var(--s3) 0 0;line-height:1.5;color:var(--muted)}
+.pk b{color:var(--ink);font-weight:600}
+.bar .hint.bad{color:var(--deny)}
+</style>
+</head>
+<body>
+<div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
+<header id="site"></header>
+<main id="main" aria-live="polite"><div class="load" aria-label="Loading"><span class="skel block" style="width:40%"></span><span class="skel block" style="height:28px;width:85%"></span><span class="skel block" style="height:90px;margin-top:16px"></span><span class="skel block" style="height:140px"></span></div></main>
+<div class="bar" id="bar" hidden>
+  <div class="in">
+    <button class="btn danger" id="no" type="button">Reject</button>
+    <button class="btn primary" id="yes" type="button">Approve</button>
+    <div class="hint">Your decision is signed and kept with the order.</div>
+  </div>
+</div>
+<script src="/static/lib.js"></script>
+<script src="/static/passkey.js"></script>
+<script>
+const cid = location.pathname.split("/").pop(), k = new URLSearchParams(location.search).get("k");
+let timer = null, PKS = null;  // PKS: how this account approves (by link, or on an enrolled device)
+const HINT = "Your decision is signed and kept with the order.";
+// The lines an allergen rule could not check, in full: approving clears exactly these, so they are all named.
+function undeclared(r) {
+  const u = r.undeclared || [];
+  if (!u.length) return "";
+  const what = [...new Set(u.flatMap(x => (x.what || "").split(", ").filter(Boolean)))];
+  return `<details class="und"${u.length <= 6 ? " open" : ""}><summary>${u.length === 1 ? "The line you would clear" : `All ${u.length} lines you would clear`}</summary>
+    <ul>${u.map(x => `<li>${esc(x.title)}${x.named_what ? ` <span>its name points at ${esc(x.named_what)}</span>` : ""}</li>`).join("")}</ul>
+    <p>Approving clears ${u.length === 1 ? "this line" : "these lines"} for ${esc(what.join(", ") || "the excluded allergens")} on this account, under your name. The agent does not ask about ${u.length === 1 ? "it" : "them"} again; a product it has not asked about still comes to you.</p></details>`;
+}
+function signoff() {
+  const p = PKS || {};
+  if (p.approvals === "passkey") return `<p class="pk"><b>Signed on an approver's device.</b> Approve asks this device for its fingerprint, face or screen lock. The signature is made inside the device and covers this exact order, your name and your note. The link alone cannot approve for this account.</p>`;
+  if (p.can_enrol && PK.supported()) return `<p class="pk">No approver device is enrolled for this account yet, so this link approves and the gateway's own key signs the record. <a href="/enrol?next=${encodeURIComponent(location.pathname + location.search)}">Make this device the approver</a>: after that only an enrolled device can approve.</p>`;
+  return `<p class="pk">No approver device is enrolled for this account yet, so this link approves and the gateway's own key signs the record. Once the account enrols a phone or laptop, only that device can approve.</p>`;
+}
+let YES = "Approve";
+const big = (kind, icon) => `<div class="big-mark ${kind}">${icon}</div>`;
+
+function view(c) {
+  const w = c.wholesale, rules = w.policy.rules;
+  const esc_ = rules.filter(r => r.outcome === "escalate"), ok = rules.filter(r => r.outcome === "pass");
+  const total = c.totals.find(t => t.type === "total").amount, sub = c.totals.find(t => t.type === "subtotal").amount;
+  const am = w.amends, goods = c.line_items.length > 0, open = c.status === "requires_escalation";
+  let h = `<div><div class="from">${open ? "<i></i>" : ""}${esc(c.buyer.name || "Your company")} · purchasing agent</div><h1>${open ? (am ? "Your agent needs your OK to change order " + esc(am.order_label) : "Your agent needs your OK for this order") : am ? "Change to order " + esc(am.order_label) : "Order request"}</h1>${am && am.title ? `<p style="margin:6px 0 0;color:var(--muted)">${esc(am.title)}</p>` : ""}
+    ${open && (!am || goods) ? `<div class="amount"><span class="big">${eur(total)}</span><span class="sub">incl. VAT<br>${eur(sub)} ex VAT</span></div>` : ""}</div>`;
+  if (open) {
+    h += `<div class="why"><b>Why it is asking you</b><ul>${esc_.map(r => `<li>${esc(r.detail)}${undeclared(r)}</li>`).join("")}</ul></div>`;
+  } else if (c.status === "ready_for_complete" && w.approval) {
+    h += `<div class="card state">${big("ok", ICON.check)}<h2>Approved</h2><p class="muted">${am && !goods ? "Your agent is making the change now." : "Your agent is placing the order now."}</p>${w.approval.device ? `<p class="muted" style="font-size:var(--t2)">Signed on ${esc(w.approval.device.device)}, key ${esc(w.approval.device.thumbprint)}.</p>` : ""}</div>`;
+  } else if (c.status === "completed") {
+    h += `<div class="card state">${big("ok", ICON.check)}<h2>${am ? (goods ? "Replacement order " + esc(c.order.label) + " placed" : "Order " + esc(am.order_label) + " changed") : "Order " + esc(c.order.label) + " placed"}</h2><p><a class="btn" href="${esc(siteUrl(c.order.url || c.order.permalink_url))}" style="margin-top:8px">Confirmation and evidence</a></p></div>`;
+  } else if (c.status === "canceled") {
+    h += `<div class="card state">${big("bad", ICON.cross)}<h2>${w.approval && w.approval.decision === "rejected" ? "Rejected" : "Cancelled"}</h2><p class="muted">${am ? "Nothing was changed." : "Nothing was ordered. The held stock was released."}</p></div>`;
+  } else {
+    h += `<div class="card state">${big("idle", ICON.close)}<h2>This request is no longer open</h2><p class="muted">The offer expired or changed. Your agent will ask again if it still needs you.</p></div>`;
+  }
+  const decided = c.status === "canceled" ? (am ? "What was asked for" : "What was asked for, not ordered") : c.status === "completed" ? (am ? "The replacement" : "The order") : am ? "The replacement" : "The order";
+  if (!am || goods) h += `<div class="card"><h3>${decided}<span class="muted">${c.line_items.length} ${c.line_items.length === 1 ? "line" : "lines"}</span></h3>${linesShort(c.line_items)}${totalsBlock(c.totals)}
+    ${c.status === "canceled" ? "" : `<dl class="kv" style="margin-top:var(--s4)"><dt>Delivery</dt><dd>${esc(day(w.delivery_date))}</dd><dt>To</dt><dd>${esc(w.ship_to || "")}</dd><dt>Supplier</dt><dd>Valio Aimo, on your existing invoice terms</dd>
+    ${w.hold && open ? `<dt>Held until</dt><dd>${esc(clock(w.hold.price_and_stock_held_until))}: price and stock are reserved for you</dd>` : ""}</dl>`}</div>`;
+  if (w.intent || w.agent_rationale) h += `<div class="card"><h3>What was asked, and the agent's reason</h3>${w.intent ? `<div class="q-label">Request</div><blockquote>“${esc(w.intent)}”</blockquote>` : ""}${w.agent_rationale ? `<div class="q-label" style="margin-top:var(--s4)">The agent says</div><blockquote>${esc(w.agent_rationale)}</blockquote>` : ""}</div>`;
+  if (ok.length && open) h += `<details class="card"><summary>${ok.length} checks passed automatically</summary>${rulesTable(ok)}</details>`;
+  if (open) h += `<div class="card"><h3>Your sign-off</h3><div class="fields"><label>Name<input type="text" id="who" value="F&amp;B manager" autocomplete="name" style="margin-top:6px"></label><label>Note (optional)<input type="text" id="note" placeholder="e.g. OK for this week only" style="margin-top:6px"></label></div>
+    ${signoff()}</div>`;
+  $("#main").innerHTML = h;
+  $("#bar").hidden = !open;
+  if (open) $("#yes").textContent = YES = am && !goods ? "Approve the change" : "Approve " + eur(total);
+}
+
+// Long orders: show the first lines (and every substitute) and fold the rest, so the decision stays near the top.
+function linesShort(items) {
+  if (items.length <= 10) return linesTable(items);
+  const sub = l => (l.wholesale || {}).substitutes_for;
+  let room = Math.max(0, 8 - items.filter(sub).length);
+  const keep = items.map(l => sub(l) || (room-- > 0));
+  const rest = items.filter((l, i) => !keep[i]);
+  return linesTable(items.filter((l, i) => keep[i])) + `<details class="more-lines"><summary>Show the other ${rest.length} lines</summary>${linesTable(rest)}</details>`;
+}
+async function load() {
+  let c;
+  try { c = await api(`/api/approve/${cid}?k=${encodeURIComponent(k || "")}`); }
+  catch (e) { $("#main").innerHTML = `<div class="card state">${big("idle", ICON.close)}<h2>Could not reach the gateway</h2><p class="muted">Check your connection. This page tries again on its own.</p></div>`; return null; }
+  if (!c.id) { $("#main").innerHTML = `<div class="card state">${big("bad", ICON.cross)}<h2>This link is not valid</h2><p class="muted">${esc((c.messages || [{}])[0].content || "")}</p></div>`; $("#bar").hidden = true; clearInterval(timer); return null; }
+  return c;
+}
+async function refresh(force) {
+  const c = await load();
+  if (!c) return;
+  if (!PKS && c.status === "requires_escalation") PKS = await api(`/api/approve/${cid}/device`, { k, approve: true }).catch(() => null);
+  // Do not redraw the form while someone is typing in it.
+  if (force || c.status !== "requires_escalation" || !$("#who")) view(c);
+  if (c.status === "completed" || c.status === "canceled") clearInterval(timer);
+}
+function said(text) { const h = $("#bar .hint"); h.textContent = text || HINT; h.classList.toggle("bad", !!text); }
+async function decide(approve) {
+  const body = { k, approve, approver: $("#who").value, note: $("#note").value };
+  const back = text => { $("#yes").disabled = $("#no").disabled = false; $("#no").textContent = "Reject"; $("#yes").textContent = text ? "Try again" : YES; said(text); };
+  $("#yes").disabled = $("#no").disabled = true; said("");
+  const b = approve ? $("#yes") : $("#no");
+  b.innerHTML = '<span class="spin"></span>' + (approve ? "Signing" : "Rejecting");
+  let r;
+  try {
+    // An account with an enrolled device: that device signs this decision. Saying no needs no device.
+    if (approve && PKS && PKS.approvals === "passkey") {
+      b.innerHTML = '<span class="spin"></span>Waiting for this device';
+      const pre = await api(`/api/approve/${cid}/device`, body);
+      if (!pre.challenge) return back((pre.messages || [{}])[0].content || "The approval could not be prepared.");
+      try { body.device = await PK.sign(pre); }
+      catch (e) { return back(e && e.name === "NotAllowedError" ? "Nothing was approved: the device prompt was closed, or this is not one of the account's approver devices." : "This device could not sign the approval."); }
+    }
+    r = await api(`/api/approve/${cid}`, body);
+  } catch (e) { return back("The gateway did not answer. Nothing was decided."); }
+  const err = !r.id && (r.messages || []).find(m => m.type === "error");
+  if (err && err.code === "device_required" && !body.device) { PKS = await api(`/api/approve/${cid}/device`, { k, approve: true }).catch(() => PKS); back(); return decide(true); }
+  if (err) return back(err.content);
+  back();
+  refresh(true);
+}
+$("#yes").onclick = () => decide(true);
+$("#no").onclick = () => decide(false);
+refresh(true);
+timer = setInterval(() => refresh(false).catch(() => {}), 1500);
+</script>
+</body>
+</html>

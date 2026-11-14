@@ -1,0 +1,1652 @@
+{
+ "voice": "nPczCjzI2devNBz1zQrb",
+ "music": "audio/music2.mp3",
+ "used": {
+  "menu": {
+   "guests": 180,
+   "lines": 41,
+   "seconds": 6.1,
+   "by_hand": {
+    "basis": "estimate",
+    "minutes": 30.8,
+    "n": 0,
+    "attempts": 0,
+    "seconds_per_line": 45,
+    "how": "An estimate, not a measurement: 45 seconds per line to search, compare pack size and allergens, and add to the basket. That figure is our assumption. Nobody has finished the by-hand page yet."
+   },
+   "order": "VA-AG-261114-0209",
+   "run": "mr_f795cadf323e"
+  },
+  "rush": {
+   "id": "rush_20261114T020853Z",
+   "agents": 60,
+   "asked": 1472,
+   "stock": 698,
+   "ordered": 698,
+   "over_allocated": false,
+   "person": 9,
+   "refused": 5,
+   "seconds": 42.1,
+   "alone": 51,
+   "override": 0
+  },
+  "proof": {
+   "id": "20261114T022233Z",
+   "models": 5,
+   "providers": 3,
+   "runs": 130,
+   "orders": 99,
+   "caught": 4,
+   "now": 0
+  },
+  "anchor": null
+ },
+ "lines": {
+  "h1": {
+   "id": "h1",
+   "text": "Saturday's wedding. One hundred and eighty guests. The chef takes a photo of the menu.",
+   "file": "audio/vo-977rbf.mp3",
+   "dur": 4.69,
+   "words": [
+    {
+     "w": "Saturday's",
+     "s": 0,
+     "e": 0.464
+    },
+    {
+     "w": "wedding.",
+     "s": 0.499,
+     "e": 0.824
+    },
+    {
+     "w": "One",
+     "s": 1.08,
+     "e": 1.277
+    },
+    {
+     "w": "hundred",
+     "s": 1.324,
+     "e": 1.579
+    },
+    {
+     "w": "and",
+     "s": 1.614,
+     "e": 1.683
+    },
+    {
+     "w": "eighty",
+     "s": 1.718,
+     "e": 1.904
+    },
+    {
+     "w": "guests.",
+     "s": 1.95,
+     "e": 2.38
+    },
+    {
+     "w": "The",
+     "s": 2.682,
+     "e": 2.81
+    },
+    {
+     "w": "chef",
+     "s": 2.868,
+     "e": 3.123
+    },
+    {
+     "w": "takes",
+     "s": 3.181,
+     "e": 3.413
+    },
+    {
+     "w": "a",
+     "s": 3.448,
+     "e": 3.483
+    },
+    {
+     "w": "photo",
+     "s": 3.541,
+     "e": 3.796
+    },
+    {
+     "w": "of",
+     "s": 3.855,
+     "e": 3.913
+    },
+    {
+     "w": "the",
+     "s": 3.947,
+     "e": 4.017
+    },
+    {
+     "w": "menu.",
+     "s": 4.063,
+     "e": 4.69
+    }
+   ]
+  },
+  "h2": {
+   "id": "h2",
+   "text": "Six seconds later it is a checked order. Forty-one lines, one tap from a person.",
+   "file": "audio/vo-12ptv8s.mp3",
+   "dur": 4.644,
+   "words": [
+    {
+     "w": "Six",
+     "s": 0,
+     "e": 0.255
+    },
+    {
+     "w": "seconds",
+     "s": 0.302,
+     "e": 0.627
+    },
+    {
+     "w": "later",
+     "s": 0.673,
+     "e": 0.917
+    },
+    {
+     "w": "it",
+     "s": 0.975,
+     "e": 1.045
+    },
+    {
+     "w": "is",
+     "s": 1.08,
+     "e": 1.161
+    },
+    {
+     "w": "a",
+     "s": 1.207,
+     "e": 1.242
+    },
+    {
+     "w": "checked",
+     "s": 1.289,
+     "e": 1.556
+    },
+    {
+     "w": "order.",
+     "s": 1.602,
+     "e": 1.916
+    },
+    {
+     "w": "Forty-one",
+     "s": 2.322,
+     "e": 2.81
+    },
+    {
+     "w": "lines,",
+     "s": 2.856,
+     "e": 3.239
+    },
+    {
+     "w": "one",
+     "s": 3.309,
+     "e": 3.495
+    },
+    {
+     "w": "tap",
+     "s": 3.529,
+     "e": 3.715
+    },
+    {
+     "w": "from",
+     "s": 3.762,
+     "e": 3.878
+    },
+    {
+     "w": "a",
+     "s": 3.924,
+     "e": 3.947
+    },
+    {
+     "w": "person.",
+     "s": 4.005,
+     "e": 4.644
+    }
+   ]
+  },
+  "n1": {
+   "id": "n1",
+   "text": "By hand, the same order is about thirty minutes. That is our estimate.",
+   "file": "audio/vo-1vak4hh.mp3",
+   "dur": 3.483,
+   "words": [
+    {
+     "w": "By",
+     "s": 0,
+     "e": 0.186
+    },
+    {
+     "w": "hand,",
+     "s": 0.255,
+     "e": 0.476
+    },
+    {
+     "w": "the",
+     "s": 0.499,
+     "e": 0.569
+    },
+    {
+     "w": "same",
+     "s": 0.639,
+     "e": 0.871
+    },
+    {
+     "w": "order",
+     "s": 0.917,
+     "e": 1.126
+    },
+    {
+     "w": "is",
+     "s": 1.173,
+     "e": 1.242
+    },
+    {
+     "w": "about",
+     "s": 1.289,
+     "e": 1.509
+    },
+    {
+     "w": "thirty",
+     "s": 1.567,
+     "e": 1.823
+    },
+    {
+     "w": "minutes.",
+     "s": 1.869,
+     "e": 2.252
+    },
+    {
+     "w": "That",
+     "s": 2.31,
+     "e": 2.485
+    },
+    {
+     "w": "is",
+     "s": 2.531,
+     "e": 2.601
+    },
+    {
+     "w": "our",
+     "s": 2.647,
+     "e": 2.752
+    },
+    {
+     "w": "estimate.",
+     "s": 2.821,
+     "e": 3.483
+    }
+   ]
+  },
+  "n2": {
+   "id": "n2",
+   "text": "Valio Aimo's challenge says why this matters. AI agents are starting to order, and whoever defines the door owns the customer.",
+   "file": "audio/vo-1s10ytw.mp3",
+   "dur": 7.059,
+   "words": [
+    {
+     "w": "Valio",
+     "s": 0,
+     "e": 0.476
+    },
+    {
+     "w": "Aimo's",
+     "s": 0.546,
+     "e": 0.917
+    },
+    {
+     "w": "challenge",
+     "s": 0.964,
+     "e": 1.382
+    },
+    {
+     "w": "says",
+     "s": 1.405,
+     "e": 1.579
+    },
+    {
+     "w": "why",
+     "s": 1.625,
+     "e": 1.741
+    },
+    {
+     "w": "this",
+     "s": 1.788,
+     "e": 1.904
+    },
+    {
+     "w": "matters.",
+     "s": 1.962,
+     "e": 2.438
+    },
+    {
+     "w": "AI",
+     "s": 2.914,
+     "e": 3.297
+    },
+    {
+     "w": "agents",
+     "s": 3.344,
+     "e": 3.634
+    },
+    {
+     "w": "are",
+     "s": 3.657,
+     "e": 3.75
+    },
+    {
+     "w": "starting",
+     "s": 3.773,
+     "e": 4.052
+    },
+    {
+     "w": "to",
+     "s": 4.087,
+     "e": 4.133
+    },
+    {
+     "w": "order,",
+     "s": 4.191,
+     "e": 4.586
+    },
+    {
+     "w": "and",
+     "s": 4.667,
+     "e": 4.818
+    },
+    {
+     "w": "whoever",
+     "s": 4.865,
+     "e": 5.155
+    },
+    {
+     "w": "defines",
+     "s": 5.213,
+     "e": 5.584
+    },
+    {
+     "w": "the",
+     "s": 5.608,
+     "e": 5.677
+    },
+    {
+     "w": "door",
+     "s": 5.712,
+     "e": 5.933
+    },
+    {
+     "w": "owns",
+     "s": 6.037,
+     "e": 6.246
+    },
+    {
+     "w": "the",
+     "s": 6.269,
+     "e": 6.339
+    },
+    {
+     "w": "customer.",
+     "s": 6.374,
+     "e": 7.059
+    }
+   ]
+  },
+  "r1": {
+   "id": "r1",
+   "text": "Now the whipping cream runs short. The sauce gets cooking cream, because it is only heated. The whipped topping keeps the real cream.",
+   "file": "audio/vo-ix8fp7.mp3",
+   "dur": 6.687,
+   "words": [
+    {
+     "w": "Now",
+     "s": 0,
+     "e": 0.197
+    },
+    {
+     "w": "the",
+     "s": 0.244,
+     "e": 0.313
+    },
+    {
+     "w": "whipping",
+     "s": 0.348,
+     "e": 0.615
+    },
+    {
+     "w": "cream",
+     "s": 0.65,
+     "e": 0.836
+    },
+    {
+     "w": "runs",
+     "s": 0.894,
+     "e": 1.115
+    },
+    {
+     "w": "short.",
+     "s": 1.161,
+     "e": 1.591
+    },
+    {
+     "w": "The",
+     "s": 1.95,
+     "e": 2.067
+    },
+    {
+     "w": "sauce",
+     "s": 2.113,
+     "e": 2.334
+    },
+    {
+     "w": "gets",
+     "s": 2.357,
+     "e": 2.508
+    },
+    {
+     "w": "cooking",
+     "s": 2.554,
+     "e": 2.844
+    },
+    {
+     "w": "cream,",
+     "s": 2.879,
+     "e": 3.088
+    },
+    {
+     "w": "because",
+     "s": 3.111,
+     "e": 3.355
+    },
+    {
+     "w": "it",
+     "s": 3.39,
+     "e": 3.448
+    },
+    {
+     "w": "is",
+     "s": 3.483,
+     "e": 3.553
+    },
+    {
+     "w": "only",
+     "s": 3.611,
+     "e": 3.808
+    },
+    {
+     "w": "heated.",
+     "s": 3.866,
+     "e": 4.296
+    },
+    {
+     "w": "The",
+     "s": 4.598,
+     "e": 4.714
+    },
+    {
+     "w": "whipped",
+     "s": 4.772,
+     "e": 4.992
+    },
+    {
+     "w": "topping",
+     "s": 5.016,
+     "e": 5.387
+    },
+    {
+     "w": "keeps",
+     "s": 5.457,
+     "e": 5.7
+    },
+    {
+     "w": "the",
+     "s": 5.747,
+     "e": 5.817
+    },
+    {
+     "w": "real",
+     "s": 5.863,
+     "e": 6.026
+    },
+    {
+     "w": "cream.",
+     "s": 6.084,
+     "e": 6.687
+    }
+   ]
+  },
+  "s1": {
+   "id": "s1",
+   "text": "Valio Aimo's own agent speaks up too. Monday's usual basket is not ordered yet. A signed proposal, and one thumb approves it.",
+   "file": "audio/vo-ze1s00.mp3",
+   "dur": 7.848,
+   "words": [
+    {
+     "w": "Valio",
+     "s": 0,
+     "e": 0.43
+    },
+    {
+     "w": "Aimo's",
+     "s": 0.499,
+     "e": 0.836
+    },
+    {
+     "w": "own",
+     "s": 0.906,
+     "e": 1.115
+    },
+    {
+     "w": "agent",
+     "s": 1.161,
+     "e": 1.416
+    },
+    {
+     "w": "speaks",
+     "s": 1.451,
+     "e": 1.718
+    },
+    {
+     "w": "up",
+     "s": 1.765,
+     "e": 1.858
+    },
+    {
+     "w": "too.",
+     "s": 1.904,
+     "e": 2.276
+    },
+    {
+     "w": "Monday's",
+     "s": 2.682,
+     "e": 3.042
+    },
+    {
+     "w": "usual",
+     "s": 3.1,
+     "e": 3.367
+    },
+    {
+     "w": "basket",
+     "s": 3.425,
+     "e": 3.808
+    },
+    {
+     "w": "is",
+     "s": 3.855,
+     "e": 3.936
+    },
+    {
+     "w": "not",
+     "s": 4.005,
+     "e": 4.18
+    },
+    {
+     "w": "ordered",
+     "s": 4.226,
+     "e": 4.493
+    },
+    {
+     "w": "yet.",
+     "s": 4.528,
+     "e": 4.818
+    },
+    {
+     "w": "A",
+     "s": 5.12,
+     "e": 5.19
+    },
+    {
+     "w": "signed",
+     "s": 5.294,
+     "e": 5.608
+    },
+    {
+     "w": "proposal,",
+     "s": 5.642,
+     "e": 6.223
+    },
+    {
+     "w": "and",
+     "s": 6.246,
+     "e": 6.397
+    },
+    {
+     "w": "one",
+     "s": 6.467,
+     "e": 6.664
+    },
+    {
+     "w": "thumb",
+     "s": 6.711,
+     "e": 6.954
+    },
+    {
+     "w": "approves",
+     "s": 7.001,
+     "e": 7.384
+    },
+    {
+     "w": "it.",
+     "s": 7.43,
+     "e": 7.848
+    }
+   ]
+  },
+  "u1": {
+   "id": "u1",
+   "text": "Monday morning. Sixty kitchens' agents ask for the same lactose-free milk at the same second. There is less than half of it.",
+   "file": "audio/vo-1wddxah.mp3",
+   "dur": 6.873,
+   "words": [
+    {
+     "w": "Monday",
+     "s": 0,
+     "e": 0.337
+    },
+    {
+     "w": "morning.",
+     "s": 0.395,
+     "e": 0.789
+    },
+    {
+     "w": "Sixty",
+     "s": 1.149,
+     "e": 1.521
+    },
+    {
+     "w": "kitchens'",
+     "s": 1.591,
+     "e": 1.974
+    },
+    {
+     "w": "agents",
+     "s": 2.009,
+     "e": 2.345
+    },
+    {
+     "w": "ask",
+     "s": 2.392,
+     "e": 2.554
+    },
+    {
+     "w": "for",
+     "s": 2.589,
+     "e": 2.682
+    },
+    {
+     "w": "the",
+     "s": 2.728,
+     "e": 2.798
+    },
+    {
+     "w": "same",
+     "s": 2.844,
+     "e": 3.053
+    },
+    {
+     "w": "lactose-free",
+     "s": 3.1,
+     "e": 3.785
+    },
+    {
+     "w": "milk",
+     "s": 3.831,
+     "e": 4.052
+    },
+    {
+     "w": "at",
+     "s": 4.098,
+     "e": 4.156
+    },
+    {
+     "w": "the",
+     "s": 4.191,
+     "e": 4.261
+    },
+    {
+     "w": "same",
+     "s": 4.296,
+     "e": 4.516
+    },
+    {
+     "w": "second.",
+     "s": 4.551,
+     "e": 4.969
+    },
+    {
+     "w": "There",
+     "s": 5.375,
+     "e": 5.55
+    },
+    {
+     "w": "is",
+     "s": 5.584,
+     "e": 5.654
+    },
+    {
+     "w": "less",
+     "s": 5.712,
+     "e": 5.898
+    },
+    {
+     "w": "than",
+     "s": 5.921,
+     "e": 6.06
+    },
+    {
+     "w": "half",
+     "s": 6.13,
+     "e": 6.327
+    },
+    {
+     "w": "of",
+     "s": 6.385,
+     "e": 6.444
+    },
+    {
+     "w": "it.",
+     "s": 6.502,
+     "e": 6.873
+    }
+   ]
+  },
+  "u2": {
+   "id": "u2",
+   "text": "The gateway splits it by contract share. Forty-two seconds. Nine of sixty needed a person. Not one litre was promised twice.",
+   "file": "audio/vo-rhwiki.mp3",
+   "dur": 8.127,
+   "words": [
+    {
+     "w": "The",
+     "s": 0,
+     "e": 0.163
+    },
+    {
+     "w": "gateway",
+     "s": 0.232,
+     "e": 0.604
+    },
+    {
+     "w": "splits",
+     "s": 0.673,
+     "e": 1.057
+    },
+    {
+     "w": "it",
+     "s": 1.103,
+     "e": 1.184
+    },
+    {
+     "w": "by",
+     "s": 1.231,
+     "e": 1.335
+    },
+    {
+     "w": "contract",
+     "s": 1.405,
+     "e": 1.916
+    },
+    {
+     "w": "share.",
+     "s": 1.939,
+     "e": 2.31
+    },
+    {
+     "w": "Forty-two",
+     "s": 2.717,
+     "e": 3.181
+    },
+    {
+     "w": "seconds.",
+     "s": 3.251,
+     "e": 3.75
+    },
+    {
+     "w": "Nine",
+     "s": 4.156,
+     "e": 4.377
+    },
+    {
+     "w": "of",
+     "s": 4.412,
+     "e": 4.458
+    },
+    {
+     "w": "sixty",
+     "s": 4.516,
+     "e": 4.841
+    },
+    {
+     "w": "needed",
+     "s": 4.911,
+     "e": 5.132
+    },
+    {
+     "w": "a",
+     "s": 5.178,
+     "e": 5.201
+    },
+    {
+     "w": "person.",
+     "s": 5.248,
+     "e": 5.7
+    },
+    {
+     "w": "Not",
+     "s": 6.002,
+     "e": 6.2
+    },
+    {
+     "w": "one",
+     "s": 6.281,
+     "e": 6.513
+    },
+    {
+     "w": "litre",
+     "s": 6.56,
+     "e": 6.838
+    },
+    {
+     "w": "was",
+     "s": 6.873,
+     "e": 6.989
+    },
+    {
+     "w": "promised",
+     "s": 7.047,
+     "e": 7.407
+    },
+    {
+     "w": "twice.",
+     "s": 7.43,
+     "e": 8.127
+    }
+   ]
+  },
+  "t1": {
+   "id": "t1",
+   "text": "A hospital kitchen's bot reaches for a soy drink. The kitchen excludes soy. Refused, and no person can override that.",
+   "file": "audio/vo-1n1snbw.mp3",
+   "dur": 6.687,
+   "words": [
+    {
+     "w": "A",
+     "s": 0,
+     "e": 0.093
+    },
+    {
+     "w": "hospital",
+     "s": 0.163,
+     "e": 0.557
+    },
+    {
+     "w": "kitchen's",
+     "s": 0.615,
+     "e": 0.94
+    },
+    {
+     "w": "bot",
+     "s": 0.975,
+     "e": 1.161
+    },
+    {
+     "w": "reaches",
+     "s": 1.231,
+     "e": 1.509
+    },
+    {
+     "w": "for",
+     "s": 1.544,
+     "e": 1.649
+    },
+    {
+     "w": "a",
+     "s": 1.695,
+     "e": 1.718
+    },
+    {
+     "w": "soy",
+     "s": 1.776,
+     "e": 1.985
+    },
+    {
+     "w": "drink.",
+     "s": 2.032,
+     "e": 2.368
+    },
+    {
+     "w": "The",
+     "s": 2.728,
+     "e": 2.844
+    },
+    {
+     "w": "kitchen",
+     "s": 2.891,
+     "e": 3.17
+    },
+    {
+     "w": "excludes",
+     "s": 3.216,
+     "e": 3.657
+    },
+    {
+     "w": "soy.",
+     "s": 3.692,
+     "e": 4.122
+    },
+    {
+     "w": "Refused,",
+     "s": 4.319,
+     "e": 4.853
+    },
+    {
+     "w": "and",
+     "s": 4.876,
+     "e": 4.957
+    },
+    {
+     "w": "no",
+     "s": 5.027,
+     "e": 5.155
+    },
+    {
+     "w": "person",
+     "s": 5.224,
+     "e": 5.515
+    },
+    {
+     "w": "can",
+     "s": 5.561,
+     "e": 5.677
+    },
+    {
+     "w": "override",
+     "s": 5.724,
+     "e": 6.13
+    },
+    {
+     "w": "that.",
+     "s": 6.153,
+     "e": 6.687
+    }
+   ]
+  },
+  "t2": {
+   "id": "t2",
+   "text": "Change one cent in a signed order, and the check fails, right in the browser.",
+   "file": "audio/vo-fivkxe.mp3",
+   "dur": 4.272,
+   "words": [
+    {
+     "w": "Change",
+     "s": 0,
+     "e": 0.372
+    },
+    {
+     "w": "one",
+     "s": 0.43,
+     "e": 0.627
+    },
+    {
+     "w": "cent",
+     "s": 0.673,
+     "e": 0.929
+    },
+    {
+     "w": "in",
+     "s": 0.987,
+     "e": 1.057
+    },
+    {
+     "w": "a",
+     "s": 1.103,
+     "e": 1.126
+    },
+    {
+     "w": "signed",
+     "s": 1.184,
+     "e": 1.451
+    },
+    {
+     "w": "order,",
+     "s": 1.498,
+     "e": 1.869
+    },
+    {
+     "w": "and",
+     "s": 1.974,
+     "e": 2.125
+    },
+    {
+     "w": "the",
+     "s": 2.171,
+     "e": 2.241
+    },
+    {
+     "w": "check",
+     "s": 2.276,
+     "e": 2.496
+    },
+    {
+     "w": "fails,",
+     "s": 2.566,
+     "e": 2.984
+    },
+    {
+     "w": "right",
+     "s": 3.146,
+     "e": 3.355
+    },
+    {
+     "w": "in",
+     "s": 3.39,
+     "e": 3.437
+    },
+    {
+     "w": "the",
+     "s": 3.471,
+     "e": 3.541
+    },
+    {
+     "w": "browser.",
+     "s": 3.564,
+     "e": 4.272
+    }
+   ]
+  },
+  "t3": {
+   "id": "t3",
+   "text": "Every step sits on a ledger that your own browser can verify.",
+   "file": "audio/vo-dsoj8h.mp3",
+   "dur": 3.39,
+   "words": [
+    {
+     "w": "Every",
+     "s": 0,
+     "e": 0.302
+    },
+    {
+     "w": "step",
+     "s": 0.36,
+     "e": 0.615
+    },
+    {
+     "w": "sits",
+     "s": 0.685,
+     "e": 0.906
+    },
+    {
+     "w": "on",
+     "s": 0.94,
+     "e": 1.01
+    },
+    {
+     "w": "a",
+     "s": 1.068,
+     "e": 1.091
+    },
+    {
+     "w": "ledger",
+     "s": 1.161,
+     "e": 1.451
+    },
+    {
+     "w": "that",
+     "s": 1.498,
+     "e": 1.614
+    },
+    {
+     "w": "your",
+     "s": 1.66,
+     "e": 1.776
+    },
+    {
+     "w": "own",
+     "s": 1.834,
+     "e": 1.974
+    },
+    {
+     "w": "browser",
+     "s": 2.032,
+     "e": 2.403
+    },
+    {
+     "w": "can",
+     "s": 2.45,
+     "e": 2.566
+    },
+    {
+     "w": "verify.",
+     "s": 2.624,
+     "e": 3.39
+    }
+   ]
+  },
+  "p1": {
+   "id": "p1",
+   "text": "We tried to break it first. Five models, one hundred and thirty test runs. They caught a bug in our own allergen rule. Four orders got through. We fixed it. Now: zero.",
+   "file": "audio/vo-1xpqwvm.mp3",
+   "dur": 10.542,
+   "words": [
+    {
+     "w": "We",
+     "s": 0,
+     "e": 0.163
+    },
+    {
+     "w": "tried",
+     "s": 0.209,
+     "e": 0.441
+    },
+    {
+     "w": "to",
+     "s": 0.464,
+     "e": 0.511
+    },
+    {
+     "w": "break",
+     "s": 0.569,
+     "e": 0.766
+    },
+    {
+     "w": "it",
+     "s": 0.813,
+     "e": 0.882
+    },
+    {
+     "w": "first.",
+     "s": 0.94,
+     "e": 1.382
+    },
+    {
+     "w": "Five",
+     "s": 1.683,
+     "e": 1.962
+    },
+    {
+     "w": "models,",
+     "s": 2.02,
+     "e": 2.392
+    },
+    {
+     "w": "one",
+     "s": 2.45,
+     "e": 2.67
+    },
+    {
+     "w": "hundred",
+     "s": 2.717,
+     "e": 3.042
+    },
+    {
+     "w": "and",
+     "s": 3.111,
+     "e": 3.216
+    },
+    {
+     "w": "thirty",
+     "s": 3.286,
+     "e": 3.553
+    },
+    {
+     "w": "test",
+     "s": 3.611,
+     "e": 3.843
+    },
+    {
+     "w": "runs.",
+     "s": 3.913,
+     "e": 4.319
+    },
+    {
+     "w": "They",
+     "s": 4.725,
+     "e": 4.876
+    },
+    {
+     "w": "caught",
+     "s": 4.911,
+     "e": 5.097
+    },
+    {
+     "w": "a",
+     "s": 5.12,
+     "e": 5.143
+    },
+    {
+     "w": "bug",
+     "s": 5.19,
+     "e": 5.364
+    },
+    {
+     "w": "in",
+     "s": 5.399,
+     "e": 5.457
+    },
+    {
+     "w": "our",
+     "s": 5.503,
+     "e": 5.608
+    },
+    {
+     "w": "own",
+     "s": 5.654,
+     "e": 5.782
+    },
+    {
+     "w": "allergen",
+     "s": 5.828,
+     "e": 6.177
+    },
+    {
+     "w": "rule.",
+     "s": 6.235,
+     "e": 6.629
+    },
+    {
+     "w": "Four",
+     "s": 7.036,
+     "e": 7.279
+    },
+    {
+     "w": "orders",
+     "s": 7.349,
+     "e": 7.616
+    },
+    {
+     "w": "got",
+     "s": 7.674,
+     "e": 7.837
+    },
+    {
+     "w": "through.",
+     "s": 7.872,
+     "e": 8.208
+    },
+    {
+     "w": "We",
+     "s": 8.29,
+     "e": 8.417
+    },
+    {
+     "w": "fixed",
+     "s": 8.487,
+     "e": 8.731
+    },
+    {
+     "w": "it.",
+     "s": 8.777,
+     "e": 8.951
+    },
+    {
+     "w": "Now:",
+     "s": 9.207,
+     "e": 9.601
+    },
+    {
+     "w": "zero.",
+     "s": 9.764,
+     "e": 10.542
+    }
+   ]
+  },
+  "a1": {
+   "id": "a1",
+   "text": "An unvetted bot signs its own mandate. Refused, and the gateway suspends it on its own.",
+   "file": "audio/vo-12nbgxd.mp3",
+   "dur": 5.016,
+   "words": [
+    {
+     "w": "An",
+     "s": 0,
+     "e": 0.139
+    },
+    {
+     "w": "unvetted",
+     "s": 0.209,
+     "e": 0.569
+    },
+    {
+     "w": "bot",
+     "s": 0.615,
+     "e": 0.824
+    },
+    {
+     "w": "signs",
+     "s": 0.882,
+     "e": 1.138
+    },
+    {
+     "w": "its",
+     "s": 1.184,
+     "e": 1.3
+    },
+    {
+     "w": "own",
+     "s": 1.347,
+     "e": 1.474
+    },
+    {
+     "w": "mandate.",
+     "s": 1.521,
+     "e": 2.078
+    },
+    {
+     "w": "Refused,",
+     "s": 2.438,
+     "e": 2.984
+    },
+    {
+     "w": "and",
+     "s": 3.007,
+     "e": 3.088
+    },
+    {
+     "w": "the",
+     "s": 3.123,
+     "e": 3.193
+    },
+    {
+     "w": "gateway",
+     "s": 3.228,
+     "e": 3.564
+    },
+    {
+     "w": "suspends",
+     "s": 3.634,
+     "e": 4.063
+    },
+    {
+     "w": "it",
+     "s": 4.11,
+     "e": 4.18
+    },
+    {
+     "w": "on",
+     "s": 4.226,
+     "e": 4.296
+    },
+    {
+     "w": "its",
+     "s": 4.354,
+     "e": 4.458
+    },
+    {
+     "w": "own.",
+     "s": 4.505,
+     "e": 5.016
+    }
+   ]
+  },
+  "a2": {
+   "id": "a2",
+   "text": "An agent only ever hears its own answer. Never the stock count.",
+   "file": "audio/vo-16g32vu.mp3",
+   "dur": 3.344,
+   "words": [
+    {
+     "w": "An",
+     "s": 0,
+     "e": 0.151
+    },
+    {
+     "w": "agent",
+     "s": 0.209,
+     "e": 0.464
+    },
+    {
+     "w": "only",
+     "s": 0.511,
+     "e": 0.697
+    },
+    {
+     "w": "ever",
+     "s": 0.743,
+     "e": 0.882
+    },
+    {
+     "w": "hears",
+     "s": 0.94,
+     "e": 1.126
+    },
+    {
+     "w": "its",
+     "s": 1.173,
+     "e": 1.277
+    },
+    {
+     "w": "own",
+     "s": 1.312,
+     "e": 1.428
+    },
+    {
+     "w": "answer.",
+     "s": 1.463,
+     "e": 1.823
+    },
+    {
+     "w": "Never",
+     "s": 2.125,
+     "e": 2.357
+    },
+    {
+     "w": "the",
+     "s": 2.403,
+     "e": 2.473
+    },
+    {
+     "w": "stock",
+     "s": 2.508,
+     "e": 2.752
+    },
+    {
+     "w": "count.",
+     "s": 2.81,
+     "e": 3.344
+    }
+   ]
+  },
+  "y1": {
+   "id": "y1",
+   "text": "Any agent can come through. Paste one address into Claude or ChatGPT, and it orders under the same rules.",
+   "file": "audio/vo-e87k07.mp3",
+   "dur": 6.548,
+   "words": [
+    {
+     "w": "Any",
+     "s": 0,
+     "e": 0.244
+    },
+    {
+     "w": "agent",
+     "s": 0.302,
+     "e": 0.569
+    },
+    {
+     "w": "can",
+     "s": 0.604,
+     "e": 0.72
+    },
+    {
+     "w": "come",
+     "s": 0.766,
+     "e": 0.929
+    },
+    {
+     "w": "through.",
+     "s": 0.964,
+     "e": 1.312
+    },
+    {
+     "w": "Paste",
+     "s": 1.718,
+     "e": 2.009
+    },
+    {
+     "w": "one",
+     "s": 2.055,
+     "e": 2.194
+    },
+    {
+     "w": "address",
+     "s": 2.229,
+     "e": 2.554
+    },
+    {
+     "w": "into",
+     "s": 2.601,
+     "e": 2.74
+    },
+    {
+     "w": "Claude",
+     "s": 2.81,
+     "e": 3.216
+    },
+    {
+     "w": "or",
+     "s": 3.274,
+     "e": 3.413
+    },
+    {
+     "w": "ChatGPT,",
+     "s": 3.483,
+     "e": 4.435
+    },
+    {
+     "w": "and",
+     "s": 4.656,
+     "e": 4.807
+    },
+    {
+     "w": "it",
+     "s": 4.876,
+     "e": 4.957
+    },
+    {
+     "w": "orders",
+     "s": 5.016,
+     "e": 5.317
+    },
+    {
+     "w": "under",
+     "s": 5.364,
+     "e": 5.515
+    },
+    {
+     "w": "the",
+     "s": 5.561,
+     "e": 5.631
+    },
+    {
+     "w": "same",
+     "s": 5.666,
+     "e": 5.875
+    },
+    {
+     "w": "rules.",
+     "s": 5.909,
+     "e": 6.548
+    }
+   ]
+  },
+  "y2": {
+   "id": "y2",
+   "text": "Open standards, not one platform's black box.",
+   "file": "audio/vo-1ccjbkv.mp3",
+   "dur": 2.74,
+   "words": [
+    {
+     "w": "Open",
+     "s": 0,
+     "e": 0.313
+    },
+    {
+     "w": "standards,",
+     "s": 0.383,
+     "e": 0.848
+    },
+    {
+     "w": "not",
+     "s": 0.882,
+     "e": 1.033
+    },
+    {
+     "w": "one",
+     "s": 1.103,
+     "e": 1.289
+    },
+    {
+     "w": "platform's",
+     "s": 1.324,
+     "e": 1.788
+    },
+    {
+     "w": "black",
+     "s": 1.823,
+     "e": 2.043
+    },
+    {
+     "w": "box.",
+     "s": 2.101,
+     "e": 2.74
+    }
+   ]
+  },
+  "c1": {
+   "id": "c1",
+   "text": "Valio Aimo. Readable by any agent. Owned by Valio.",
+   "file": "audio/vo-16jegx7.mp3",
+   "dur": 3.297,
+   "words": [
+    {
+     "w": "Valio",
+     "s": 0,
+     "e": 0.36
+    },
+    {
+     "w": "Aimo.",
+     "s": 0.406,
+     "e": 0.778
+    },
+    {
+     "w": "Readable",
+     "s": 1.033,
+     "e": 1.393
+    },
+    {
+     "w": "by",
+     "s": 1.428,
+     "e": 1.544
+    },
+    {
+     "w": "any",
+     "s": 1.602,
+     "e": 1.765
+    },
+    {
+     "w": "agent.",
+     "s": 1.823,
+     "e": 2.171
+    },
+    {
+     "w": "Owned",
+     "s": 2.31,
+     "e": 2.496
+    },
+    {
+     "w": "by",
+     "s": 2.519,
+     "e": 2.589
+    },
+    {
+     "w": "Valio.",
+     "s": 2.647,
+     "e": 3.297
+    }
+   ]
+  }
+ }
+}

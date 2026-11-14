@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Valio Aimo's agent</title>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+main{padding-bottom:var(--s8)}
+.page-head{padding-bottom:0}
+.page-head+.sec{margin-top:var(--s6)}
+.eyebrow{font-size:var(--t3);font-weight:500;color:var(--muted);margin:0 0 var(--s2)}
+h1.owner{font-size:clamp(24px,2.6vw,32px);line-height:1.22;font-weight:600;letter-spacing:-.022em;max-width:30ch;margin:0}
+.page-head .lead{max-width:68ch;font-size:var(--t4)}
+
+/* Totals */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);border-radius:var(--r-l);background:var(--panel);overflow:hidden;margin-top:var(--s5)}
+.tile{padding:16px 14px 16px 16px;min-width:0;border-left:1px solid var(--line)}
+.tile:first-child{border-left:0;background:var(--soft)}
+.tile .k{display:flex;align-items:baseline;gap:6px;font-size:var(--t2);font-weight:500;color:var(--ink-2);line-height:1.3;margin-top:6px}
+.tile .k i{flex:none;width:7px;height:7px;border-radius:50%;background:var(--faint);transform:translateY(-1px)}
+.tile .k i.pass{background:var(--pass)}.tile .k i.esc{background:var(--esc)}.tile .k i.deny{background:var(--deny)}
+.tile b{display:block;font-size:var(--t8);font-weight:600;letter-spacing:-.025em;font-variant-numeric:tabular-nums;line-height:1.1}
+.tile .v{display:block;color:var(--muted);font-size:var(--t2);line-height:1.35;margin-top:2px}
+.tile.zero b{color:var(--faint)}
+.also{margin:var(--s2) 0 0;font-size:var(--t3);color:var(--muted);line-height:1.5}
+.also b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.run.ok{border-color:color-mix(in srgb,var(--pass) 35%,var(--line))}
+.run.bad{border-color:color-mix(in srgb,var(--deny) 35%,var(--line))}
+
+/* Controls and the kitchen's agent */
+.bar{display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center;margin-top:var(--s4)}
+.bar select{width:auto;min-width:220px;max-width:100%;height:36px}
+.bar .btn{height:36px}
+.bar .note{color:var(--muted);font-size:var(--t3);flex:1 1 260px;line-height:1.4}
+.run{margin-top:var(--s3);font-size:var(--t3);line-height:1.5}
+.run:not(:empty){padding:12px 16px;border:1px solid var(--line);border-radius:var(--r-l);background:var(--panel)}
+.run .final{white-space:pre-wrap;margin-top:6px;color:var(--ink-2)}
+
+/* Proposals */
+.list{display:flex;flex-direction:column;gap:var(--s4)}
+.prop{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-l);overflow:hidden}
+.prop .pt{padding:18px 22px 16px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;align-items:start}
+.prop .meta{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:var(--t3);color:var(--muted)}
+.prop .meta b{color:var(--ink);font-weight:500}
+.prop .meta .dot{color:var(--faint)}
+.prop .st{grid-row:1/span 2;grid-column:2;justify-self:end}
+.prop .st .pill{height:26px;padding:0 10px;font-size:var(--t2)}
+.prop h3{grid-column:1;font-size:var(--t5);font-weight:600;letter-spacing:-.012em;line-height:1.35;margin:4px 0 0}
+.prop .reason{grid-column:1/-1;font-size:var(--t4);line-height:1.5;margin:4px 0 0;max-width:80ch}
+.prop .by{grid-column:1/-1;color:var(--muted);font-size:var(--t2)}
+.prop .body{display:grid;grid-template-columns:minmax(0,1fr) 340px;border-top:1px solid var(--line)}
+.prop .col{padding:16px 22px 18px;min-width:0}
+.prop .col+.col{border-left:1px solid var(--line);background:var(--soft)}
+.prop .lbl{font-size:var(--t2);font-weight:600;color:var(--muted);margin:0 0 8px;letter-spacing:.01em}
+.prop .col .lbl~.lbl{margin-top:18px}
+.facts{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 16px;margin:0;font-size:var(--t3);line-height:1.45}
+.facts dt{color:var(--muted)}
+.facts dd{margin:0;color:var(--ink)}
+.facts dd b{font-weight:600}
+.note2{font-size:var(--t3);color:var(--ink-2);line-height:1.5;margin:10px 0 0}
+.seed{display:flex;gap:8px;align-items:baseline;margin-top:12px;font-size:var(--t2);color:var(--muted);line-height:1.45}
+.seed .pill{flex:none;height:20px}
+.rl{display:grid;gap:10px}
+.rl .r{font-size:var(--t3);line-height:1.45}
+.rl .r b{font-weight:600}
+.rl .r .mono{color:var(--muted);margin-left:4px}
+.rl .r div{color:var(--ink-2)}
+.dec{margin-bottom:10px}
+.dec .pill{height:26px;padding:0 10px;font-size:var(--t2)}
+.what{font-size:var(--t3);line-height:1.5;display:grid;gap:6px}
+.what .q{color:var(--ink-2)}
+.ln{border-top:1px solid var(--line);padding:6px 22px 4px;font-size:var(--t3)}
+.ln .row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;padding:7px 0;border-top:1px solid var(--line)}
+.ln .row:first-child{border-top:0}
+.ln .row .u{font-variant-numeric:tabular-nums;color:var(--muted);margin-right:6px}
+.ln .row .sf{color:var(--muted)}
+.ln .row s{color:var(--faint);margin-right:6px}
+.ln .row.tot{font-weight:600}
+.prop details{border-top:1px solid var(--line);padding:10px 22px;font-size:var(--t3)}
+.prop details summary{color:var(--muted)}
+.prop details[open] summary{margin-bottom:6px}
+.prop.stopped{background:var(--soft)}
+.prop.stopped .col+.col{background:var(--panel)}
+
+/* The drift chart */
+.chart{display:block;max-width:100%;height:auto;margin:2px 0 4px;overflow:visible}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .ax{fill:var(--muted);font-size:12px;font-family:var(--sans)}
+.chart .used{fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.chart .pt{fill:var(--panel);stroke:var(--ink);stroke-width:2}
+.chart .pt.last{fill:var(--ink)}
+.chart .std{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:5 4}
+.chart .cor{stroke:var(--ink-2);stroke-width:2;stroke-dasharray:1 5;stroke-linecap:round}
+.chart .lab{font-size:12px;font-family:var(--sans);fill:var(--muted)}
+.chart .lab tspan.n{fill:var(--ink);font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:var(--t2);color:var(--muted);margin-top:2px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend svg{width:22px;height:8px}
+
+/* Per customer */
+.cust{width:100%;border-collapse:collapse;font-size:var(--t3)}
+.cust th{font-size:var(--t2);color:var(--muted);font-weight:500;text-align:right;padding:4px 0 8px 12px;white-space:nowrap;border-bottom:1px solid var(--line)}
+.cust th:first-child,.cust td:first-child{text-align:left;padding-left:0}
+.cust td{padding:10px 0 10px 12px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cust tr:last-child td{border-bottom:0}
+.cust td:first-child{white-space:normal;font-weight:500}
+.scrollx{overflow-x:auto}
+.sw{display:inline-flex;align-items:center;gap:6px;font-size:var(--t3)}
+
+@media (max-width:1100px){.prop .body{grid-template-columns:minmax(0,1fr) 300px}}
+@media (max-width:760px){
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tile{padding:10px 12px 12px}
+  .tile .k{font-size:var(--t3);margin-top:2px}
+  .tile .v{font-size:var(--t1)}
+  .tile:nth-child(n+3){border-top:1px solid var(--line)}
+  .tile:nth-child(2n+1){border-left:0}
+  .tile .k{min-height:0}
+  .tile b{font-size:var(--t6)}
+  .page-head{padding-top:var(--s5)}
+  .prop .pt{padding:14px 16px;grid-template-columns:minmax(0,1fr)}
+  .prop .st{grid-row:auto;grid-column:1;justify-self:start;order:3}
+  .prop h3{order:2}
+  .prop .meta{order:1;gap:4px 12px}
+  .prop .meta .dot{display:none}
+  .prop .reason,.prop .by{order:4}
+  .prop .by{order:5}
+  .prop .body{grid-template-columns:minmax(0,1fr)}
+  .prop .col{padding:14px 16px 16px}
+  .prop .col+.col{border-left:0;border-top:1px solid var(--line)}
+  .ln,.prop details{padding-left:16px;padding-right:16px}
+  .facts{grid-template-columns:minmax(0,1fr);gap:0}
+  .facts dd{margin-bottom:8px}
+  .bar select{flex:1 1 100%}
+  .bar .btn{flex:1 1 auto}
+}
+</style>
+</head>
+<body>
+<div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
+<header id="site"></header>
+<main class="wrap">
+  <div class="page-head">
+    <p class="eyebrow">Valio Aimo's agent</p>
+    <h1 class="owner">Whatever agent a kitchen buys with, the customer relationship stays with Valio Aimo.</h1>
+    <p class="lead">This is Valio Aimo's own agent, speaking in its name and signing with its key. It proposes; the kitchen's agent and the kitchen's people decide. Every proposal is a signed offer, judged by the same rules as any order under the buyer's mandate before it leaves. Code picks the products, quantities and prices. A model only chooses which proposals matter today and writes the sentence.</p>
+    <div class="tiles" id="tiles" aria-live="polite"></div>
+    <p class="also" id="also"></p>
+    <div class="bar" id="bar"></div>
+    <div class="run" id="run" aria-live="polite"></div>
+    <div class="run" id="agentrun" aria-live="polite"></div>
+  </div>
+  <h2 class="sec">Proposals</h2>
+  <div class="list" id="list"><div class="empty">Loading…</div></div>
+  <h2 class="sec" id="cust-h" hidden>Per customer</h2>
+  <div class="card scrollx" id="cust" hidden></div>
+</main>
+<script src="/static/lib.js"></script>
+<script>
+const KIND = { drift: "Standing order drift", short_dated: "Short-dated stock", cutoff: "Before the cut-off", shortage: "Shortage ahead", fill: "Fill the case" };
+const OUT = {
+  open: ["Open: waiting for the kitchen's agent", ""], pending: ["Accepted, being finished", "escalate"], accepted: ["Accepted", "pass"], declined: ["Declined by the kitchen's agent", "line"],
+  rejected_by_person: ["A person at the kitchen said no", "deny"], refused: ["Stopped by a rule before it left", "deny"], expired: ["Expired at the cut-off", "line"],
+  withdrawn: ["Withdrawn: proposals switched off", "line"], overtaken: ["Overtaken: the kitchen ordered itself", "line"],
+};
+const DEC = { agent_may_accept: ["The kitchen's agent may accept it alone", "pass"], needs_human_approval: ["Accepting it needs a person", "escalate"], not_allowed: ["Stopped before it left", "deny"] };
+let S = { op: false, acct: "", runId: null, busy: false };
+
+// A readable weekly chart: use per week against the standing order and the proposed level.
+function niceStep(x) { const p = Math.pow(10, Math.floor(Math.log10(x || 1))), m = x / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p; }
+function chart(b) {
+  const u = (b.used_per_week || []).map(Number), wk = b.weeks || [], std = b.standing_units, cor = b.corrected_units;
+  if (u.length < 2) return "";
+  const narrow = matchMedia("(max-width:760px)").matches;
+  const W = narrow ? 320 : 560, H = 200, L = 40, R = narrow ? 96 : 120, T = 12, B = 28;
+  const vals = [...u, std, cor].filter(v => v != null);
+  const step = niceStep((Math.max(...vals) - Math.min(...vals)) / 3);
+  const lo = Math.floor((Math.min(...vals) - step * .25) / step) * step, hi = Math.ceil((Math.max(...vals) + step * .25) / step) * step;
+  const n = u.length, x = i => L + i * (W - L - R) / (n - 1), y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+  const xe = x(n - 1) + 10;
+  let g = "";
+  for (let v = lo; v <= hi + 1e-9; v += step) g += `<line class="grid" x1="${L}" x2="${xe}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${+v.toFixed(1)}</text>`;
+  wk.forEach((w, i) => { if (narrow && (n - 1 - i) % 2) return; g += `<text class="ax" x="${x(i)}" y="${H - 8}" text-anchor="middle">${esc(new Date(w + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }))}</text>`; });
+  const pts = u.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  const last = u[n - 1];
+  const labs = [{ y: y(last), n: last, t: "used last week" }, { y: y(std), n: std, t: "standing order" }];
+  if (cor != null && cor !== std) labs.push({ y: y(cor), n: cor, t: "proposed" });
+  labs.sort((a, b2) => a.y - b2.y);
+  for (let i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 36) labs[i].y = labs[i - 1].y + 36;
+  const over = labs[labs.length - 1].y - (H - B - 4); if (over > 0) labs.forEach(l => l.y -= over);
+  const lx = xe + 8;
+  const lab = labs.map(l => `<text class="lab" x="${lx}" y="${(l.y - 2).toFixed(1)}"><tspan class="n">${esc(l.n)}</tspan><tspan x="${lx}" dy="15">${esc(l.t)}</tspan></text>`).join("");
+  const label = `Weekly use of ${b.product || "the product"} over ${n} weeks, from ${u[0]} to ${last}, against a standing order of ${std}${cor != null ? `; proposed ${cor}` : ""}.`;
+  return `<svg class="chart" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${g}
+    <line class="std" x1="${L}" x2="${xe}" y1="${y(std)}" y2="${y(std)}"/>
+    ${cor != null && cor !== std ? `<line class="cor" x1="${L}" x2="${xe}" y1="${y(cor)}" y2="${y(cor)}"/>` : ""}
+    <polyline class="used" points="${pts}"/>${u.map((v, i) => `<circle class="pt${i === n - 1 ? " last" : ""}" cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="${i === n - 1 ? 4 : 3}"/>`).join("")}${lab}</svg>
+    <div class="legend"><span><svg viewBox="0 0 22 8"><line x1="1" x2="21" y1="4" y2="4" stroke="currentColor" style="color:var(--ink)" stroke-width="2"/></svg>Used per week</span><span><svg viewBox="0 0 22 8"><line x1="1" x2="21" y1="4" y2="4" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4"/></svg>Standing order</span>${cor != null && cor !== std ? `<span><svg viewBox="0 0 22 8"><line x1="2" x2="21" y1="4" y2="4" stroke="currentColor" style="color:var(--ink-2)" stroke-width="2" stroke-dasharray="1 5" stroke-linecap="round"/></svg>Proposed</span>` : ""}</div>`;
+}
+
+const fact = (k, v) => v === "" || v == null ? "" : `<dt>${esc(k)}</dt><dd>${v}</dd>`;
+const seedNote = t => t ? `<div class="seed"><span class="pill escalate">Seeded</span><span>${esc(String(t).replace(/^Seeded:\s*/, "").replace(/^./, c => c.toUpperCase()))}</span></div>` : "";
+function basis(p) {
+  const b = p.basis || {};
+  if (p.kind === "drift") {
+    const up = b.corrected_units > b.standing_units;
+    const now = p.standing_now != null && p.standing_now !== b.standing_units ? ` Standing order now: <b>${esc(p.standing_now)}</b>.` : p.standing_now != null ? ` Standing order now: ${esc(p.standing_now)}.` : "";
+    return `${chart(b)}<p class="note2">${up ? `Rising ${esc(b.weeks_rising || 3)} weeks running; the last 3 weeks average ${esc(b.average_last_3_weeks)}. Corrected to ${esc(b.corrected_units)}${b.add_for_delivery ? `, adding ${esc(b.add_for_delivery)} to ${esc(b.delivery)}` : ""}.`
+      : `Falling ${esc(b.weeks_falling || 3)} weeks running; the last 3 weeks average ${esc(b.average_last_3_weeks)}. Corrected to ${esc(b.corrected_units)}.${b.saved_units_per_week != null ? ` Saves ${esc(b.saved_units_per_week)} units a week (${esc(b.weekly_saving_ex_vat)} ex VAT).` : ""}`}${now}</p>${seedNote(b.seeded)}`;
+  }
+  if (p.kind === "short_dated") return `<dl class="facts">${fact("Lot", `${esc(b.lot)}, ${esc(b.units_in_lot)} left, best before <b>${esc(b.best_before)}</b>`)}${fact("The kitchen uses", `about ${esc(b.usual_per_week)} a week of ${esc(b.usual_of)}`)}${fact("Used by then", `${esc(b.used_by_then)} in ${esc(b.days_to_use)} days`)}${fact("Price", `${esc(b.off_pct)}% off${b.unit_price_now ? `: ${esc(b.unit_price_now)} instead of ${esc(b.unit_price_usual)}` : ""}`)}</dl>${seedNote(b.seeded)}`;
+  if (p.kind === "cutoff") return `<dl class="facts">${fact("Usually orders by", esc(b.usual_order_by))}${fact("Ordered so far", `nothing for ${esc(b.delivery)}`)}${fact("Cut-off", `${esc(when(b.cutoff))}, <b>${esc(b.hours_to_cutoff)} hours away</b>`)}${b.not_in_full ? fact("Not in full", esc(b.not_in_full.join(", "))) : ""}</dl>${seedNote(b.seeded)}`;
+  if (p.kind === "shortage") return `<dl class="facts">${fact("Usual", `${esc(b.standing_units)} ${esc(b.product)}`)}${fact("Can be delivered", `${esc(b.can_be_delivered)} on ${esc(b.delivery)}, <b>${esc(b.short_by)} short</b>`)}${fact("Replacement", `${esc(b.replacement)}${b.listed_by_valio_aimo ? " (on Valio Aimo's substitute list)" : " (not on Valio Aimo's substitute list)"}`)}${fact("Price", b.price_difference_pct == null ? "difference unknown" : `${b.price_difference_pct > 0 ? "+" : ""}${esc(b.price_difference_pct)}% per unit of content`)}</dl>${b.how_chosen ? `<p class="note2">${esc(b.how_chosen)}</p>` : ""}`;
+  if (p.kind === "fill") return `<dl class="facts">${fact("Standing order", `${esc(b.standing_units)}: ${esc(b.full)}`)}${fact("Adding", `${esc(b.add)} makes ${esc(b.fills_to)}`)}</dl>${b.price_break ? `<p class="note2">${esc(b.price_break)}</p>` : ""}${seedNote(b.seeded)}`;
+  return "";
+}
+
+// Which rule let it through, sent it to a person, or stopped it.
+function ruleBlock(p) {
+  const title = id => ((p.rules || []).find(r => r.id === id) || {}).title || "";
+  const d = DEC[p.decision] || ["", ""];
+  let rows = "";
+  if (p.status === "refused" && p.refused) rows = `<div class="r"><b>${esc(title(p.refused.rule) || "Rule")}</b><span class="mono">${esc(p.refused.rule)}</span><div>Refused it, so it was never sent.</div></div>`;
+  else if (p.decision === "agent_may_accept") rows = ((p.authority && p.authority.basis) || []).map(t => { const m = /^([A-Z]\d+):\s*(.*)$/.exec(t) || [, "", t]; return `<div class="r"><b>${esc(title(m[1]) || "Rule")}</b>${m[1] ? `<span class="mono">${esc(m[1])}</span>` : ""}<div>${esc(m[2])}</div></div>`; }).join("");
+  else rows = (p.rules || []).filter(r => r.outcome !== "pass").map(r => `<div class="r"><b>${esc(r.title)}</b><span class="mono">${esc(r.id)}</span><div>${esc(r.detail)}</div></div>`).join("");
+  return `<div class="dec"><span class="pill ${d[1]}">${esc(d[0])}</span></div><div class="rl">${rows}</div>`;
+}
+
+function outcome(p) {
+  const out = [];
+  if (p.status === "open") out.push(`<div>Sent to the kitchen's agent. Nothing is ordered until it answers.</div>`);
+  if (p.order) out.push(`<div>Order <a href="${esc(p.order.url)}">${esc(p.order.label)}</a>, ${eur(p.order.subtotal)} ex VAT. ${p.order.approved_by ? "Approved by " + esc(p.order.approved_by) + " through the approval link." : "The agent accepted it alone, inside its mandate."}</div>`);
+  if (p.status === "pending" && p.checkout) out.push(`<div>Checkout <span class="mono">${esc(p.checkout.id)}</span>: ${p.checkout.status === "requires_escalation" ? "waiting for a person at the kitchen to approve." : esc(nice(p.checkout.status))}</div>`);
+  if (p.answer && p.answer.reason) out.push(`<div class="q"><span class="muted">The kitchen's agent:</span> “${esc(p.answer.reason)}”</div>`);
+  if (p.answer && p.answer.person_note) out.push(`<div class="q">${esc(p.answer.person)}: “${esc(p.answer.person_note)}”</div>`);
+  if (p.closed) out.push(`<div class="muted">${esc(p.closed.why)}</div>`);
+  if (p.status === "refused") out.push(`<div>Nothing reached the kitchen or its agent.</div>`);
+  return out.join("");
+}
+
+function card(p) {
+  const stopped = p.status === "refused";
+  const [st, cls] = OUT[p.status] || [nice(p.status), ""];
+  const lines = (p.lines || []).map(l => `<div class="row"><span><span class="u">${esc(l.units)} ×</span>${esc(l.title)}${l.substitutes_for ? ` <span class="sf">for ${esc(l.substitutes_for)}</span>` : ""}</span><span class="tnum">${l.list_price && l.list_price > l.price ? `<s>${eur(l.list_price)}</s>` : ""}${eur(l.price)}</span></div>`).join("");
+  const reason = stopped ? `<p class="reason">${esc(p.refused.detail)}</p>`
+    : `<p class="reason">${esc(p.reason && p.reason.text)}</p><div class="by">Sentence written by ${esc(p.reason && p.reason.by === "template" ? "a template (no usable model answer)" : p.reason && p.reason.by)}.</div>`;
+  return `<article class="prop${stopped ? " stopped" : ""}" data-id="${esc(p.id)}">
+    <div class="pt">
+      <div class="meta"><span class="pill line">${esc(KIND[p.kind] || p.kind_title || p.kind)}</span><span>For <b>${esc(p.buyer)}</b></span><span class="dot">·</span><span>delivery ${esc(day(p.delivery_date))}</span><span class="dot">·</span><span>made ${esc(when(p.made_at))}</span>${p.signed ? '<span class="dot">·</span><span>signed by Valio Aimo</span>' : ""}</div>
+      <div class="st"><span class="pill ${cls}">${esc(st)}</span></div>
+      <h3>${esc(p.title)}</h3>
+      ${reason}
+    </div>
+    <div class="body">
+      <div class="col"><p class="lbl">Based on</p>${basis(p) || '<p class="note2">No basis recorded.</p>'}</div>
+      <div class="col"><p class="lbl">Rules</p>${ruleBlock(p)}<p class="lbl">What happened</p><div class="what">${outcome(p)}</div></div>
+    </div>
+    ${lines ? `<div class="ln">${lines}<div class="row tot"><span>Total</span><span class="tnum">${eur(p.total_ex_vat)} ex VAT</span></div></div>` : ""}
+    <details data-k="${esc(p.id)}"><summary>Every rule it was judged by (${(p.rules || []).length})</summary>${rulesTable(p.rules)}</details>
+  </article>`;
+}
+
+function tiles(t) {
+  const kg = t.short_dated_saved.kg ? `, ${t.short_dated_saved.kg} kg` : "";
+  S.made = t.made;
+  const items = [
+    ["", "Proposals made", t.made, t.open ? `${t.open} open, waiting for an answer` : "none open"],
+    ["pass", "Accepted alone", t.accepted_alone, "by the kitchen's agent"],
+    ["esc", "Sent to a person", t.sent_to_person, t.sent_to_person ? `at the kitchen, ${t.approved_by_person || 0} approved` : "at the kitchen"],
+    ["deny", "Stopped by a rule", t.refused_before_leaving, "before leaving Valio Aimo"],
+  ];
+  $("#also").innerHTML = `<b>${esc(eur0(t.euros_added_ex_vat))}</b> ex VAT went into orders from proposals. <b>${esc(`${t.short_dated_saved.l || 0}\u00a0L${kg}`)}</b> of short-dated stock sold before its date. The kitchen's agent declined <b>${esc(t.declined)}</b>.`;
+  $("#tiles").innerHTML = items.map(([c, l, v, s]) => `<div class="tile${v === 0 || v === "€0" || v === "0 L" ? " zero" : ""}"><b>${esc(v)}</b><span class="k">${c ? `<i class="${c}"></i>` : ""}${esc(l)}</span>${s ? `<span class="v">${esc(s)}</span>` : ""}</div>`).join("");
+}
+
+function customers(sm) {
+  const show = S.op && sm.customers.length;
+  $("#cust").hidden = $("#cust-h").hidden = !show;
+  if (!show) return;
+  $("#cust").innerHTML = `<table class="cust"><thead><tr><th>Customer</th><th>Made</th><th>Alone</th><th>To a person</th><th>Declined</th><th>Stopped</th><th>Added</th><th>Proposals</th></tr></thead><tbody>${sm.customers.map(c =>
+    `<tr><td>${esc(c.buyer)}</td><td>${c.made}</td><td>${c.accepted_alone}</td><td>${c.sent_to_person}</td><td>${c.declined}</td><td>${c.refused_before_leaving}</td><td>${eur0(c.euros_added_ex_vat)}</td>
+     <td><label class="sw"><input type="checkbox" data-acct="${esc(c.account)}" ${c.proposals_on ? "checked" : ""}> ${c.proposals_on ? "on" : "off"}</label></td></tr>`).join("")}</tbody></table>`;
+  for (const i of document.querySelectorAll("#cust input[data-acct]")) i.onchange = async () => { await api("/api/seller/switch", { acct: i.dataset.acct, on: i.checked }); load(); };
+}
+
+function bar(r) {
+  if ($("#bar").dataset.ready) return false;
+  $("#bar").dataset.ready = "1";
+  const accts = S.op ? `<select id="acct" aria-label="Customer">${(r.standing || []).map(s => `<option value="${esc(s.account)}">${esc(s.buyer)}</option>`).join("")}</select>` : "";
+  $("#bar").innerHTML = `${accts}<button class="btn primary" id="go">Make proposals now</button><button class="btn" id="ask">Let the kitchen's agent answer</button>
+    <span class="note">${S.op ? "Runs on its own every half hour for the stage and floor customers." : "Your own sandbox kitchen. Its standing order and usage are seeded."}</span>`;
+  if ($("#acct")) $("#acct").onchange = load;
+  $("#go").onclick = makeNow;
+  $("#ask").onclick = async () => {
+    $("#ask").disabled = true;
+    agentSay("Starting the kitchen's agent…");
+    const body = { agent: "claude", request: "Valio Aimo's agent has sent us proposals. Go through them: take what the kitchen needs, decline what it does not, and say why." };
+    const r2 = await fetch("/api/demo/run" + (S.op ? "?acct=" + encodeURIComponent($("#acct").value) : ""), { method: "POST", headers: { "content-type": "application/json", accept: "application/json" }, body: JSON.stringify(body) }).then(x => x.json()).catch(() => ({}));
+    if (r2.id) { S.runId = r2.id; poll(); } else { agentSay(esc((r2.messages || []).map(m => m.content).join(" ") || "Could not start the agent. Nothing was sent."), "bad"); $("#ask").disabled = false; }
+  };
+  return true;
+}
+
+// Say what really happened. The answer can be lost on the way back even when proposals were made,
+// so a failed call is checked against the count before it is called a failure.
+const runSay = (text, kind) => { $("#run").className = "run" + (kind ? " " + kind : ""); $("#run").innerHTML = text; };
+const agentSay = (text, kind) => { $("#agentrun").className = "run" + (kind ? " " + kind : ""); $("#agentrun").innerHTML = text; };
+const plural = (n, one, many) => `${n}\u00a0${n === 1 ? one : many}`;
+function madeText(rep) {
+  const made = rep.made || [], ref = rep.refused || [], alone = made.filter(p => p.authority === "agent_may_accept").length;
+  const bits = [];
+  if (made.length) bits.push(`Made ${plural(made.length, "proposal", "proposals")}${made.length === 1 ? (alone ? ", which the kitchen's agent may accept alone" : ", which needs a person at the kitchen") : alone === made.length ? ", all of which the kitchen's agent may accept alone" : !alone ? ", all of which need a person at the kitchen" : `: ${alone} the kitchen's agent may accept alone, ${made.length - alone} ${made.length - alone === 1 ? "needs" : "need"} a person at the kitchen`}. ${made.length === 1 ? "It is" : "They are"} at the top of the list below.`);
+  if (ref.length) bits.push(`${plural(ref.length, "proposal was", "proposals were")} stopped by a rule before leaving.`);
+  if (!made.length && !ref.length) {
+    const sk = rep.skipped || [], dup = sk.filter(s => s.why === "already proposed").length, other = sk.filter(s => s.why !== "already proposed");
+    bits.push((rep.notes || []).map(esc).join(" ") || "Nothing new to propose right now.");
+    if (dup) bits.push(`${plural(dup, "idea is", "ideas are")} already in the list below.`);
+    for (const s of other) bits.push(`Left out “${esc(s.title)}”: ${esc(s.why)}`);
+    if (!sk.length && !(rep.notes || []).length) bits.push(S.n ? "Today's proposals are already in the list below." : "Nothing in this customer's orders and stock calls for one today.");
+  }
+  if (made.length && rep.ranked_by) bits.push(`Chosen and worded by ${esc(rep.ranked_by)}.`);
+  return bits.join(" ");
+}
+async function makeNow() {
+  const go = $("#go"), before = S.made;
+  go.disabled = true; go.innerHTML = '<span class="spin"></span>Making proposals';
+  runSay("Valio Aimo's agent is reading the kitchen's history and judging each proposal against the rules. This takes a few seconds.");
+  let rep = null, problem = "";
+  try {
+    const x = await fetch("/api/demo/seller", { method: "POST", headers: { "content-type": "application/json", accept: "application/json" }, body: JSON.stringify(S.op ? { acct: $("#acct").value } : {}) });
+    rep = await x.json().catch(() => null);
+    if (!x.ok || !rep || !Array.isArray(rep.made)) problem = (rep && rep.messages || []).map(m => m.content).join(" ") || `The gateway answered ${x.status}.`;
+  } catch (e) { problem = "The connection dropped before the answer came back."; }
+  go.disabled = false; go.textContent = "Make proposals now";
+  await load();
+  if (!problem) return runSay(madeText(rep), "ok");
+  if (before != null && S.made > before) return runSay(`Made ${plural(S.made - before, "proposal", "proposals")}. ${S.made - before === 1 ? "It is" : "They are"} in the list below. (The answer was lost on the way back, so the details are only in the list.)`, "ok");
+  runSay(`${esc(problem)} Nothing new was made. Try again.`, "bad");
+}
+
+async function poll() {
+  if (!S.runId) return;
+  let r;
+  try { r = await api("/api/demo/run/" + S.runId); if (!r.status) throw 0; }
+  catch (e) { agentSay("<b>Kitchen's agent:</b> lost touch with the gateway. Checking again in a few seconds."); return setTimeout(poll, 4000); }
+  const ap = r.approval_url ? ` <a href="${esc(r.approval_url)}" target="_blank" rel="noopener">Open the approval link</a>` : "";
+  agentSay(`<b>Kitchen's agent:</b> ${esc(nice(r.status))}.${ap}${r.final ? `<div class="final">${esc(r.final)}</div>` : ""}`);
+  if (r.status === "running" || r.status === "waiting_approval") setTimeout(poll, 2500); else { $("#ask").disabled = false; load(); }
+}
+
+let lastList = "";
+async function load() {
+  try {
+    const qs = S.op && $("#acct") ? "?acct=" + encodeURIComponent($("#acct").value) : "";
+    const [sm, r] = await Promise.all([api("/api/seller/summary"), api("/api/seller/proposals" + qs)]);
+    S.op = r.operator; S.n = r.proposals.length;
+    tiles(sm.total);
+    customers(sm);
+    if (bar(r) && S.op && !qs) return load();  // the account picker exists only now: show just its customer
+    const html = r.proposals.length ? r.proposals.map(card).join("") : '<div class="empty">No proposals yet. Press Make proposals now.</div>';
+    if (html === lastList) return;  // the list refreshes every few seconds: keep open rule lists open
+    const open = new Set([...document.querySelectorAll("#list details[open]")].map(d => d.dataset.k));
+    $("#list").innerHTML = lastList = html;
+    for (const d of document.querySelectorAll("#list details[data-k]")) if (open.has(d.dataset.k)) d.open = true;
+  } catch (e) { $("#list").innerHTML = '<div class="empty">Could not load. Retrying.</div>'; lastList = ""; }
+}
+load();
+setInterval(() => { if (!document.hidden) load(); }, 6000);
+let wasNarrow = matchMedia("(max-width:760px)").matches;
+addEventListener("resize", () => { const n = matchMedia("(max-width:760px)").matches; if (n !== wasNarrow) { wasNarrow = n; lastList = ""; load(); } });
+</script>
+</body>
+</html>

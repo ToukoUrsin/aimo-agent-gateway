@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Order from a menu</title>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+/* Order from a menu. Read from a projector and filmed off a laptop: nothing that matters is under 15 px. */
+main{max-width:1320px;margin:0 auto;padding:0 var(--s5) var(--s8)}
+@media (max-width:640px){main{padding:0 var(--s4) var(--s7)}}
+.page-head{padding:var(--s6) 0 var(--s5)}
+body.running .page-head,body.running #start{display:none}
+
+/* Start: two buttons and four sample photos */
+.startc{padding:var(--s5)}
+.pick{display:flex;gap:var(--s2);flex-wrap:wrap;align-items:center}
+.pick .btn{height:46px;padding:0 20px;font-size:var(--t4)}
+.pick .or{color:var(--muted);font-size:var(--t4);margin-left:var(--s2)}
+.samples{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s3);margin-top:var(--s4)}
+@media (max-width:760px){.samples{grid-template-columns:repeat(2,minmax(0,1fr))}.pick .or{flex-basis:100%;margin:var(--s2) 0 0}.pick .btn{flex:1 1 0;padding:0 12px}}
+@media (max-width:640px){.startc{padding:var(--s4)}.samples{gap:var(--s2)}.sample .cap{padding:8px 10px 10px}}
+.sample{border:1px solid var(--line);border-radius:var(--r-l);background:var(--panel);padding:0;cursor:pointer;text-align:left;overflow:hidden;display:flex;flex-direction:column;transition:border-color .15s,box-shadow .2s var(--ease),transform .2s var(--ease)}
+.sample:hover{border-color:var(--line-2);box-shadow:var(--pop);transform:translateY(-1px)}
+.sample:active{transform:none}
+.sample .im{display:block;aspect-ratio:4/3;overflow:hidden;background:var(--soft);border-bottom:1px solid var(--line)}
+.sample img{width:100%;height:100%;object-fit:cover;object-position:50% 25%;display:block;transition:transform .4s var(--ease)}
+.sample:hover img{transform:scale(1.025)}
+.sample .cap{display:block;padding:10px 12px 12px;line-height:1.35}
+.sample b{display:block;font-size:var(--t4);font-weight:600;letter-spacing:-.005em}
+.sample i{display:block;font-style:normal;color:var(--muted);font-size:var(--t3);margin-top:2px}
+.sample.nm .im{filter:grayscale(1)}
+.disclaim{margin:var(--s4) 0 0;color:var(--muted);font-size:var(--t3);line-height:1.5;max-width:90ch}
+
+/* A run: stats on top, the photo beside the order (photo first on a phone) */
+.runbar{display:flex;align-items:center;gap:var(--s3);padding:var(--s4) 0 var(--s3);flex-wrap:wrap}
+.runbar h1{font-size:var(--t6);letter-spacing:-.016em;line-height:1.25;min-width:0}
+.runbar .src{color:var(--muted);font-size:var(--t4)}
+.runbar .btn{margin-left:auto}
+.run{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s4);grid-template-areas:"photo" "stats" "main" "side"}
+@media (min-width:1000px){.run{grid-template-columns:380px minmax(0,1fr);grid-template-rows:auto auto 1fr;grid-template-areas:"stats stats" "photo main" "side main";column-gap:var(--s5);align-items:start}}
+.run>.main{grid-area:main;display:flex;flex-direction:column;gap:var(--s4);min-width:0}
+.run>.side{grid-area:side;display:flex;flex-direction:column;gap:var(--s4);min-width:0}
+
+.stats{grid-area:stats;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--panel);border:1px solid var(--line);border-radius:var(--r-l);overflow:hidden}
+.stat{padding:14px 18px 16px;min-width:0;border-left:1px solid var(--line)}
+.stat:first-child{border-left:0}
+.stat .k{display:flex;flex-wrap:wrap;align-items:center;gap:2px 10px;font-size:var(--t4);color:var(--muted);line-height:1.35}
+.stat b{display:block;font-size:34px;font-weight:600;letter-spacing:-.028em;line-height:1.15;font-variant-numeric:tabular-nums;margin-top:4px;white-space:nowrap}
+.stat .v{display:block;color:var(--ink-2);font-size:var(--t4);line-height:1.4;margin-top:4px}
+.stat .v a{color:var(--ink)}
+.bs{display:inline-flex;align-items:center;gap:6px;font-size:var(--t3);font-weight:500;color:var(--muted);white-space:nowrap}
+.bs::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+.bs.m{color:var(--pass)} .bs.e{color:var(--esc)} .bs.live{color:var(--ink)}
+.bs.live::before{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+@media (max-width:999px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stat:nth-child(3){border-left:0}.stat:nth-child(-n+2){border-bottom:1px solid var(--line)}}
+@media (max-width:640px){
+  .stats{grid-template-columns:minmax(0,1fr)}
+  .stat,.stat:nth-child(3){border-left:0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:0 12px;padding:10px 14px 11px}
+  .stat:last-child{border-bottom:0}
+  .stat .k{grid-row:1;grid-column:1}
+  .stat b{grid-row:1;grid-column:2;font-size:24px;margin:0}
+  .stat .v{grid-column:1/-1;font-size:var(--t3);color:var(--muted);margin-top:2px}
+  .stat .v:empty,.stat .lg{display:none}
+}
+
+/* The photo */
+.shot{grid-area:photo;position:relative;margin:0;min-width:0}
+.shot .frame{position:relative;border-radius:var(--r-l);overflow:hidden;border:1px solid var(--line);background:var(--soft)}
+.photo{width:100%;display:block;max-height:calc(100vh - 290px);min-height:240px;object-fit:contain;transition:filter .4s,opacity .4s}
+@media (max-width:999px){.photo{height:300px;max-height:none;min-height:0;object-fit:cover;object-position:50% 35%;transition:height .5s var(--ease)}.shot.done .photo{height:170px}}
+.shot.refused .photo{filter:grayscale(1);opacity:.55}
+.scan{position:absolute;left:0;right:0;top:0;height:30%;pointer-events:none;background:linear-gradient(to bottom,transparent,color-mix(in srgb,var(--ink) 9%,transparent) 85%,color-mix(in srgb,var(--ink) 55%,transparent) 99%,transparent);animation:scan 2.4s cubic-bezier(.45,0,.55,1) infinite alternate}
+@keyframes scan{from{transform:translateY(-100%)}to{transform:translateY(340%)}}
+.chip{position:absolute;left:12px;bottom:12px;display:inline-flex;align-items:center;gap:8px;background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 12px 6px 8px;font-size:var(--t3);font-weight:500;box-shadow:var(--pop);max-width:calc(100% - 24px)}
+.chip .mark{width:20px;height:20px}
+.chip .spin{margin:0 4px}
+.shot figcaption{margin-top:8px;color:var(--muted);font-size:var(--t3);line-height:1.45}
+
+/* Shared card heads in this page */
+.h2{font-size:var(--t6);font-weight:600;letter-spacing:-.016em;line-height:1.25;margin:0}
+.ch{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s3);flex-wrap:wrap}
+.ch .muted{font-size:var(--t4)}
+.para{font-size:var(--t4);line-height:1.55;margin:var(--s2) 0 0;color:var(--ink-2)}
+.note{font-size:var(--t3);color:var(--muted);line-height:1.5;margin:var(--s3) 0 0}
+
+/* Progress while the model reads */
+.steps-l{margin-top:var(--s3)}
+.st{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:4px 12px;padding:12px 0;border-top:1px solid var(--line);align-items:start}
+.st:first-child{border-top:0}
+.st .mark{width:22px;height:22px;margin-top:1px}
+.st b{font-weight:600;font-size:var(--t5);letter-spacing:-.01em}
+.st p{grid-column:2;margin:2px 0 0;color:var(--muted);font-size:var(--t4);line-height:1.45}
+.st .tm{font-variant-numeric:tabular-nums;font-size:var(--t4);color:var(--muted);white-space:nowrap}
+.st.wait b{color:var(--faint)}
+.st.wait .mark{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line-2)}
+.ghost-lines{margin-top:var(--s3)}
+.ghost-lines div{display:grid;grid-template-columns:minmax(0,1fr) 60px 70px;gap:16px;padding:14px 0;border-top:1px solid var(--line)}
+
+/* The order lines */
+.ol{margin-top:var(--s3)}
+.line{padding:14px 0 12px;border-top:1px solid var(--line);scroll-margin-top:90px}
+.line .top{display:grid;grid-template-columns:minmax(0,1fr) auto 92px;gap:2px 18px;align-items:baseline}
+.line .t{font-weight:500;font-size:var(--t5);letter-spacing:-.008em;line-height:1.35;overflow-wrap:anywhere}
+.line .q,.line .a{font-size:var(--t5);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.line .q{color:var(--ink-2)}
+.line .a{font-weight:500}
+.line .for{color:var(--muted);font-size:var(--t4);line-height:1.45;margin-top:3px}
+.line .for i{font-style:normal;color:var(--ink-2)}
+.dt{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:var(--r-s);background:var(--soft);color:var(--ink-2);font-size:var(--t2);font-weight:500;margin-left:6px;vertical-align:1px;white-space:nowrap}
+.mid{display:flex;flex-wrap:wrap;align-items:center;gap:6px 24px;margin-top:4px}
+.mid .for{flex:1 1 300px;margin-top:0}
+.cks{flex:none}
+.cks[open]{flex-basis:100%}
+.cks>summary{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;font-size:var(--t4);color:var(--ink-2);border-radius:var(--r-s);padding:4px 6px;margin:-4px -6px;transition:background-color .15s}
+.cks>summary::before{display:none}
+.cks>summary:hover{background:var(--hover);color:var(--ink)}
+.chk{display:inline-flex;align-items:center;gap:7px}
+.chk .mark{width:20px;height:20px}
+.mark.unk{background:var(--esc-bg);color:var(--esc)}
+.chk.unk{color:var(--esc)}
+.pkn{margin:var(--s3) 0 0;padding:10px 14px;border-radius:var(--r);background:var(--soft);font-size:var(--t4);line-height:1.5;color:var(--ink-2)}
+.pkn.bad{background:var(--esc-bg);color:var(--esc)}
+.cks .cw{margin-top:10px;padding:12px 14px;border-radius:var(--r);background:var(--soft);font-size:var(--t3);color:var(--ink-2);line-height:1.5;display:grid;gap:6px}
+.cks .cw b{color:var(--ink);font-weight:600}
+.flag{display:flex;gap:8px;align-items:baseline;margin-top:8px;font-size:var(--t4);color:var(--esc)}
+.flag::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;flex:none;transform:translateY(-1px)}
+.over{margin-top:6px;font-size:var(--t4);color:var(--muted);line-height:1.45}
+
+/* The cleverest thing on the page: a short product replaced by what it does in the dish */
+.line.sub{background:color-mix(in srgb,var(--pass-bg) 45%,transparent);margin:0 calc(-1 * var(--s5));padding-left:var(--s5);padding-right:var(--s5);border-top-color:transparent}
+.line.sub+.line{border-top-color:transparent}
+.swap,.kept{margin-top:10px;border-radius:var(--r);padding:12px 14px 13px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 10px;align-items:start}
+.swap{background:var(--panel);box-shadow:inset 0 0 0 1.5px var(--pass)}
+.kept{background:var(--soft)}
+.swap svg,.kept svg{width:20px;height:20px;margin-top:2px}
+.swap svg{color:var(--pass)} .kept svg{color:var(--ink-2)}
+.swap .h,.kept .h{font-size:var(--t5);font-weight:600;letter-spacing:-.01em;line-height:1.35}
+.swap p,.kept p{grid-column:2;margin:2px 0 0;font-size:var(--t4);line-height:1.5}
+.swap p.m,.kept p.m{color:var(--muted)}
+.swap a,.kept a{color:inherit}
+@media (max-width:640px){.line.sub{margin:0 calc(-1 * var(--s4));padding-left:var(--s4);padding-right:var(--s4)}}
+
+/* Lines arrive one by one when a plan first lands; their checks land after them. */
+.reveal .line{animation:lineIn .45s var(--ease) both;animation-delay:var(--d)}
+@keyframes lineIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.reveal .chk .mark{animation:land .42s var(--ease) both;animation-delay:calc(var(--d) + 160ms + var(--j) * 70ms)}
+@keyframes land{0%{background:var(--soft);color:transparent;transform:scale(.55)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+.reveal .chk .mark path{stroke-dasharray:15;animation:draw .28s ease-out both;animation-delay:calc(var(--d) + 230ms + var(--j) * 70ms)}
+@keyframes draw{from{stroke-dashoffset:15}to{stroke-dashoffset:0}}
+.reveal .chk span:last-child{animation:fadeIn .3s ease-out both;animation-delay:calc(var(--d) + 160ms + var(--j) * 70ms)}
+@keyframes fadeIn{from{opacity:.35}to{opacity:1}}
+.after{animation:lineIn .5s var(--ease) both;animation-delay:var(--d,0ms)}
+@media (prefers-reduced-motion:reduce){.reveal *,.after,.scan{animation-delay:0s!important}.scan{display:none}}
+
+/* The offer, sticky at the bottom while the lines scroll by */
+.offerbar{position:sticky;bottom:16px;z-index:6;display:flex;align-items:center;gap:var(--s3) var(--s4);flex-wrap:wrap;background:var(--panel);border:1px solid var(--line-2);border-radius:var(--r-l);box-shadow:var(--pop);padding:12px 12px 12px 18px}
+.offerbar .ob{flex:1 1 280px;min-width:0;line-height:1.4}
+.offerbar .ob b{display:block;font-size:var(--t5);font-weight:600;letter-spacing:-.01em}
+.offerbar .ob span{font-size:var(--t4);color:var(--muted)}
+.offerbar .btn{height:48px;padding:0 22px;font-size:var(--t4)}
+@media (max-width:640px){.offerbar{bottom:8px;padding:10px 12px 12px;gap:8px}.offerbar .ob{flex-basis:100%}.offerbar .ob b{font-size:var(--t4)}.offerbar .ob span{font-size:var(--t4)}.offerbar .btn{width:100%;height:46px}
+.line .top{grid-template-columns:minmax(0,1fr) auto}.line .t{grid-column:1/-1}.line .q{text-align:left}.cks{flex:1 1 100%}.cks>summary{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.swap p,.kept p{grid-column:1/-1}}
+.rule{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:12px 0;border-top:1px solid var(--line);font-size:var(--t4)}
+.rule:first-of-type{border-top:0}
+.rule b{font-weight:600}
+.rule .d{grid-column:1/-1;color:var(--muted);line-height:1.5}
+.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.more{background:none;border:0;padding:0;margin-top:4px;color:var(--ink);font-size:var(--t3);text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:3px;cursor:pointer;justify-self:start;grid-column:1/-1}
+
+/* Done */
+.donec{padding:var(--s5)}
+.donec .hd{display:flex;gap:14px;align-items:center}
+.donec .hd .mark{width:36px;height:36px}
+.donec .hd .mark svg{width:20px;height:20px}
+.donec h2{font-size:var(--t7);letter-spacing:-.02em;line-height:1.2}
+.donec h2 .id{white-space:nowrap}
+@media (max-width:640px){.donec{padding:var(--s4)}.donec h2{font-size:var(--t6)}}
+.tl{display:flex;height:10px;border-radius:999px;overflow:hidden;margin-top:var(--s4);gap:2px;background:var(--panel)}
+.tl span{min-width:4px;background:var(--ink)}
+.tl span.p{background:var(--line-2)}
+.tl span.o{background:var(--muted)}
+.tlk{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:var(--t4);color:var(--muted)}
+.tlk span{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.tlk i{width:10px;height:10px;border-radius:3px;background:var(--ink);flex:none}
+.tlk i.p{background:var(--line-2)} .tlk i.o{background:var(--muted)}
+.tlk b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+.bar{display:flex;gap:var(--s2) var(--s3);align-items:center;flex-wrap:wrap}
+
+/* Things a person decides, and things that are not ours */
+.left{margin-top:var(--s2)}
+.lft{display:grid;grid-template-columns:22px minmax(0,1fr);gap:2px 12px;padding:14px 0;border-top:1px solid var(--line)}
+.lft:first-child{border-top:0}
+.lft .ic{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;margin-top:1px}
+.lft .ic svg{width:12px;height:12px}
+.lft.esc .ic{background:var(--esc-bg);color:var(--esc)}
+.lft.out .ic{background:var(--soft);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line-2)}
+.lft b{font-weight:600;font-size:var(--t5);letter-spacing:-.008em}
+.lft .w{font-size:var(--t4);color:var(--muted);line-height:1.5;grid-column:2}
+.lft .k{font-size:var(--t4);font-weight:500;grid-column:2}
+.lft.esc .k{color:var(--esc)}
+.lft.out .k{color:var(--muted)}
+.shortnote{display:flex;gap:10px;align-items:baseline;padding:12px 16px;border-radius:var(--r);background:var(--esc-bg);color:var(--esc);font-size:var(--t4);line-height:1.45}
+.shortnote b{font-weight:600}
+
+/* Refused photo, errors */
+.calm{padding:var(--s6) var(--s5)}
+.resume{display:flex;flex-wrap:wrap;gap:var(--s3) var(--s5);align-items:center;justify-content:space-between;margin-bottom:var(--s4);border-color:color-mix(in srgb,var(--ink) 25%,var(--line))}
+.resume b{display:block;font-size:var(--t4);font-weight:600}
+.resume span{display:block;color:var(--muted);font-size:var(--t3);margin-top:2px}
+.resume .bar{display:flex;gap:var(--s2);flex-wrap:wrap}
+body.running #resume{display:none}
+.calm .mark{width:36px;height:36px}
+.calm .mark svg{width:18px;height:18px}
+.calm h2{font-size:var(--t7);letter-spacing:-.02em;line-height:1.2;margin:var(--s4) 0 0}
+.calm .msg{font-size:var(--t5);line-height:1.5;margin:var(--s2) 0 0;max-width:56ch;color:var(--ink-2)}
+.calm .bar{margin-top:var(--s5)}
+.tries{display:flex;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s3)}
+
+/* What the model read (beside the photo) */
+.readc .kv{font-size:var(--t4);gap:6px 18px;margin-top:var(--s3)}
+.dish{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:10px 0;border-top:1px solid var(--line);font-size:var(--t4)}
+.dishes{margin-top:var(--s3)}
+.dish b{font-weight:500}
+.dish .n{color:var(--muted)}
+.dish .sub{grid-column:1/-1;color:var(--muted);font-size:var(--t3);line-height:1.45}
+.dish .pill{font-size:var(--t2);height:24px}
+.nr{padding:12px 0;border-top:1px solid var(--line);font-size:var(--t4)}
+.nr:first-of-type{border-top:0}
+.nr q{font-weight:600;quotes:"“" "”"}
+.nr div{color:var(--muted);line-height:1.5;margin-top:2px;display:grid;grid-template-columns:16px minmax(0,1fr);gap:8px}
+.nr div svg{width:14px;height:14px;margin-top:4px;color:var(--faint)}
+
+/* Questions before anything is ordered */
+.ask{display:flex;gap:10px;align-items:baseline;padding:12px 14px;border-radius:var(--r);background:var(--esc-bg);color:var(--esc);font-size:var(--t4);margin-top:8px;line-height:1.45}
+.edit .row{display:grid;grid-template-columns:minmax(0,1fr) 96px auto;gap:8px;align-items:center;margin-bottom:6px}
+.edit .row.note{grid-template-columns:minmax(0,1fr) auto}
+.edit label{display:block;margin:16px 0 6px;font-size:var(--t3);color:var(--ink-2);font-weight:500}
+.edit input[type=text],.edit input[type=number]{height:40px;font-size:var(--t4)}
+
+/* Test control */
+.ctl{margin-top:var(--s7);border:1px dashed var(--line-2);border-radius:var(--r-l);padding:var(--s4) var(--s5) var(--s5)}
+.ctl h2{font-size:var(--t4);font-weight:600;margin:0}
+.ctl p{margin:4px 0 14px;color:var(--muted);font-size:var(--t3);line-height:1.5;max-width:80ch}
+.ctl .bar{font-size:var(--t4)}
+.ctl label{font-size:var(--t4);color:var(--muted)}
+.ctl input{width:84px}
+.ctl #ctl-state{margin-top:10px;font-size:var(--t3);color:var(--muted)}
+.ctl.on{border-style:solid;border-color:color-mix(in srgb,var(--esc) 45%,var(--line))}
+.ctl.on #ctl-state{color:var(--esc)}
+.hide{display:none}
+#sub,#open{scroll-margin-top:90px}
+</style>
+</head>
+<body>
+<div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
+<header id="site"></header>
+<main>
+<div class="page-head">
+  <h1>Order from a menu</h1>
+  <p class="lead">Take a photo of a menu or a meal plan. A model reads it. Code works out what to buy, checks every line and makes one order. You approve once.</p>
+</div>
+
+<div id="resume"></div>
+<div class="card startc" id="start">
+  <div class="pick">
+    <button class="btn primary" id="b-cam" type="button"></button>
+    <button class="btn" id="b-up" type="button"></button>
+    <span class="or">or pick a sample photo</span>
+    <input class="hide" type="file" id="cam" name="cam" accept="image/*" capture="environment">
+    <input class="hide" type="file" id="up" name="up" accept="image/*">
+  </div>
+  <div class="samples" id="samples">
+    <div class="sample" aria-hidden="true"><span class="im"><span class="skel" style="width:100%;height:100%;border-radius:0"></span></span><span class="cap"><span class="skel" style="width:12ch"></span></span></div>
+    <div class="sample" aria-hidden="true"><span class="im"><span class="skel" style="width:100%;height:100%;border-radius:0"></span></span><span class="cap"><span class="skel" style="width:14ch"></span></span></div>
+    <div class="sample" aria-hidden="true"><span class="im"><span class="skel" style="width:100%;height:100%;border-radius:0"></span></span><span class="cap"><span class="skel" style="width:13ch"></span></span></div>
+    <div class="sample" aria-hidden="true"><span class="im"><span class="skel" style="width:100%;height:100%;border-radius:0"></span></span><span class="cap"><span class="skel" style="width:9ch"></span></span></div>
+  </div>
+  <p class="disclaim">The sample photos were made with an image model for this page. They are not a real kitchen's menus. Everything that happens after you pick one is real: the reading, the checks, the order.</p>
+</div>
+
+<div id="out"></div>
+
+<section class="ctl" id="ctl">
+  <h2>Test control: make a product short</h2>
+  <p>This pretends other customers reserved the stock of one product on your test account, for two hours. Valio Aimo's data is not changed. Plan a menu after it to see how the shortage is solved.</p>
+  <div class="bar"><span id="ctl-name"></span>
+    <label for="leave">leave</label><input type="number" id="leave" name="leave" value="20" min="0" max="48">
+    <button class="btn" id="ctl-set">Make it short</button><button class="btn ghost" id="ctl-clear" hidden>Back to normal</button></div>
+  <div id="ctl-state"></div>
+</section>
+</main>
+<script src="/static/lib.js"></script>
+<script src="/static/passkey.js"></script>
+<script>
+const S = { phase: "idle", photo: null, run: null, t0: 0, ms: 0, err: "", editing: false, shown: "", short: null, pk: null, signErr: "" };
+let ticker = null, counter = null;
+const out = $("#out");
+const errOf = r => r && r.messages && r.messages.find(m => m.type === "error");
+const n = x => Number(x).toLocaleString("en-IE", { maximumFractionDigits: 2 });
+const secs = s => s == null ? "" : (s < 10 ? s.toFixed(1) : Math.round(s)) + " s";
+const MANY = { piece: "pcs", case: "cases", bag: "bags", bottle: "bottles", pack: "packs", box: "boxes", sack: "sacks", jar: "jars", carton: "cartons", roll: "rolls" };
+const uw = (u, k) => k === 1 ? (u === "piece" ? "pc" : u) : (MANY[u] || u);
+const CHECKS = [["pack", "Pack size"], ["allergens", "Allergens"], ["stock", "Stock"], ["price", "Price"]];
+const PHASE = { reading: "Reading the photo", planning: "Working out what to buy and checking every line", ordering: "Placing the order" };
+const cap = s => s ? s[0].toUpperCase() + s.slice(1) : "";
+const andList = a => a.length < 2 ? (a[0] || "") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
+const SVG = (d, extra = "") => `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"${extra}>${d}</svg>`;
+const IC = {
+  camera: SVG('<path d="M2 5.5h2.5L6 3.5h4l1.5 2H14V13H2z"/><circle cx="8" cy="9" r="2.3"/>'),
+  upload: SVG('<path d="M8 10.5V2.5M5 5.5l3-3 3 3M2.5 10v3.5h11V10"/>'),
+  swap: SVG('<path d="M2.5 5h10M10 2.5 12.5 5 10 7.5M13.5 11h-10M6 8.5 3.5 11 6 13.5"/>'),
+  keep: SVG('<rect x="3" y="7" width="10" height="6.5" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/>'),
+  person: SVG('<circle cx="8" cy="5.5" r="2.5"/><path d="M3 13.5c.6-2.6 2.6-4 5-4s4.4 1.4 5 4"/>'),
+  out: SVG('<circle cx="8" cy="8" r="5.5"/><path d="M4.2 11.8 11.8 4.2"/>'),
+  to: SVG('<path d="M3 8h10M9 4l4 4-4 4"/>'),
+};
+// Seconds per line in the staged reveal of lines that arrived in one batch: about 1.6 s in all, never faster than 28 ms a line.
+const stepMs = k => Math.max(28, Math.min(70, Math.round(1600 / Math.max(1, k))));
+
+function tick() { if (S.t0) { S.ms = performance.now() - S.t0; const el = $("#clock-now[data-live]"); if (el) el.textContent = (S.ms / 1000).toFixed(1) + " s"; for (const c of [$("#chip-now"), $("#step-now")]) if (c) c.textContent = (S.ms / 1000).toFixed(1) + " s"; } }
+function startClock() { S.t0 = performance.now(); S.ms = 0; clearInterval(ticker); ticker = setInterval(tick, 100); }
+function stopClock() { clearInterval(ticker); ticker = null; S.t0 = 0; }
+
+// ---- The four numbers on top. Each says whether it is measured, live or an estimate.
+function byHand(b, lines) {
+  if (!b) return { v: "–", bs: "", sub: "" };
+  if (b.basis === "measured") return { v: n(b.minutes) + " min", bs: '<span class="bs m">measured</span>', sub: `The middle of ${b.attempts || b.n} timed attempt${(b.attempts || b.n) === 1 ? "" : "s"} by ${b.n} ${b.n === 1 ? "person" : "people"}.` };
+  return { v: b.minutes ? n(b.minutes) + " min" : "not timed yet", bs: '<span class="bs e">estimate</span>', sub: `Our assumption: ${b.seconds_per_line} s a line${lines ? " × " + lines + " lines" : ""}.<span class="lg"> Nobody has timed it yet.</span>` };
+}
+function stats(fresh) {
+  const r = S.run || {}, pl = r.plan, sec = r.seconds || {}, u = r.usage;
+  const machine = pl && sec.plan != null ? (sec.read || 0) + sec.plan : null;
+  let c1;
+  if (machine != null) c1 = { v: secs(machine), live: false, bs: '<span class="bs m">measured</span>', sub: `<span class="lg">On the server: </span>reading ${secs(sec.read)}, lines and checks ${secs(sec.plan)}.` + (r.order ? ` ${secs(sec.total)} with your tap.` : "") };
+  else if (sec.read != null && S.phase !== "reading" && S.phase !== "planning") c1 = { v: secs(sec.read), live: false, bs: '<span class="bs m">measured</span>', sub: S.phase === "error" ? "Reading only, on the server. The next step did not finish." : "Reading only, on the server. Waiting for your answers." };
+  else c1 = { v: (S.ms / 1000).toFixed(1) + " s", live: true, bs: '<span class="bs live">live</span>', sub: PHASE[S.phase] || "" };
+  const bh = byHand(r.by_hand, pl && pl.totals.lines);
+  const lines = pl ? pl.totals.lines : null;
+  return `<div class="stats" aria-live="polite">
+    <div class="stat"><span class="k">Photo to checked order ${c1.bs}</span><b id="clock-now"${c1.live ? " data-live" : ""}>${c1.v}</b><span class="v">${c1.sub}</span></div>
+    <div class="stat"><span class="k">Order lines</span><b id="n-lines">${lines == null ? "–" : fresh ? "0" : lines}</b><span class="v">${pl ? eur(pl.totals.subtotal) + " ex VAT" + (pl.not_ordered.length ? `, ${pl.not_ordered.length} left for a person` : "") : ""}</span></div>
+    <div class="stat"><span class="k">Model cost ${u ? '<span class="bs m">measured</span>' : ""}</span><b>${u ? "€" + u.eur.toFixed(4) : "–"}</b><span class="v">${u ? `${n(u.tokens_in)} tokens in, ${n(u.tokens_out)} out<span class="lg">, at list price</span>.` : ""}</span></div>
+    <div class="stat"><span class="k">By hand ${bh.bs}</span><b>${bh.v}</b><span class="v">${bh.sub} <a href="/byhand${r.id && pl ? "?run=" + esc(r.id) : ""}">Time yourself</a></span></div>
+  </div>`;
+}
+
+// ---- Beside the photo: what the model read, and the rules code made of the notes
+function readingCard() {
+  const rd = S.run.reading; if (!rd) return "";
+  const pl = S.run.plan, src = pl ? Object.fromEntries(pl.dishes.map(d => [d.name, d])) : {};
+  return `<section class="card readc"><div class="ch"><h2 class="h2">What the model read</h2><button class="btn small" id="edit"${S.run.order ? " hidden" : ""}>Change it</button></div>
+    <dl class="kv"><dt>Menu</dt><dd>${esc(rd.title || "Untitled")}</dd><dt>Date</dt><dd>${rd.date ? esc(day(rd.date)) : "not on the menu"}${rd.date_text ? ` <span class="muted">(written “${esc(rd.date_text)}”)</span>` : ""}</dd>
+      <dt>For</dt><dd>${rd.guests != null ? n(rd.guests) : "not on the menu"}${rd.guests_text ? ` <span class="muted">(written “${esc(rd.guests_text)}”)</span>` : ""}</dd></dl>
+    <div class="dishes">${rd.dishes.map(d => {
+      const p = (d.portions || rd.guests || 0) * d.days;
+      const tag = !d.food ? '<span class="pill deny">not food</span>' : d.card ? '<span class="pill">kitchen\'s card</span>' : d.source === "agent" ? '<span class="pill escalate">agent\'s recipe, check it</span>' : '<span class="pill escalate">model\'s recipe, check it</span>';
+      return `<div class="dish"><div><b>${esc(d.name)}</b>${d.notes.length ? ` <span class="n">${d.notes.map(esc).join(", ")}</span>` : ""}</div><div>${tag}</div>
+        <div class="sub">${n(p)} portions${d.days > 1 ? ` (${d.days} days)` : ""}${!d.card && d.recipe.length ? ". Per portion: " + d.recipe.map(i => `${esc(i.item)} ${i.amount} ${i.unit} (${esc(i.role)})`).join(", ") : (src[d.name] && src[d.name].card ? `. ${src[d.name].ingredients} ingredients on the card` : "")}</div></div>`; }).join("")}</div>
+    ${rd.notes.length ? `<p class="note">Notes on the page: ${rd.notes.map(x => "“" + esc(x) + "”").join(", ")}</p>` : ""}</section>`;
+}
+function rulesCard(pl) {
+  return `<section class="card"><h2 class="h2">Notes become rules</h2>
+    <div style="margin-top:var(--s2)"><div class="nr"><b style="font-weight:600">Delivery ${esc(day(pl.delivery_date))}</b><div>${IC.to}<span>${esc(pl.delivery_note)}</span></div></div>
+    ${pl.diet.map(d => `<div class="nr"><q>${esc(d.note)}</q><div>${IC.to}<span>${esc(d.rule)}</span></div></div>`).join("") || '<div class="nr"><div><span></span><span>No dietary note on this menu.</span></div></div>'}</div>
+    <p class="note">The model reads the notes. Code applies the rules to every line, and Valio Aimo's gateway checks them again before it signs.</p></section>`;
+}
+
+function askCard() {
+  const r = S.run, rd = r.reading, qs = r.questions || [];
+  return `<section class="card edit"><h2 class="h2">${qs.length ? "Before anything is ordered" : "Change the reading"}</h2>
+    ${qs.map(q => `<div class="ask">${IC.person.replace("<svg", '<svg style="width:16px;height:16px;flex:none;transform:translateY(2px)"')}<span>${esc(q.text)}</span></div>`).join("")}
+    ${qs.length ? '<p class="note">Code found these. Nothing is ordered until they are answered.</p>' : ""}
+    <label for="e-guests">Guests or portions</label><input type="number" id="e-guests" name="guests" min="1" max="5000" value="${rd.guests ?? ""}" style="max-width:160px">
+    <label>Dishes, and portions when a dish has its own number</label>
+    <div id="e-dishes">${rd.dishes.map((d, i) => `<div class="row" data-i="${i}"><input type="text" name="dish" class="e-name" value="${esc(d.name)}" aria-label="Dish"><input type="number" name="portions" class="e-por" min="1" max="5000" value="${d.portions ?? ""}" placeholder="all" aria-label="Portions"><button class="btn small ghost e-del" aria-label="Remove ${esc(d.name)}">Remove</button></div>`).join("")}</div>
+    <label>Dietary notes</label>
+    <div id="e-notes">${rd.notes.map(x => `<div class="row note"><input type="text" name="note" class="e-note" value="${esc(x)}" aria-label="Note"><button class="btn small ghost e-del">Remove</button></div>`).join("")}</div>
+    <div class="bar" style="margin-top:var(--s4)"><button class="btn primary lg" id="e-go">Plan with this</button>${qs.length ? "" : '<button class="btn ghost lg" id="e-cancel">Cancel</button>'}</div></section>`;
+}
+
+// ---- One order line
+// The gateway writes the reason as: "<short product> is short: ... A <role> needs <what>. This product (<fit>) does that, so it covers <amount> for <dish>. <more>"
+function parseReason(reason) {
+  const parts = String(reason || "").split(/(?=\bA [a-z][a-z ]* needs )/);
+  const have = parts[0].trim(), roles = [];
+  for (const p of parts.slice(1)) {
+    const m = p.match(/^A ([a-z][a-z ]*?) needs (.+?)\. This product \((.+?)\) does that, so it covers (.+?)\.(?:\s+(.*))?$/s);
+    if (!m) return null;
+    roles.push({ role: m[1], needs: m[2], fit: m[3], covers: m[4], more: (m[5] || "").trim() });
+  }
+  return roles.length ? { have, roles } : null;
+}
+function swapHtml(l, id) {
+  const p = parseReason(l.reason), was = esc(l.substitutes_for.title), item = [...new Set(l.for.map(f => f.item))];
+  if (!p) return `<div class="swap"${id}>${IC.swap}<div class="h">Replaces ${was}</div><p>${esc(l.reason)}</p></div>`;
+  const groups = {};
+  for (const x of p.roles) { const g = groups[x.needs + "|" + x.fit] ||= { needs: x.needs, fit: x.fit, roles: [] }; g.roles.push(x.role); }
+  const roles = [...new Set(p.roles.map(x => x.role))], more = [...new Set(p.roles.map(x => x.more).filter(Boolean))];
+  return `<div class="swap"${id}>${IC.swap}<div class="h">${esc(cap(andList(roles)))}: this instead of ${esc(andList(item))}</div>
+    ${Object.values(groups).map(g => { const rs = [...new Set(g.roles)]; return `<p>${esc(cap(andList(rs.map(r => "a " + r))))} need${rs.length === 1 ? "s" : ""} ${esc(g.needs)}. This one (${esc(g.fit)}) does that.</p>`; }).join("")}
+    <p class="m">${esc(p.have)} This covers ${esc(andList(p.roles.map(x => x.covers)))}. ${esc(more.join(" "))}</p></div>`;
+}
+const NEEDS = { "whipped topping": "A whipped topping needs cream that whips, which takes 30% fat or more, so cooking cream would not do." };
+function keptHtml(l, all) {
+  const st = l.checks.stock.text, m = st.match(/The (.+?) gets them first\./), first = m && m[1];
+  const by = all.find(x => x.substitutes_for && x.substitutes_for.id === l.product.id);
+  const rest = by ? [...new Set(by.for.map(f => f.role))] : [];
+  return `<div class="kept">${IC.keep}<div class="h">${first ? `Kept for the ${esc(first)}` : "Short, and kept where it matters most"}</div>
+    ${first && NEEDS[first] ? `<p>${esc(NEEDS[first])}</p>` : ""}
+    <p class="m">${esc(st)}${by ? ` The ${esc(andList(rest))} ${rest.length === 1 ? "uses" : "use"} <a href="#ln-${esc(by.product.id)}">${esc(by.product.title)}</a> instead.` : ""}</p></div>`;
+}
+function forHtml(l) {
+  const by = {};
+  for (const f of l.for) ((by[f.item] ||= {})[f.role] ||= []).push(f.dish);
+  const diet = [...new Set(l.for.flatMap(f => f.diet))];
+  return Object.entries(by).map(([item, roles]) => `<i>${esc(item)}</i>: ` + Object.entries(roles).map(([role, ds]) => `${esc(role)} in ${esc(andList([...new Set(ds)]))}`).join("; ")).join(" · ") + diet.map(d => `<span class="dt">${esc(d)}</span>`).join("");
+}
+function lineHtml(l, i, all, step) {
+  const d = i * step;
+  const flags = [l.source === "search" ? "Matched by catalogue search, not from the kitchen's list. Check it." : "",
+    l.recipe.includes("model") ? "From the model's recipe. Check it." : l.recipe.includes("agent") ? "From the agent's recipe. Check it." : ""].filter(Boolean);
+  const askA = (l.checks.allergens.ask || []).length > 0, done = !!S.run.order;
+  const chip = (k, label, j) => k === "allergens" && askA
+    ? `<span class="chk${done ? "" : " unk"}" style="--j:${j}"><span class="mark ${done ? "ok" : "unk"}">${done ? ICON.check : IC.person}</span><span>${done ? "Allergens: you cleared it" : "Allergens: not declared"}</span></span>`
+    : `<span class="chk" style="--j:${j}">${markHtml(l.checks[k].ok)}<span>${label}</span></span>`;
+  const per = l.for.map(f => `${esc(cap(f.role))} in ${esc(f.dish)}: ${esc(f.per_portion)} a portion, ${n(f.portions)} portions, ${f.waste_pct}% waste allowance.`).join(" ");
+  return `<div class="line${l.reason ? " sub" : ""}" id="ln-${esc(l.product.id)}" style="--d:${d}ms">
+    <div class="top"><span class="t">${esc(l.product.title)}</span><span class="q">${n(l.units)} ${esc(uw(l.unit, l.units))}</span><span class="a">${eur(l.amount)}</span></div>
+    <div class="mid"><div class="for">${forHtml(l)}</div>
+      <details class="cks"><summary aria-label="What was checked">${CHECKS.map(([k, label], j) => chip(k, label, j)).join("")}</summary>
+      <div class="cw">${CHECKS.map(([k, label]) => `<div><b>${label}.</b> ${esc(l.checks[k].text)}</div>`).join("")}<div><b>Amount.</b> ${per}</div></div></details></div>
+    ${l.reason ? swapHtml(l, i === S.firstSub ? ' id="sub"' : "") : ""}
+    ${l.partial ? keptHtml(l, all) : ""}
+    ${(l.passed_over || []).map(o => `<div class="over">Passed over ${esc(o.title)}: ${esc(o.why)}.</div>`).join("")}
+    ${flags.map(f => `<div class="flag">${esc(f)}</div>`).join("")}</div>`;
+}
+
+// ---- The plan: lines, what is left for a person, the offer
+function leftHtml(o) {
+  const k = { not_in_range: ["out", IC.out, "Not in Valio Aimo's range"], no_fit: ["esc", IC.person, "No product passes the checks"], short: ["esc", IC.person, "Not enough stock, a person decides"] }[o.kind] || ["esc", IC.person, "Left for a person"];
+  if (o.portions_refused || o.dish_refused) {
+    const diet = (o.diet || []).join(", "), m = String(o.text || "").match(/was refused: (.+?)\. (?:Nothing is ordered|The whole dish)/), rest = String(o.text || "").match(/The other ([\d,]+) portions are ordered\./);
+    const head = o.dish_refused ? "The whole dish waits for a person" : `${n(o.portions_refused)} ${diet ? diet + " " : ""}portions wait for a person`;
+    const say = (m ? `${cap(o.item)} was refused for ${o.dish_refused ? "this dish" : "them"}: ${m[1]}. ` : "") + (o.dish_refused ? "None of its ingredients is ordered." : `Nothing is ordered for those ${n(o.portions_refused)}${rest ? `; the other ${rest[1]} portions are ordered` : ""}.`);
+    return `<div class="lft esc"><span class="ic">${IC.person}</span><b>${esc(o.dish || cap(o.item || ""))}</b><span class="k">${esc(head)}</span><span class="w">${esc(say)}</span></div>`;
+  }
+  let why = String(o.text || "").replace(/^[^:]*:\s*/, "");
+  const said = why.replace(/^(no product passes the checks, so it is not ordered\.|not in Valio Aimo's range\. Not ordered\.)\s*/i, "");
+  if (said !== why) why = said ? (o.kind === "no_fit" ? "Tried and turned down. " : "") + said : "Not ordered.";
+  return `<div class="lft ${k[0]}"><span class="ic">${k[1]}</span><b>${esc(cap(o.item || ""))}${o.amount ? ` <span class="muted" style="font-weight:400">${esc(o.amount)}</span>` : ""}</b><span class="k">${k[2]}${o.dish ? `, for ${esc(o.dish)}` : ""}</span><span class="w">${esc(why)}</span></div>`;
+}
+function ruleRow(x, kind) {
+  const long = (x.detail || "").length > 240;
+  return `<div class="rule"><b>${esc(x.title)}</b><span class="pill ${kind === "deny" ? "deny" : "escalate"}">${kind === "deny" ? "refused" : "needs a person"}</span><div class="d${long ? " clamp" : ""}">${esc(x.detail)}</div>${long ? '<button class="more" type="button">Show all</button>' : ""}</div>`;
+}
+function planHtml(fresh) {
+  const r = S.run, pl = r.plan, ck = r.checkout || {};
+  const asks = (ck.rules || []).filter(x => x.outcome === "escalate"), denies = (ck.rules || []).filter(x => x.outcome === "deny");
+  const subs = pl.lines.filter(l => l.substitutes_for).length, open = pl.not_ordered.length;
+  const step = stepMs(pl.lines.length), end = fresh ? pl.lines.length * step + 450 : 0;
+  // Lines where code had to decide something come first: a replacement by role, then what it kept. The rest keep the menu's order.
+  const shown = [...pl.lines.filter(l => l.substitutes_for), ...pl.lines.filter(l => l.partial && !l.substitutes_for), ...pl.lines.filter(l => !l.substitutes_for && !l.partial)];
+  S.firstSub = shown.findIndex(l => l.substitutes_for);
+  let top = "", h = "";
+  if (S.short && !r.order) h += `<div class="shortnote${fresh ? " after" : ""}"><b>Test control is on.</b><span>${esc(S.short.title)} is short on this account: ${n(S.short.leave)} left.</span></div>`;
+  const askN = pl.totals.allergen_ask || 0, L = pl.totals.lines;
+  const sum = [!askN ? "Every line passed its four checks."
+    : r.order ? `${L - askN} of ${L} lines passed all four checks on data. ${askN} ${askN === 1 ? "has" : "have"} no allergen declaration from the manufacturer; you cleared ${askN === 1 ? "it" : "them"} when you approved, and the account remembers.`
+    : `${L - askN} of ${L} lines passed all four checks. <a href="#why">${askN} ${askN === 1 ? "has" : "have"} no allergen declaration from the manufacturer</a>, so ${askN === 1 ? "it is" : "they are"} not passed on silence: you clear ${askN === 1 ? "it" : "them"} when you approve, and the account remembers.`];
+  if (subs) sum.push(`<a href="#sub">${subs} line${subs === 1 ? " replaces" : "s replace"} a short product</a> by what it does in the dish.`);
+  if (open) sum.push(`<a href="#open">${open} item${open === 1 ? " is" : "s are"} left for a person</a>.`);
+  h += `<section class="card"><div class="ch"><h2 class="h2">${pl.totals.lines} order lines</h2><span class="muted tnum">${eur(pl.totals.subtotal)} ex VAT · delivery ${esc(day(pl.delivery_date))}</span></div>
+    <p class="para">${sum.join(" ")}</p>
+    <div class="ol${fresh ? " reveal" : ""}">${shown.map((l, i) => lineHtml(l, i, pl.lines, step)).join("")}</div></section>`;
+  if (open) h += `<section class="card${fresh ? " after" : ""}" id="open" style="--d:${end}ms"><div class="ch"><h2 class="h2">Not ordered</h2><span class="pill escalate">${open} for a person</span></div>
+    <p class="para">Code does not guess. These are left out of the order and named here.</p><div class="left">${pl.not_ordered.map(leftHtml).join("")}</div></section>`;
+  if (r.order) {
+    const s = r.seconds, tot = s.total || 1, seg = (v, c, t) => `<span class="${c}" style="flex:${Math.max(v || 0, 0.001)}" title="${t} ${secs(v)}"></span>`;
+    top = `<section class="card donec after"><div class="hd">${markHtml(true)}<h2>Order <span class="id">${esc(r.order.label)}</span> is placed</h2></div>
+      <p class="para" style="font-size:var(--t5)">${pl.totals.lines} lines for delivery ${esc(day(pl.delivery_date))}. ${r.order.approved_by_person ? "You approved what the rules sent to a person; the agent then signed the offer." : "Every rule passed, so the agent signed the offer without asking."} <a href="${esc(r.order.url ? new URL(r.order.url, location.href).pathname + new URL(r.order.url, location.href).search : "/orders/" + r.order.id)}">Open the signed order</a></p>
+      <div class="tl" role="img" aria-label="Server clock: reading ${secs(s.read)}, lines and checks ${secs(s.plan)}, your tap ${secs(s.person)}, order ${secs(s.order)}">${seg(s.read, "", "Reading")}${seg(s.plan, "o", "Lines and checks")}${seg(s.person, "p", "Your tap")}${seg(s.order, "o", "Order")}</div>
+      <div class="tlk"><span><i></i>Reading <b>${secs(s.read)}</b></span><span><i class="o"></i>Lines, checks, signed offer <b>${secs(s.plan)}</b></span><span><i class="p"></i>Your tap <b>${secs(s.person)}</b></span><span><i class="o"></i>Order <b>${secs(s.order)}</b></span><span>Total on the server clock <b>${secs(s.total)}</b></span></div>
+      <p class="note">Model cost €${r.usage.eur.toFixed(4)} ($${r.usage.usd.toFixed(4)}): ${r.usage.calls.map(c => `${esc(c.step)} with ${esc(c.model)}, ${n(c.in)} tokens in and ${n(c.out)} out, ${secs(c.seconds)}`).join("; ")}. ${esc(r.usage.basis)}</p>
+      <div class="bar" style="margin-top:var(--s4)"><button class="btn again">Another menu</button><a class="btn ghost" href="/byhand?run=${esc(r.id)}">Do the same basket by hand, timed</a></div></section>`;
+  } else if (ck.status === "ready_for_complete" || ck.status === "requires_escalation") {
+    const total = eur((ck.totals.find(t => t.type === "total") || {}).amount);
+    const pk = S.pk || {}, dev = asks.length && pk.approvals === "passkey";
+    const pkn = !asks.length ? "" : S.signErr ? `<p class="pkn bad" role="alert">${esc(S.signErr)}</p>`
+      : dev ? `<p class="pkn">Approvals on this account are signed on an enrolled device (${esc(andList(pk.devices.map(d => d.name)))}). Your tap asks it for its fingerprint, face or screen lock, and the signature covers exactly this offer. A tap or a link alone can no longer approve.</p>`
+      : pk.can_enrol && PK.supported() ? `<p class="pkn">This account approves with a tap. <a href="/enrol?next=/menu">Make this device the approver</a> and the approval is signed inside it with its fingerprint, face or screen lock; after that a tap or a link alone cannot approve.</p>` : "";
+    h += `<div class="offerbar${fresh ? " after" : ""}" style="--d:${end}ms"><div class="ob"><b>One signed offer${ck.signed ? ", signed by Valio Aimo" : ""}</b><span>${pl.totals.lines} lines, ${total} with VAT. ${asks.length ? `${asks.length} rule${asks.length === 1 ? " asks" : "s ask"} for a person.` : "Every rule passed."}</span></div>
+      <button class="btn primary" id="go"${S.phase === "ordering" ? " disabled" : ""}>${S.phase === "ordering" ? '<span class="spin" style="border-color:color-mix(in srgb,var(--accent-ink) 35%,transparent);border-top-color:var(--accent-ink)"></span> Placing the order' : asks.length ? (dev ? "Approve on this device and place the order" : "Approve and place the order") : "Place the order"}</button></div>
+      <section class="card${fresh ? " after" : ""}" id="why" style="--d:${end}ms;scroll-margin-top:90px"><h2 class="h2">${asks.length ? "Why a person approves this" : "The agent may place this alone"}</h2>
+      ${asks.length ? `<div style="margin-top:var(--s2)">${asks.map(x => ruleRow(x, "escalate")).join("")}</div>` : '<p class="para">Every rule passed. The agent may place this order on its own.</p>'}
+      ${pkn}<details style="margin-top:var(--s3)"><summary>All ${ck.rules.length} rules the gateway ran</summary>${rulesTable(ck.rules)}</details>
+      <p class="note">This is a test account: nothing is delivered or invoiced.</p></section>`;
+  } else if (ck.id) {
+    h += `<section class="card calm"><span class="mark bad">${ICON.cross}</span><h2>The gateway did not make an offer</h2>
+      <div style="margin-top:var(--s3)">${denies.map(x => ruleRow(x, "deny")).join("")}${(ck.errors || []).map(e => `<div class="rule"><div class="d">${esc(e)}</div></div>`).join("")}</div></section>`;
+  }
+  return { top, rest: h };
+}
+
+function progressHtml() {
+  const sec = (S.run && S.run.seconds) || {}, read = sec.read != null && S.phase === "planning";
+  const live = '<span class="tm" id="step-now"></span>';
+  return `<section class="card" aria-live="polite"><h2 class="h2">From photo to order</h2>
+    <div class="steps-l">
+      <div class="st">${read ? markHtml(true) : markHtml(null)}<b>Reading the photo</b>${read ? `<span class="tm">${secs(sec.read)}</span>` : live}<p>A small model checks that it is a menu while a larger one reads the dishes, the guests, the date and the dietary notes.</p></div>
+      <div class="st${read ? "" : " wait"}">${read ? markHtml(null) : '<span class="mark wait"></span>'}<b>Lines, checks, one signed offer</b><span class="tm"></span><p>Code works out the bill of materials, matches each ingredient to a product and checks pack size, allergens, stock and price. Valio Aimo's gateway signs one offer.</p></div>
+    </div>
+    <div class="ghost-lines" aria-hidden="true">${[62, 48, 70, 55].map(w => `<div><span class="skel" style="width:${w}%"></span><span class="skel" style="width:100%"></span><span class="skel" style="width:100%"></span></div>`).join("")}</div></section>`;
+}
+
+function draw() {
+  const r = S.run;
+  document.body.classList.toggle("running", S.phase !== "idle");
+  clearInterval(counter);
+  if (S.phase === "idle") { out.innerHTML = ""; return; }
+  const refused = r && r.status === "not_a_menu", asking = r && r.reading && (S.editing || r.status === "needs_answers");
+  const planned = r && r.plan && r.reading && !asking && S.phase !== "planning";
+  const key = planned ? r.id + ":" + ((r.checkout || {}).id || r.plan.totals.subtotal) : "";
+  const fresh = planned && S.shown !== key && !r.order;
+  const src = r && r.source ? r.source : "";
+  const title = refused ? "Not a menu" : r && r.reading && r.reading.title ? cap(r.reading.title.toLowerCase()) : S.phase === "error" ? "Order from a menu" : "Reading a menu";
+
+  let main = "", side = "";
+  if (S.err) main += `<section class="card calm" role="alert"><span class="mark bad">${ICON.cross}</span><h2>${S.retry ? "The answer did not arrive" : "That did not work"}</h2><p class="msg">${esc(S.err)}</p><div class="bar">${S.retry ? `<button class="btn primary lg" id="retry">Try again</button><button class="btn lg again">Start over</button>` : '<button class="btn primary lg again">Try another photo</button>'}</div></section>`;
+  if (refused) main += `<section class="card calm"><span class="mark bad">${ICON.cross}</span><h2>This is not a menu</h2><p class="msg">${esc(r.message)}</p>
+    <p class="note">Looking at it took ${secs(r.seconds.read)} and cost €${r.usage.eur.toFixed(4)} (${n(r.usage.tokens_in)} tokens in, ${n(r.usage.tokens_out)} out). A small model decides this first, so a wrong photo never reaches the larger one.</p>
+    <div class="bar"><button class="btn primary lg again">Try another photo</button></div></section>`;
+  if (!S.err && !refused && (S.phase === "reading" || S.phase === "planning")) main += progressHtml();
+  if (asking) main += askCard();
+  if (planned) { const pc = planHtml(fresh); main = pc.top + main + pc.rest; }
+  if (r && r.status === "nothing_to_order" && !asking) main += `<section class="card calm"><span class="mark bad">${ICON.cross}</span><h2>Nothing to order</h2><p class="msg">No ingredient on this menu could be matched to a product that passes the checks.</p></section>`;
+  if (r && r.reading && !asking) side += readingCard();
+  if (planned) side += rulesCard(r.plan);
+
+  const chip = S.phase === "reading" ? `<span class="chip"><span class="spin"></span>Reading <span id="chip-now" class="tnum">${(S.ms / 1000).toFixed(1)} s</span></span>`
+    : refused ? `<span class="chip">${markHtml(false)}Not a menu</span>`
+    : r && r.seconds && r.seconds.read != null && r.reading ? `<span class="chip">${markHtml(true)}Read in ${secs(r.seconds.read)}</span>` : "";
+  const shot = S.photo ? `<figure class="shot${refused ? " refused" : ""}${planned ? " done" : ""}"><div class="frame"><img class="photo" src="${S.photo}" alt="The photo of the menu">${S.phase === "reading" ? '<span class="scan"></span>' : ""}${chip}</div>
+    ${src ? `<figcaption>${esc(cap(src))}${src.startsWith("sample") ? ", made for this page." : ". It is sent to the model once and not kept."}</figcaption>` : ""}</figure>` : "";
+
+  out.innerHTML = `<div class="runbar"><h1>${esc(title)}</h1><button class="btn again">Another menu</button></div>
+    <div class="run">${!refused && !(S.phase === "error" && !r) ? stats(fresh) : ""}${shot}<div class="main">${main}</div><div class="side">${side}</div></div>`;
+  if (fresh) {
+    S.shown = key;
+    const total = r.plan.totals.lines, step = stepMs(total), el = $("#n-lines"), t0 = performance.now();
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) el.textContent = total;
+    else counter = setInterval(() => { const k = Math.min(total, Math.floor((performance.now() - t0) / step) + 1); el.textContent = k; if (k >= total) clearInterval(counter); }, 30);
+  }
+  wire();
+}
+
+function wire() {
+  const on = (sel, fn) => { const el = $(sel); if (el) el.onclick = fn; };
+  document.querySelectorAll(".again").forEach(b => b.onclick = reset);
+  on("#go", () => placeOrder());
+  on("#retry", () => { const f = S.retry; S.retry = null; S.err = ""; if (f) f(); });
+  on("#edit", () => { S.editing = true; draw(); });
+  on("#e-cancel", () => { S.editing = false; draw(); });
+  document.querySelectorAll(".e-del").forEach(b => b.onclick = () => b.parentElement.remove());
+  document.querySelectorAll(".rule .more").forEach(b => b.onclick = () => { const d = b.previousElementSibling, open = d.classList.toggle("clamp"); b.textContent = open ? "Show all" : "Show less"; });
+  on("#e-go", () => {
+    const rd = S.run.reading, g = parseInt($("#e-guests").value, 10);
+    const dishes = [...document.querySelectorAll("#e-dishes .row")].map(row => {
+      const old = rd.dishes[+row.dataset.i], name = $(".e-name", row).value.trim(), por = parseInt($(".e-por", row).value, 10);
+      const same = name === old.name;
+      return name ? { name, as_written: same ? old.as_written : name, card: same ? old.card : null, recipe: same ? old.recipe : null, source: same ? old.source : null, food: same ? old.food : true, portions: Number.isFinite(por) ? por : null, days: old.days, notes: old.notes } : null;
+    }).filter(Boolean);
+    const notes = [...document.querySelectorAll("#e-notes .e-note")].map(i => i.value.trim()).filter(Boolean);
+    S.editing = false;
+    plan({ title: rd.title, date: rd.date, date_text: rd.date_text, guests: Number.isFinite(g) ? g : null, dishes, notes });
+  });
+}
+
+function reset() { stopClock(); Object.assign(S, { phase: "idle", photo: null, run: null, err: "", retry: null, editing: false, ms: 0, shown: "" }); remember(null); draw(); $("#start").scrollIntoView({ behavior: "smooth", block: "start" }); }
+// A failed step keeps what came before it. "Try again" repeats only that step.
+function fail(r, fallback, retry) { stopClock(); const e = errOf(r); S.err = (e && e.content) || fallback; S.retry = retry || null; S.phase = "error"; draw(); const c = $("#out [role=alert]"); if (c) c.scrollIntoView({ behavior: "smooth", block: "center" }); }
+const DROP = "The connection dropped before the answer came back.";
+// The run id survives a reload, so a plan the server finished is not lost. Per browser only.
+function remember(id) { try { id ? localStorage.setItem("menu.run", id) : localStorage.removeItem("menu.run"); } catch (e) {} }
+// After a dropped answer, ask the server how far the run got before doing the step again.
+async function fetchRun() { try { const x = await api("/api/menu/run/" + S.run.id); return x && x.id ? x : null; } catch (e) { return null; } }
+
+async function begin(photo, body) {
+  Object.assign(S, { phase: "reading", photo, run: null, err: "", editing: false, shown: "" });
+  startClock(); draw(); scrollTo({ top: 0, behavior: "smooth" });
+  let r;
+  const again = () => begin(photo, body);
+  try { r = await api("/api/menu/read", body); } catch (e) { return fail(null, DROP + " Try again reads the same photo.", again); }
+  if (!r || !r.id) return fail(r, "The photo could not be read.", again);
+  S.run = r; remember(r.id);
+  if (r.status === "not_a_menu") { stopClock(); S.phase = "refused"; return draw(); }
+  if (r.status === "needs_answers") { S.phase = "asking"; return draw(); }
+  plan();
+}
+
+async function plan(reading) {
+  S.phase = "planning"; S.err = ""; if (!S.t0) { const was = S.ms; startClock(); S.t0 -= was; } draw();
+  let r;
+  const again = async () => {
+    const x = await fetchRun();
+    if (x && x.plan && !reading) { S.run = x; S.phase = x.status === "needs_answers" ? "asking" : "ready"; return draw(); }  // the server finished it
+    plan(reading);
+  };
+  try { [r] = await Promise.all([api("/api/menu/plan", { run: S.run.id, ...(reading ? { reading } : {}) }), loadPk()]); } catch (e) { return fail(null, DROP + " Try again picks up the plan if the server finished it, or works it out again.", again); }
+  if (!r || !r.id) return fail(r, "The menu could not be planned.", again);
+  S.run = r;
+  S.phase = r.status === "needs_answers" ? "asking" : "ready";
+  draw();
+}
+
+async function loadPk() { try { S.pk = await api("/api/passkey"); } catch (e) { S.pk = null; } }
+// An account with an enrolled approver's device: that device signs this exact decision, then the order is placed.
+async function signAndOrder() {
+  let device;
+  try {
+    const pre = await api("/api/menu/sign", { run: S.run.id });
+    if (!pre.challenge) return fail(pre, "The approval could not be prepared.", () => placeOrder());
+    device = await PK.sign(pre);
+  } catch (e) {
+    S.phase = "ready";
+    S.signErr = e && e.name === "NotAllowedError" ? "Nothing was approved or ordered: the device prompt was closed, or this is not one of the account's approver devices." : "This device could not sign the approval. Nothing was ordered.";
+    return draw();
+  }
+  placeOrder(device);
+}
+async function placeOrder(device) {
+  S.phase = "ordering"; S.signErr = ""; draw();
+  const needs = ((S.run.checkout || {}).rules || []).some(x => x.outcome === "escalate");
+  if (!device && needs && S.pk && S.pk.approvals === "passkey") return signAndOrder();
+  let r;
+  const again = async () => {
+    const x = await fetchRun();
+    if (x && x.order) { S.run = x; stopClock(); S.phase = "done"; draw(); return scrollTo({ top: 0, behavior: "smooth" }); }  // it was placed: never order twice
+    placeOrder();
+  };
+  try { r = await api("/api/menu/order", { run: S.run.id, ...(device ? { device } : {}) }); } catch (e) { return fail(null, DROP + " Try again first checks whether the order was placed, so nothing is ordered twice.", again); }
+  if (!device && (errOf(r) || {}).code === "device_required") { await loadPk(); return signAndOrder(); }
+  if (!r || !r.id) return fail(r, "The order could not be placed.", again);
+  S.run = r;
+  if (r.order) { stopClock(); S.phase = "done"; remember(null); } else S.phase = "ready";
+  draw(); loadCtl();
+  if (r.order) scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function shrink(file) {
+  // Phones make 4 to 12 MB photos. The model does not need that: 1600 px on the long side reads the same and uploads in a second.
+  const bmp = await createImageBitmap(file);
+  const k = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  return c.toDataURL("image/jpeg", 0.85);
+}
+async function picked(input) {
+  const f = input.files && input.files[0]; input.value = "";
+  if (!f) return;
+  let url;
+  try { url = await shrink(f); } catch (e) { S.phase = "error"; S.photo = null; S.run = null; S.err = "This photo could not be opened here. Try a JPEG or PNG."; return draw(); }
+  begin(url, { image: url });
+}
+$("#b-cam").innerHTML = IC.camera + "<span>Take a photo</span>";
+$("#b-up").innerHTML = IC.upload + "<span>Upload a photo</span>";
+$("#b-cam").onclick = () => $("#cam").click();
+$("#b-up").onclick = () => $("#up").click();
+$("#cam").onchange = e => picked(e.target);
+$("#up").onchange = e => picked(e.target);
+
+async function loadSamples() {
+  let r;
+  try { r = await api("/api/menu/samples"); } catch (e) { r = {}; }
+  const list = r.samples || [];
+  $("#samples").innerHTML = list.length ? list.map(s => `<button class="sample${s.id === "notmenu" ? " nm" : ""}" data-id="${esc(s.id)}" data-url="${esc(s.url)}"><span class="im"><img src="${esc(s.url.replace(".jpg", "-thumb.jpg"))}" alt="" loading="lazy"></span><span class="cap"><b>${esc(s.title)}</b><i>${esc(cap(s.sub))}</i></span></button>`).join("")
+    : '<p class="empty" style="grid-column:1/-1">The sample photos could not be loaded. Take or upload a photo instead.</p>';
+  document.querySelectorAll(".sample[data-id]").forEach(b => b.onclick = () => begin(b.dataset.url, { sample: b.dataset.id }));
+}
+
+async function loadCtl() {
+  const r = await api("/api/menu/short");
+  const s = r.short, d = r.default || {};
+  S.short = s;
+  $("#ctl-name").textContent = d.title || "";
+  $("#ctl-clear").hidden = !s;
+  $("#ctl").classList.toggle("on", !!s);
+  $("#ctl-state").textContent = s ? `${s.title} is short on this account: ${n(s.leave)} left, until ${clock(s.until_iso)}. Pick a menu, or plan again, to see it.` : "Stock is as Valio Aimo reports it.";
+}
+async function ctl(path, body) {
+  const r = await api(path, body || {});
+  const e = errOf(r);
+  if (e) { $("#ctl-state").textContent = e.content; return; }
+  await loadCtl();
+  if (S.run && S.run.plan && !S.run.order && S.phase === "ready") plan();  // the offer on screen is replaced by one made with the new stock
+}
+$("#ctl-set").onclick = () => ctl("/api/menu/short", { leave: parseFloat($("#leave").value) || 0, ...(S.run && S.run.plan ? { day: S.run.plan.delivery_date } : {}) });
+$("#ctl-clear").onclick = () => ctl("/api/menu/short/clear");
+
+// On reload: offer the plan the server finished, if it is recent and not ordered yet.
+async function resume() {
+  let id = null; try { id = localStorage.getItem("menu.run"); } catch (e) {}
+  if (!id) return;
+  let x; try { x = await api("/api/menu/run/" + id); } catch (e) { return; }
+  const ck = (x && x.checkout) || {};
+  const live = x && x.id && x.plan && !x.order && ["ready_for_complete", "requires_escalation"].includes(ck.status) && Date.now() - Date.parse(x.at) < 2 * 3600e3;
+  if (!live) { remember(null); return; }
+  const t = x.reading && x.reading.title ? cap(x.reading.title.toLowerCase()) : "Your last menu";
+  $("#resume").innerHTML = `<div class="card resume"><div><b>${esc(t)} is planned and waiting</b><span>${x.plan.totals.lines} lines, ${eur(x.plan.totals.subtotal)} ex VAT, from the photo you sent at ${esc(clock(x.at))}. Nothing is ordered yet.</span></div>
+    <div class="bar"><button class="btn primary" id="r-go">Pick up the plan</button><button class="btn ghost" id="r-no">Start over</button></div></div>`;
+  $("#r-no").onclick = () => { $("#resume").innerHTML = ""; remember(null); };
+  $("#r-go").onclick = () => {
+    $("#resume").innerHTML = "";
+    const s = x.sample && document.querySelector(`.sample[data-id="${CSS.escape(x.sample)}"]`);
+    Object.assign(S, { run: x, photo: s ? s.dataset.url : null, phase: "ready", err: "", retry: null, editing: false, ms: 0 });
+    S.shown = x.id + ":" + (ck.id || x.plan.totals.subtotal);  // already seen: no staged reveal
+    draw(); scrollTo({ top: 0, behavior: "smooth" });
+  };
+}
+loadSamples().then(resume); loadCtl(); loadPk();
+</script>
+</body>
+</html>

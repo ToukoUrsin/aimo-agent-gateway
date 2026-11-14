@@ -1,0 +1,40 @@
+# Public front door. The gateway itself runs on the team's box (the agents need the model pool there);
+# this only forwards to it.
+#
+# Two tunnels reach the box. The quick one (cloudflared, about 0.1 s a request) carries everything.
+# The steady one (Tailscale Funnel, about 1 s a request) takes over when the quick one is down.
+# Both addresses are Fly secrets: UPSTREAM_QUICK (https://<name>.trycloudflare.com) and UPSTREAM_STEADY
+# (the Funnel address with its port; it serves the gateway under /aimo).
+# The quick tunnel's address changes when cloudflared restarts. Then: start it again
+# (cloudflared tunnel --no-autoupdate --url http://127.0.0.1:8642) and
+# fly secrets set UPSTREAM_QUICK=<new address> -a trusted-trade-agents
+{
+	auto_https off
+	admin off
+}
+:8080 {
+	handle {
+		reverse_proxy {$UPSTREAM_QUICK} {
+			header_up Host {upstream_hostport}
+			header_up X-Forwarded-For {http.request.header.Fly-Client-IP}
+			flush_interval -1
+			@down status 502 530
+			handle_response @down {
+				rewrite * /aimo{uri}
+				reverse_proxy {$UPSTREAM_STEADY} {
+					header_up Host {upstream_hostport}
+					header_up X-Forwarded-For {http.request.header.Fly-Client-IP}
+					flush_interval -1
+				}
+			}
+		}
+	}
+	handle_errors {
+		rewrite * /aimo{uri}
+		reverse_proxy {$UPSTREAM_STEADY} {
+			header_up Host {upstream_hostport}
+			header_up X-Forwarded-For {http.request.header.Fly-Client-IP}
+			flush_interval -1
+		}
+	}
+}

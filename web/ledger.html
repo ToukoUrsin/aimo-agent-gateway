@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ledger · Aimo Agent Gateway</title>
+<meta name="description" content="Every step agents, people and the gateway took, hash-chained and checked in your browser.">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+.chain{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:var(--s3);padding:var(--s3) var(--s4);border-radius:var(--r-l);background:var(--soft);font-size:var(--t3);margin-bottom:var(--s4);min-height:48px}
+.chain.ok{background:var(--pass-bg);color:var(--pass)}
+.chain.bad{background:var(--deny-bg);color:var(--deny)}
+.chain b{font-weight:600}
+.chain .meta{font-size:var(--t1);opacity:.85;text-align:right;white-space:nowrap}
+.filters{display:grid;grid-template-columns:minmax(0,1.6fr) repeat(4,minmax(0,1fr));gap:var(--s2);position:sticky;top:57px;z-index:5;background:var(--bg);padding:var(--s2) 0 var(--s3)}
+.filters input[type=search]{padding-left:34px;background:var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2397979e' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='4.5'/%3E%3Cpath d='m10.5 10.5 3 3'/%3E%3C/svg%3E") no-repeat 11px center}
+.count{font-size:var(--t2);color:var(--muted);display:flex;justify-content:space-between;gap:var(--s3);padding:0 0 var(--s2);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.count button{all:unset;cursor:pointer;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:3px}
+.count button:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:2px}
+.tl{list-style:none;margin:0;padding:0}
+.e{border-bottom:1px solid var(--line)}
+.e>button{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-columns:72px 20px minmax(0,1fr) auto;gap:var(--s3);padding:14px 0;cursor:pointer;align-items:start}
+.e>button:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;border-radius:6px}
+.e>button:hover .txt{color:var(--ink)}
+.e .t{font-size:var(--t2);color:var(--muted);font-variant-numeric:tabular-nums;padding-top:1px}
+.e .t small{display:block;font-size:var(--t1);color:var(--faint)}
+.e .mark{margin-top:0}
+.e .who{display:flex;gap:6px 8px;align-items:baseline;flex-wrap:wrap;font-size:var(--t3)}
+.e .who b{font-weight:600}
+.e .who .k{font-size:var(--t1);color:var(--muted)}
+.e .who .role{font-size:var(--t1);font-weight:500}
+.role.agent{color:var(--buyer)} .role.gateway{color:var(--ink)} .role.human{color:var(--human)}
+.e .txt{color:var(--ink-2);font-size:var(--t3);margin-top:2px;overflow-wrap:anywhere}
+.e .rl{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.e .rl div{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:baseline;font-size:var(--t2);color:var(--muted)}
+.e .side{display:flex;flex-direction:column;align-items:flex-end;gap:4px;text-align:right}
+.e .side .hash{font:11px/1.4 var(--mono);color:var(--muted)}
+.e .side a{font-size:var(--t2);white-space:nowrap}
+.e.withheld .who b{color:var(--muted);font-weight:500}
+.e.withheld .txt{color:var(--muted)}
+.e.run .who b{color:var(--ink-2)}
+.e.bad{background:color-mix(in srgb,var(--deny-bg) 55%,transparent)}
+.e .raw{padding:0 0 var(--s4) calc(72px + 20px + 2 * var(--s3))}
+.e .raw dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;font-size:var(--t2);margin:0 0 var(--s2)}
+.e .raw dt{color:var(--muted)}
+.e .raw dd{margin:0;font:12px/1.5 var(--mono);overflow-wrap:anywhere}
+.e.arrive{animation:arrive .5s var(--ease) both}
+.more{display:flex;justify-content:center;padding:var(--s5) 0}
+.state{padding:var(--s7) 0;text-align:center;color:var(--muted)}
+@media (max-width:860px){.filters{grid-template-columns:1fr 1fr}.filters .q{grid-column:1/-1}}
+@media (max-width:640px){
+  .filters{top:57px}
+  .e>button{grid-template-columns:20px minmax(0,1fr);gap:var(--s2) var(--s3)}
+  .e .t{grid-column:2;grid-row:1;display:flex;gap:8px}
+  .e .t small{display:inline}
+  .e .mark{grid-row:1/3;grid-column:1}
+  .e .body{grid-column:2}
+  .e .side{grid-column:2;flex-direction:row;justify-content:space-between;align-items:center}
+  .e .raw{padding-left:calc(20px + var(--s3))}
+  .chain{grid-template-columns:auto minmax(0,1fr);align-items:start}.chain .meta{grid-column:2;text-align:left}
+}
+</style>
+</head>
+<body>
+<div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
+<header id="site"></header>
+<main class="wrap" style="max-width:1040px">
+  <div class="page-head">
+    <h1>Ledger</h1>
+    <p class="lead">Every step agents, people and the gateway took, in order. Each entry carries the hash of the one before it, so changing any entry breaks every link after it. Your browser checks the chain below.</p>
+    <p class="lead" style="font-size:14px">Valio Aimo reads every entry. A customer reads its own and gets everyone else's withheld, and can still check the whole chain. In this demo you can read as either: the customers are invented, and nobody else ever sees your own sandbox.</p>
+  </div>
+  <div class="chain" id="chain" role="status"><span class="spin"></span><span>Loading the latest entries</span></div>
+  <div class="filters" role="search">
+    <input class="q" type="search" id="q" placeholder="Search text, order, agent, rule" aria-label="Search the ledger">
+    <select id="f_view" aria-label="Read as"><option value="valio">Read as Valio Aimo (demo)</option><option value="me">Read as a customer (you)</option></select>
+    <select id="f_acct" aria-label="Account"><option value="">All accounts</option></select>
+    <select id="f_kind" aria-label="Kind"><option value="">All kinds</option></select>
+    <select id="f_cid" aria-label="Order"><option value="">All orders</option></select>
+  </div>
+  <div class="count" id="count"><span><span class="skel" style="width:20ch"></span></span></div>
+  <ol class="tl" id="tl" aria-live="polite"></ol>
+  <div class="more" id="more" hidden><button class="btn" id="morebtn" type="button">Show older entries</button></div>
+  <footer class="foot"><span>The same data as JSON for agents and scripts:</span><a href="/ledger?format=json">/ledger?format=json</a><a href="/spec#rules">The rules</a></footer>
+</main>
+<script src="/static/lib.js"></script>
+<script>
+// Plain words for each kind of entry.
+const KIND = { plan: "Asked what is possible", search: "Searched the catalogue", lookup: "Looked up products", checkout: "Got a signed offer", policy: "Rules ran", order: "Order placed",
+  approved: "A person approved", rejected: "A person rejected", refused: "Refused", canceled: "Cancelled", expired: "Offer expired", control: "Setting changed",
+  exception: "Exception", issue: "Problem reported", resolve: "Way out chosen", recall: "Recall", amended: "Order changed" };
+const OUT = { pass: ["pass", "pass"], escalate: ["escalate", "needs a person"], deny: ["deny", "refused"], refused: ["deny", "refused"] };
+const PAGE = 200, MAX = 1000;
+let all = [], genesis = "0".repeat(64), verdicts = new Map(), shown = PAGE, limit = PAGE, newShape = false, lastSeq = 0, open = new Set(), openRuns = new Set(), fresh = new Set();
+
+const actor = a => {
+  if (!a) return { name: "Another customer", role: "", cls: "" };
+  if (a === "gateway") return { name: "Valio Aimo gateway", role: "gateway", cls: "gateway" };
+  if (a.startsWith("human:")) return { name: a.slice(6), role: "person", cls: "human" };
+  const m = a.match(/^agent:([^/]+)\/(.+)$/);
+  if (m) { const n = m[2].replace(/[-_]+/g, " "); return { name: n.charAt(0).toUpperCase() + n.slice(1), role: "agent of " + m[1].split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "), cls: "agent" }; }
+  return { name: a, role: "", cls: "agent" };
+};
+// "Outside the agent's authority. [B1 pass] detail [N1 escalate] detail" -> headline + rule list.
+function split(text) {
+  const parts = String(text || "").split(/\[([A-Z]\d+(?: [A-Z]\d+)*) (pass|escalate|deny|refused)\]\s*/);
+  const head = parts[0].trim(), rules = [];
+  for (let i = 1; i + 2 < parts.length + 1; i += 3) if (parts[i]) rules.push({ id: parts[i], out: parts[i + 1], detail: (parts[i + 2] || "").trim() });
+  return { head, rules };
+}
+const orderOf = e => e.data && (e.data.label || (e.data.order_id ? e.data.order_id : ""));
+const acctName = a => a ? "Customer " + a : "";
+
+async function fetchPage(params) {
+  const r = await fetch("/ledger?format=json&" + params + ($("#f_view").value === "valio" ? "&view=valio" : ""), { headers: { accept: "application/json" } });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+async function load(first) {
+  const L = await fetchPage("limit=" + limit);
+  newShape = "next_since" in L || (L.events[0] && "digest" in L.events[0]);
+  genesis = L.genesis || genesis;
+  // An older gateway sends everything at once; keep only the latest window in view.
+  let evs = L.events || [];
+  if (evs.length > limit) evs = evs.slice(-limit);
+  const before = new Set(all.map(e => e.seq));
+  if (!first) for (const e of evs) if (!before.has(e.seq)) fresh.add(e.seq);
+  all = evs;
+  lastSeq = all.length ? all[all.length - 1].seq : 0;
+  await check();
+  fillFilters();
+  draw();
+}
+async function check() {
+  if (!crypto.subtle) { $("#chain").className = "chain"; $("#chain").innerHTML = `<span>The chain can only be checked on a secure (https) page.</span>`; return; }
+  const { results, firstBad, fromGenesis } = await verifyChain(all, genesis, (n, of) => { $("#chain").innerHTML = `<span class="spin"></span><span>Checking ${n.toLocaleString("en-GB")} of ${of.toLocaleString("en-GB")} entries</span>`; });
+  verdicts = new Map(all.map((e, i) => [e.seq, results[i]]));
+  const withheld = all.filter(e => e.withheld).length, n = all.length;
+  const span = n ? `entries #${all[0].seq.toLocaleString("en-GB")} to #${all[n - 1].seq.toLocaleString("en-GB")}` : "";
+  if (!n) { $("#chain").className = "chain"; $("#chain").innerHTML = `<span>The ledger is empty. The first agent call writes the first entry.</span>`; return; }
+  const ok = firstBad === null;
+  $("#chain").className = "chain " + (ok ? "ok" : "bad");
+  $("#chain").innerHTML = `${markHtml(ok)}<span>${ok
+    ? `<b>Chain intact.</b> Your browser recomputed ${n.toLocaleString("en-GB")} links${fromGenesis ? " from the first entry" : ""}.`
+    : `<b>Chain broken at entry #${all[firstBad].seq}.</b> It was changed after it was written; every later link is suspect.`}${withheld ? ($("#f_view").value === "valio" ? ` ${withheld.toLocaleString("en-GB")} entries belong to other visitors' sandboxes: withheld even in this demo view, their digests still chain.` : ` ${withheld.toLocaleString("en-GB")} entries belong to other customers: their content is withheld from you, their digests still chain.`) : ""}${withheld === n ? ` <a href="/demo">Send an agent shopping</a> and its steps show here in full.` : ""}</span><span class="meta">${span}</span>`;
+}
+function fillFilters() {
+  const keep = id => $(id).value;
+  const set = (id, label, items) => { const v = keep(id); $(id).innerHTML = `<option value="">${label}</option>` + items.map(([k, t]) => `<option value="${esc(k)}">${esc(t)}</option>`).join(""); $(id).value = items.some(i => i[0] === v) ? v : ""; };
+  const accts = [...new Set(all.map(e => e.acct).filter(Boolean))].sort();
+  set("#f_acct", "All accounts", accts.map(a => [a, acctName(a)]).concat(all.some(e => e.withheld) ? [["__withheld", "Other customers (withheld)"]] : []));
+  const kinds = [...new Set(all.map(e => e.kind).filter(Boolean))].sort();
+  set("#f_kind", "All kinds", kinds.map(k => [k, KIND[k] || nice(k)]));
+  const orders = new Map();
+  for (const e of all) if (e.cid) { const lab = e.kind === "order" && e.data && e.data.label; if (lab || !orders.has(e.cid)) orders.set(e.cid, lab || orders.get(e.cid) || e.cid); }
+  set("#f_cid", "All orders and offers", [...orders].reverse().map(([cid, lab]) => [cid, lab.startsWith("chk_") ? "Offer " + lab : "Order " + lab]));
+}
+function match(e) {
+  const a = $("#f_acct").value, k = $("#f_kind").value, c = $("#f_cid").value, q = $("#q").value.trim().toLowerCase();
+  if (a === "__withheld" ? !e.withheld : a && e.acct !== a) return false;
+  if (k && e.kind !== k) return false;
+  if (c && e.cid !== c) return false;
+  if (q) { const hay = [e.text, e.actor, e.kind, KIND[e.kind], e.cid, e.ref, e.hash, e.seq, orderOf(e), e.acct].join(" ").toLowerCase(); if (!hay.includes(q)) return false; }
+  return true;
+}
+function row(e) {
+  const v = verdicts.get(e.seq) || { ok: null }, who = actor(e.actor), wh = e.withheld;
+  const { head, rules } = split(e.text);
+  const oid = e.data && e.data.order_id;
+  const t = new Date(e.ts);
+  const time = isNaN(t) ? "" : t.toLocaleTimeString("en-GB", { timeZone: TZ }), date = isNaN(t) ? "" : t.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: TZ });
+  const body = wh
+    ? `<div class="who"><b>Another customer's entry, withheld</b><span class="k">${esc(KIND[e.kind] || nice(e.kind || "entry"))}</span></div><div class="txt muted">Its content is not shown to you. Its digest and hashes are, so it still counts in the chain check.</div>`
+    : `<div class="who"><b>${esc(who.name)}</b>${who.role ? `<span class="role ${who.cls}">${esc(who.role)}</span>` : ""}<span class="k">${esc(KIND[e.kind] || nice(e.kind))}${e.acct ? " · " + esc(acctName(e.acct)) : ""}</span></div>
+       <div class="txt">${esc(head)}</div>${rules.length ? `<div class="rl">${rules.map(r => `<div><span class="pill ${(OUT[r.out] || ["", r.out])[0]}">${esc(r.id)} ${esc((OUT[r.out] || ["", r.out])[1])}</span><span>${esc(r.detail)}</span></div>`).join("")}</div>` : ""}`;
+  const isOpen = open.has(e.seq);
+  const raw = isOpen ? `<div class="raw"><dl><dt>Entry</dt><dd>#${e.seq}</dd><dt>Previous</dt><dd>${esc(e.prev)}</dd>${e.digest ? `<dt>Digest</dt><dd>${esc(e.digest)}</dd>` : ""}<dt>Hash</dt><dd>${esc(e.hash)}</dd>
+      <dt>Link</dt><dd>${v.link ? "chains onto the entry before" : v.link === false ? "does not chain onto the entry before" : "not checked"}</dd>${wh ? "" : `<dt>Content</dt><dd>${v.body === false ? "does not match its digest" : "matches its hash"}</dd>`}</dl>
+      <pre>${esc(JSON.stringify(e, null, 1))}</pre></div>` : "";
+  return `<li class="e${wh ? " withheld" : ""}${v.ok === false ? " bad" : ""}${fresh.has(e.seq) ? " arrive" : ""}" data-seq="${e.seq}"><button type="button" aria-expanded="${isOpen}">
+    <span class="t">${esc(time)}<small>${esc(date)}</small></span>${markHtml(v.ok === undefined ? null : v.ok)}
+    <span class="body">${body}</span>
+    <span class="side"><span class="hash" title="${esc(e.hash)}">#${e.seq} · ${esc((e.hash || "").slice(0, 8))}</span>${oid ? `<a href="/orders/${esc(oid)}">Order ${esc(e.data.label || "")}</a>` : ""}</span>
+  </button>${raw}</li>`;
+}
+// Runs of other customers' entries fold into one row, so your own steps stay readable.
+function rows(list) {
+  let h = "", i = 0;
+  while (i < list.length) {
+    let j = i;
+    while (j < list.length && list[j].withheld) j++;
+    const run = list.slice(i, j);
+    if (run.length >= 2 && !openRuns.has(run[run.length - 1].seq)) {
+      const ok = run.every(e => (verdicts.get(e.seq) || {}).ok !== false), a = run[run.length - 1], b = run[0];
+      const t = x => { const d = new Date(x.ts); return isNaN(d) ? "" : d.toLocaleTimeString("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit" }); };
+      h += `<li class="e withheld run" data-run="${a.seq}"><button type="button" aria-expanded="false">
+        <span class="t">${esc(t(a))}<small>to ${esc(t(b))}</small></span>${markHtml(ok)}
+        <span class="body"><div class="who"><b>${run.length.toLocaleString("en-GB")} entries from other customers, withheld</b></div><div class="txt muted">Their content is not shown to you. Their digests and hashes still count in the chain check. Open to see each one.</div></span>
+        <span class="side"><span class="hash">#${a.seq} to #${b.seq}</span></span></button></li>`;
+      i = j; continue;
+    }
+    h += run.map(row).join("");
+    if (j === i) { h += row(list[i]); j = i + 1; }
+    i = j;
+  }
+  return h;
+}
+function draw() {
+  const list = all.filter(match).reverse();
+  const filtered = list.length !== all.length;
+  $("#count").innerHTML = `<span>${all.length ? (filtered ? `${list.length.toLocaleString("en-GB")} of the latest ${all.length.toLocaleString("en-GB")} entries match` : `The latest ${all.length.toLocaleString("en-GB")} entries, newest first`) : ""}</span>${filtered ? '<button type="button" id="clear">Clear filters</button>' : ""}`;
+  if (filtered) $("#clear").onclick = () => { $("#q").value = ""; for (const id of ["#f_acct", "#f_kind", "#f_cid"]) $(id).value = ""; sync(); draw(); };
+  $("#tl").innerHTML = list.length ? rows(list.slice(0, shown)) : `<li class="state">${all.length ? "No entries match. Try fewer filters." : "Nothing on the ledger yet."}</li>`;
+  $("#more").hidden = !(list.length > shown || (all.length >= limit && limit < MAX && newShape));
+  fresh.clear();
+}
+// Filters live in the address, so a link can point at one order's entries.
+function sync() {
+  const p = new URLSearchParams();
+  for (const [k, id] of [["q", "#q"], ["acct", "#f_acct"], ["kind", "#f_kind"], ["cid", "#f_cid"]]) if ($(id).value) p.set(k, $(id).value);
+  if ($("#f_view").value === "me") p.set("view", "me");
+  history.replaceState(null, "", "/ledger" + (p.toString() ? "?" + p : ""));
+}
+$("#tl").onclick = e => {
+  if (e.target.closest("a")) return;
+  const li = e.target.closest(".e"); if (!li) return;
+  if (li.dataset.run) { openRuns.add(+li.dataset.run); draw(); return; }
+  const s = +li.dataset.seq; open.has(s) ? open.delete(s) : open.add(s);
+  const ev = all.find(x => x.seq === s); li.outerHTML = row(ev);
+};
+let qt = null;
+$("#q").oninput = () => { clearTimeout(qt); qt = setTimeout(() => { shown = PAGE; sync(); draw(); }, 120); };
+for (const id of ["#f_acct", "#f_kind", "#f_cid"]) $(id).onchange = () => { shown = PAGE; sync(); draw(); };
+// Valio Aimo reads every account; a customer reads its own and gets the rest withheld. In this demo anyone may try both.
+$("#f_view").onchange = async () => { shown = PAGE; sync(); await load(true).catch(() => { }); };
+$("#morebtn").onclick = async () => {
+  const list = all.filter(match);
+  if (list.length > shown) { shown += PAGE; draw(); return; }
+  limit = Math.min(MAX, limit * 2); shown += PAGE;
+  $("#morebtn").disabled = true; await load(false).catch(() => { }); $("#morebtn").disabled = false;
+};
+document.addEventListener("keydown", e => { if (e.key === "/" && document.activeElement.tagName !== "INPUT") { e.preventDefault(); $("#q").focus(); } });
+
+(async () => {
+  const p = new URLSearchParams(location.search);
+  $("#q").value = p.get("q") || "";
+  if (p.get("view") === "me") $("#f_view").value = "me";
+  try { await load(true); }
+  catch (e) { $("#chain").className = "chain bad"; $("#chain").innerHTML = `${markHtml(false)}<span>Could not load the ledger. Reload to try again.</span>`; $("#count").textContent = ""; return; }
+  for (const [k, id] of [["acct", "#f_acct"], ["kind", "#f_kind"], ["cid", "#f_cid"]]) if (p.get(k)) $(id).value = p.get(k);
+  draw();
+  // New entries arrive while you watch. An older gateway sends the whole ledger each time, so ask it less often.
+  setInterval(() => { if (!document.hidden && !$("#q").matches(":focus")) load(false).catch(() => { }); }, newShape ? 5000 : 15000);
+})();
+</script>
+</body>
+</html>

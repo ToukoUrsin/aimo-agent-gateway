@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aimo Agent Gateway</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+body{background:var(--bg)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--s5);padding:var(--s5) var(--s5) var(--s8);max-width:1440px;margin:0 auto}
+@media (max-width:980px){.grid{grid-template-columns:1fr;padding:var(--s4) var(--s4) var(--s7);gap:var(--s6)}}
+.col{display:flex;flex-direction:column;gap:var(--s3);min-width:0}
+.side{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:var(--t4);font-weight:600;letter-spacing:-.01em;min-height:28px;margin-bottom:2px}
+.side .tag{font-size:var(--t1);font-weight:500;padding:3px 8px;border-radius:var(--r-s);letter-spacing:0}
+.side .note{font-size:var(--t2);font-weight:400;color:var(--muted)}
+.buyer .tag{background:var(--buyer-bg);color:var(--buyer)} .seller .tag{background:var(--seller-bg);color:var(--seller)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:var(--s3) 0}
+.chip{border:1px solid var(--line-2);background:var(--panel);border-radius:999px;height:28px;padding:0 12px;font-size:var(--t2);cursor:pointer;color:var(--ink-2);transition:background-color .15s,border-color .15s}
+.chip:hover{background:var(--hover)}
+.chip[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.row{display:flex;gap:var(--s2);align-items:center}
+.row>select{flex:1;min-width:0}
+.row .btn{height:36px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--s3) var(--s4)}
+.fields label{font-size:var(--t2);color:var(--muted);display:block}
+.fields label>input,.fields label>select,.fields label>.money{margin-top:6px}
+.money{display:flex;align-items:center;border:1px solid var(--line-2);border-radius:var(--r);background:var(--panel);height:36px;transition:border-color .15s,box-shadow .15s}
+.money:focus-within{border-color:var(--ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--ink) 12%,transparent)}
+.money span{padding:0 0 0 12px;color:var(--muted);font-size:var(--t3)}
+.money span.u{padding:0 12px 0 6px;font-size:var(--t1);white-space:nowrap}
+.money input{border:0!important;box-shadow:none!important;background:transparent!important;height:34px;padding:0 4px;font-variant-numeric:tabular-nums;min-width:0}
+.money .saved{color:var(--pass);opacity:0;transition:opacity .3s;padding:0 10px 0 0;display:flex}
+.money .saved.on{opacity:1}
+.money .saved svg{width:14px;height:14px}
+details.card>summary{display:flex;width:100%;font-size:var(--t3);color:var(--ink);gap:8px;min-height:24px}
+details.card>summary .muted{font-size:var(--t2);font-weight:400}
+details.card>summary b{font-weight:600}
+details.card[open]>summary{margin-bottom:var(--s3)}
+.steps{display:flex;flex-direction:column;gap:2px;padding:var(--s2) 0}
+.step{display:grid;grid-template-columns:56px 1fr;gap:var(--s3);font-size:var(--t3);padding:6px 0}
+.step.arrive{animation:arrive .45s var(--ease) both}
+.step .t{color:var(--muted);font-size:var(--t1);padding-top:2px;font-variant-numeric:tabular-nums}
+.step .b{min-width:0;overflow-wrap:anywhere}
+.step .b p{margin:.25em 0}
+.step.call .name,.step.result .name{font-family:var(--mono);font-size:var(--t2);display:inline-flex;align-items:center;gap:6px}
+.step.call .name::before,.step.result .name::before{content:"";width:6px;height:6px;border-radius:50%;flex:none}
+.step.call .name::before{background:var(--buyer)} .step.result .name::before{background:var(--ink)}
+.step.call details,.step.result details{margin-top:2px}
+.step.say .b{background:var(--buyer-bg);border-radius:var(--r-l);padding:10px 14px}
+.step.check .b{color:var(--muted);font-size:var(--t2)}
+.step.check .b::before{content:"Signature checked · ";color:var(--pass);font-weight:500}
+.step.error .b{color:var(--deny)}
+.step.wait .b{background:var(--esc-bg);border-radius:var(--r-l);padding:12px 14px}
+.step.done .b{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-l);padding:12px 16px}
+.step.done p{margin:.35em 0} .step.done ul{margin:.35em 0;padding-left:1.2em}
+.qr{display:flex;gap:var(--s4);align-items:center;margin-top:var(--s3)}
+.qr img{width:120px;height:120px;border-radius:var(--r);background:#fff;flex:none;padding:6px}
+.switch,.fields label.switch{display:flex;gap:10px;align-items:center;font-weight:500;color:var(--ink)!important;font-size:var(--t3)!important;align-self:end;height:36px}
+.switch input{appearance:none;-webkit-appearance:none;width:34px;height:20px;border-radius:999px;background:var(--line-2);position:relative;cursor:pointer;transition:background-color .2s;flex:none}
+.switch input::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .2s var(--ease)}
+.switch input:checked{background:var(--pass)}
+.switch input:checked::after{transform:translateX(14px)}
+.ledger .ev{display:grid;grid-template-columns:64px 1fr auto;gap:var(--s3);padding:9px 0;border-bottom:1px solid var(--line);font-size:var(--t2)}
+.ledger .ev:last-of-type{border-bottom:0}
+.ledger .ev>div:nth-child(2){min-width:0;overflow-wrap:anywhere;color:var(--ink-2)}
+.who{font-size:var(--t1);font-weight:600;display:block;margin-bottom:1px}
+.who.agent{color:var(--buyer)} .who.gateway{color:var(--seller)} .who.human{color:var(--human)}
+.hash{font:11px/1.6 var(--mono);color:var(--muted)}
+.ledger .lfoot{color:var(--muted);font-size:var(--t1);margin-top:var(--s3);padding-top:var(--s3);border-top:1px solid var(--line);display:flex;gap:4px 12px;flex-wrap:wrap}
+.empty{color:var(--muted);font-size:var(--t3);padding:2px 0}
+.card.quiet{padding-top:14px;padding-bottom:14px}
+.card.quiet h3{margin:0 0 2px}
+.issue{height:30px;font-size:var(--t2);width:auto;max-width:190px}
+#orders td{vertical-align:middle}
+#orders .wrap-cell{white-space:nowrap}
+.decide{border-radius:var(--r-l);padding:var(--s4);margin:0 0 var(--s4);background:var(--soft)}
+.decide.pass{background:var(--pass-bg)} .decide.escalate{background:var(--esc-bg)} .decide.deny{background:var(--deny-bg)}
+.decide .dv{display:flex;align-items:center;gap:10px;font-size:var(--t6);font-weight:600;letter-spacing:-.014em;line-height:1.25}
+.decide.pass .dv{color:var(--pass)} .decide.escalate .dv{color:var(--esc)} .decide.deny .dv{color:var(--deny)}
+.decide .dv .mark{width:24px;height:24px;background:color-mix(in srgb,currentColor 14%,transparent);color:inherit}
+.decide.escalate .dv .mark::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.decide dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:10px 18px;margin:var(--s3) 0 0;font-size:var(--t3);line-height:1.45}
+.decide dt{color:var(--muted);padding-top:1px}
+.decide dd{margin:0;min-width:0;overflow-wrap:anywhere;color:var(--ink)}
+.decide .fired+.fired{margin-top:6px}
+.decide .fired .mono{font-weight:600}
+.decide .fired .d{color:var(--ink-2)}
+.decide .dfoot{margin-top:var(--s3);font-size:var(--t1);color:var(--muted)}
+.decide .acts{margin-top:var(--s3);display:flex;gap:var(--s2);flex-wrap:wrap}
+@media (max-width:640px){.decide dl{grid-template-columns:1fr;gap:2px}.decide dd+dt{margin-top:8px}}
+.calm{display:flex;gap:8px;align-items:center;font-size:var(--t3);color:var(--ink-2)}
+.calm .tnum{color:var(--muted)}
+.panel-steps{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-l);padding:var(--s3) var(--s5)}
+@media (max-width:640px){
+  .panel-steps{padding:var(--s3) var(--s4)}
+  .step{grid-template-columns:1fr;gap:2px}
+  #req{min-height:112px}
+  #orders table,#orders tbody,#orders tr,#orders td{display:block}
+  #orders tr{display:grid;grid-template-columns:1fr auto;gap:4px 12px;padding:10px 0;border-bottom:1px solid var(--line)}
+  #orders td{border:0;padding:0}
+  #orders td:nth-child(3),#orders td:nth-child(5){grid-column:1/-1}
+  #agents table,#agents tbody,#agents tr,#agents td{display:block}
+  #agents tr{display:grid;grid-template-columns:1fr auto;gap:4px 12px;padding:10px 0;border-bottom:1px solid var(--line)}
+  #agents td{border:0;padding:0}
+  .qr img{width:96px;height:96px}
+}
+</style>
+</head>
+<body>
+<div class="banner">Junction 2026 prototype on Valio Aimo's challenge data and mock price and availability API. Not a Valio Aimo system.</div>
+<header id="site"><button class="btn small" id="reset" type="button" title="Start this account again from a clean slate">Reset demo</button></header>
+<main class="grid">
+  <section class="col buyer" aria-label="Buyer side">
+    <div class="side"><span class="tag">Buyer side</span><span id="buyername"><span class="skel" style="width:14ch"></span></span><span class="note" id="acctnote"></span></div>
+    <div class="card">
+      <h3><label for="req" style="font-size:inherit;color:inherit">Request to the purchasing agent</label></h3>
+      <textarea id="req" rows="3"></textarea>
+      <div class="chips" id="presets" role="group" aria-label="Example requests"></div>
+      <div class="row">
+        <select id="agent" aria-label="Which agent"></select>
+        <button class="btn primary" id="run" type="button">Send to agent</button>
+      </div>
+      <p class="muted" id="botnote" hidden style="font-size:var(--t2);margin:var(--s2) 0 0"></p>
+    </div>
+    <div class="panel-steps" aria-live="polite"><div class="steps" id="steps"></div></div>
+    <details class="card" id="mandatecard">
+      <summary><b>The agent's mandate</b> <span id="mandatesum"></span></summary>
+      <p class="muted" style="font-size:var(--t2);margin:0 0 var(--s3)">Signed by the buying company and bound to the agent's key. The agent presents it with every request; Valio Aimo checks it in code.</p>
+      <div class="fields">
+        <label>The buyer's limit per order, without a person<div class="money"><span>€</span><input type="text" inputmode="numeric" id="m_order" autocomplete="off"><span class="u">ex VAT</span></div></label>
+        <label>Per week<div class="money"><span>€</span><input type="text" inputmode="numeric" id="m_week" autocomplete="off"><span class="u">ex VAT</span></div></label>
+        <label>Substitutions<select id="m_sub"><option value="listed">Only Valio Aimo's listed substitutes</option><option value="any">Any that keeps claims and allergens</option><option value="none">Never</option></select></label>
+        <label>Products never bought before<select id="m_new"><option value="ask">Ask a person</option><option value="allow">Allowed</option></select></label>
+      </div>
+      <div style="margin-top:var(--s4)"><button class="btn small" id="m_save" type="button">Sign new mandate</button></div>
+    </details>
+    <details class="card" id="approver">
+      <summary><b>The approver's device</b> <span class="muted" id="pksum"></span></summary>
+      <div id="pkbody"></div>
+    </details>
+    <div class="card quiet" id="agents"><h3>Agents on this account</h3><div class="empty"><span class="skel" style="width:24ch"></span></div></div>
+    <details class="card" id="connect">
+      <summary><b>Connect your own assistant</b> <span class="muted">Claude, ChatGPT or any MCP client</span></summary>
+      <p style="margin:0 0 var(--s2)">Add this address as a connector. Your assistant sends you to a page where you set what it may order alone.</p>
+      <div class="row"><input type="text" id="mcpurl" readonly class="mono" aria-label="MCP address"><button class="btn small" id="copy" type="button">Copy</button></div>
+      <p class="muted" style="font-size:var(--t2);margin:var(--s2) 0 0">Claude: Settings, Connectors, Add custom connector. ChatGPT: Settings, Connectors, Create. It orders on this account, under the same rules as every other agent.</p>
+    </details>
+  </section>
+
+  <section class="col seller" aria-label="Valio Aimo side">
+    <div class="side"><span class="tag">Valio Aimo side</span><span>Agent gateway in front of the price and availability API</span></div>
+    <div class="card">
+      <h3>Valio Aimo's rules for agents on this account</h3>
+      <div class="fields">
+        <label class="switch"><input type="checkbox" id="p_on" role="switch">Agent ordering on</label>
+        <label>What agents may do<select id="p_tier"><option value="order">Order</option><option value="reorder">Re-order past products only</option><option value="read">Look up only</option></select></label>
+        <label>Valio Aimo's cap per order<div class="money"><span>€</span><input type="text" inputmode="numeric" id="p_cap" autocomplete="off"><span class="u">ex VAT</span><span class="saved" id="p_saved" aria-hidden="true"></span></div></label>
+      </div>
+    </div>
+    <div class="card" id="offer"><h3>Signed offer</h3><span class="skel block"></span><span class="skel block" style="width:70%"></span></div>
+    <div class="card quiet" id="orders"><h3>Orders placed by agents</h3><div class="empty"><span class="skel" style="width:16ch"></span></div></div>
+    <div class="card ledger" id="ledger"><h3>Audit ledger</h3><span class="skel block"></span><span class="skel block" style="width:80%"></span></div>
+  </section>
+</main>
+<script src="/static/lib.js"></script>
+<script src="/static/passkey.js"></script>
+<script>
+const PRESETS = [
+  ["Re-order, no person needed", "We need 400 litres of our usual lactose-free milk for Monday."],
+  ["The challenge's example", "I need 1,000 litres of lactose-free milk by Monday. Find an option that meets our requirements based on price and availability."],
+  ["Not enough stock", "We need 1,000 litres of Arla Cafè lactose-free milk (product 463380) by Monday. If there is not enough, fill the rest with the closest allowed substitute."],
+  ["Allergen rule", "We need 200 litres of barista oat drink by Monday. It must be gluten-free."],
+  ["A whole basket", "Monday's breakfast order: 300 litres of our usual lactose-free milk, 100 litres of barista oat drink (gluten-free) and 60 kg of butter. Keep it in one order."],
+];
+const BOTS = [["script", "Standing-order bot, no AI, over REST"], ["rogue", "Unvetted bot (7 attacks), over REST"]];
+let models = null;
+function fillAgents(list) {
+  const key = JSON.stringify(list); if (models === key) return; models = key;
+  const cur = $("#agent").value;
+  $("#agent").innerHTML = list.map(m => `<option value="llm:${esc(m.id)}">${esc(m.label)}, over MCP</option>`).join("") + BOTS.map(b => `<option value="${b[0]}">${b[1]}</option>`).join("");
+  if (cur) $("#agent").value = cur;
+  botState();
+}
+let run = null, shown = 0, last = {}, focusCid = null, editing = false, resumed = false;
+
+$("#presets").innerHTML = PRESETS.map((p, i) => `<button type="button" class="chip" data-i="${i}" aria-pressed="${i === 0}">${esc(p[0])}</button>`).join("");
+const pressChip = () => { for (const c of document.querySelectorAll("#presets .chip")) c.setAttribute("aria-pressed", String(PRESETS[c.dataset.i][1] === $("#req").value)); };
+$("#presets").onclick = e => { const b = e.target.closest(".chip"); if (b) { $("#req").value = PRESETS[b.dataset.i][1]; pressChip(); } };
+$("#req").oninput = pressChip;
+$("#req").value = PRESETS[0][1];
+// The two bots have no model and do not read the request: say so and grey the text out, so nobody thinks their words were ignored by a rule.
+const BOTNOTE = { script: "This bot has no AI and does not read the request. It sends the same standing order every time: 400 L of the usual lactose-free milk for next Monday.", rogue: "This bot has no AI and does not read the request. It tries seven ways around the rules, then a normal re-order." };
+const botState = () => { const n = BOTNOTE[$("#agent").value]; $("#botnote").hidden = !n; $("#botnote").textContent = n || ""; $("#req").disabled = !!n; $("#presets").style.opacity = n ? ".45" : ""; $("#presets").style.pointerEvents = n ? "none" : ""; };
+$("#agent").addEventListener("change", botState);
+fillAgents([{ id: "claude-opus-5-5", label: "Claude Opus 5.5" }]);
+
+// Money fields: shown as "15,000", sent as cents.
+const money = v => Math.round(Number(String(v).replace(/[^\d.]/g, "")) * 100) || 0;
+const moneyText = c => (Math.round(c) / 100).toLocaleString("en-IE", { maximumFractionDigits: 2 });
+for (const id of ["m_order", "m_week", "p_cap"]) $("#" + id).addEventListener("blur", e => { e.target.value = moneyText(money(e.target.value)); });
+
+// What the panels look like before anything has happened: a quiet, labelled example.
+const ex = (body, note) => `<div class="example"><span class="ex-tag">Example</span><div class="ex-body">${body}</div></div>${note ? `<div class="muted" style="font-size:var(--t2);margin-top:var(--s2)">${note}</div>` : ""}`;
+const STEPS_EXAMPLE = ex(`<div class="steps" style="padding:0">
+  <div class="step call"><div class="t">0.0 s</div><div class="b"><span class="name">plan_sourcing</span></div></div>
+  <div class="step result"><div class="t">1.2 s</div><div class="b"><span class="name">plan_sourcing</span><div>11 products qualify. Usual product: €624.00 ex VAT, the agent may order it alone.</div></div></div>
+  <div class="step check"><div class="t">2.0 s</div><div class="b">Valio Aimo's offer</div></div>
+  <div class="step done"><div class="t">3.1 s</div><div class="b"><b>Ordered</b><p>400 l of the usual lactose-free milk for Monday, no person needed.</p></div></div></div>`, "Pick a request and send it. The agent's real steps appear here.");
+const OFFER_EXAMPLE = '<h3>Signed offer</h3>' + ex(`<div style="display:flex;justify-content:space-between;gap:12px;font-size:var(--t3)"><span><b>Lactose-free milk 1 l</b> × 400</span><span class="tnum">€624.00</span></div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"><span class="pill pass">B1 pass</span><span class="pill pass">A2 pass</span><span class="pill pass">Within the agent's authority</span></div>`, "When an agent asks for a checkout, the offer Valio Aimo signs shows here with every rule it ran.");
+
+function stepHtml(s) {
+  let body = "";
+  if (s.kind === "call") body = `<span class="name">${esc(s.title)}</span><details><summary>arguments</summary><pre>${esc(JSON.stringify(s.data.arguments, null, 1))}</pre></details>`;
+  else if (s.kind === "result") body = `<span class="name">${esc(s.title)}</span><div>${esc(s.text)}</div>${s.data ? `<details><summary>signed response</summary><pre>${esc(JSON.stringify(s.data.response, null, 1))}</pre></details>` : ""}`;
+  else if (s.kind === "wait") body = `<b>${esc(s.title)}</b><div>${esc(s.text)}</div>${approvalBox(s.data.continue_url)}`;
+  else if (s.kind === "done") body = `<b>${esc(s.title)}</b>${md(s.text)}`;
+  else if (s.kind === "say") body = md(s.text);
+  else body = `<b>${esc(s.title)}</b> ${esc(s.text)}`;
+  return `<div class="step arrive ${esc(s.kind)}"><div class="t">${esc(s.t)}</div><div class="b">${body}</div></div>`;
+}
+function approvalBox(url) {
+  return `<div class="qr" style="margin-top:8px"><img alt="QR code for the approval page" src="/api/qr?u=${encodeURIComponent(url)}"><div><div>Scan with a phone, or</div><a href="${esc(url)}" target="_blank" rel="noopener"><b>open the approval page</b></a><div class="muted" style="font-size:12.5px;margin-top:4px">In production this link goes to the approver by email, Teams or the buyer's procurement system.</div></div></div>`;
+}
+
+async function pollRun() {
+  if (!run) return;
+  const r = await api("/api/demo/run/" + run.id);
+  if (!r || !r.steps) return;   // busy or rate limited: the next poll asks again
+  const box = $("#steps");
+  if (shown === 0) box.innerHTML = "";
+  for (; shown < r.steps.length; shown++) box.insertAdjacentHTML("beforeend", stepHtml(r.steps[shown]));
+  let sp = $("#spinner");
+  if (r.status === "running") { if (!sp) box.insertAdjacentHTML("beforeend", '<div class="step" id="spinner"><div class="t"></div><div class="b muted" style="display:flex;gap:8px;align-items:center"><span class="spin"></span> Working</div></div>'); else box.appendChild(sp); }
+  else if (sp) sp.remove();
+  if (r.checkout_id) focusCid = r.checkout_id;
+  if (r.status === "done" || r.status === "error") { run = null; $("#run").disabled = false; tick().catch(() => { }); }
+}
+
+function issuesHtml(x) {
+  if (!x || !x.issues || !x.issues.length) return "";
+  const kind = { short_pick: "Short pick", delay: "Delay", recall: "Recall" };
+  return `<div style="margin-top:12px"><b>After the order</b></div><table>` + x.issues.slice(0, 6).map(i => `<tr><td><b>${esc(kind[i.kind] || i.kind)}</b> on <a href="${esc(siteUrl(i.order.url))}" target="_blank" rel="noopener">${esc(i.order.label)}</a><div class="muted" style="font-size:13px">${esc(i.what_happened || "")}</div></td><td>${i.status === "open" ? '<span class="pill escalate">open</span>' : `<span class="pill pass">${esc(nice(i.status))}</span>`}${i.chosen ? `<div class="muted" style="font-size:13px">${esc(i.chosen.title || i.chosen.option || "")}${i.decided_by ? " · " + esc(i.decided_by) : ""}</div>` : ""}</td><td>${i.recall && i.recall.url ? `<a href="${esc(siteUrl(i.recall.url))}" target="_blank" rel="noopener">Trace</a>` : ""}</td></tr>`).join("") + "</table>";
+}
+function set(id, html) { if (last[id] !== html) { last[id] = html; $(id).innerHTML = html; } }
+
+// The decision gets the weight: what the agent wanted, which rule decided, what the gateway did.
+function decision(c) {
+  const w = c.wholesale, pol = w.policy || { rules: [] }, ap = w.approval;
+  const fired = pol.rules.filter(x => x.outcome === "escalate" || x.outcome === "deny");
+  const denied = fired.some(x => x.outcome === "deny") || c.status === "incomplete";
+  const sub = (c.totals.find(t => t.type === "subtotal") || {}).amount;
+  const tone = c.status === "canceled" || denied ? "deny" : c.status === "requires_escalation" ? "escalate" : "pass";
+  const verdict = c.status === "completed" ? (ap ? `Ordered, after ${esc(ap.by)} approved` : "Ordered by the agent alone")
+    : c.status === "requires_escalation" ? "Needs a person"
+    : c.status === "canceled" ? (ap && ap.decision === "rejected" ? `Rejected by ${esc(ap.by)}` : "Cancelled")
+    : denied ? "Refused by the rules"
+    : ap ? `Approved by ${esc(ap.by)}` : "The agent may order this alone";
+  const asked = c.line_items.map(l => `${((l.wholesale || {}).units ?? (l.quantity.total ?? l.quantity)).toLocaleString("en-IE")} × ${esc(l.item.title)}`).join("; ");
+  const did = c.status === "completed" ? `Placed order ${esc(c.order.label)}${ap ? "" : " with no person involved"}, signed by Valio Aimo and the agent.`
+    : c.status === "requires_escalation" ? `Signed the offer, held the price and stock${w.hold ? " until " + esc(clock(w.hold.price_and_stock_held_until)) : ""} and sent it to the buyer's approver. Nothing is ordered until they decide.`
+    : c.status === "canceled" ? "Ordered nothing and released the held stock."
+    : denied ? "Signed nothing orderable and told the agent why. No person can override this."
+    : ap ? "Recorded the signed approval. The agent may now place the order." : "Signed the offer. Every rule passed, so the agent may order it alone.";
+  const errs = c.messages.filter(m => m.type === "error" && m.code !== "approval_required" && m.code !== "policy_denied");
+  return `<div class="decide ${tone}"><div class="dv"><span class="mark">${tone === "pass" ? ICON.check : tone === "deny" ? ICON.cross : ""}</span><span>${verdict}</span></div><dl>
+    ${asked ? `<dt>The agent asked for</dt><dd>${asked}${sub ? ` · <b class="tnum">${eur(sub)}</b> ex VAT` : ""}</dd>` : ""}
+    <dt>${fired.length === 1 ? "The rule that decided" : fired.length ? "The rules that decided" : "Rules"}</dt><dd>${fired.length ? fired.map(x => `<div class="fired"><span class="mono">${esc(x.id)}</span> <b>${esc(x.title)}</b><div class="d">${esc(x.detail)}</div></div>`).join("") : `All ${pol.rules.length} passed.`}
+      ${errs.map(m => `<div class="fired"><b>${esc(nice(m.code))}</b><div class="d">${esc(m.content)}</div>${m.wholesale && m.wholesale.alternatives && m.wholesale.alternatives.length ? `<div class="d">Alternatives offered: ${m.wholesale.alternatives.map(a => esc(a.title) + " (" + esc(a.tier) + ")").join("; ")}</div>` : ""}</div>`).join("")}</dd>
+    <dt>The gateway</dt><dd>${did}${ap && ap.note ? ` Note: “${esc(ap.note)}”` : ""}</dd></dl>
+    ${c.status === "requires_escalation" && c.continue_url ? `<div class="acts"><a class="btn small" href="${esc(c.continue_url)}" target="_blank" rel="noopener">Open the approval page</a></div>` : ""}
+    ${c.order ? `<div class="acts"><a class="btn primary fit" href="${esc(siteUrl(c.order.url || c.order.permalink_url))}" target="_blank" rel="noopener">Order ${esc(c.order.label)}: confirmation and evidence</a></div>` : ""}
+    <div class="dfoot">Decided in Valio Aimo's code at ${esc(clock(pol.evaluated_at))}, no model involved.</div></div>`;
+}
+
+async function renderOffer(c) {
+  if (!c) return set("#offer", OFFER_EXAMPLE);
+  if (!c.wholesale) return;   // a busy or failed answer: keep what is on screen
+  const w = c.wholesale, pol = w.policy;
+  let html = `<h3>Valio Aimo's decision</h3>` + decision(c);
+  if (c.line_items.length) html += `<details class="offer-more"><summary>The signed offer: lines, totals, signature</summary><div style="margin-top:var(--s3)">` + linesTable(c.line_items) + totalsBlock(c.totals) + `<dl class="kv" style="margin:10px 0">
+    <dt>Delivery</dt><dd>${esc(day(w.delivery_date))}${w.order_by ? ` · order by ${esc(new Date(w.order_by).toLocaleString("en-GB", { weekday: "short", hour: "2-digit", minute: "2-digit", timeZone: TZ }))}` : ""}</dd>
+    <dt>Asked by</dt><dd><span class="mono">${esc(w.agent)}</span>${w.mandate_id ? ` under mandate <span class="mono">${esc(w.mandate_id)}</span>` : " with no mandate"}</dd>
+    ${w.hold && c.status === "requires_escalation" ? `<dt>Held</dt><dd>Price and stock held until ${esc(clock(w.hold.price_and_stock_held_until))}</dd>` : ""}
+    <dt>Signature</dt><dd class="mono" title="Detached JWS (ES256) over the canonical JSON of this offer">…${esc(c.ap2.merchant_authorization.slice(-28))}</dd></dl></div></details>`;
+  const passed = pol.rules.filter(x => x.outcome === "pass");
+  if (passed.length) html += `<details class="offer-more" style="margin-top:var(--s2)"><summary>${passed.length} other ${passed.length === 1 ? "rule" : "rules"} passed</summary>${rulesTable(passed)}</details>`;
+  set("#offer", html);
+}
+
+async function tick() {
+  const s = await api("/api/console");
+  $("#mcpurl").value = s.public_url + "/mcp";
+  $("#buyername").textContent = s.buyer;
+  $("#acctnote").textContent = s.operator ? "stage account, you are the operator" : s.account.kind === "sandbox" ? "a sandbox made for you, nothing here is a real order" : "";
+  if (s.models) fillAgents(s.models);
+  set("#agents", `<h3>Agents on this account</h3>` + (s.agents.length ? "<table>" + s.agents.map(a => `<tr><td><b>${esc(a.name || a.id)}</b><div class="muted mono" style="font-size:12px">${esc(a.id)}</div></td><td class="muted" style="font-size:13px">${a.kind === "keyless" ? "signed in, no key" : "own signing key"}<div>${a.orders} ordered · ${a.asked} asked · ${a.refused} refused</div></td><td>${a.status === "suspended" ? `<span class="pill deny" title="${esc(a.reason || "")}">suspended</span>` : '<span class="pill pass">in good standing</span>'}</td><td><button class="btn small" data-agent="${esc(a.id)}" data-s="${a.status === "suspended" ? 0 : 1}">${a.status === "suspended" ? "Reinstate" : "Suspend"}</button></td></tr>`).join("") + "</table>" : '<div class="empty">None yet. Agents show up here the first time they call.</div>'));
+  $("#agents").classList.toggle("quiet", !s.agents.length);
+  if (!editing) {
+    const m = s.mandate, p = s.profile;
+    $("#m_order").value = moneyText(m.budget.max_per_order); $("#m_week").value = moneyText(m.budget.max_per_week); $("#m_sub").value = m.substitution.allow; $("#m_new").value = m.new_products;
+    $("#mandatesum").innerHTML = `<span class="muted">up to ${eur(m.budget.max_per_order)} per order, ${eur(m.budget.max_per_week)} per week (${eur(s.spent_week)} used)</span>`;
+    $("#p_on").checked = !!p.enabled; $("#p_tier").value = p.tier; $("#p_cap").value = moneyText(p.max_order_total);
+  }
+  // After a page reload, pick the latest agent run up again.
+  if (!run && !resumed && s.runs.length) { const r = s.runs[0]; run = { id: r.id }; shown = 0; if (r.request) { $("#req").value = r.request; pressChip(); } $("#agent").value = BOTS.some(b => b[0] === r.agent) ? r.agent : "llm:" + (r.model || "claude-opus-5-5"); botState(); $("#run").disabled = r.status === "running" || r.status === "waiting_approval"; }
+  resumed = true;
+  s.issues = s.orders.length ? await api("/api/demo/issues").then(x => x && x.issues ? x : null).catch(() => null) : null;
+  set("#orders", `<h3>Orders placed by agents</h3>` + (s.orders.length ? "<table>" + s.orders.map(o => `<tr><td><a href="${esc(siteUrl(o.url))}" target="_blank" rel="noopener"><b>${esc(o.label)}</b></a></td><td class="num">${eur(o.subtotal)}</td><td>${o.approved_by ? `<span class="pill escalate">approved by ${esc(o.approved_by)}</span>` : '<span class="pill pass">agent alone</span>'}</td><td class="muted">${esc(clock(o.placed_at))}</td><td><select class="issue" data-order="${esc(o.id)}" aria-label="Report a problem with this order"><option value="">Something went wrong…</option><option value="short_pick">Warehouse is short</option><option value="delay">Delivery is a day late</option><option value="recall">A batch is recalled</option></select></td></tr>`).join("") + "</table>" : '<div class="empty">None on this account yet. Each order an agent places shows here with a link to its signed confirmation.</div>') + issuesHtml(s.issues));
+  $("#orders").classList.toggle("quiet", !s.orders.length);
+  // The offer card comes last: a slow or busy answer there never holds back the order list.
+  const cid = focusCid || (s.checkouts[0] && s.checkouts[0].id);
+  try { await renderOffer(cid ? await api("/api/demo/checkout/" + cid) : null); } catch (e) { }
+  const evs = s.events.slice(-14).reverse();
+  const L = s.ledger, chainPill = `<span class="pill ${L.intact ? "pass" : "deny"}">${L.intact ? "chain intact" : "chain broken at #" + L.first_bad_seq}</span>`;
+  set("#ledger", `<h3>Audit ledger ${chainPill}</h3>` +
+    (evs.length ? `<div class="muted" style="font-size:var(--t2);margin:-4px 0 var(--s2)">The latest of this account's entries. The ledger holds ${L.events.toLocaleString("en-GB")} entries from every account.</div>` + evs.map(e => { const k = e.actor.startsWith("human") ? "human" : e.actor === "gateway" ? "gateway" : "agent"; return `<div class="ev"><div class="hash">${esc(e.ts.slice(11, 19))}</div><div><span class="who ${k}">${esc(k === "human" ? e.actor.slice(6) : k === "gateway" ? "Valio Aimo gateway" : e.actor)}</span>${esc(e.text)}</div><div class="hash" title="${esc(e.hash)}">${esc(e.hash.slice(0, 8))}</div></div>`; }).join("")
+      : `<div class="empty">Nothing from this account yet. The ledger holds ${L.events.toLocaleString("en-GB")} ${L.events === 1 ? "entry" : "entries"} from every account${L.events ? ", and this account's steps join it as soon as an agent calls" : ""}.</div>`) +
+    `<div class="lfoot"><span>Each entry carries the hash of the one before it.</span><a href="/ledger">Open the ledger</a><span><span class="tnum">${s.aimo_calls}</span> calls to Valio Aimo's mock API so far</span></div>`);
+}
+
+// Start a run. A busy server (429, 503) gets one calm line and a retry with a visible countdown.
+let retryT = null;
+async function startRun() {
+  clearInterval(retryT);
+  $("#run").disabled = true; shown = 0; focusCid = null;
+  $("#steps").innerHTML = '<div class="calm"><span class="spin"></span> Starting the agent</div>';
+  const a = $("#agent").value, llm = a.startsWith("llm:");
+  let res, body;
+  try {
+    res = await fetch("/api/demo/run", { method: "POST", headers: { "content-type": "application/json", accept: "application/json" }, body: JSON.stringify(llm ? { agent: "claude", model: a.slice(4), request: $("#req").value } : { agent: a, request: $("#req").value }) });
+    body = await res.json().catch(() => ({}));
+  } catch (e) { res = { status: 0 }; body = {}; }
+  if (body.id) { run = body; return; }
+  const said = (body.messages && body.messages[0] && body.messages[0].content) || "";
+  const wait = res.status === 429 || res.status === 503 || res.status === 0 ? Math.max(3, Math.min(60, +(body.retry_after || res.headers?.get?.("retry-after") || 8))) : 0;
+  if (wait && !/tomorrow/i.test(said)) {
+    let left = wait;
+    const line = () => `<div class="calm"><span class="spin"></span><span>${res.status === 0 ? "The gateway did not answer." : res.status === 503 ? "The gateway is busy for a moment." : esc(said.replace(/ It retries by itself in a few seconds\.?/, "") || "Many people are trying this right now.")} Trying again in <span class="tnum">${left}</span> s.</span><button class="btn small ghost" type="button" id="cancelretry">Cancel</button></div>`;
+    $("#steps").innerHTML = line();
+    retryT = setInterval(() => { left--; if (left <= 0) { clearInterval(retryT); startRun(); } else $("#steps").innerHTML = line(); }, 1000);
+    return;
+  }
+  $("#run").disabled = false;
+  $("#steps").innerHTML = `<div class="step error"><div class="t"></div><div class="b">${esc(said || "That did not start. Try again in a moment.")}</div></div>`;
+}
+$("#run").onclick = startRun;
+$("#steps").addEventListener("click", e => { if (e.target.closest("#cancelretry")) { clearInterval(retryT); $("#run").disabled = false; $("#steps").innerHTML = STEPS_EXAMPLE; } });
+$("#orders").onchange = async e => {
+  const sel = e.target.closest("select.issue"); if (!sel || !sel.value) return;
+  const r = await api("/api/demo/issue", { kind: sel.value, order: sel.dataset.order });
+  const mine = (r.requests || []).find(q => q.request) || r;
+  if (!mine.request) { $("#steps").innerHTML = `<div class="step error"><div class="t"></div><div class="b">${esc((r.messages && r.messages[0] && r.messages[0].content) || "That could not be raised on this order.")}</div></div>`; return tick(); }
+  $("#req").value = mine.request; if (!$("#agent").value.startsWith("llm:")) $("#agent").selectedIndex = 0; botState();
+  tick(); $("#run").click();
+};
+$("#agents").onclick = async e => { const b = e.target.closest("[data-agent]"); if (!b) return; b.disabled = true; await api("/api/demo/agent", { id: b.dataset.agent, suspended: b.dataset.s === "1" }); tick(); };
+$("#copy").innerHTML = ICON.copy + "<span>Copy</span>";
+$("#copy").onclick = () => copyFrom($("#mcpurl"), $("#copy"));
+$("#reset").onclick = async () => { await api("/api/demo/reset", {}); run = null; shown = 0; focusCid = null; $("#run").disabled = false; $("#steps").innerHTML = STEPS_EXAMPLE; tick(); };
+for (const id of ["m_order", "m_week", "m_sub", "m_new", "p_cap", "p_tier"]) { $("#" + id).onfocus = () => editing = true; $("#" + id).onblur = () => setTimeout(() => editing = false, 300); }
+$("#m_save").onclick = async () => {
+  await api("/api/demo/mandate", { budget: { currency: "EUR", max_per_order: money($("#m_order").value), max_per_week: money($("#m_week").value) }, substitution: { allow: $("#m_sub").value, max_unit_price_increase_pct: 10 }, new_products: $("#m_new").value });
+  editing = false; tick();
+};
+const saveProfile = async () => { await api("/api/demo/profile", { enabled: $("#p_on").checked, tier: $("#p_tier").value, max_order_total: money($("#p_cap").value) }); editing = false; $("#p_saved").innerHTML = ICON.check; $("#p_saved").classList.add("on"); setTimeout(() => $("#p_saved").classList.remove("on"), 1400); tick(); };
+$("#p_on").onchange = saveProfile; $("#p_tier").onchange = saveProfile; $("#p_cap").onchange = saveProfile;
+
+// ---- The approver's device: a passkey on a phone or laptop signs each approval. The QR holds a 15-minute enrolment link.
+let pkShown = "";
+async function loadPk(fresh) {
+  let s; try { s = await api("/api/passkey"); } catch (e) { return; }
+  if (!s || !s.devices) return;
+  const k = s.devices.length, sig = k + ":" + s.devices.map(d => d.id).join(",") + ":" + !!s.can_enrol;
+  $("#pksum").textContent = k ? `${k} enrolled: every approval is signed on ${k === 1 ? "it" : "one of them"}` : "none yet: approvals go by link";
+  if (!fresh && sig === pkShown) return;  // the QR stays still while someone scans it
+  pkShown = sig;
+  $("#pkbody").innerHTML = `<p class="muted" style="font-size:var(--t2);margin:0 0 var(--s3)">When the agent needs a person, the approver's phone or laptop signs the yes with its fingerprint, face or screen lock. The key is made inside the device and never leaves it, so nobody else can produce that approval: not the agent, not Valio Aimo, not this server. Once a device is enrolled, a link alone can no longer approve for this account.</p>`
+    + (k ? `<table>${s.devices.map(d => `<tr><td><b>${esc(d.name)}</b></td><td class="mono muted">key ${esc(d.thumbprint)}</td><td class="muted">${esc(when(d.enrolled_at))}</td></tr>`).join("")}</table><div style="margin-top:var(--s3)"><button class="btn small" id="pkrm" type="button">Remove ${k === 1 ? "it" : "all " + k} and go back to link approval</button></div>` : "")
+    + (s.enrol_url ? `<div class="qr"><img alt="QR code that enrols a phone as an approver" src="/api/qr?u=${encodeURIComponent(s.enrol_url)}"><div><div>${k ? "Add another: scan" : "Scan"} with the approver's phone, or</div><a href="/enrol?next=/demo"><b>enrol this device</b></a><div class="muted" style="font-size:12.5px;margin-top:4px">The code works for ${s.enrol_minutes || 15} minutes and only for this account.</div></div></div>` : "");
+  if ($("#pkrm")) $("#pkrm").onclick = async () => { await api("/api/passkey/remove", {}); loadPk(true); };
+}
+$("#approver").ontoggle = () => { if ($("#approver").open) loadPk(true); };
+loadPk();
+setInterval(() => { if ($("#approver").open) loadPk().catch(() => {}); }, 4000);
+
+$("#steps").innerHTML = STEPS_EXAMPLE;
+let down = 0;
+const guard = () => tick().then(() => { if (down) { down = 0; $("#offline")?.remove(); } }).catch(() => { if (++down === 3 && !$("#offline")) $("main").insertAdjacentHTML("afterbegin", '<div id="offline" class="error-state" style="grid-column:1/-1">Lost contact with the gateway. Retrying every few seconds.</div>'); });
+guard();
+setInterval(guard, 1500);
+setInterval(() => pollRun().catch(() => {}), 700);
+</script>
+</body>
+</html>

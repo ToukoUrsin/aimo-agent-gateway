@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Aimo Agent Gateway</title>
+<style>
+@font-face{font-family:"Inter";src:url(../web/inter.woff2) format("woff2");font-weight:100 900;font-style:normal}
+@page{size:1920px 1080px;margin:0}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:#151517;font:400 30px/1.4 "Inter",system-ui,sans-serif;font-feature-settings:"cv05","cv08","ss03";-webkit-font-smoothing:antialiased}
+.s{width:1920px;height:1080px;padding:96px 112px 88px;position:relative;overflow:hidden;page-break-after:always;break-after:page;display:flex;flex-direction:column}
+.s:last-child{page-break-after:auto;break-after:auto}
+.k{font-size:22px;font-weight:500;color:#6a6a70;letter-spacing:.01em;margin-bottom:28px}
+h1{font-size:112px;line-height:1.02;letter-spacing:-.035em;font-weight:650;margin:0;max-width:15ch}
+h2{font-size:72px;line-height:1.06;letter-spacing:-.03em;font-weight:650;margin:0;max-width:20ch}
+p{margin:0}
+.lead{font-size:38px;line-height:1.35;color:#3b3b40;max-width:30ch;margin-top:36px}
+.foot{position:absolute;left:112px;right:112px;bottom:44px;display:flex;justify-content:space-between;font-size:18px;color:#a3a3a8}
+.two{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:72px;flex:1;min-height:0;align-items:center}
+.shot{border:1px solid #e3e3e0;border-radius:16px;overflow:hidden;box-shadow:0 2px 4px rgba(20,20,22,.05),0 24px 60px rgba(20,20,22,.10);background:#fbfbfa;max-height:800px;display:flex}
+.shot img{width:100%;height:100%;object-fit:cover;object-position:top left;display:block}
+.nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:2px solid #151517;margin-top:48px}
+.nums.two-col{grid-template-columns:repeat(2,minmax(0,1fr))}
+.nums div{padding:24px 28px 0 0}
+.nums b{display:block;white-space:nowrap;font-size:68px;line-height:1;font-weight:650;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+.nums span{display:block;font-size:22px;line-height:1.3;color:#6a6a70;margin-top:12px;max-width:17ch}
+.nums .est{color:#935400}
+.sub{font-size:30px;line-height:1.4;color:#3b3b40;margin-top:28px;max-width:34ch}
+.good{color:#17734a}.bad{color:#b8321f}
+ul.plain{list-style:none;margin:40px 0 0;padding:0;font-size:32px;line-height:1.35;color:#3b3b40;max-width:44ch}
+ul.plain li{padding:20px 0;border-top:1px solid #e3e3e0}
+ul.plain li b{color:#151517;font-weight:600}
+.cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:40px;margin-top:64px}
+.cols div{border-top:2px solid #151517;padding-top:22px;font-size:26px;line-height:1.35;color:#3b3b40}
+.cols b{display:block;color:#151517;font-size:30px;margin-bottom:10px;font-weight:600}
+.cols i{display:block;font-style:normal;font-size:20px;color:#a3a3a8;margin-bottom:14px}
+.url{font:500 40px ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:-.01em;margin-top:48px}
+.photo{margin:0}
+.photo img{display:block;width:100%;border-radius:16px;box-shadow:0 24px 60px rgba(20,20,22,.18);transform:rotate(1.5deg)}
+.photo figcaption{font-size:22px;line-height:1.35;color:#6a6a70;margin-top:36px}
+.qr{display:flex;flex-direction:column;align-items:center;gap:20px;font-size:22px;color:#6a6a70}
+.qr img{width:360px;height:360px;display:block}
+.mid{flex:1;display:flex;flex-direction:column;justify-content:center}
+ul.plain.und{margin:0;font-size:24px;max-width:none}
+ul.plain.und li{padding:15px 0}
+ul.plain.und li span{display:block;color:#935400;font-size:21px;margin-top:2px}
+.small{font-size:20px;color:#a3a3a8;margin-top:20px;max-width:60ch}
+</style>
+</head>
+<body>
+
+<section class="s">
+  <div class="two" style="grid-template-columns:minmax(0,1.5fr) minmax(0,.7fr)">
+    <div>
+      <p class="k">Junction 2026 · Valio Aimo · Trusted Trade Agents</p>
+      <h1>Valio Aimo's own door for AI agents.</h1>
+      <p class="lead">Customers' AI agents are about to start buying. Whoever builds the door they come through owns the customer.</p>
+      <p class="url">trusted-trade-agents.fly.dev</p>
+    </div>
+    <figure class="photo"><img src="../web/samples/wedding.jpg" alt=""><figcaption>This photo became {{menu.lines}} checked order lines in {{menu.seconds}} seconds.</figcaption></figure>
+  </div>
+  <div class="foot"><span>Aimo Agent Gateway · team Northbound Dispatch</span><span>A prototype on the challenge's data. Not a Valio Aimo system.</span></div>
+</section>
+
+<section class="s">
+  <p class="k">1 · A menu photo becomes an order</p>
+  <div class="two">
+    <div>
+      <h2>A chef photographs Saturday's menu. {{menu.seconds}} seconds later the order is checked.</h2>
+      <div class="nums">
+        <div><b>{{menu.lines}}</b><span>order lines for {{menu.guests}} guests</span></div>
+        <div><b>{{menu.seconds}} s</b><span>photo to checked order, measured</span></div>
+        <div><b class="{{menu.hand_class}}">{{menu.hand}}</b><span class="{{menu.hand_class}}">the same by hand, {{menu.hand_basis}}</span></div>
+      </div>
+      <p class="sub">A model only reads the photo. Code does quantities, pack sizes, allergens, stock and price. A shortage is solved by what the ingredient does in the dish.</p>
+    </div>
+    <div class="shot"><img src="shots/menu.png" alt=""></div>
+  </div>
+  <div class="foot"><span>/menu</span><span>2</span></div>
+</section>
+
+<section class="s">
+  <p class="k">2 · Valio Aimo has its own agent at the door</p>
+  <div class="two">
+    <div>
+      <h2>It tells the kitchen's agent what it missed.</h2>
+      <div class="nums">
+        <div><b>{{seller.made}}</b><span>signed proposals to {{seller.customers}} kitchens</span></div>
+        <div><b>{{seller.accepted}}</b><span>accepted, {{seller.alone}} of them by the agent alone</span></div>
+        <div><b>{{seller.refused}}</b><span>stopped by a rule before they left</span></div>
+      </div>
+      <p class="sub">A standing order that has drifted. Stock close to its date. A shortage coming. Whatever assistant the kitchen uses, the relationship stays with Valio Aimo.</p>
+    </div>
+    <div class="shot"><img src="shots/seller.png" alt=""></div>
+  </div>
+  <div class="foot"><span>/seller</span><span>3</span></div>
+</section>
+
+<section class="s">
+  <p class="k">3 · The Monday rush</p>
+  <div class="two">
+    <div>
+      <h2>{{rush.agents}} agents want the same milk in the same second.</h2>
+      <div class="nums">
+        <div><b>{{rush.stock}} L</b><span>in stock, {{rush.asked}} L asked for</span></div>
+        <div><b>{{rush.people}}</b><span>of {{rush.agents}} agents needed a person</span></div>
+        <div><b>{{rush.seconds}} s</b><span>to the last order. Promised twice: never</span></div>
+      </div>
+      <p class="sub">The stock is split by contract share, hospitals and schools first. Each agent learns its own share and nothing about anyone else.</p>
+    </div>
+    <div class="shot"><img src="shots/tower.png" alt=""></div>
+  </div>
+  <div class="foot"><span>/tower</span><span>4</span></div>
+</section>
+
+<section class="s">
+  <p class="k">4 · What the product data does not say</p>
+  <div class="two">
+    <div>
+      <h2>Silence is not a pass.</h2>
+      <div class="nums two-col">
+        <div><b class="bad">{{und.n}}</b><span>of {{und.food}} food products carry no allergen declaration</span></div>
+        <div><b class="bad">{{und.named}}</b><span>of those name an allergen in their own title</span></div>
+      </div>
+      <p class="sub">An agent that reads "nothing listed" as "safe" puts almonds in a nut-free kitchen. Here such a line goes to a person, once per product and allergen, and the account remembers who cleared it.</p>
+    </div>
+    <ul class="plain und">{{und.examples}}</ul>
+  </div>
+  <div class="foot"><span>/proof · counted from the challenge's product data</span><span>5</span></div>
+</section>
+
+<section class="s">
+  <p class="k">Who decides what</p>
+  <div class="two">
+    <div>
+      <h2>Rules run in code. Never in a model.</h2>
+      <ul class="plain">
+        <li><b>The buyer signs a mandate.</b> How much, which products, which substitutes. Valio Aimo has its own switch and cap on top.</li>
+        <li><b>{{rules}} named rules on every request.</b> Pass, ask a person, or refuse. Nobody can approve what a rule refused.</li>
+        <li><b>The yes is signed on the approver's own phone.</b> A passkey. The key never leaves the device, so no agent and no server can make that approval.</li>
+        <li><b>Everything is signed.</b> Change one cent in an order and the check fails in your browser.</li>
+      </ul>
+    </div>
+    <div class="shot"><img src="shots/order.png" alt=""></div>
+  </div>
+  <div class="foot"><span>/spec · /ledger · /demo</span><span>6</span></div>
+</section>
+
+<section class="s">
+  <p class="k">We broke it first</p>
+  <div class="two">
+    <div>
+      <h2>The test caught a bug in our own allergen rule.</h2>
+      <div class="nums two-col">
+        <div><b class="bad">{{proof.before}}</b><span>orders that broke a rule in the first full run</span></div>
+        <div><b class="good">{{proof.unsafe}}</b><span>after the fix, in {{proof.runs}} runs on {{proof.models}} models</span></div>
+      </div>
+      <p class="sub">The same {{proof.scenarios}} requests go to every model, scored in code from the signed records. Then {{menus.n}} menus to {{menus.n}} orders: {{menus.checks}} checks, {{menus.failed}} failed. And {{attack.checks}} attacks from outside: {{attack.holes}} holes found, all fixed.</p>
+    </div>
+    <div class="shot"><img src="shots/proof.png" alt=""></div>
+  </div>
+  <div class="foot"><span>/proof</span><span>7</span></div>
+</section>
+
+<section class="s">
+  <p class="k">Open, and the way to production</p>
+  <div class="mid">
+  <h2>Any agent, any model. Nothing proprietary.</h2>
+  <p class="sub" style="max-width:60ch">MCP and REST. Universal Commerce Protocol, AP2, OAuth 2.1, WebAuthn, GS1, Peppol. Tested with Claude, GPT, Gemini and open-weights Gemma agents.</p>
+  <div class="cols">
+    <div><i>Step 1</i><b>Read only</b>A few pilot customers. Agents look up and plan. No orders, so nothing can go wrong with one.</div>
+    <div><i>Step 2</i><b>Re-orders with approval</b>Products the customer already buys, each approved by a person, into the existing order flow.</div>
+    <div><i>Step 3</i><b>Mandates</b>Customers set limits in their web shop account. Orders inside them go through alone.</div>
+    <div><i>Step 4</i><b>Open ordering</b>New products and substitutes inside the mandate. Valio Aimo's own agent proposes.</div>
+  </div>
+  </div>
+  <div class="foot"><span>/spec says what is real here, what is a stand-in and what is estimated</span><span>8</span></div>
+</section>
+
+<section class="s">
+  <div class="two" style="grid-template-columns:minmax(0,1.6fr) minmax(0,.6fr)">
+    <div>
+      <p class="k">Try it now, no sign-up</p>
+      <h1 style="max-width:none">Readable by any agent.<br>Owned by Valio Aimo.</h1>
+      <p class="url">trusted-trade-agents.fly.dev</p>
+      <p class="lead" style="max-width:40ch">Photograph a menu on <b>/menu</b>. Or add <b>/mcp</b> to Claude or ChatGPT as a connector and order under the same rules.</p>
+    </div>
+    <div class="qr"><img src="shots/qr.svg" alt=""><span>Open it on your phone</span></div>
+  </div>
+  <div class="foot"><span>Aimo Agent Gateway · team Northbound Dispatch · MIT licence</span><span>Every number here comes from a recorded run on the live server, except the one marked as our estimate.</span></div>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Order confirmation</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+main{max-width:880px;margin:0 auto;padding:var(--s6) var(--s4) var(--s8);display:flex;flex-direction:column;gap:var(--s4)}
+.ohead .eyebrowless{color:var(--muted);font-size:var(--t2)}
+h1{font-size:var(--t8);letter-spacing:-.025em;line-height:1.1;margin-top:4px}
+.ohead .pills{margin-top:var(--s3);display:flex;gap:6px;flex-wrap:wrap}
+.check{display:grid;grid-template-columns:20px 1fr;gap:var(--s3);padding:12px 0;border-bottom:1px solid var(--line);align-items:start}
+.check:last-of-type{border-bottom:0}
+.check .mark{margin-top:1px}
+.check b{font-weight:600;font-size:var(--t4)}
+.check.bad b{color:var(--deny)}
+.check.pending b{color:var(--faint);font-weight:500}
+.check .d{color:var(--muted);font-size:var(--t2);overflow-wrap:anywhere;margin-top:2px}
+.check.landed .mark{animation:land .5s var(--ease)}
+.check.changed{animation:flash 1.6s ease-out}
+@keyframes land{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+.evi{border-color:var(--line-2)}
+.evi .verdict{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s4);margin:0 0 var(--s2);border-radius:var(--r);background:var(--soft);font-size:var(--t3);transition:background-color .4s var(--ease),color .4s}
+.evi .verdict.ok{background:var(--pass-bg);color:var(--pass)}
+.evi .verdict.bad{background:var(--deny-bg);color:var(--deny)}
+.evi .verdict b{font-weight:600}
+.cheat{margin-top:var(--s4);padding-top:var(--s4);border-top:1px solid var(--line);display:flex;gap:var(--s2);flex-wrap:wrap;align-items:center}
+.cheat .btn[aria-pressed=true]{background:var(--deny-bg);color:var(--deny);border-color:transparent}
+.ev{display:grid;grid-template-columns:64px 1fr;gap:var(--s3);padding:10px 0;border-bottom:1px solid var(--line);font-size:var(--t3)}
+.ev:last-child{border-bottom:0}
+.ev .mono{font-size:var(--t1);padding-top:2px}
+.who{font-size:var(--t1);font-weight:600;display:block}
+.who.agent{color:var(--buyer)} .who.gateway{color:var(--seller)} .who.human{color:var(--human)}
+.docs .links{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);font-size:var(--t3)}
+.iss{border-top:1px solid var(--line);padding:var(--s4) 0 var(--s1);margin-top:var(--s3)}
+.iss .ih{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px}
+.iss .kv{margin:var(--s2) 0 4px}
+.iss .check{padding:8px 0;font-size:var(--t3)}
+.now td,.now th{font-size:var(--t3)}
+.more-ev>summary{margin-top:var(--s2)}
+.small-note{font-size:var(--t1);color:var(--muted);margin:var(--s3) 0 0}
+@media (max-width:640px){h1{font-size:26px;word-break:break-word}main{padding-top:var(--s5)}.ev{grid-template-columns:52px 1fr}}
+</style>
+</head>
+<body>
+<div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
+<header id="site"></header>
+<main id="main" aria-live="polite"><div><span class="skel" style="width:22ch"></span><span class="skel block" style="height:32px;width:60%;margin-top:10px"></span></div><div class="card"><span class="skel block" style="width:30%"></span><span class="skel block"></span><span class="skel block" style="width:75%"></span></div><div class="card"><span class="skel block" style="width:40%"></span><span class="skel block"></span><span class="skel block"></span><span class="skel block"></span></div></main>
+<script src="/static/lib.js"></script>
+<script src="/static/passkey.js"></script>
+<script>
+const oid = location.pathname.split("/").pop();
+let order, audit, profile, ledger, tamper = { price: false, ledger: false };
+
+function tampered() {
+  const o = JSON.parse(JSON.stringify(order)), led = JSON.parse(JSON.stringify(ledger.events));
+  if (tamper.price) o.line_items[0].item.price -= 1;
+  // Edit an entry this reader can see (other customers' entries carry no text to edit).
+  const mine = led.filter(e => !e.withheld && typeof e.text === "string");
+  if (tamper.ledger && mine.length > 2) mine[Math.floor(mine.length / 2)].text += " (edited)";
+  return [o, led];
+}
+// The six checks live in lib.js (orderChecks), so the home page runs exactly the same ones.
+const checks = (o, led) => orderChecks(o, audit, profile, led, ledger.genesis);
+
+// ---- After the order: issues Valio Aimo raised, the way out chosen, the signed amendments and linked orders.
+const KIND = { short_pick: "Short pick", delay: "Delay", recall: "Recall" };
+// A linked order's own link carries its own key. Keep it on this site, whatever host the server names.
+const orderLink = o => siteUrl(o.url || o.permalink_url || "/orders/" + o.id);
+const kidOf = jws => { try { return JSON.parse(new TextDecoder().decode(b64d(jws.split(".")[0]))).kid; } catch (e) { return ""; } };
+const sellerKey = jws => profile.keys.find(x => x.kid === kidOf(jws));
+const signedBy = async doc => !!doc && !!doc.proof && await verifyDetached(without(doc, "proof"), doc.proof.jws, sellerKey(doc.proof.jws));
+
+async function afterChecks(o, row) {
+  const out = [], n = row.notice, a = row.amendment;
+  const odig = await sha256hex(utf8(jcs(without(o, "proof"))));
+  const c1 = await signedBy(n) && n.order.confirmation_digest === odig;
+  out.push([c1, "Valio Aimo signed the notice", c1 ? "It says what happened and lists the ways out, and names this confirmation by its sha-256 digest." : "The notice does not verify, or it is about a different confirmation."]);
+  if (!a) return out;
+  const ev = a.evidence, ndig = await sha256hex(utf8(jcs(without(n, "proof"))));
+  const c2 = await signedBy(a) && a.order.confirmation_digest === odig && a.issue.notice_digest === ndig;
+  out.push([c2, "Valio Aimo signed the amendment", c2 ? `Amendment ${a.id} names this confirmation and that notice by digest. The confirmation itself was not touched.` : "The amendment does not verify, or it belongs to a different confirmation or notice."]);
+
+  // Same proof as for the order: the mandate, the offer Valio Aimo signed, and the agent's acceptance of exactly that offer.
+  const m = await verifyJwt(ev.mandate, audit.keys.buyer);
+  const dig = row.offer ? await sha256hex(utf8(jcs(row.offer))) : "";
+  const offerOk = !!row.offer && dig === ev.offer_digest && await verifyDetached(row.offer, ev.offer_signature, sellerKey(ev.offer_signature));
+  const keyless = ev.agent_class === "keyless", rc = ev.keyless_receipt;
+  let who = null;
+  if (keyless) { if (m && rc && rc.mandate_jti === m.jti && rc.checkout_digest === dig && await signedBy(rc)) who = rc.agent; }
+  else { const t = m && m.cnf ? await verifyJwt(ev.agent_acceptance, m.cnf.jwk) : null; if (t && t.mandate_jti === m.jti && t.checkout_digest === dig) who = t.iss; }
+  const c3 = !!who && offerOk;
+  out.push([c3, keyless ? "The assistant accepted the change under its mandate" : "The agent accepted the change with the key named in its mandate",
+    c3 ? `${who} accepted exactly the terms Valio Aimo signed (offer digest sha-256 ${dig.slice(0, 16)}…)` + (keyless ? ". It holds no key, so Valio Aimo signed a receipt of what it accepted." : ".") : "The acceptance does not match the signed offer behind this amendment."]);
+
+  if (ev.approval) {
+    const c4 = !!row.offer && await verifyDetached(without(ev.approval, "signature"), ev.approval.signature.jws, audit.keys.approver) && jcs(row.offer.wholesale.approval) === jcs(ev.approval);
+    out.push([c4, `${ev.approval.by} approved the change`, c4 ? `Signed approval at ${when(ev.approval.at)}, overriding ${ev.approval.overrides.join(", ")}.` : "The approval record's signature does not verify."]);
+  } else {
+    const why = ev.policy.rules.filter(r => ["D1", "P1", "R1"].includes(r.id)).map(r => r.detail).join(" ");
+    out.push([true, "No person was needed", why || "Every rule passed, so the mandate alone authorised the change."]);
+  }
+  if (a.linked_order) {
+    const lo = row.linked_order;
+    const c5 = await signedBy(lo) && lo.id === a.linked_order.id && !!lo.wholesale.amends && lo.wholesale.amends.order_id === o.id && lo.wholesale.evidence.offer_digest === ev.offer_digest;
+    out.push([c5, "The replacement is a signed order linked to this one", c5 ? `Order ${lo.label} carries Valio Aimo's signature, points back at this order, and came from the same accepted offer.` : "The linked order does not verify or does not point back at this order."]);
+  }
+  return out;
+}
+
+function afterCard(after, ares) {
+  const st = after.state, list = after.issues;
+  if (!list.length) return `<div class="card"><h3>After the order</h3><div class="muted">No short pick, delay or recall has been reported on this order.</div></div>`;
+  const allok = ares && ares.every(rs => rs.every(r => r[0]));
+  let h = `<div class="card"><h3>After the order <span class="pill ${ares ? (allok ? "pass" : "deny") : ""}">${ares ? (allok ? "all checks pass" : "a check failed") : "needs https"}</span></h3>`;
+  if (st && st.amendments.length) {
+    const n = st.amendments.length;
+    h += `<div class="muted" style="font-size:13px;margin-bottom:2px">The order as it stands now: the confirmation above with ${n} signed change${n > 1 ? "s" : ""} applied.</div>
+      <table class="now"><tr><th>Product</th><th class="num">Confirmed</th><th class="num">Now</th></tr>` + st.lines.map(l => `<tr><td>${esc(l.title)}<div class="mono muted">lot ${esc(l.lot)}</div></td>
+        <td class="num">${l.ordered.toLocaleString("en-IE")} ${esc(l.unit)}</td><td class="num">${l.units === l.ordered ? "same" : `<b>${l.units.toLocaleString("en-IE")} ${esc(l.unit)}</b><div class="muted" style="font-size:12.5px">${esc(l.status)}</div>`}</td></tr>`).join("") + `</table>
+      <dl class="kv" style="margin-top:8px">${st.status === "cancelled" ? "<dt>Status</dt><dd><b>Cancelled</b></dd>" : ""}
+        ${st.delivery_date !== st.confirmed_date ? `<dt>Delivery</dt><dd><b>${esc(day(st.delivery_date))}</b>, moved from ${esc(day(st.confirmed_date))}</dd>` : ""}
+        ${st.credit_ex_vat ? `<dt>Credited</dt><dd>${eur(st.credit_ex_vat)} ex VAT (${eur(st.credit_ex_vat + st.credit_tax)} incl. VAT)</dd>` : ""}
+        ${st.linked_orders.length ? `<dt>Replacements</dt><dd>${st.linked_orders.map(k => `<a href="${esc(orderLink(k))}">Order ${esc(k.label)}</a> ${eur(k.subtotal)} ex VAT`).join(", ")}</dd>` : ""}</dl>`;
+  }
+  list.forEach((i, k) => {
+    const a = i.amendment, r = i.resolution, p = i.pending, person = p && p.status === "requires_escalation";
+    const word = i.status === "resolved" ? "settled" : person ? "waiting for a person" : i.status === "closed" ? "closed" : "waiting for the agent";
+    h += `<div class="iss"><div class="ih"><b>${esc(KIND[i.kind] || i.kind)}</b><span class="muted" style="font-size:13px">reported ${esc(when(i.raised_at))}</span><span class="pill ${i.status === "resolved" ? "pass" : person ? "escalate" : ""}">${word}</span></div>
+      <div>${esc(i.what_happened)}</div>`;
+    if (i.kind === "recall") h += `<div style="margin-top:4px"><a href="/recalls/${esc(i.facts.recall)}">Recall trace: every order that got this lot</a></div>`;
+    (i.attempts || []).forEach(t => { h += `<div class="muted" style="font-size:13.5px;margin-top:4px">Earlier: “${esc(t.title)}” was ${esc(t.outcome)}.${t.note ? " Note: " + esc(t.note) : ""}</div>`; });
+    (i.refused || []).forEach(t => { h += `<div class="muted" style="font-size:13.5px;margin-top:4px">Earlier: ${esc(t.agent)} asked for “${esc(t.option)}”. Refused by rule ${esc(t.rule)}: recalled goods are never kept.</div>`; });
+    if (a) {
+      const d = a.decided_by;
+      h += `<dl class="kv"><dt>Way out</dt><dd><b>${esc(a.way_out.title)}</b><div class="muted" style="font-size:13.5px">${esc(a.way_out.effect)}</div></dd>
+        <dt>Decided by</dt><dd>${d.alone ? `${esc(d.agent)} alone, inside its mandate` : `${esc(d.agent)}, approved by <b>${esc(d.person)}</b>`} · ${esc(when(a.at))}</dd>
+        ${d.rationale ? `<dt>The agent says</dt><dd>“${esc(d.rationale)}”</dd>` : ""}
+        ${a.credit.ex_vat ? `<dt>Credit</dt><dd>${eur(a.credit.ex_vat)} ex VAT</dd>` : ""}
+        ${a.linked_order ? `<dt>Replacement</dt><dd><a href="${esc(orderLink(a.linked_order))}">Order ${esc(a.linked_order.label)}</a> · ${eur(a.linked_order.subtotal)} ex VAT</dd>` : ""}</dl>`;
+    } else if (r) h += `<div class="muted" style="margin-top:4px">${esc(r.title)}</div>`;
+    else if (p) h += `<div style="margin-top:6px">Proposed by ${esc(p.agent)}: <b>${esc(p.title)}</b></div>`;
+    else h += `<div style="margin-top:6px">${i.notice.ways_out.map(w => `<div style="padding:2px 0">${esc(w.title)} <span class="pill ${w.authority.decision === "agent_may_resolve" ? "pass" : "escalate"}">${w.authority.decision === "agent_may_resolve" ? "agent may decide" : "needs a person"}</span></div>`).join("")}</div>`;
+    if (ares) h += ares[k].map(c => `<div class="check ${c[0] ? "ok" : "bad"}">${markHtml(c[0])}<div><b>${esc(c[1])}</b><div class="d">${esc(c[2])}</div></div></div>`).join("");
+    h += (a ? `<details style="margin-top:4px"><summary>Rules that ran on this change</summary>${rulesTable(a.evidence.policy.rules)}</details>` : "") +
+      `<details style="margin-top:4px"><summary>Signed notice${a ? " and amendment" : ""} (JSON)</summary><pre>${esc(JSON.stringify(a ? { notice: i.notice, amendment: a } : i.notice, null, 1))}</pre></details></div>`;
+  });
+  return h + `<p class="muted" style="font-size:12.5px;margin:12px 0 0">${esc(after.lots || "")}</p></div>`;
+}
+
+let lastRes = null;
+const checkRow = (r, state) => `<div class="check ${state}">${state === "pending" ? markHtml(null) : markHtml(r[0])}<div><b>${esc(r[1])}</b><div class="d">${state === "pending" ? "Checking" : esc(r[2])}</div></div></div>`;
+const verdict = (res, done) => !res ? '<div class="verdict">Signature checks need a secure (https) page.</div>'
+  : !done ? `<div class="verdict"><span class="spin"></span><span>Checking ${res.length} signatures and the ledger with your browser's own crypto</span></div>`
+  : res.every(r => r[0]) ? `<div class="verdict ok">${markHtml(true)}<span><b>All ${res.length} checks pass.</b> Nobody has changed this order since it was signed.</span></div>`
+  : `<div class="verdict bad">${markHtml(false)}<span><b>${res.filter(r => !r[0]).length} of ${res.length} checks fail.</b> Something here was changed after it was signed.</span></div>`;
+
+async function render() {
+  const [o, led] = tampered(), w = o.wholesale, ev = w.evidence;
+  const res = crypto.subtle ? await checks(o, led) : null;
+  const after = audit.after || { issues: [] }, st = after.state;
+  const ares = crypto.subtle ? await Promise.all(after.issues.map(i => afterChecks(o, i))) : null;
+  const first = lastRes === null, calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let h = `<div class="ohead"><div class="eyebrowless">Valio Aimo agent gateway · order confirmation</div><h1>Order ${esc(o.label)}</h1>
+    <div class="pills"><span class="pill" title="${esc(w.placed_by)}">placed by agent ${esc(String(w.placed_by||"").replace(/^agent:/,""))}</span>${ev.approval ? `<span class="pill escalate">approved by ${esc(ev.approval.by)}</span>` : '<span class="pill pass">no person involved</span>'}<span class="pill">${esc(when(w.placed_at))}</span>${st && st.status === "cancelled" ? '<span class="pill deny">cancelled after the order</span>' : st && st.amendments.length ? '<span class="pill escalate">changed after the order</span>' : ""}</div>
+    ${after.amends ? `<div style="margin-top:var(--s3)">Replaces goods on <a href="${esc(after.amends.url || after.amends.permalink_url ? orderLink(after.amends) : "/orders/" + after.amends.order_id)}">order ${esc(after.amends.order_label)}</a> after a ${esc((KIND[after.amends.kind] || "").toLowerCase())}: ${esc(after.amends.title)}.</div>` : ""}</div>`;
+  h += `<div class="card evi"><h3>Evidence, checked in your browser</h3><div id="verdict">${verdict(res, !first || calm)}</div><div id="checks">` +
+    (res ? res.map((r, i) => checkRow(r, first && !calm ? "pending" : lastRes && lastRes[i] && lastRes[i][0] !== r[0] ? (r[0] ? "ok changed" : "bad changed") : r[0] ? "ok" : "bad")).join("") : "") + `</div>
+    <div class="cheat"><span class="muted" style="font-size:var(--t2)">Try to cheat:</span>
+      <button class="btn small" id="t1" aria-pressed="${tamper.price}">${tamper.price ? "Undo price change" : "Lower a price by 1 cent"}</button><button class="btn small" id="t2" aria-pressed="${tamper.ledger}">${tamper.ledger ? "Undo ledger edit" : "Edit an audit entry"}</button></div>
+    <p class="small-note">Nothing here trusts this server: the page fetches the signed JSON and the public keys, then verifies ES256 signatures over canonical JSON (RFC 8785) with your browser's own crypto.</p></div>`;
+  h += `<div class="card"><h3>Order</h3>${linesTable(o.line_items)}${totalsBlock(o.totals)}
+    <dl class="kv" style="margin-top:var(--s4)"><dt>Buyer</dt><dd>${esc(w.buyer.name)} · customer ${esc(w.customer)}</dd><dt>Delivery</dt><dd>${esc(day(w.delivery_date))} · ${esc(w.ship_to || "")}</dd>
+    ${w.purchase_order ? `<dt>Buyer's PO</dt><dd class="mono">${esc(w.purchase_order)}</dd>` : ""}${w.intent ? `<dt>Request</dt><dd>“${esc(w.intent)}”</dd>` : ""}<dt>Payment</dt><dd>${esc(w.payment)}</dd></dl></div>`;
+  h += afterCard(after, ares);
+  const fired = ev.policy.rules.filter(x => x.outcome !== "pass"), passed = ev.policy.rules.filter(x => x.outcome === "pass");
+  h += `<div class="card"><h3>Guardrails that ran <span class="muted" style="font-size:var(--t2)">in Valio Aimo's code, before the offer was signed</span></h3>${fired.length ? rulesTable(fired) : `<div class="muted" style="font-size:var(--t3)">All ${passed.length} passed, so the mandate alone authorised this order.</div>`}
+    ${passed.length && fired.length ? `<details style="margin-top:var(--s2)"><summary>${passed.length} other ${passed.length === 1 ? "rule" : "rules"} passed</summary>${rulesTable(passed)}</details>` : passed.length ? `<details style="margin-top:var(--s2)"><summary>Show the ${passed.length} rules</summary>${rulesTable(passed)}</details>` : ""}</div>`;
+  const evRow = e => { const k = e.actor.startsWith("human") ? "human" : e.actor === "gateway" ? "gateway" : "agent"; return `<div class="ev"><div class="mono muted">${esc(e.ts.slice(11, 19))}</div><div><span class="who ${k}">${esc(k === "human" ? e.actor.slice(6) : k === "gateway" ? "Valio Aimo gateway" : e.actor)}</span><div>${esc(e.text)}</div></div></div>`; };
+  const EV = audit.events, FIRST = 5;
+  h += `<div class="card"><h3>How this order came about${after.issues.length ? " and what happened after" : ""} <span class="muted" style="font-size:var(--t2)">${EV.length} ledger entries</span></h3>` + EV.slice(0, FIRST).map(evRow).join("")
+    + (EV.length > FIRST ? `<details class="more-ev"><summary>Show the other ${EV.length - FIRST}</summary>${EV.slice(FIRST).map(evRow).join("")}</details>` : "") + `</div>`;
+  h += `<div class="card docs"><h3>Documents</h3><div class="links"><a href="${esc(keyed(w.documents.peppol_order))}">Peppol BIS 3 Order (UBL XML)</a><a href="${esc(keyed(w.documents.peppol_order_response))}">Peppol BIS 3 Order Response</a>${st && st.amendments.length ? `<a href="${esc(keyed(`/orders/${o.id}/peppol/order-response-amended.xml`))}">Order Response after the changes</a>` : ""}<a href="${esc(keyed(w.documents.audit))}">Audit trail (JSON)</a><a href="/ledger">Ledger</a></div>
+    <details style="margin-top:var(--s3)"><summary>Signed order (JSON)</summary><pre>${esc(JSON.stringify(o, null, 1))}</pre></details>
+    <p class="small-note">The XML is shaped to Peppol BIS Ordering 3 so the order can enter the same EDI flow as any other; it has not been run through the Peppol validator.</p></div>`;
+  $("#main").innerHTML = h;
+  $("#t1").onclick = () => { tamper.price = !tamper.price; render(); };
+  $("#t2").onclick = () => { tamper.ledger = !tamper.ledger; render(); };
+  // First time: the checks land one by one, as the browser finishes each.
+  if (res && first && !calm) {
+    const rows = document.querySelectorAll("#checks .check");
+    for (const [i, r] of res.entries()) { await new Promise(ok => setTimeout(ok, i ? 260 : 380)); rows[i].outerHTML = checkRow(r, (r[0] ? "ok" : "bad") + " landed"); }
+    await new Promise(ok => setTimeout(ok, 200));
+    $("#verdict").innerHTML = verdict(res, true);
+  }
+  lastRes = res || [];
+}
+
+// the key in the link (see gateway/config.py order_key): lets the person an agent sent the link to read this one order without a session
+const KQ = (k => k ? "?k=" + encodeURIComponent(k) : "")(new URLSearchParams(location.search).get("k"));
+const keyed = u => KQ && u && !/[?&]k=/.test(u) ? u + KQ : u;
+(async () => {
+  [order, audit, profile, ledger] = await Promise.all([api(`/orders/${oid}${KQ}`), api(`/orders/${oid}/audit${KQ}`), api("/.well-known/ucp"), api("/ledger?format=json&limit=400")]).catch(() => [{}]);
+  if (!order || !order.id) { $("#main").innerHTML = `<div class="card" style="text-align:center;padding:48px 24px"><h2 style="font-size:var(--t6)">This order cannot be opened from here</h2><p class="muted">An order opens for the account that placed it, or with the full link from its confirmation (it ends in ?k=...). The link may also be wrong.</p><a class="btn" href="/demo">Place an order</a></div>`; return; }
+  document.title = "Order " + order.label;
+  render();
+})();
+</script>
+</body>
+</html>

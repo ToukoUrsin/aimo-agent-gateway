@@ -1,0 +1,15 @@
+[project]
+name = "aimo-agent-gateway"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=2.8.0",
+    "cryptography>=50.0.2",
+    "fastapi>=0.162.7",
+    "httpx>=0.28.1",
+    "mcp>=2.3.0",
+    "rfc8785>=0.1.4",
+    "segno>=1.6.6",
+    "solders>=0.29.0",
+    "uvicorn[standard]>=0.54.0",
+]

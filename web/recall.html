@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recall · Aimo Agent Gateway</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+main{max-width:880px;margin:0 auto;padding:var(--s6) var(--s4) var(--s8);display:flex;flex-direction:column;gap:var(--s4)}
+.eyebrow{font-size:var(--t2);color:var(--muted)}
+h1{font-size:var(--t8);line-height:1.15;margin-top:6px}
+.pills{margin-top:var(--s3);display:flex;gap:6px;flex-wrap:wrap}
+.chain{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;font-size:var(--t3);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.chain .step{padding:var(--s3) var(--s4);position:relative;min-width:0;overflow-wrap:anywhere}
+.chain .step+.step{border-left:1px solid var(--line)}
+.chain .step small{display:block;color:var(--muted);font-size:var(--t1);font-weight:500;margin-bottom:2px}
+.chain .to{display:none}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:var(--s3) 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .what{grid-column:1/-1;color:var(--muted);font-size:var(--t2)}
+.check{display:grid;grid-template-columns:24px 1fr;gap:var(--s2);padding:4px 0;align-items:start}
+.check .d{color:var(--muted);font-size:var(--t2)}
+.small{font-size:var(--t2);color:var(--muted)}
+.load{display:flex;flex-direction:column;gap:var(--s3)}
+@media (max-width:640px){.chain{grid-template-columns:1fr}.chain .step+.step{border-left:0;border-top:1px solid var(--line)}h1{font-size:var(--t7)}}
+</style>
+</head>
+<body>
+<div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
+<header id="site"></header>
+<main id="main" aria-live="polite"><div class="load" aria-label="Loading"><span class="skel block" style="width:30%"></span><span class="skel block" style="height:34px;width:70%"></span><span class="skel block" style="height:120px;margin-top:16px"></span><span class="skel block" style="height:180px"></span></div></main>
+<script src="/static/lib.js"></script>
+<script>
+const rid = location.pathname.split("/").pop();
+let timer = null, busy = false;
+const STATE = { "credited": "pass", "replaced": "pass", "waiting for a person": "escalate", "waiting for the agent": "", "order no longer exists": "" };
+
+async function load() {
+  const v = await api(`/api/recalls/${rid}`);
+  if (!v.id) { $("#main").innerHTML = `<div class="card"><div class="error-state">${markHtml(false)}<b>No such recall</b></div><p class="muted" style="margin:8px 0 0">The link may be wrong, or the recall belongs to another account.</p></div>`; clearInterval(timer); timer = null; return; }
+  document.title = "Recall " + v.lot;
+  const s = v.summary, p = v.product;
+  let ok = null;
+  if (v.notice && crypto.subtle) ok = await verifyDetached(without(v.notice, "proof"), v.notice.proof.jws, v.keys.seller);
+  let h = `<div><div class="eyebrow">Valio Aimo agent gateway · recall</div><h1>Recall of lot ${esc(v.lot)}</h1>
+    <div class="pills">${v.blocked ? '<span class="pill deny">product blocked for new orders</span>' : '<span class="pill pass">closed, product can be ordered again</span>'}
+      <span class="pill">raised ${esc(when(v.raised_at))}</span>${v.closed_at ? `<span class="pill">closed ${esc(when(v.closed_at))}</span>` : ""}</div></div>`;
+
+  h += `<div class="card"><h3>From the lot to every order</h3>
+    <div class="chain"><div class="step"><small>Lot</small><span class="mono">${esc(v.lot)}</span></div><span class="to">→</span>
+      <div class="step"><small>Product</small>${esc(p.title)} <span class="mono muted">${esc(p.id)}</span></div><span class="to">→</span>
+      <div class="step"><small>Went to</small>${s.orders} order${s.orders === 1 ? "" : "s"} at ${s.customers} customer${s.customers === 1 ? "" : "s"}, ${s.units.toLocaleString("en-IE")} units</div><span class="to">→</span>
+      <div class="step"><small>Now</small>${s.settled} settled, ${s.open} open</div></div>
+    <dl class="kv" style="margin-top:12px"><dt>Reason</dt><dd>${esc(v.reason)}</dd>${p.supplier ? `<dt>Supplier</dt><dd>${esc(p.supplier)}</dd>` : ""}${p.gtin ? `<dt>GTIN</dt><dd class="mono">${esc(p.gtin)}</dd>` : ""}
+      <dt>New orders</dt><dd>${v.blocked ? "Refused with code <span class=\"mono\">product_recalled</span> until Valio Aimo closes the recall." : `Allowed again since ${esc(when(v.closed_at))}. New orders get the next batch.`}</dd></dl></div>`;
+
+  h += `<div class="card"><h3>Orders that got this lot <span class="pill ${s.open ? "escalate" : "pass"}">${s.open ? s.open + " open" : "all settled"}</span></h3>` +
+    (v.affected.length ? v.affected.map(x => {
+      const i = x.issue, done = i.status === "resolved";
+      const who = !done ? "" : i.alone ? `${i.agent} decided alone, inside its mandate` : `${i.agent} proposed it, ${i.person} approved`;
+      return `<div class="row"><div><b>${esc(x.buyer || "Customer")}</b> <span class="muted">customer ${esc(x.customer)}</span><div><a href="${esc(siteUrl(x.order_url || "/orders/" + x.order_id))}">Order ${esc(x.order_label)}</a> · ${x.units.toLocaleString("en-IE")} ${esc(x.unit)} from this lot</div></div>
+        <div><span class="pill ${STATE[x.state] ?? ""}">${esc(x.state)}</span></div>
+        <div class="what">${done ? `${esc(i.title)}. ${esc(who)}, ${esc(when(i.at))}.${i.credit_ex_vat ? " Credit " + eur(i.credit_ex_vat) + " ex VAT." : ""}${i.linked_order ? ` Replacement on <a href="${esc(siteUrl(i.linked_order.url || i.linked_order.permalink_url || "/orders/" + i.linked_order.id))}">order ${esc(i.linked_order.label)}</a>.` : ""}${i.rationale ? ` “${esc(i.rationale)}”` : ""}`
+          : x.state === "waiting for a person" ? "The customer's agent chose a way out that is outside its mandate. A person at the customer has the approval link." : x.state === "waiting for the agent" ? "A signed notice with the ways out is waiting for the customer's agent." : ""}</div></div>`;
+    }).join("") : '<div class="muted">None of this account\'s orders got this lot.</div>') +
+    (v.scope === "own" ? `<p class="muted" style="font-size:var(--t2);margin:var(--s3) 0 0">You see your own orders. Valio Aimo sees all ${s.orders}.</p>` : "") + `</div>`;
+
+  h += `<div class="card"><h3>Record</h3>` +
+    (v.notice ? (ok === null ? '<div class="muted">Signature checks need a secure (https) page.</div>' :
+      `<div class="check ${ok ? "ok" : "bad"}">${markHtml(ok)}<div><b>${ok ? "Valio Aimo signed this recall" : "The recall notice does not verify"}</b><div class="d">${ok ? "Checked in your browser: the lot, the product and the list of orders are covered by Valio Aimo's signature." : "It was changed after signing."}</div></div></div>`) +
+      `<details style="margin-top:4px"><summary>Signed recall notice (JSON)</summary><pre>${esc(JSON.stringify(v.notice, null, 1))}</pre></details>` : '<div class="muted">The signed notice lists every customer, so it is shown to Valio Aimo only.</div>') +
+    `<p class="small" style="margin:var(--s3) 0 0">${esc(v.lots)}</p>
+    <p class="small" style="margin:6px 0 0">A recall is not a choice for an agent: the only ways out are a replacement or a credit (rule R1). Each customer's answer is a signed amendment on its order page.</p>` +
+    (v.blocked && v.can_close ? `<div style="margin-top:12px"><button class="btn" id="close">Close the recall</button> <span class="small">Valio Aimo does this when the fault is fixed.</span></div>` : "") + `</div>`;
+
+  const open = [...document.querySelectorAll("details")].map(d => d.open);  // keep opened details open across refreshes
+  $("#main").innerHTML = h;
+  document.querySelectorAll("details").forEach((d, n) => { d.open = !!open[n]; });
+  const b = $("#close");
+  if (b) b.onclick = async () => { b.disabled = true; await api(`/api/recalls/${rid}/close`, {}); tick(); };
+  if (!v.blocked && !s.open && timer) { clearInterval(timer); timer = null; }
+}
+let fails = 0;
+async function tick() {
+  if (busy) return; busy = true;
+  try { await load(); fails = 0; }
+  catch (e) { if (++fails >= 3 || !$(".card")) if (!$("#offline")) $("#main").insertAdjacentHTML("afterbegin", `<div class="error-state" id="offline">${markHtml(false)}Could not reach the gateway. Retrying.</div>`); }
+  finally { busy = false; }
+}
+tick();
+timer = setInterval(tick, 4000);  // agents settle their orders while you watch
+</script>
+</body>
+</html>
