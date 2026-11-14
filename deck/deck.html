@@ -8,186 +8,228 @@
 @page{size:1920px 1080px;margin:0}
 *{box-sizing:border-box}
 html,body{margin:0;background:#fff;color:#151517;font:400 30px/1.4 "Inter",system-ui,sans-serif;font-feature-settings:"cv05","cv08","ss03";-webkit-font-smoothing:antialiased}
-.s{width:1920px;height:1080px;padding:96px 112px 88px;position:relative;overflow:hidden;page-break-after:always;break-after:page;display:flex;flex-direction:column}
+.s{width:1920px;height:1080px;padding:84px 112px 88px;position:relative;overflow:hidden;page-break-after:always;break-after:page;display:flex;flex-direction:column}
 .s:last-child{page-break-after:auto;break-after:auto}
-.k{font-size:22px;font-weight:500;color:#6a6a70;letter-spacing:.01em;margin-bottom:28px}
-h1{font-size:112px;line-height:1.02;letter-spacing:-.035em;font-weight:650;margin:0;max-width:15ch}
-h2{font-size:72px;line-height:1.06;letter-spacing:-.03em;font-weight:650;margin:0;max-width:20ch}
+.k{font-size:24px;font-weight:500;color:#6a6a70;letter-spacing:.01em;margin:0 0 24px}
+h1{font-size:100px;line-height:1.02;letter-spacing:-.035em;font-weight:650;margin:0}
+h2{font-size:68px;line-height:1.06;letter-spacing:-.03em;font-weight:650;margin:0}
 p{margin:0}
-.lead{font-size:38px;line-height:1.35;color:#3b3b40;max-width:30ch;margin-top:36px}
-.foot{position:absolute;left:112px;right:112px;bottom:44px;display:flex;justify-content:space-between;font-size:18px;color:#a3a3a8}
-.two{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:72px;flex:1;min-height:0;align-items:center}
-.shot{border:1px solid #e3e3e0;border-radius:16px;overflow:hidden;box-shadow:0 2px 4px rgba(20,20,22,.05),0 24px 60px rgba(20,20,22,.10);background:#fbfbfa;max-height:800px;display:flex}
-.shot img{width:100%;height:100%;object-fit:cover;object-position:top left;display:block}
-.nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:2px solid #151517;margin-top:48px}
-.nums.two-col{grid-template-columns:repeat(2,minmax(0,1fr))}
-.nums div{padding:24px 28px 0 0}
-.nums b{display:block;white-space:nowrap;font-size:68px;line-height:1;font-weight:650;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
-.nums span{display:block;font-size:22px;line-height:1.3;color:#6a6a70;margin-top:12px;max-width:17ch}
-.nums .est{color:#935400}
-.sub{font-size:30px;line-height:1.4;color:#3b3b40;margin-top:28px;max-width:34ch}
+i.fi{font-style:normal;font-weight:600;color:#151517}
+.lead{font-size:40px;line-height:1.3;color:#3b3b40;margin-top:36px;max-width:28ch}
+.sub{font-size:30px;line-height:1.4;color:#3b3b40;margin-top:28px}
+.foot{position:absolute;left:112px;right:112px;bottom:36px;display:flex;justify-content:space-between;gap:40px;font-size:19px;color:#8a8a90}
+.row{display:flex;gap:72px;flex:1;min-height:0;align-items:center}
+.row > .txt{flex:1;min-width:0}
+.phones{display:flex;gap:36px;align-items:flex-start;flex:none}
+.phone{flex:none;background:#151517;border-radius:56px;padding:12px;box-shadow:0 2px 4px rgba(20,20,22,.08),0 30px 70px rgba(20,20,22,.18)}
+.phone img{display:block;border-radius:44px;height:100%;width:auto}
+.phone.lg{height:864px}.phone.md{height:836px}.phone.sm{height:724px}
+figure{margin:0}
+figure.ph figcaption{font-size:24px;line-height:1.3;color:#151517;font-weight:600;margin:0 0 16px}
+figure.ph figcaption span{font-weight:400;color:#6a6a70;font-size:21px}
+.quote{font-size:30px;line-height:1.4;color:#151517;margin-top:30px;padding-left:24px;border-left:4px solid #151517}
+.quote small{display:block;font-size:21px;color:#6a6a70;margin-bottom:6px}
+.nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:2px solid #151517;margin-top:40px}
+.nums.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.nums div{padding:22px 28px 0 0}
+.nums b{display:block;white-space:nowrap;font-size:76px;line-height:1;font-weight:650;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+.nums span{display:block;font-size:22px;line-height:1.3;color:#6a6a70;margin-top:12px}
+.est{color:#935400 !important}
 .good{color:#17734a}.bad{color:#b8321f}
-ul.plain{list-style:none;margin:40px 0 0;padding:0;font-size:32px;line-height:1.35;color:#3b3b40;max-width:44ch}
-ul.plain li{padding:20px 0;border-top:1px solid #e3e3e0}
+ul.plain{list-style:none;margin:32px 0 0;padding:0;font-size:29px;line-height:1.35;color:#3b3b40}
+ul.plain li{padding:18px 0;border-top:1px solid #e3e3e0}
+ul.plain li:first-child{border-top:2px solid #151517}
 ul.plain li b{color:#151517;font-weight:600}
-.cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:40px;margin-top:64px}
+.note{margin-top:28px;font-size:23px;line-height:1.4;color:#6a6a70;border-top:1px solid #e3e3e0;padding-top:18px}
+.note b{color:#3b3b40}
+.url{font:500 40px ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:-.01em;margin-top:44px}
+.shot{border:1px solid #e3e3e0;border-radius:18px;overflow:hidden;box-shadow:0 2px 4px rgba(20,20,22,.05),0 24px 60px rgba(20,20,22,.10);background:#fbfbfa;flex:none}
+.shot img{display:block;height:100%;width:auto}
+.cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:40px;margin-top:56px}
 .cols div{border-top:2px solid #151517;padding-top:22px;font-size:26px;line-height:1.35;color:#3b3b40}
-.cols b{display:block;color:#151517;font-size:30px;margin-bottom:10px;font-weight:600}
-.cols i{display:block;font-style:normal;font-size:20px;color:#a3a3a8;margin-bottom:14px}
-.url{font:500 40px ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:-.01em;margin-top:48px}
-.photo{margin:0}
-.photo img{display:block;width:100%;border-radius:16px;box-shadow:0 24px 60px rgba(20,20,22,.18);transform:rotate(1.5deg)}
-.photo figcaption{font-size:22px;line-height:1.35;color:#6a6a70;margin-top:36px}
-.qr{display:flex;flex-direction:column;align-items:center;gap:20px;font-size:22px;color:#6a6a70}
-.qr img{width:360px;height:360px;display:block}
-.mid{flex:1;display:flex;flex-direction:column;justify-content:center}
-ul.plain.und{margin:0;font-size:24px;max-width:none}
-ul.plain.und li{padding:15px 0}
-ul.plain.und li span{display:block;color:#935400;font-size:21px;margin-top:2px}
-.small{font-size:20px;color:#a3a3a8;margin-top:20px;max-width:60ch}
+.cols b{display:block;color:#151517;font-size:31px;margin-bottom:10px;font-weight:600}
+.qr{display:flex;flex-direction:column;align-items:center;gap:18px;font-size:26px;color:#3b3b40;flex:none}
+.qr img{width:340px;height:340px;display:block}
+.qr code{font:500 22px ui-monospace,"SF Mono",Menlo,monospace;color:#6a6a70}
+.big{display:flex;align-items:flex-end;gap:56px;margin-top:56px}
+.big div b{display:block;font-size:220px;line-height:.9;font-weight:650;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.big div span{display:block;font-size:28px;line-height:1.3;color:#3b3b40;margin-top:20px;max-width:30ch}
+.big .arrow{font-size:120px;line-height:1;color:#a3a3a8;padding-bottom:110px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:88px;margin-top:40px}
+.split h3{font-size:34px;font-weight:650;margin:0 0 6px;letter-spacing:-.01em}
 </style>
 </head>
 <body>
 
+<!-- 1 · title -->
 <section class="s">
-  <div class="two" style="grid-template-columns:minmax(0,1.5fr) minmax(0,.7fr)">
-    <div>
+  <div class="row">
+    <div class="txt">
       <p class="k">Junction 2026 · Valio Aimo · Trusted Trade Agents</p>
-      <h1>Valio Aimo's own door for AI agents.</h1>
-      <p class="lead">Customers' AI agents are about to start buying. Whoever builds the door they come through owns the customer.</p>
-      <p class="url">trusted-trade-agents.fly.dev</p>
+      <h1>From what the kitchen will serve to a confirmed order.</h1>
+      <p class="lead">A chat built to sit inside Valio Aimo's own web shop.</p>
+      <p class="url">{{home.url}}/shop</p>
+      <p class="sub" style="font-size:24px;color:#6a6a70;margin-top:20px">A Junction 2026 prototype on the challenge data. Not a Valio Aimo system.</p>
     </div>
-    <figure class="photo"><img src="../web/samples/wedding.jpg" alt=""><figcaption>This photo became {{menu.lines}} checked order lines in {{menu.seconds}} seconds.</figcaption></figure>
+    <div class="phone lg"><img src="shots/shop-rows.png" alt=""></div>
   </div>
-  <div class="foot"><span>Aimo Agent Gateway · team Northbound Dispatch</span><span>A prototype on the challenge's data. Not a Valio Aimo system.</span></div>
+  <div class="foot"><span>Aimo Agent Gateway · team Northbound Dispatch</span></div>
 </section>
 
+<!-- 2 · one line, one cart -->
 <section class="s">
-  <p class="k">1 · A menu photo becomes an order</p>
-  <div class="two">
-    <div>
-      <h2>A chef photographs Saturday's menu. {{menu.seconds}} seconds later the order is checked.</h2>
+  <div class="row">
+    <div class="txt">
+      <p class="k">1 · The cook writes what they will serve</p>
+      <h2>One line becomes one ostoskori.</h2>
+      <p class="quote"><small>Typed in the chat:</small>{{shop.ask}}</p>
+      <p class="sub">Back comes one ostoskori (cart), priced with the test prices from the challenge. The program works out amounts and pack sizes and checks every line for allergens, stock and price on the delivery day.</p>
       <div class="nums">
-        <div><b>{{menu.lines}}</b><span>order lines for {{menu.guests}} guests</span></div>
-        <div><b>{{menu.seconds}} s</b><span>photo to checked order, measured</span></div>
-        <div><b class="{{menu.hand_class}}">{{menu.hand}}</b><span class="{{menu.hand_class}}">the same by hand, {{menu.hand_basis}}</span></div>
+        <div><b>{{shop.lines}}</b><span>lines in one cart, from one message</span></div>
+        <div><b>{{shop.page_s}} s</b><span>as the page counts it. Send to cart on screen: {{shop.wall_s}} s</span></div>
+        <div><b class="{{hand.class}}">{{hand.min}}</b><span class="{{hand.class}}">{{hand.what}}</span></div>
       </div>
-      <p class="sub">A model only reads the photo. Code does quantities, pack sizes, allergens, stock and price. A shortage is solved by what the ingredient does in the dish.</p>
     </div>
-    <div class="shot"><img src="shots/menu.png" alt=""></div>
+    <div class="phone lg"><img src="shots/shop-wedding.png" alt=""></div>
   </div>
-  <div class="foot"><span>/menu</span><span>2</span></div>
+  <div class="foot"><span>/shop. Lines and seconds read from the page when this deck was built: "{{shop.made}}" Prices come from the challenge's price API, which gives every customer the same price; {{shop.contract}} of these lines are marked as a contract price (sopimushinta). By hand: /api/menu/latest.</span></div>
 </section>
 
+<!-- 3 · short -->
 <section class="s">
-  <p class="k">2 · Valio Aimo has its own agent at the door</p>
-  <div class="two">
-    <div>
-      <h2>It tells the kitchen's agent what it missed.</h2>
-      <div class="nums">
-        <div><b>{{seller.made}}</b><span>signed proposals to {{seller.customers}} kitchens</span></div>
-        <div><b>{{seller.accepted}}</b><span>accepted, {{seller.alone}} of them by the agent alone</span></div>
-        <div><b>{{seller.refused}}</b><span>stopped by a rule before they left</span></div>
-      </div>
-      <p class="sub">A standing order that has drifted. Stock close to its date. A shortage coming. Whatever assistant the kitchen uses, the relationship stays with Valio Aimo.</p>
-    </div>
-    <div class="shot"><img src="shots/seller.png" alt=""></div>
-  </div>
-  <div class="foot"><span>/seller</span><span>3</span></div>
-</section>
-
-<section class="s">
-  <p class="k">3 · The Monday rush</p>
-  <div class="two">
-    <div>
-      <h2>{{rush.agents}} agents want the same milk in the same second.</h2>
-      <div class="nums">
-        <div><b>{{rush.stock}} L</b><span>in stock, {{rush.asked}} L asked for</span></div>
-        <div><b>{{rush.people}}</b><span>of {{rush.agents}} agents needed a person</span></div>
-        <div><b>{{rush.seconds}} s</b><span>to the last order. Promised twice: never</span></div>
-      </div>
-      <p class="sub">The stock is split by contract share, hospitals and schools first. Each agent learns its own share and nothing about anyone else.</p>
-    </div>
-    <div class="shot"><img src="shots/tower.png" alt=""></div>
-  </div>
-  <div class="foot"><span>/tower</span><span>4</span></div>
-</section>
-
-<section class="s">
-  <p class="k">4 · What the product data does not say</p>
-  <div class="two">
-    <div>
-      <h2>Silence is not a pass.</h2>
-      <div class="nums two-col">
-        <div><b class="bad">{{und.n}}</b><span>of {{und.food}} food products carry no allergen declaration</span></div>
-        <div><b class="bad">{{und.named}}</b><span>of those name an allergen in their own title</span></div>
-      </div>
-      <p class="sub">An agent that reads "nothing listed" as "safe" puts almonds in a nut-free kitchen. Here such a line goes to a person, once per product and allergen, and the account remembers who cleared it.</p>
-    </div>
-    <ul class="plain und">{{und.examples}}</ul>
-  </div>
-  <div class="foot"><span>/proof · counted from the challenge's product data</span><span>5</span></div>
-</section>
-
-<section class="s">
-  <p class="k">Who decides what</p>
-  <div class="two">
-    <div>
-      <h2>Rules run in code. Never in a model.</h2>
+  <div class="row" style="gap:56px">
+    <div class="txt">
+      <p class="k">2 · A product runs short</p>
+      <h2>Replaced from Valio Aimo's own range.</h2>
+      <p class="quote"><small>Typed in the chat:</small>{{short.ask}}</p>
       <ul class="plain">
-        <li><b>The buyer signs a mandate.</b> How much, which products, which substitutes. Valio Aimo has its own switch and cap on top.</li>
-        <li><b>{{rules}} named rules on every request.</b> Pass, ask a person, or refuse. Nobody can approve what a rule refused.</li>
-        <li><b>The yes is signed on the approver's own phone.</b> A passkey. The key never leaves the device, so no agent and no server can make that approval.</li>
-        <li><b>Everything is signed.</b> Change one cent in an order and the check fails in your browser.</li>
+        <li><b>Not enough:</b> {{short.have}}.</li>
+        <li><i class="fi">Korvaava tuote</i> (replacement) from Valio Aimo's own range, {{short.price}}: {{short.sub}}, {{short.diff}}.</li>
+        <li><b>Why, in one sentence:</b> {{short.why_en}}</li>
+        <li><i class="fi">Vaihda</i> (change) opens the other {{short.alts}} choices. Nothing comes from outside Valio Aimo.</li>
+        <li class="dim">With Valio Aimo's data it would offer only this customer's contract products. The challenge data does not show that range, so here it picks from all Valio Aimo products in the data.</li>
       </ul>
     </div>
-    <div class="shot"><img src="shots/order.png" alt=""></div>
+    <div class="phones">
+      <div class="phone md"><img src="shots/shop-short.png" alt=""></div>
+      <div class="phone md"><img src="shots/shop-swap.png" alt=""></div>
+    </div>
   </div>
-  <div class="foot"><span>/spec · /ledger · /demo</span><span>6</span></div>
+  <div class="foot"><span>/shop. Read from the page when this deck was built. Stock and prices come from the challenge's mock API.</span></div>
 </section>
 
+<!-- 4 · approval -->
 <section class="s">
-  <p class="k">We broke it first</p>
-  <div class="two">
-    <div>
-      <h2>The test caught a bug in our own allergen rule.</h2>
-      <div class="nums two-col">
-        <div><b class="bad">{{proof.before}}</b><span>orders that broke a rule in the first full run</span></div>
-        <div><b class="good">{{proof.unsafe}}</b><span>after the fix, in {{proof.runs}} runs on {{proof.models}} models</span></div>
+  <p class="k">3 · Over the limit</p>
+  <h2>Nothing goes out before someone confirms.</h2>
+  <div class="row" style="gap:48px;align-items:center;margin-top:12px">
+    <div class="txt">
+      <ul class="plain" style="font-size:26px;margin-top:0">
+        <li>"{{milk.ask}}" comes to <b>{{milk.eur}}</b>. This account may order <b>{{milk.limit}}</b> alone, so the cart stops.</li>
+        <li><b>The person who asked cannot approve it.</b> Someone else says yes on their own phone.</li>
+        <li>Only then <i class="fi">Vahvista tilaus</i> (confirm order) works.</li>
+      </ul>
+      <p class="note" style="font-size:21px"><b>What it does not prove:</b> in the prototype anyone who has the link can approve, and the typed name is not checked. Only the browser that asked is refused. In Minun Aimo it would be the signed-in user who has the right to approve.</p>
+    </div>
+    <div class="phones" style="gap:24px">
+      <figure class="ph"><figcaption>The cart stops<span> · cook</span></figcaption><div class="phone sm"><img src="shots/shop-stop.png" alt=""></div></figure>
+      <figure class="ph"><figcaption>Someone else says yes<span> · approver</span></figcaption><div class="phone sm"><img src="shots/approve.png" alt=""></div></figure>
+      <figure class="ph"><figcaption>Confirmed<span> · {{milk.order}}</span></figcaption><div class="phone sm"><img src="shots/shop-done.png" alt=""></div></figure>
+    </div>
+  </div>
+  <div class="foot"><span>/shop and the approval page, in two browsers, when this deck was built. The amounts and the limit are read from the page. "{{approver}}" was typed as the approver's name.</span></div>
+</section>
+
+<!-- 5 · rules -->
+<section class="s">
+  <div class="row">
+    <div class="txt">
+      <p class="k">4 · Who decides</p>
+      <h2>Valio Aimo would set the rules.</h2>
+      <ul class="plain">
+        <li><b>The AI reads the request and the cart.</b> The program picks products, amounts and prices, under rules the AI cannot change.</li>
+        <li><b>Switches per customer.</b> What may be ordered, a cap, a pause. The customer sets its own limits under those.</li>
+        <li><b>A rule passes, asks a person, or refuses.</b> Nobody can approve what a rule refused.</li>
+        <li><b>An empty allergen field is not treated as safe.</b> <span class="bad">{{und.n}}</span> of {{und.food}} food products in the challenge data ({{und.pct}}%) declare nothing about allergens. If the kitchen has an allergen rule, a person checks such a line.</li>
+      </ul>
+    </div>
+    <div class="shot" style="height:840px"><img src="shots/access.png" alt=""></div>
+  </div>
+  <div class="foot"><span>Switches: /access. Allergen count: /proof, counted from the challenge's product data.</span></div>
+</section>
+
+<!-- 6 · rush -->
+<section class="s">
+  <p class="k">5 · The Monday rush</p>
+  <h2 style="max-width:30ch">{{rush.agents}} kitchens want the same short milk at the same moment.</h2>
+  <div class="row" style="gap:64px;align-items:flex-start;margin-top:36px">
+    <div class="txt" style="flex:0 0 560px">
+      <div class="nums" style="grid-template-columns:1fr;margin-top:0">
+        <div><b>{{rush.stock}} L</b><span>in stock. {{rush.asked}} L asked for</span></div>
+        <div><b class="good">Never</b><span>promised twice. {{rush.ordered}} L ordered, {{rush.seconds}} s from the first request to the last order</span></div>
       </div>
-      <p class="sub">The same {{proof.scenarios}} requests go to every model, scored in code from the signed records. Then {{menus.n}} menus to {{menus.n}} orders: {{menus.checks}} checks, {{menus.failed}} failed. And {{attack.checks}} attacks from outside: {{attack.holes}} holes found, all fixed.</p>
+      <p class="sub" style="font-size:26px">A simulation: {{rush.models}} of the kitchens were AI models, {{rush.scripts}} were simple programs. Each learns its own share and nothing about the others. The split rule is ours. Valio Aimo would set its own.</p>
     </div>
-    <div class="shot"><img src="shots/proof.png" alt=""></div>
+    <div class="shot" style="height:640px"><img src="shots/tower.png" alt=""></div>
   </div>
-  <div class="foot"><span>/proof</span><span>7</span></div>
+  <div class="foot"><span>/tower. A recorded run on {{rush.when}} (Helsinki), replayed. The kitchens are simulated; stock and prices come from the mock API.</span></div>
 </section>
 
+<!-- 7 · proof -->
 <section class="s">
-  <p class="k">Open, and the way to production</p>
-  <div class="mid">
-  <h2>Any agent, any model. Nothing proprietary.</h2>
-  <p class="sub" style="max-width:60ch">MCP and REST. Universal Commerce Protocol, AP2, OAuth 2.1, WebAuthn, GS1, Peppol. Tested with Claude, GPT, Gemini and open-weights Gemma agents.</p>
+  <p class="k">6 · We broke it first</p>
+  <h2>Our own test caught a bug in our own allergen rule.</h2>
+  <div class="big">
+    <div><b class="bad">{{proof.before}}</b><span>orders broke a rule in the first full run ({{proof.before_runs}} runs on {{proof.before_models}} models)</span></div>
+    <div class="arrow">→</div>
+    <div><b class="good">{{proof.unsafe}}</b><span>after the fix, all again: {{proof.scenarios}} requests to {{proof.models}} models, {{proof.runs}} runs, {{proof.orders}} orders</span></div>
+  </div>
+  <p class="sub" style="max-width:62ch;margin-top:56px">A nut-free kitchen. A tub of hazelnut spread lists hazelnut as an ingredient and tree nuts only as a trace. The rule took it for a trace, asked a person, and the test's approver said yes. Now excluding tree nuts also excludes hazelnut, and that order is refused outright.</p>
+  <div class="foot"><span>/proof. Scored in code from the signed records, both runs shown.</span></div>
+</section>
+
+<!-- 8 · outside software -->
+<section class="s">
+  <p class="k">7 · Later: outside software</p>
+  <h2>Outside software, one customer at a time.</h2>
+  <p class="sub" style="max-width:56ch;font-size:34px">Nothing is open by default. When Valio Aimo switches a customer on, that customer's purchasing software gets the same rules through the same interface as the chat.</p>
   <div class="cols">
-    <div><i>Step 1</i><b>Read only</b>A few pilot customers. Agents look up and plan. No orders, so nothing can go wrong with one.</div>
-    <div><i>Step 2</i><b>Re-orders with approval</b>Products the customer already buys, each approved by a person, into the existing order flow.</div>
-    <div><i>Step 3</i><b>Mandates</b>Customers set limits in their web shop account. Orders inside them go through alone.</div>
-    <div><i>Step 4</i><b>Open ordering</b>New products and substitutes inside the mandate. Valio Aimo's own agent proposes.</div>
+    <div><b>MCP and REST</b>with an OpenAPI description.</div>
+    <div><b>OAuth 2.1</b>to sign in, as that customer only.</div>
+    <div><b>Peppol</b>an order exports as a Peppol order. The XML validates against the UBL 2.1 schema; it was not sent through an access point.</div>
+    <div><b>One request at a time</b>It asks price and availability for the products of one request. It does not keep fetching the whole range.</div>
   </div>
-  </div>
-  <div class="foot"><span>/spec says what is real here, what is a stand-in and what is estimated</span><span>8</span></div>
+  <div class="foot"><span>/access shows what outside software would see for one account. /spec says how.</span></div>
 </section>
 
+<!-- 9 · limits and the way in -->
 <section class="s">
-  <div class="two" style="grid-template-columns:minmax(0,1.6fr) minmax(0,.6fr)">
-    <div>
-      <p class="k">Try it now, no sign-up</p>
-      <h1 style="max-width:none">Readable by any agent.<br>Owned by Valio Aimo.</h1>
-      <p class="url">trusted-trade-agents.fly.dev</p>
-      <p class="lead" style="max-width:40ch">Photograph a menu on <b>/menu</b>. Or add <b>/mcp</b> to Claude or ChatGPT as a connector and order under the same rules.</p>
+  <p class="k">8 · Honestly</p>
+  <div class="row" style="align-items:center;gap:80px">
+    <div class="txt">
+      <div class="split" style="margin-top:0">
+        <div>
+          <h2 style="font-size:52px">What we could not check</h2>
+          <ul class="plain" style="font-size:26px">
+            <li>No cook has used it.</li>
+            <li>It runs on the challenge's mock API and product data. Nothing touches a Valio Aimo system.</li>
+            <li>Anyone who has the approval link can approve. The typed name is not checked.</li>
+            <li>The cook's words and the cart go to a hosted AI model (Google's Gemini). Valio Aimo would choose the model.</li>
+          </ul>
+        </div>
+        <div>
+          <h2 style="font-size:52px">The way in</h2>
+          <ul class="plain" style="font-size:26px">
+            <li>The chat goes into Minun Aimo for a few pilot kitchens.</li>
+            <li>That needs the Minun Aimo sign-in, the customer's own range and prices, and who may approve.</li>
+            <li>Outside software later, one customer at a time.</li>
+          </ul>
+        </div>
+      </div>
     </div>
-    <div class="qr"><img src="shots/qr.svg" alt=""><span>Open it on your phone</span></div>
+    <div class="qr"><img src="shots/qr.svg" alt=""><span>Open it on your phone</span><code>{{home.url}}/shop</code></div>
   </div>
-  <div class="foot"><span>Aimo Agent Gateway · team Northbound Dispatch · MIT licence</span><span>Every number here comes from a recorded run on the live server, except the one marked as our estimate.</span></div>
+  <div class="foot"><span>Aimo Agent Gateway · team Northbound Dispatch · MIT licence</span><span>Every number in this deck was read from the running site when it was built. Estimates say so.</span></div>
 </section>
 
 </body>

@@ -606,13 +606,9 @@ def build(g, ctx, page) -> APIRouter:
             if t - min((g.aimo.cache.get((i, DAY, base)) or (0.0,))[0] for i in ids) > 20:
                 for i in ids:
                     g.aimo.cache.pop((i, DAY, base), None)
+        for c in custs:
+            g.aimo.alias[c] = base   # whatever else a rush account asks about is asked once too, not once per account
         g.aimo.quote(ids, DAY, base)
-        with g.aimo.lock:
-            for i in ids:
-                hit = g.aimo.cache.get((i, DAY, base))
-                if hit:
-                    for c in custs[1:]:
-                        g.aimo.cache[(i, DAY, c)] = hit
         return {"customers": len(custs), "products": len(ids), "asked_valio_aimo": g.aimo.calls - calls}
 
     def rush_seed(release_s, again_s, world="rush", count=60, models=12) -> dict:

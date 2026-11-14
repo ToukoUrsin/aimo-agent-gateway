@@ -55,7 +55,7 @@ uv run verify/own_key.py https://trusted-trade-agents.fly.dev
 | Menu photo to checked order | 34 lines for 180 guests, 6 to 8 seconds to read the photo with Gemini 4 Hydrogen and under 1.5 seconds to plan, model cost about 1.2 cents | `GET /api/menu/latest` |
 | Menu test | 60 menus to 60 signed orders, 1,168 lines, 6,843 checks, 0 failed. 52 of them carry dietary notes. 6 menus that must go back to a person with a question all did. Each sample photo read 10 times: guests right 10 of 10, a photo that is not a menu refused 10 of 10 | `evals/menu-latest.json`, `evals/menu-runs/*.jsonl` |
 | Product data | 4,233 of 13,546 food products (31%) have no allergen declaration; 290 of them name an allergen in their title. Such a line goes to a person | `GET /api/proof` (`undeclared`) |
-| Monday rush | 60 agents, 1,472 L asked, 698 L in stock, 698 L ordered, never over-allocated, 9 needed a person, 42 s | `GET /api/rush/latest`, `evals/rush-latest.json` |
+| Monday rush | 60 agents, 1,472 L asked, 698 L in stock, 698 L ordered, never over-allocated, 9 needed a person, 40 s | `GET /api/rush/latest`, `evals/rush-latest.json` |
 | Model test | 38 requests to each of 5 models from 3 providers: 190 runs, 140 orders, 0 broke a rule. Need met, of 38: Opus 38, Gemini Carbon 38, Gemini Hydrogen 38, GPT 34, open-weights Gemma 31. All 140 orders are kept with their signatures and pass `verify/verify_order.py` | `GET /api/proof`, `evals/latest.json`, `evals/runs/*.jsonl`, `evals/orders/*.jsonl` |
 | Attacks from outside | 105 checks, 5 holes found and fixed | `tests/attack.py` |
 | Test suites | 601 checks in 10 suites, 0 failed | `evals/tests-latest.json` |

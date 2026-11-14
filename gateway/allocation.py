@@ -123,7 +123,7 @@ class Allocation:
     def _source(self, pid, day, customer, ask=False):
         """The stock Valio Aimo's own system reports, before anything the gateway has promised."""
         with self.g.aimo.lock:
-            hit = self.g.aimo.cache.get((pid, day, customer))
+            hit = self.g.aimo.cache.get((pid, day, self.g.aimo.alias.get(customer, customer)))
         rec = hit[1] if hit else (self.g.aimo.quote([pid], day, customer).get(pid) if ask else None)
         lines = ((rec or {}).get("avail") or {}).get("scheduleLines") or []
         return float(lines[0].get("availableAmount") or 0) if lines else None

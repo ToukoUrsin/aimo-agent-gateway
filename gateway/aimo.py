@@ -28,6 +28,10 @@ class Aimo:
         self.cache: dict[tuple, tuple[float, dict]] = {}
         self.lock = threading.Lock()
         self.calls = 0
+        # Accounts that share one answer. The challenge's API ignores the customer number, so when many simulated accounts ask for
+        # the same products in the same second (the Monday rush) one of them asks and the others read that answer.
+        self.alias: dict[str, str] = {}
+        self.flight = threading.Lock()
 
     def _post(self, path, ids, day, customer):
         """One upstream call. A rate limit or a hiccup upstream is waited out here, briefly, so one busy second at Valio Aimo
@@ -55,6 +59,13 @@ class Aimo:
 
     def quote(self, ids: list[str], day: str, customer: str) -> dict[str, dict]:
         """{product_id: {price, avail, time_now}} for the requested delivery day."""
+        shared = self.alias.get(customer)
+        if shared:
+            with self.flight:   # one asks, the rest wait a moment and read the cached answer
+                return self._quote(ids, day, shared)
+        return self._quote(ids, day, customer)
+
+    def _quote(self, ids: list[str], day: str, customer: str) -> dict[str, dict]:
         ids = list(dict.fromkeys(ids))
         out, missing, t = {}, [], time.time()
         with self.lock:
