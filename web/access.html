@@ -136,6 +136,7 @@ html[lang=fi] .money input{padding-left:12px;text-align:right}
   </div>
   <div class="blk ctl" id="ctl">
     <h2><span class="en-only">Valio Aimo decides, per customer</span><span class="fi-only">Valio Aimo päättää, asiakas kerrallaan</span></h2>
+    <p class="note" id="startnote"><span class="en-only">In this test kitchen the switches start on, so you can try them. With a real customer, outside software would start closed and Valio Aimo would open it one customer at a time.</span><span class="fi-only">Tässä testikeittiössä kytkimet ovat valmiiksi päällä, jotta voit kokeilla niitä. Oikealla asiakkaalla ulkopuolinen ohjelmisto olisi aluksi suljettu, ja Valio Aimo avaisi sen asiakas kerrallaan.</span></p>
     <div class="sw">
       <div class="lbl"><span class="en-only">What agents may do</span><span class="fi-only">Mitä apuri saa tehdä</span><span class="mono en-only">rule W2</span></div>
       <div class="seg" role="group" aria-label="What agents may do" data-fi-aria="Mitä apuri saa tehdä" id="tier">
@@ -145,8 +146,9 @@ html[lang=fi] .money input{padding-left:12px;text-align:right}
       </div>
     </div>
     <div class="sw" id="capsw">
-      <div class="lbl"><span class="en-only">A person approves an order above</span><span class="fi-only">Tilausraja: tätä suuremman tilauksen vahvistaa hyväksyjä</span><span class="mono en-only">rule W3</span></div>
+      <div class="lbl"><span class="en-only">Valio Aimo's ceiling: a person approves an order above</span><span class="fi-only">Valio Aimon katto: tätä suuremman tilauksen vahvistaa hyväksyjä</span><span class="mono en-only">rule W3</span></div>
       <div class="money"><span class="en-only">€</span><input type="text" inputmode="numeric" id="cap" autocomplete="off" aria-label="Approval limit per order, euros ex VAT" data-fi-aria="Tilausraja tilausta kohden, euroa ilman arvonlisäveroa"><span class="u"><span class="en-only">ex VAT</span><span class="fi-only">€ (alv 0 %)</span></span></div>
+      <p class="note" id="capnote"><span class="en-only">This is Valio Aimo's ceiling for the customer. The customer has a lower limit of its own: in this test kitchen one person may order €1,500 alone, and that is the limit the shop shows. The lower of the two decides.</span><span class="fi-only">Tämä on Valio Aimon katto asiakkaalle. Asiakkaalla on lisäksi oma, pienempi rajansa: tässä testikeittiössä yksi henkilö saa tilata yksin 1 500 € asti, ja sen rajan kauppa näyttää. Pienempi raja ratkaisee.</span></p>
     </div>
     <div class="sw">
       <div class="lbl"><span class="en-only">Prices and availability in a lookup</span><span class="fi-only">Hinnat ja saatavuus tuotehaussa</span></div>

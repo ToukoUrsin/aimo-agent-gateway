@@ -325,10 +325,19 @@ def _own_request(cid: str, request: Request) -> bool:
     return bool(mine) and mine == acct.get("slug")
 
 
+def _review_on(cid: str) -> bool:
+    """Review mode for the test kitchen a checkout belongs to: switched on only by opening the shop from its demo link
+    (/shop?demo=1), kept on the server and written to the ledger. Only then can one person on one device open the
+    approver's view; a shop opened without the link has no way to approve in the browser that asked."""
+    acct = g.account_of(g._load(cid)["_internal"].get("customer")) or {}
+    return bool(acct.get("slug")) and bool(g.store.get("review:" + acct["slug"]))
+
+
 @app.get("/api/approve/{cid}", include_in_schema=False)
 def approve_view(cid: str, request: Request, k: str = ""):
     v = g.approval_view(cid, k)
-    return v | ({"_own": True} if _own_request(cid, request) else {})
+    own = _own_request(cid, request)
+    return v | ({"_own": True} if own else {}) | ({"_review": True} if own and _review_on(cid) else {})
 
 
 @app.post("/api/approve/{cid}", include_in_schema=False)
@@ -338,12 +347,14 @@ def approve_decide(cid: str, request: Request, body: dict = Body(...)):
     own = approve and _own_request(cid, request)
     # One person trying the shop alone on one device has nobody to send the link to. The approval page's demo view lets
     # them see the approver's side in the same browser; the yes is kept as a demo approval, and the order record says so.
-    demo = own and bool(body.get("demo"))
+    demo = own and bool(body.get("demo")) and _review_on(cid)
     if own and not demo:  # the person who asked in the shop chat cannot also be the one who approves
         c = g._load(cid)
         g.store.log(c["_internal"].get("trace"), "gateway", "refused", "The person who asked for this order in the shop chat tried to approve it in their own browser. Refused: an approval comes from someone else, on their own device. Nothing was approved.",
                     {"code": "own_request"}, cid=cid)
         raise GatewayError(403, "own_request", "You cannot approve your own order. Send the link to the approver or show them the QR code; they approve on their own device. Nothing was approved.")
+    if demo:  # a demo approval names no person: whatever was typed, the record carries the demo approver
+        by = by if by in ("Demo-hyväksyjä", "Demo approver") else "Demo approver"
     if approve and not by:  # the server never makes up who approved
         raise GatewayError(400, "approver_required", "An approval carries the name of the person who gives it. Nothing was approved.")
     clears = body.get("clears") if isinstance(body.get("clears"), list) else None  # the lines with no allergen declaration the approver ticked, one by one

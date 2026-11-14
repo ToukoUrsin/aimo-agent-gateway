@@ -67,6 +67,7 @@ def placed(web):
 def main():
     web = httpx.Client(base_url=BASE, timeout=30)  # the visitor's browser, with its own cookie (its own sandbox account)
     h = web.get("/api/shop/hello", params={"lang": "fi"}).json()
+    check(h.get("review") is False, "a shop opened the plain way is not in review mode")
     print("hello:", h["account"]["name"], "|", h["greeting"][:60], "| proposals", h["proposals"], "| shelf", len(h["products"]))
     check(h["account"]["name"] and h["account"]["customer"] and "ennen kuin vahvistat" in h["greeting"], "the greeting says nothing is ordered before the person confirms")
     labels = [c["label"] for c in h["chips"]]
@@ -192,6 +193,9 @@ def main():
     th, tools, said, end = turn(web, th, "1 000 litraa laktoositonta maitojuomaa maanantaiksi")
     full, meta = cart_of(tools)
     k = full["continue_url"].split("k=")[1]
+    r = web.post(f"/api/approve/{full['id']}", json={"approve": True, "approver": "Demo-hyväksyjä", "k": k, "demo": True})
+    check(r.status_code == 403, f"a shop opened without the review link has no demo approval: the asker's own yes is refused ({r.status_code})")
+    check(web.get("/api/shop/hello", params={"lang": "fi", "demo": "1"}).json().get("review") is True, "the review link (/shop?demo=1) switches review mode on for this account")
     r = web.post(f"/api/approve/{full['id']}", json={"approve": True, "approver": "Demo-hyväksyjä", "k": k, "demo": True})
     check(r.status_code == 200 and "Demo approval" in (r.json()["wholesale"]["approval"].get("demo") or ""), "alone on one device: the demo view's yes goes through and is kept as a demo approval")
     had = {o["id"] for o in placed(web)["orders"]}

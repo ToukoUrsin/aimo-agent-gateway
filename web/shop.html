@@ -126,6 +126,7 @@ body{overflow:hidden;background:var(--panel)}
 .cart .hd span{font-size:var(--t2);color:var(--muted);white-space:nowrap}
 .cart .made{margin:0;font-size:var(--t2);font-weight:600;line-height:1.4}
 .chips.try{align-items:center}.chips.try span{font-size:var(--t2);color:var(--muted)}
+.msg .langnote{margin-top:6px;color:var(--muted);font-size:13px}
 .cart .ask{margin:-6px 0 0;font-size:var(--t2);color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 .nt .dl{display:block;margin-top:3px}
 .nt .morerows{min-height:28px;margin-top:2px;font-size:var(--t2);font-weight:600}
@@ -152,6 +153,8 @@ body{overflow:hidden;background:var(--panel)}
 .cta{height:48px;border-radius:999px;border:0;background:var(--ink);color:var(--panel);font-size:var(--t4);font-weight:600;cursor:pointer;width:100%}
 .cta:hover{opacity:.9}
 .cta:disabled{opacity:.45;cursor:default}
+.tick{display:flex;gap:10px;align-items:flex-start;margin:12px 0 10px;font-size:var(--t2);line-height:1.4;color:var(--ink);cursor:pointer}
+.tick input{width:22px;height:22px;flex:none;margin:0;accent-color:var(--ink)}
 a.cta{display:grid;place-items:center;text-decoration:none;background:var(--panel);color:var(--ink);border:1px solid var(--line-2)}
 .appr{border:1px solid var(--line);border-radius:var(--r);padding:var(--s3);display:grid;grid-template-columns:minmax(0,1fr) 108px;gap:var(--s2) var(--s3);align-items:start;font-size:var(--t2);line-height:1.45}
 .appr .rest{grid-column:1/-1}
@@ -281,7 +284,9 @@ const T = {
     shelf_h: "Usein ostetut", shelf_tap: "Tilaa uudelleen lisää tavallisen määräsi ostoskoriin", shelf_none: "Tällä asiakasnumerolla ei ole vielä tilaushistoriaa.", again: "Tilaa uudelleen", again_l: n => `Tilaa uudelleen: ${n}`,
     byhand: "Sama tilaus käsin tuote kerrallaan", access: "Mitä Valio Aimo päättää ja näkee",
     fine: "Junction 2026 -prototyyppi Valio Aimon haastedatalla. Ei Valio Aimon järjestelmä. Hinnat ja saatavuus tulevat haasteen testirajapinnasta.",
-    asst: "Tilausapuri", try: "Kokeile:", reset: "Uusi keskustelu", input: "Kerro mitä aiot tarjoilla…", photo: "Liitä kuva", send: "Lähetä", photo_on: "Kuva liitetään viestiin", remove: "Poista",
+    asst: "Tilausapuri", try: "Kokeile:", reset: "Uusi keskustelu",
+    review_note: "Arviointitila: kun ostoskori tarvitsee hyväksyjän ja olet yksin yhdellä laitteella, kortista voi avata hyväksyjän näkymän tässä. Tilaukseen tallentuu, että se oli demohyväksyntä. Ilman arviointilinkkiä avatussa kaupassa tätä näkymää ei ole.",
+    input: "Kerro mitä aiot tarjoilla…", photo: "Liitä kuva", send: "Lähetä", photo_on: "Kuva liitetään viestiin", remove: "Poista",
     photo_only: "Tässä kuva.", photo_sent: "Kuva", retry: "Yritä uudelleen", failed: "Vastaus jäi kesken.", hello_fail: "Tilausapuriin ei saatu yhteyttä.",
     read: "Luetaan pyyntöä…", read_img: "Luetaan kuvaa…", think: "Mietitään…", menu: "Lasketaan ostoskoria ruokalistasta…", source: "Kootaan ostoskoria…", props: "Luetaan Valio Aimon ehdotuksia…",
     issues: "Tarkistetaan toimituksia…", place: "Vahvistetaan tilausta…", search_s: "Haetaan tuotteita…", write: "Kirjoitetaan vastausta…", orders_s: "Haetaan tilauksia…", act: "Päivitetään ostoskoria…",
@@ -305,9 +310,11 @@ const T = {
       late: (ev, d) => `Ei ehdi tilaisuuteen. Tilaisuus on ${ev} ja ensimmäinen mahdollinen toimituspäivä on ${d}`, same_day: d => `Toimitus on tilaisuuspäivänä ${d} Aiempaa toimituspäivää ei ole.`,
       dishes: (n, g) => `${n} ${n === 1 ? "ruokalaji" : "ruokalajia"}${g ? `, ${g} henkeä` : ""}:`, diet_all: "kaikki annokset", diet_n: (n, g) => `${n} ${n === 1 ? "annos" : "annosta"}${g ? ` ${g}:stä` : ""}`,
       diet: { gluten: "Gluteeniton", lactose: "Laktoositon", milk: "Maidoton", vegan: "Vegaaninen", vegetarian: "Kasvisruoka", nut: "Pähkinätön", peanut: "Maapähkinätön", egg: "Munaton", fish: "Kalaton", soy: "Soijaton", sesame: "Seesamiton", shellfish: "Äyriäisetön", celery: "Selleritön", mustard: "Sinapiton" },
-      menu_sub: n => `${n} ${n === 1 ? "korvaava tuote" : "korvaavaa tuotetta"} Valio Aimon valikoimasta:`, left_out: "Ei ostoskorissa, päätä itse:", pantry: "Jätetty keittiön omaan varastoon:",
+      menu_sub: n => `${n} ${n === 1 ? "korvaava tuote" : "korvaavaa tuotetta"} Valio Aimon valikoimasta:`, short_menu: (item, dish, amt, prod) => `${item}${dish ? ` (${dish})` : ""}: ${amt} jää vajaaksi. Ostoskorissa on se määrä, jonka Valio Aimo voi toimittaa tälle päivälle${prod ? `: ${prod}` : ""}. Muuta sopivaa tuotetta ei ole saatavilla; lopusta päätät itse.`,
+      left_out: "Ei ostoskorissa, päätä itse:", pantry: "Jätetty keittiön omaan varastoon:",
       held_n: (dish, n, diet, item, rest) => `${dish}: ${n} ${n === 1 ? "annos" : "annosta"}${diet ? ` (${diet})` : ""} on jätetty tilaamatta, koska ${item} ei sovi ruokavalioon.${rest ? ` Muut ${rest} ${rest === 1 ? "annos" : "annosta"} on tilattu.` : ""} Päätä itse, mitä näille tarjoat.`,
       held_all: (dish, diet, item) => `${dish} on jätetty tilaamatta, koska ${item} ei sovi ruokavalioon${diet ? ` (${diet})` : ""}. Päätä itse, mitä tarjoat sen tilalla.`,
+      labels: n => n === 1 ? "Olen lukenut tämän tuotteen pakkausmerkinnät." : `Olen lukenut näiden ${n} tuotteen pakkausmerkinnät.`,
       invented: "Näille ei ole keittiön reseptikorttia, joten määrät ovat arvio. Tarkista ne:", undeclared: "Näillä tuotteilla ei ole valmistajan allergeeni-ilmoitusta, joten niitä ei voitu tarkistaa. Tarkista ne itse ennen kuin vahvistat:", more: n => ` ja ${n} muuta (merkitty riveille)`, no_decl: "ei allergeeni-ilmoitusta",
       made: (n, s, img) => `${img ? "Yhdestä kuvasta" : "Yhdestä viestistä"} ${n} riviä ostoskorissa, ${s} sekunnissa.`, made_again: n => `Yhdestä kuvasta ${n} riviä ostoskorissa. Sama kuva luettiin jo aiemmin tänään, joten käytössä on sama luku.`, share: "Lähetä linkki hyväksyjälle", share_text: "Tilaus odottaa hyväksyntääsi.",
       need: "Tarvitsee hyväksynnän", need_how: "Hyväksyjä avaa linkin omalla puhelimellaan. Omaa tilaustasi et voi hyväksyä itse.", alone: "Yksin yhdellä laitteella? Avaa hyväksyjän näkymä (demo)", demo_appr: "(demohyväksyntä samassa selaimessa)",
@@ -336,7 +343,7 @@ const T = {
     shelf_h: "Often bought", shelf_tap: "Order again puts your usual amount in a cart", shelf_none: "This customer number has no order history yet.", again: "Order again", again_l: n => `Order again: ${n}`,
     byhand: "The same order by hand, product by product", access: "What Valio Aimo decides and sees",
     fine: "Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system. Prices and stock come from the challenge's test API.",
-    asst: "Order assistant", try: "Try:", reset: "New conversation", input: "What will you serve?", photo: "Attach a photo", send: "Send", photo_on: "The photo goes with your message", remove: "Remove",
+    asst: "Order assistant", try: "Try:", reset: "New conversation", lang_note: "Shown in English because your browser is. A cook sees this shop in Finnish: tap FI at the top.", input: "What will you serve?", photo: "Attach a photo", send: "Send", photo_on: "The photo goes with your message", remove: "Remove",
     photo_only: "Here is a photo.", photo_sent: "Photo", retry: "Try again", failed: "The answer stopped halfway.", hello_fail: "Could not reach the order assistant.",
     read: "Reading your request…", read_img: "Reading the photo…", think: "Thinking…", menu: "Working out the cart for the menu…", source: "Building the cart…", props: "Reading Valio Aimo's proposals…",
     issues: "Checking your deliveries…", place: "Confirming the order…", search_s: "Searching products…", write: "Writing the answer…", orders_s: "Looking up your orders…", act: "Updating the cart…",
@@ -360,9 +367,11 @@ const T = {
       late: (ev, d) => `It will not arrive in time. The event is on ${ev} and the first possible delivery day is ${d}.`, same_day: d => `Delivery is on the day of the event, ${d}. There is no earlier delivery day.`,
       dishes: (n, g) => `${n} ${n === 1 ? "dish" : "dishes"}${g ? `, ${g} guests` : ""}:`, diet_all: "every portion", diet_n: (n, g) => `${n} ${n === 1 ? "portion" : "portions"}${g ? ` of ${g}` : ""}`,
       diet: { gluten: "Gluten-free", lactose: "Lactose-free", milk: "Milk-free", vegan: "Vegan", vegetarian: "Vegetarian", nut: "Nut-free", peanut: "Peanut-free", egg: "Egg-free", fish: "Fish-free", soy: "Soy-free", sesame: "Sesame-free", shellfish: "Shellfish-free", celery: "Celery-free", mustard: "Mustard-free" },
-      menu_sub: n => `${n} ${n === 1 ? "replacement" : "replacements"} from Valio Aimo's own range:`, left_out: "Not in the cart, yours to decide:", pantry: "Left to the kitchen's own shelf:",
+      menu_sub: n => `${n} ${n === 1 ? "replacement" : "replacements"} from Valio Aimo's own range:`, short_menu: (item, dish, amt, prod) => `${item}${dish ? ` (${dish})` : ""}: ${amt} is not covered. The cart has what Valio Aimo can deliver for this day${prod ? `: ${prod}` : ""}. No other product that fits can be ordered; the rest is yours to decide.`,
+      left_out: "Not in the cart, yours to decide:", pantry: "Left to the kitchen's own shelf:",
       held_n: (dish, n, diet, item, rest) => `${dish}: ${n} ${n === 1 ? "portion" : "portions"}${diet ? ` (${diet})` : ""} left out, because ${item} does not fit the diet.${rest ? ` The other ${rest} ${rest === 1 ? "is" : "are"} in the cart.` : ""} Yours to decide what they get.`,
       held_all: (dish, diet, item) => `${dish} is left out, because ${item} does not fit the diet${diet ? ` (${diet})` : ""}. Yours to decide what to serve instead.`,
+      labels: n => n === 1 ? "I have read this product's label." : `I have read the labels of these ${n} products.`,
       invented: "There is no recipe card for these, so the amounts are an estimate. Check them:", undeclared: "The manufacturer declared no allergens for these, so they could not be checked. Check them yourself before you confirm:", more: n => ` and ${n} more (marked on the lines)`, no_decl: "no allergen declaration",
       made: (n, s, img) => `${img ? "One photo" : "One message"}: ${n} lines in the cart, in ${s} seconds.`, made_again: n => `One photo: ${n} lines in the cart. The same photo was read earlier today, so the same reading is used.`, share: "Send the link to the approver", share_text: "An order is waiting for your approval.",
       need: "Needs approval", need_how: "The approver opens the link on their own phone. You cannot approve your own order.", alone: "Alone on one device? Open the approver's view (demo)", demo_appr: "(demo approval in the same browser)",
@@ -382,6 +391,8 @@ const T = {
       sample: "Sample data: this prototype's order history is invented.", same: "Same as last week", issues: "Is there any problem with our deliveries?", conf: "Order confirmation", by: n => `Approved by ${n}`, wait_n: n => `${n} waiting for approval`,
       ah: "Approvals", alede: "Orders over what you may order alone. The approver decides on their own device.", anone: "No orders waiting for approval.", why: { B1: "The order is over what you may order alone.", B2: "This week's orders are over what you may order alone." }, wait: "Waiting for approval", ok: "Approved, confirm the order", load: "Loading…", fail: "Could not load the orders." } },
 };
+// Review mode: the shop opened from its review link (/shop?demo=1). The server keeps the switch; only then does a cart that waits for an approver offer the approver's view on this same device.
+const REVIEW_LINK = (() => { try { return new URLSearchParams(location.search).get("demo") === "1"; } catch (e) { return false; } })();
 // The language: ?lang=fi|en in the link, else the choice made with the switch, else the browser's own (Finnish anywhere in its list is Finnish).
 let lang = (() => {
   const ok = x => x === "fi" || x === "en" ? x : null;
@@ -389,6 +400,7 @@ let lang = (() => {
   try { q = ok(new URLSearchParams(location.search).get("lang")); } catch (e) {}
   try { s = ok(localStorage.getItem("shop.lang")); } catch (e) {}
   const l = q || s || ((navigator.languages && navigator.languages.length ? [...navigator.languages] : [navigator.language || ""]).some(x => /^fi\b/i.test(x)) ? "fi" : "en");
+  window.LANG_FROM_BROWSER = !q && !s;  // nobody chose: an English browser is told that a cook sees the shop in Finnish
   try { localStorage.setItem("shop.lang", l); } catch (e) {}  // the approval and order pages opened from here read the same choice
   return l;
 })();
@@ -432,7 +444,7 @@ async function cardReady() {
 
 // ---------------------------------------------------------------- the shop chat's own API
 const backend = {
-  hello: async () => { const r = await fetch(`/api/shop/hello?lang=${lang}`, { cache: "no-store" }); if (!r.ok) throw new Error("hello " + r.status); return r.json(); },
+  hello: async () => { const r = await fetch(`/api/shop/hello?lang=${lang}${REVIEW_LINK ? "&demo=1" : ""}`, { cache: "no-store" }); if (!r.ok) throw new Error("hello " + r.status); return r.json(); },
   send: async body => { const r = await fetch("/api/shop/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }); const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.detail || j.message || (r.status === 429 ? "Busy. Try again in a moment." : "The shop answered " + r.status + ".")); return j; },
   poll: async (th, after) => { const r = await fetch(`/api/shop/chat/${encodeURIComponent(th)}?after=${after}`, { cache: "no-store" }); if (r.status === 404) return { gone: true, busy: false, events: [] }; if (!r.ok) throw new Error("poll " + r.status); return r.json(); },
   orders: async () => { const r = await fetch(`/api/shop/orders?lang=${lang}`, { cache: "no-store" }); if (!r.ok) throw new Error("orders " + r.status); return r.json(); },
@@ -482,7 +494,7 @@ function addEl(html, before) {
 function greet() {
   if (!greetEl || !greetEl.isConnected) { greetEl = document.createElement("div"); greetEl.className = "greet"; log.prepend(greetEl); }
   if (!hello) { greetEl.innerHTML = `<div class="msg bot"><p>${esc(t("hello_fail"))}</p></div><div class="err"><button class="btn" type="button" data-retry-hello>${esc(t("retry"))}</button></div>`; return; }
-  greetEl.innerHTML = `<div class="msg bot"><p>${esc(hello.greeting)}</p></div>` + ((hello.chips || []).length && !$(".msg.me", log) ? `<div class="chips">${hello.chips.map(chip).join("")}</div>` : "");
+  greetEl.innerHTML = `<div class="msg bot"><p>${esc(hello.greeting)}</p>${lang === "en" && window.LANG_FROM_BROWSER ? `<p class="langnote">${esc(t("lang_note"))}</p>` : ""}${hello.review ? `<p class="langnote" data-review>${esc(t("review_note"))}</p>` : ""}</div>` + ((hello.chips || []).length && !$(".msg.me", log) ? `<div class="chips">${hello.chips.map(chip).join("")}</div>` : "");
 }
 // A starter request. One with image sends a sample photo with its words, so a menu photo is one tap away on a laptop too.
 function chip(c) { return `<button type="button" data-say="${esc(c.text)}"${c.image ? ` data-img="${esc(c.image)}"` : ""}>${esc(c.label || c.text)}</button>`; }
@@ -606,7 +618,7 @@ function tool(ev) {
   let el = null;
   if (isCheckout(d)) el = cartCard(ev, d, tn);
   else if (ev.name === "list_orders") el = mk(`<div class="cart">${ordersHtml(d, true)}</div>`);
-  else if (ev.name === "build_cart") el = d.cart ? mk(`<div class="cart"><div class="hd"><b>${esc(t("c").built)}</b></div>${itemNotes({ d: { status: "none" }, x: { cart: d.cart }, open: {} })}</div>`) : null;
+  else if (ev.name === "build_cart") el = d.cart ? mk(`<div class="cart"><div class="hd"><b>${esc(t("c").not_yet)}</b></div>${itemNotes({ d: { status: "none" }, x: { cart: d.cart }, open: {} })}</div>`) : null;
   else { card(ev, tn); return; }
   if (!el) return;
   addEl(el);
@@ -643,6 +655,7 @@ function itemNotes(S) {
   if (!c) return "";
   const live = !["completed", "canceled"].includes(S.d.status), has = S.d.status !== "none";
   if (c.moved) out.push(nt(esc(L.moved(dayS(c.moved.from), dayS(c.moved.to)))));
+  if ((c.stated || []).length && live) out.push(nt(esc(L.stated(c.stated.map(k => L.excl[k] || k).join(", "))), "info"));
   const m = c.menu;
   if (m) {
     if (m.late) out.push(nt(`<b>${esc(L.late(dayS(m.event_date), dayS(c.day)))}</b>`, "bad"));
@@ -682,6 +695,8 @@ function itemNotes(S) {
       const dish = lang === "fi" ? x.dish_fi : x.dish, item = lang === "fi" ? x.fi : x.item, diet = (x.diet || []).map(k => (L.diet[k] || L.diet[String(k).replace(/-free$/, "")] || k).toLowerCase()).join(", ");
       out.push(nt(esc(x.whole ? L.held_all(dish, diet, item) : L.held_n(dish, x.portions, diet, item, x.rest))));
     }
+    const shortP = leftP.filter(x => x.kind === "short"), amtS = a => lang === "fi" ? String(a || "").replace(".", ",") : String(a || "");
+    for (const x of shortP) { leftP.splice(leftP.indexOf(x), 1); out.push(nt(esc(L.short_menu(lang === "fi" ? x.fi : x.item, lang === "fi" ? x.dish_fi : x.dish, amtS(x.amount), (m.partial || []).length === 1 ? (lang === "fi" ? m.partial[0].title_fi : m.partial[0].title) : "")))); }
     if (leftP.length) out.push(nt(`<b>${esc(L.left_out)}</b> ${esc(leftP.map(x => (lang === "fi" ? x.fi : x.item) + (x.dish ? ` (${lang === "fi" ? x.dish_fi : x.dish})` : "")).join(", "))}`));
     if ((m.invented || []).length) out.push(nt(`${esc(L.invented)} ${esc((lang === "fi" && m.invented_fi || m.invented).join(", "))}`));
   }
@@ -703,8 +718,9 @@ function itemNotes(S) {
     }
     else if (it.status === "ask_amount") out.push(nt(L.amount(a)));
     else if (it.status === "not_on_day") out.push(nt(`${L.not_day(a, esc(dayS(c.day)))}${it.available_on && live && has ? `<div class="acts"><button type="button" class="sm" data-act="day" data-date="${esc(it.available_on)}">${esc(L.move(dayS(it.available_on)))}</button></div>` : it.available_on ? ` ${esc(L.can_day(dayS(it.available_on)))}` : ""}`));
-    else if (it.status === "not_found") out.push(nt(L.none(a)));
+    else if (it.status === "not_found") out.push(nt(it.no_fit ? L.no_fit(a, esc((c.stated || []).map(k => L.excl[k] || k).join(", "))) : L.none(a)));
     else if (ch) {
+      if (it.named_miss && live) out.push(nt(L.named_miss(a, `”${esc(it.named_miss)}”`, ch.lines.map(l => `${num(l.units)} × ${esc(lang === "fi" ? l.title_fi : l.title)}`).join(" + ")) + (swapBtn && !(it.usual && !c.same_as_last_week) ? `<div class="acts">${swapBtn}</div>` : "")));
       if (it.usual && !c.same_as_last_week) out.push(nt(L.usual(a, num(it.quantity), u) + (swapBtn ? `<div class="acts">${swapBtn}</div>` : "") + alts, "info"));
       else if (more && S.open.swap === i) out.push(nt(`${a}${alts}`, "info"));
     }
@@ -751,6 +767,9 @@ function render(S) {
   const stopped = st === "incomplete" && !expired;
   // An order that cannot arrive before the event is not offered for confirming or approving until the person says they want it anyway.
   const lateGate = (ready || esc_) && S.x.cart && S.x.cart.menu && S.x.cart.menu.late && !S.open.late_ok;
+  // An exclusion is in force and some products say nothing about allergens: the person ticks that they read those labels before the button opens.
+  const blankN = new Set((((w.policy || {}).rules || []).filter(r => r.id === "A1" && r.outcome === "pass" && r.undeclared).flatMap(r => r.undeclared)).map(x => String(x.id))).size;
+  const needTick = ready && blankN > 0;
   S.el.className = "cart" + (done ? " done" : off ? " off" : "");
   S.el.dataset.cid = d.id;
   const c = S.x.cart, solo = c && (c.items || []).filter(it => !it.dropped && it.choices);
@@ -766,9 +785,10 @@ function render(S) {
     + (stopped ? nt(esc([L.deny_h].concat([...new Set(((w.policy || {}).rules || []).filter(r => r.outcome === "deny").map(r => L.deny_why[r.id] || L.deny_why[r.id[0]] || L.deny_why.other))]).join(" ") || L.deny), "bad") : "") + (expired ? nt(esc(L.expired)) : "")
     + `<dl class="sum"><dt>${esc(L.day)}</dt><dd>${esc(dayS(w.delivery_date))}</dd><dt>${esc(L.ex)}</dt><dd>${eur(amount(d.totals, "subtotal"))}</dd><dt class="tot">${esc(L.inc)}</dt><dd class="tot">${eur(amount(d.totals, "total"))}</dd></dl>`
     + (lateGate ? `<div class="acts" style="margin:10px 0 4px"><button type="button" class="sm" data-act="lateok">${esc(L.late_ok(dayS(w.delivery_date)))}</button></div>` : "")
-    + (esc_ && !lateGate ? `<div class="appr"><div><b>${esc(L.need)}</b>${whyApproval(S).map(s => `<p>${esc(s)}</p>`).join("")}<p class="mu">${esc(L.need_how)}</p></div><div class="qr">${S.x.qr || ""}</div><div class="rest">${navigator.share ? `<button type="button" class="sm" data-act="share">${esc(L.share)}</button>` : ""}<button type="button" class="sm" data-act="copy">${esc(L.copy)}</button><button type="button" class="lnkbtn alone" data-act="demoappr">${esc(L.alone)}</button>${cheaper}</div></div>` : "")
+    + (esc_ && !lateGate ? `<div class="appr"><div><b>${esc(L.need)}</b>${whyApproval(S).map(s => `<p>${esc(s)}</p>`).join("")}<p class="mu">${esc(L.need_how)}</p></div><div class="qr">${S.x.qr || ""}</div><div class="rest">${navigator.share ? `<button type="button" class="sm" data-act="share">${esc(L.share)}</button>` : ""}<button type="button" class="sm" data-act="copy">${esc(L.copy)}</button>${hello && hello.review ? `<button type="button" class="lnkbtn alone" data-act="demoappr">${esc(L.alone)}</button>` : ""}${cheaper}</div></div>` : "")
     + (ap && ap.decision === "approved" && !off ? `<div class="okline">✓ ${esc(L.approved(ap.by || ""))}${ap.demo ? ` <span class="demo">${esc(L.demo_appr)}</span>` : ""}</div>` : ap && ap.decision === "rejected" ? `<div class="nt bad">${esc(L.rejected(ap.by || ""))}</div>` : "")
-    + (lateGate ? "" : ready || expired ? `<button type="button" class="cta" data-act="confirm">${esc(L.confirm)}</button>` : esc_ ? `<button type="button" class="cta" disabled>${esc(L.confirm)} · ${esc(L.waiting)}</button>` : done && (o.permalink_url || S.x.order_url) ? `<a class="cta" href="${esc(o.permalink_url || S.x.order_url)}" target="_blank" rel="noopener">${esc(L.record)}</a>` : "")
+    + (needTick && !lateGate ? `<label class="tick"><input type="checkbox" data-act="labels"${S.open.labels ? " checked" : ""}><span>${esc(L.labels(blankN))}</span></label>` : "")
+    + (lateGate ? "" : ready || expired ? `<button type="button" class="cta" data-act="confirm"${needTick && !S.open.labels ? " disabled" : ""}>${esc(L.confirm)}</button>` : esc_ ? `<button type="button" class="cta" disabled>${esc(L.confirm)} · ${esc(L.waiting)}</button>` : done && (o.permalink_url || S.x.order_url) ? `<a class="cta" href="${esc(o.permalink_url || S.x.order_url)}" target="_blank" rel="noopener">${esc(L.record)}</a>` : "")
     + `<div class="folds"><button type="button" class="lnkbtn" data-act="rows">${esc(S.open.rows ? L.rows_hide : L.rows(n))}</button><button type="button" class="lnkbtn" data-act="checks">${esc(S.open.checks ? L.checks_hide : L.checks)}</button>${ready || esc_ ? `<button type="button" class="lnkbtn" data-act="cancel">${esc(L.cancel)}</button>` : ""}</div>`
     + (S.open.rows ? rowsHtml(S) : "") + (S.open.checks ? checksHtml(S) : "");
 }
@@ -795,6 +815,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) for 
 function cartAct(S, b) {
   const a = b.dataset.act, L = t("c"), c = S.x.cart, i = Number(b.dataset.i);
   if (a === "rows" || a === "checks") { S.open[a] = !S.open[a]; render(S); return; }
+  if (a === "labels") { S.open.labels = !!b.checked; render(S); return; }  // lines with no allergen declaration: the person says they read the labels, then the button opens
   if (a === "share") { navigator.share({ title: L.need, text: L.share_text, url: S.d.continue_url || "" }).catch(() => {}); return; }
   if (a === "lateok") { S.open.late_ok = true; render(S); return; }
   // One person, one device: the approver's page opens in a new tab as its demo view. That yes is kept as a demo approval.
@@ -804,7 +825,7 @@ function cartAct(S, b) {
   if (a === "plan") { const box = $("[data-frames]", S.el); b.remove(); for (const q of S.quiet) card(q, null, box); return; }
   if (a === "sig") { const box = $("[data-frames]", S.el); b.remove(); card({ name: S.ev.name, args: S.ev.args || {}, result: { content: [], structuredContent: S.d, _meta: { [META]: { ...S.x, full: S.d } } } }, null, box); return; }
   if (busy) return;
-  if (a === "confirm") act({ type: "confirm", checkout: S.id }, L.confirm);
+  if (a === "confirm") act({ type: "confirm", checkout: S.id, read_labels: !!S.open.labels }, L.confirm);
   else if (a === "cancel") act({ type: "cancel", checkout: S.id }, L.cancel);
   else if (a === "day") act({ type: "day", checkout: S.id, date: b.dataset.date }, L.move(dayS(b.dataset.date)));
   else if (a === "kind") act({ type: "kind", checkout: S.id, item: i, kind: b.dataset.kind }, `${c.items[i].as_written}: ${b.textContent}`);
@@ -975,7 +996,7 @@ document.addEventListener("click", async e => {
   if (tb) { const k = tb.dataset.tab; if (k === "order") view("chat"); else if (k === "shelf") view("shop"); else if (k === "orders" || k === "approvals") view(k); else { view("chat"); send(t("tabmsg")[k]); } return; }
   const lb = e.target.closest("[data-lang]");
   if (lb && lb.dataset.lang !== lang) {
-    lang = lb.dataset.lang; try { localStorage.setItem("shop.lang", lang); } catch (err) {}
+    lang = lb.dataset.lang; window.LANG_FROM_BROWSER = false; try { localStorage.setItem("shop.lang", lang); } catch (err) {}
     paint(); shop(); setStatus(statusKey); recap();
     for (const k of Object.keys(carts)) if (carts[k].el.isConnected) render(carts[k]);
     for (const f of frames) if (f.ready) post(f, "ui/notifications/host-context-changed", { locale: loc() });

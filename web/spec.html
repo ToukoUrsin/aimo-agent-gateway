@@ -43,7 +43,7 @@ table.wrap td:first-child{white-space:normal}
 <nav class="toc" id="toc" aria-label="On this page"></nav>
 <main class="read">
 <h1>How it works</h1>
-<p class="lead">A customer's AI agent can look up products, get a fixed price and place an order with Valio Aimo, with no person in the loop, as long as it stays inside limits both companies set. Anything outside goes to a person as one link.</p>
+<p class="lead">This page is for Valio Aimo's IT. The shop chat on <a href="/shop">/shop</a> is the gateway's first user, and there nothing is ordered before the signed-in person confirms. The same gateway can let a customer's own software look up products, get a fixed price and place an order inside limits both companies set, once Valio Aimo opens that for the customer. Anything outside the limits goes to a person as one link.</p>
 <p>The gateway sits in front of Valio Aimo's price and availability API. The rules run in code, never in a model. Every price, every decision and every order is signed, so either side can prove later what was agreed.</p>
 <p>The first caller is Valio Aimo's own: a chat in its web shop (<a href="/shop">/shop</a>), where the signed-in cook or purchasing manager says what they need and the order is built, and a menu photo (<a href="/menu">/menu</a>). A customer's own purchasing software, or a chat assistant, comes through the same door under the same rules. <a href="/access">/access</a> shows what any of them can see for one account.</p>
 <p>Three things go further than a safe door. A <a href="#menu">menu photo becomes one checked order</a>. <a href="#seller">Valio Aimo has its own agent</a> at the door, so the customer relationship stays with Valio Aimo whatever assistant the kitchen uses. And <a href="#allocation">short stock is split by contract share</a> when every agent asks at once.</p>
@@ -58,7 +58,7 @@ table.wrap td:first-child{white-space:normal}
 </ol>
 
 <h2>Connect your own agent</h2>
-<p>Any agent can use it. Nothing here is tied to one model or vendor.</p>
+<p>Nothing here is tied to one model or vendor. Which software may connect, and for which customer, is Valio Aimo's choice on <a href="/access">/access</a>.</p>
 <table>
 <tr><td>MCP</td><td class="mono" data-u="/mcp"></td></tr>
 <tr><td>REST</td><td><span class="mono" data-u=""></span>, described in <a href="/openapi.json">/openapi.json</a></td></tr>
@@ -153,7 +153,7 @@ table.wrap td:first-child{white-space:normal}
 <li><div><b>A shortage is solved by what the ingredient does in the dish.</b> Cooking cream can stand in for whipping cream in a sauce. It cannot in a whipped topping, so that line is reported instead of quietly swapped.</div></li>
 <li><div><b>One signed offer.</b> The whole basket goes through the normal rules, approval link and signatures.</div></li>
 </ol>
-<p>Any agent can use the same planner: <span class="mono">plan_menu_order</span> over MCP or <span class="mono">POST /menu/plan</span>. <a href="/byhand">/byhand</a> lets a person do the same basket in a bare web shop over the same catalogue and times it. Until someone finishes it, the by-hand time shown is an estimate and says so.</p>
+<p>Software Valio Aimo has let in can use the same planner: <span class="mono">plan_menu_order</span> over MCP or <span class="mono">POST /menu/plan</span>. <a href="/byhand">/byhand</a> lets a person do the same basket in a bare web shop over the same catalogue and times it. Until someone finishes it, the by-hand time shown is an estimate and says so.</p>
 
 <h2 id="seller">Valio Aimo's own agent</h2>
 <p>If the only agent in the conversation is the customer's, someone else's assistant decides what the kitchen buys. So Valio Aimo has an agent of its own at the door. It speaks in Valio Aimo's name, signs with Valio Aimo's key and makes proposals to the customer's agent. See <a href="/seller">/seller</a>.</p>
@@ -266,7 +266,8 @@ table.wrap td:first-child{white-space:normal}
 
 <h2>From here to production</h2>
 <ol>
-<li><b>Read only.</b> Put the gateway in front of the real price and availability services for a few pilot customers. Agents can look up and plan, not order. Nothing can go wrong with an order because there is none.</li>
+<li><b>The chat inside Minun Aimo.</b> A few pilot kitchens, Valio Aimo's sign-in, each customer's own contract range and prices. The signed-in person confirms every order, and it enters the web shop's existing order flow.</li>
+<li><b>Outside software, read only.</b> For customers Valio Aimo chooses, their own purchasing software can look up and plan, not order. Nothing can go wrong with an order because there is none.</li>
 <li><b>Re-orders with approval.</b> Orders for products the customer already buys, each one approved by a person. Orders enter the webshop's existing order flow, so credit checks, picking and invoicing stay as they are.</li>
 <li><b>Mandates.</b> Customers set limits in the webshop account settings. Orders inside them go through alone. The buyer's key comes from their company sign-in, which also gates who may enrol an approver's device; the approval link goes to email or Teams and is signed on that device.</li>
 <li><b>Open ordering.</b> New products and substitutes inside the mandate. Peppol orders out to customers who already use it.</li>

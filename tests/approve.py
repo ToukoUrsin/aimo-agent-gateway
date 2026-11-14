@@ -89,12 +89,18 @@ ok(r.json()["wholesale"]["approval"]["by"] == "Maija Korhonen", "the record name
 # as a demo approval inside the signed record, and makes no device the account's approver device.
 cidd, status, kd = ask(shop)
 before = len(passkey.devices(g.store, slug))
-r = asker.post(f"/api/approve/{cidd}", json={"k": kd, "approve": True, "approver": "", "note": "", "demo": True})
-ok(r.status_code != 200, f"a demo approval still needs a name ({r.status_code})")
-r = asker.post(f"/api/approve/{cidd}", json={"k": kd, "approve": True, "approver": "Demo-hyväksyjä", "note": "", "demo": True})
+# The demo view is there only when the shop was opened with the review link (/shop?demo=1). The table demo's shop has no such way round.
+r = asker.post(f"/api/approve/{cidd}", json={"k": kd, "approve": True, "approver": "Maija Korhonen", "note": "", "demo": True})
+ok(r.status_code == 403 and (r.json().get("messages") or [{}])[0].get("code") == "own_request", f"without the review link the asker's demo yes is refused like any own yes ({r.status_code})")
+ok(not asker.get(f"/api/approve/{cidd}", params={"k": kd}).json().get("_review"), "the approval page is told the account is not in review mode")
+h = asker.get("/api/shop/hello", params={"lang": "en", "demo": "1"}).json()
+ok(h.get("review") is True, "opening the shop with the review link switches review mode on for this account")
+ok(asker.get(f"/api/approve/{cidd}", params={"k": kd}).json().get("_review") is True, "and the approval page is told so")
+r = asker.post(f"/api/approve/{cidd}", json={"k": kd, "approve": True, "approver": "Maija Korhonen", "note": "", "demo": True})
 ap = (r.json().get("wholesale") or {}).get("approval") or {}
+ok(ap.get("by") == "Demo approver", f"a demo approval names no person, whatever was typed ({ap.get('by')})")
 ok(r.status_code == 200 and r.json()["status"] == "ready_for_complete", f"the asker's demo yes goes through ({r.status_code} {r.json().get('status')})")
-ok("Demo approval" in (ap.get("demo") or "") and "browser that asked" in ap["demo"] and ap.get("by") == "Demo-hyväksyjä" and not ap.get("device"), "the approval record says it was a demo approval in the asker's browser, with no approver device")
+ok("Demo approval" in (ap.get("demo") or "") and "browser that asked" in ap["demo"] and not ap.get("device"), "the approval record says it was a demo approval in the asker's browser, with no approver device")
 v = asker.get(f"/api/approve/{cidd}", params={"k": kd}).json()
 ok(any("Demo approval" in e["text"] for e in v["_events"]), "the ledger says it was a demo approval")
 ok(len(passkey.devices(g.store, slug)) == before, "the asker's browser did not become an approver device")

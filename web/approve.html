@@ -34,6 +34,7 @@ h1{font-size:var(--t6);line-height:1.25;letter-spacing:-.015em;text-wrap:balance
 .fields{display:grid;gap:6px}
 .fields label{font-size:var(--t2);font-weight:500}
 .fields input{height:44px;font-size:16px;margin-top:4px}
+.fields input[readonly]{background:var(--soft);color:var(--muted)}
 .note>summary{padding:6px 0 4px}
 .notice{background:var(--soft);border-radius:var(--r-l);padding:var(--s3) var(--s4);font-size:var(--t3);line-height:1.45}
 .bar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:var(--s3) var(--s4) calc(var(--s3) + env(safe-area-inset-bottom))}
@@ -116,7 +117,7 @@ h1{font-size:var(--t6);line-height:1.25;letter-spacing:-.015em;text-wrap:balance
 const cid = location.pathname.split("/").pop(), k = new URLSearchParams(location.search).get("k");
 // The demo view: one person on one device looks at the approver's side in the browser that asked. Its yes is kept as a demo approval.
 const DEMO = new URLSearchParams(location.search).get("demo") === "1";
-const demoOwn = c => DEMO && !!(c && c._own);
+const demoOwn = c => DEMO && !!(c && c._own && c._review);  // only a test kitchen in review mode has the demo view; the server decides
 // The shop's stored choice, else the browser's own language (Finnish anywhere in its list is Finnish).
 let lang = (() => {
   let s = null;
@@ -140,9 +141,9 @@ const T = {
     so: (t, a, b, s) => `${t}: ${a} → ${b} joka viikko ${s} alkaen.`, soNow: "Nyt ei tilata mitään.", soAlso: "Muuttaa myös vakiotilausta: ",
     name: "Nimesi", namePh: "esim. Maija Korhonen, ravintolapäällikkö", note: "Lisää viesti (valinnainen)", notePh: "esim. OK vain tällä viikolla",
     honest: "Prototyyppi ei tarkista, kuka hyväksyjä on: hyväksyjän laitteeksi tulee ensimmäinen laite, joka hyväksyy eri selaimessa kuin tilaaja, ja nimen hän kirjoittaa itse. Minun Aimossa hyväksyjä olisi kirjautunut käyttäjä, jolla on hyväksymisoikeus.",
-    ownH: "Et voi hyväksyä omaa tilaustasi.", ownP: "Lähetä tämä linkki hyväksyjälle tai näytä QR-koodi hänelle. Hän hyväksyy omalla laitteellaan.",
+    ownH: "Et voi hyväksyä omaa tilaustasi.", ownP: "Lähetä tämä linkki hyväksyjälle tai näytä QR-koodi hänelle. Hän hyväksyy omalla laitteellaan. Yksin? Yksityinen ikkuna käy toisesta laitteesta.",
     ownDemo: "Kokeiletko yksin yhdellä laitteella? Avaa hyväksyjän näkymä (demo)", demoName: "Demo-hyväksyjä", backShop: "Palaa ostoskoriin",
-    demoNote: "<b>Demo.</b> Katsot tätä hyväksyjänä samassa selaimessa, jossa tilaus tehtiin. Oikeasti hyväksyjä on toinen henkilö omalla laitteellaan. Tilauksen tietoihin tallentuu, että tämä oli demohyväksyntä.",
+    demoNote: "<b>Demo.</b> Katsot hyväksyjän näkymää samassa selaimessa, jossa tilaus tehtiin. Tilaukseen tallentuu, että tämä oli demohyväksyntä. Oikea hyväksyntä tulee toiselta laitteelta, joka allekirjoittaa sen: avaa linkki toisella laitteella tai yksityisessä ikkunassa.",
     hintDemo: "Tilauksen tietoihin tallentuu, että tämä oli demohyväksyntä.", demoDone: "Tallennettu demohyväksyntänä: annettu samassa selaimessa, jossa tilaus tehtiin.", honestH: "Miten tämä toimisi Minun Aimossa",
     copy: "Kopioi linkki", copied: "Linkki kopioitu", copyFail: "Kopioi linkki osoiteriviltä",
     ownSmall: "Prototyyppi tunnistaa tilaajan selaimesta. Minun Aimossa hyväksyjä tunnistetaan kirjautumisesta.",
@@ -194,9 +195,9 @@ const T = {
     so: (t, a, b, s) => `${t}: ${a} → ${b} every week from ${s}.`, soNow: "Nothing is ordered now.", soAlso: "It also changes the standing order: ",
     name: "Your name", namePh: "e.g. Maija Korhonen, F&B manager", note: "Add a note (optional)", notePh: "e.g. OK for this week only",
     honest: "The prototype does not check who the approver is: the first device that approves in a different browser from the asker becomes the approver's device, and they type their own name. In Minun Aimo the approver would be a signed-in user with the right to approve.",
-    ownH: "You cannot approve your own order.", ownP: "Send this link to the approver or show them the QR code. They approve on their own device.",
+    ownH: "You cannot approve your own order.", ownP: "Send this link to the approver or show them the QR code. They approve on their own device. Alone? A private window counts as another device.",
     ownDemo: "Trying this alone on one device? Open the approver's view (demo)", demoName: "Demo approver", backShop: "Back to the cart",
-    demoNote: "<b>Demo.</b> You see this as the approver, in the same browser that asked for the order. In real use the approver is another person on their own device. The order record will say this was a demo approval.",
+    demoNote: "<b>Demo.</b> You see the approver's view in the same browser that asked for the order. The order's record will say this was a demo approval. A real approval comes from another device, which signs it: open the link on another device or in a private window.",
     hintDemo: "The order record will say this was a demo approval.", demoDone: "Kept as a demo approval: given in the same browser that asked for the order.", honestH: "How this would work in Minun Aimo",
     copy: "Copy link", copied: "Link copied", copyFail: "Copy the link from the address bar",
     ownSmall: "The prototype recognises who asked by their browser. In Minun Aimo the approver is recognised by their sign-in.",
@@ -570,7 +571,7 @@ function view(c) {
   if (open && $("#who")) { LAST.who = $("#who").value; LAST.note = $("#note").value; }
   $("#acct").innerHTML = `<b>${esc(c.buyer.name || "")}</b>${w.customer ? esc(`${t("custno")} ${w.customer}`) : ""}`;
   let h = "";
-  if (open && own) h += `<div class="own"><h2>${t("ownH")}</h2><p>${t("ownP")}</p><div class="row"><img alt="" src="/api/qr?u=${encodeURIComponent(location.href)}" onerror="this.remove()"><button class="btn lg" id="copy" type="button">${ICON.copy}<span>${t("copy")}</span></button></div><p><a href="${esc(location.pathname + location.search + "&demo=1")}">${t("ownDemo")}</a></p><p class="small">${t("ownSmall")}</p></div>`;
+  if (open && own) h += `<div class="own"><h2>${t("ownH")}</h2><p>${t("ownP")}</p><div class="row"><img alt="" src="/api/qr?u=${encodeURIComponent(location.href)}" onerror="this.remove()"><button class="btn lg" id="copy" type="button">${ICON.copy}<span>${t("copy")}</span></button></div>${c._review ? `<p><a href="${esc(location.pathname + location.search + "&demo=1")}">${t("ownDemo")}</a></p>` : ""}<p class="small">${t("ownSmall")}</p></div>`;
   if (open && demo) h += `<div class="notice">${t("demoNote")}</div>`;
   const st = (w.proposal || {}).standing;
   h += `<div><h1>${esc(so ? (open ? t("soOpen") : t("soChanged")) : am && open ? t("amOpen", am.order_label) : open ? t("asks", asker(c)) : t("asked", asker(c)))}</h1>`
@@ -582,7 +583,7 @@ function view(c) {
     h += `<div class="why"><b>${t("why")}</b>${esc_.map(r => `<p>${esc(plainNamed(r))}</p>`).join("")}${own ? "" : tickList(c)}</div>`;
     if (!own) {
       if (!demo && noSign()) h += `<div class="notice">${MODE === "other" ? t("other") : t("cannot")}</div>`;
-      else h += `<div class="fields"><label for="who">${t("name")}</label><input type="text" id="who" value="${esc(LAST.who)}" autocomplete="name" placeholder="${esc(t("namePh"))}">
+      else h += `<div class="fields"><label for="who">${t("name")}</label><input type="text" id="who" value="${esc(demo ? t("demoName") : LAST.who)}" autocomplete="name" placeholder="${esc(t("namePh"))}"${demo ? " readonly" : ""}>
         <details class="note"${LAST.note || opened.has("note") ? " open" : ""} data-fold="note"><summary>${t("note")}</summary><input type="text" id="note" value="${esc(LAST.note)}" placeholder="${esc(t("notePh"))}" aria-label="${esc(t("note"))}"></details>
         <details class="note"${opened.has("honest") ? " open" : ""} data-fold="honest"><summary>${t("honestH")}</summary><p class="small" style="margin:6px 0 0">${t("honest")}</p></details></div>`;
     }

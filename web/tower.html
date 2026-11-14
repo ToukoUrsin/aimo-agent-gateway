@@ -525,20 +525,21 @@ function rules(d) {
 
 function ops(d) {
   const f = d.floor || {}, s = f.summary, ru = d.rush || {}, fi = FI();
-  const replay = RU.mode === "replay" ? tr(" The Monday rush on this page is a replay of a recorded run.", " Tämän sivun maanantairuuhka on tallennetun ajon toisto.") : "";
+  // Said first, so nobody takes the replay for something happening now.
+  const idle = RU.mode === "replay" ? tr("You are watching a recording of an earlier Monday rush. Nothing is running right now.", "Katsot tallennetta aiemmasta maanantairuuhkasta. Mikään ei ole käynnissä juuri nyt.") : tr("Nothing is running right now.", "Mikään ei ole käynnissä juuri nyt.");
   $("#alarm").hidden = !d.paused_all;
   $("#floor").innerHTML = fi
     ? (f.running ? `<b>Simulaatio ${f.stopping ? "pysähtyy" : "on käynnissä"}.</b> ${esc(noteFi(f.note || ""))}${f.agents ? `, ${f.agents} apuria` : ""}.`
       : ru.running ? `<b>Maanantairuuhka ${ru.stopping ? "pysähtyy" : "on käynnissä nyt"}.</b> ${esc(noteFi(ru.note || ""))}.`
-      : ru.cooldown_s ? `Mikään ei ole nyt käynnissä. Edellinen kävijän ruuhka päättyi; uuden voi aloittaa <b>${Math.ceil(ru.cooldown_s)} s</b> kuluttua.${replay}`
-      : s ? `Mikään ei ole nyt käynnissä.${replay} Edellinen simulaatio: <b>${n0(s.orders)} tilausta</b>, ${n0(s.alone)} apurin itse tekemää, ${n0(s.approved)} hyväksyjän hyväksymää, ${n0(s.refused + s.said_no)} pysäytettyä.`
-      : `Mikään ei ole nyt käynnissä.${replay}${f.note && /^Stopped:/.test(f.note) ? " Edellinen simulaatio pysähtyi virheeseen." : ""}`)
+      : ru.cooldown_s ? `${idle} Edellinen kävijän ruuhka päättyi; uuden voi aloittaa <b>${Math.ceil(ru.cooldown_s)} s</b> kuluttua.`
+      : s ? `${idle} Edellinen simulaatio: <b>${n0(s.orders)} tilausta</b>, ${n0(s.alone)} apurin itse tekemää, ${n0(s.approved)} hyväksyjän hyväksymää, ${n0(s.refused + s.said_no)} pysäytettyä.`
+      : `${idle}${f.note && /^Stopped:/.test(f.note) ? " Edellinen simulaatio pysähtyi virheeseen." : ""}`)
     : f.running
     ? `<b>The floor is ${f.stopping ? "stopping" : "running"}.</b> ${esc(f.note || "")}${f.agents ? `, ${f.agents} agents` : ""}.`
     : ru.running ? `<b>The Monday rush is ${ru.stopping ? "stopping" : "running live"}.</b> ${esc(ru.note || "")}.`
-    : ru.cooldown_s ? `Nothing is running live. The last live visitor rush finished; a new one can start in <b>${Math.ceil(ru.cooldown_s)} s</b>.${replay}`
-    : s ? `Nothing is running live.${replay} Last floor run: <b>${n0(s.orders)} orders</b>, ${n0(s.alone)} alone, ${n0(s.approved)} approved by a person, ${n0(s.refused + s.said_no)} stopped.`
-    : `Nothing is running live.${replay}${f.note && /^Stopped:/.test(f.note) ? " " + esc(f.note) : ""}`;
+    : ru.cooldown_s ? `${idle} The last live visitor rush finished; a new one can start in <b>${Math.ceil(ru.cooldown_s)} s</b>.`
+    : s ? `${idle} Last floor run: <b>${n0(s.orders)} orders</b>, ${n0(s.alone)} alone, ${n0(s.approved)} approved by a person, ${n0(s.refused + s.said_no)} stopped.`
+    : `${idle}${f.note && /^Stopped:/.test(f.note) ? " " + esc(f.note) : ""}`;
   // A visitor can start one small rush. The recorded 60-agent controls remain operator-only.
   $("#floorctl").hidden = !OP;
   $("#rmodl").hidden = !OP || !d.rush || !!ru.live;

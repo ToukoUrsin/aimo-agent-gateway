@@ -1071,7 +1071,9 @@ class Planner:
                 dm["pool"], dm["known"], dm["swapped"] = list(dict.fromkeys(pid for n in names for pid in PANTRY[n]["prefer"])), True, len(names) > 1
                 dm["wide"] = wide(g, dm["item"])
             else:
-                diets = tuple(sorted({w for o in dms if o["item"] == dm["item"] for w in o["cons"]["why"] if w in DIET_QUERY}))  # one pool per ingredient, so one product can serve every group of portions
+                # Each group of portions gets its own search: the 5 coeliac portions look for gluten-free spaghetti, the other 235 for spaghetti.
+                # (One shared pool made the diet product the first choice for everyone.)
+                diets = tuple(sorted({w for w in dm["cons"]["why"] if w in DIET_QUERY}))
                 dm["pool"], dm["known"], dm["swapped"], dm["wide"] = find(g, dm["item"], dm.get("fi"), diets), False, False, []
             # What the other products for this ingredient contain; for a search, only those on the product's own shelf (a blueberry doughnut says nothing about blueberries).
             shelf = str((g.cat.get(dm["pool"][0]) or {}).get("category") or "")[:3] if dm["pool"] and not dm["known"] else None
@@ -1251,15 +1253,19 @@ class Planner:
                 for dm in group:
                     dm["cands"], dm["sized"] = [best] + [c for c in dm["cands"] if c != best], first
         # The same ingredient for portions with and without a dietary rule: when the product the rule needs is also the ingredient for everyone
-        # and one pack of it leaves less over than two different packs, everyone gets that product.
+        # and one pack of it leaves less over than two different packs, everyone gets that product. Only when Valio Aimo has enough of it for
+        # everyone and it costs no more: 5 coeliacs of 240 do not put the whole school on the gluten-free spaghetti.
         chosen = {}
         for (item, pid), group in by_product().items():
             chosen.setdefault(item, {})[pid] = group
         for item, mine in chosen.items():
             while len(mine) > 1:
                 amount = lambda pid, dms_: self.covers(pid, dms_[0]["unit"], sum(d["need"] for d in dms_))
+                cost = lambda pid, dms_: (self.live[pid].get("price") or 0) * amount(pid, dms_) / self.content(pid, dms_[0]["unit"])
+                enough = lambda pid, dms_: self.cap(pid) * self.content(pid, dms_[0]["unit"]) >= sum(d["need"] for d in dms_) - 1e-6
                 moves = [(amount(b, mine[a] + mine[b]) - amount(a, mine[a]) - amount(b, mine[b]), a, b) for a in mine for b in mine
-                         if a != b and all(b in d["cands"] and (not d["known"] or _ingredient_matches(item, g.cat.get(b))) for d in mine[a])]
+                         if a != b and all(b in d["cands"] and (not d["known"] or _ingredient_matches(item, g.cat.get(b))) for d in mine[a])
+                         and enough(b, mine[a] + mine[b]) and cost(b, mine[a] + mine[b]) <= cost(a, mine[a]) + cost(b, mine[b]) + 1e-6]
                 if not moves or min(moves)[0] >= -1e-6:
                     break
                 _, a, b = min(moves)

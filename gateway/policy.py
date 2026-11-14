@@ -281,7 +281,7 @@ def evaluate(lines, subtotal, principal, profile, history, spent_week, requireme
             what = names(sorted(set().union(*(codes for _, codes in open_))))
             which = ", ".join(l["title"] for l, _ in open_[:3]) + (f" and {len(open_) - 3} more" if len(open_) > 3 else "")
             r = rule("A1", "Allergen exclusions", "pass", f"{len(open_)} of {len(lines)} line{'s have' if len(open_) != 1 else ' has'} no allergen declaration from the manufacturer, so the exclusion of {what} "
-                     f"cannot be checked there: {which}. The cart says so above its button, and the signed-in person confirms the order themselves.")
+                     f"cannot be checked there: {which}. The cart names them above its button, and the signed-in person must tick that they read those labels before the order can be confirmed.")
             r["undeclared"] = [{"id": l["id"], "title": l["title"], "codes": codes, "what": names(codes)} for l, codes in open_]
             out.append(r)
             silent, open_ = [(l, codes) for l, codes in silent if not any(l is x for x, _ in open_)], []

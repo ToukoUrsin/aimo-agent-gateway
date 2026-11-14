@@ -608,8 +608,12 @@ function draw() {
   if (fresh) {
     S.shown = key;
     const total = r.plan.totals.lines, step = stepMs(total), el = $("#n-lines"), t0 = performance.now();
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) el.textContent = total;
-    else counter = setInterval(() => { const k = Math.min(total, Math.floor((performance.now() - t0) / step) + 1); el.textContent = k; if (k >= total) clearInterval(counter); }, 30);
+    // A tab in the background runs timers about once a second: there the count is written at once, so the number never stands at a part of the total.
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches || document.hidden) el.textContent = total;
+    else {
+      counter = setInterval(() => { const k = document.hidden ? total : Math.min(total, Math.floor((performance.now() - t0) / step) + 1); el.textContent = k; if (k >= total) clearInterval(counter); }, 30);
+      setTimeout(() => { clearInterval(counter); const e = $("#n-lines"); if (e && S.shown === key) e.textContent = total; }, total * step + 300);
+    }
   }
   wire();
 }

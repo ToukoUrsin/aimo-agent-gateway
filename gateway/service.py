@@ -1342,7 +1342,10 @@ class Gateway:
             h["orders"] += 1
         self.store.put("history:" + w["customer"], hist)
         self.agent_note(principal, "order")
-        who = f"approved by {w['approval']['by']}" if w.get("approval") else "no human involved"
+        # Who, if anyone, said yes: an approver, and in the shop chat the signed-in person who pressed the button. Only an order nobody touched says so.
+        ap, in_shop = w.get("approval") or {}, str(w.get("agent") or "").endswith("/shop-assistant")
+        who = ", ".join(x for x in [(f"approved by {ap.get('by')}" + (" (a demo approval, in the browser that asked)" if ap.get("demo") else "")) if ap else None,
+                                    "confirmed by the signed-in person in the shop" if in_shop else None] if x) or "no human involved"
         self.store.log(c["_internal"].get("trace"), w["agent"], "order", f"Order {o['label']} placed: {policy.eur(subtotal)} ex VAT, delivery {nice_day(w['delivery_date'])}, {who}. Signed by the agent and by Valio Aimo.",
                        {"order_id": oid, "label": o["label"], "subtotal": subtotal, "evidence": {"mandate_id": w["mandate_id"], "offer_digest": c["_internal"]["digest"], "agent_signed": bool(proof), "approval": bool(w.get("approval"))}}, cid=c["id"])
         if w.get("amends"):
