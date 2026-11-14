@@ -24,6 +24,7 @@ from mcp.server.mcpserver.resources import FunctionResource
 from mcp_types import CallToolResult, TextContent, ToolAnnotations
 
 from . import peppol, peppol_check, pictures, policy
+from .catalog import pieces
 from .config import PUBLIC_URL, WEB, order_url
 from .service import GatewayError, iso
 
@@ -158,6 +159,10 @@ def extras(g, tool: str, out: dict, p: dict | None = None) -> dict:
         fi = {i: n for i in product_ids(out) + [i for i in stood_in if i] if (n := ((g.cat.get(i) or {}).get("names") or {}).get("fi"))}  # and the product a replacement stands in for
         if fi:
             x["names_fi"] = x["names"] = fi  # the card reads "names", the shop page "names_fi"
+        # How many pieces one sales unit holds, when the product's own name says so ("egg M10" is 10): a line of 12 boxes says 120 pieces.
+        pcs = {i: n for i in product_ids(out) if (d := g.cat.get(i)) and (n := pieces(d)) and n > 1}
+        if pcs:
+            x["pieces"] = pcs
     except Exception:
         pass
     try:

@@ -114,7 +114,15 @@ h1{font-size:var(--t6);line-height:1.25;letter-spacing:-.015em;text-wrap:balance
 <script src="/static/passkey.js"></script>
 <script>
 const cid = location.pathname.split("/").pop(), k = new URLSearchParams(location.search).get("k");
-let lang = (() => { try { return localStorage.getItem("shop.lang") || "fi"; } catch (e) { return "fi"; } })();
+// The demo view: one person on one device looks at the approver's side in the browser that asked. Its yes is kept as a demo approval.
+const DEMO = new URLSearchParams(location.search).get("demo") === "1";
+const demoOwn = c => DEMO && !!(c && c._own);
+// The shop's stored choice, else the browser's own language (Finnish anywhere in its list is Finnish).
+let lang = (() => {
+  let s = null;
+  try { s = localStorage.getItem("shop.lang"); } catch (e) {}
+  return s === "fi" || s === "en" ? s : (navigator.languages && navigator.languages.length ? [...navigator.languages] : [navigator.language || ""]).some(x => /^fi\b/i.test(x)) ? "fi" : "en";
+})();
 if (lang !== "fi" && lang !== "en") lang = "fi";
 const fi = () => lang === "fi";
 
@@ -133,6 +141,9 @@ const T = {
     name: "Nimesi", namePh: "esim. Maija Korhonen, ravintolapäällikkö", note: "Lisää viesti (valinnainen)", notePh: "esim. OK vain tällä viikolla",
     honest: "Prototyyppi ei tarkista, kuka hyväksyjä on: hyväksyjän laitteeksi tulee ensimmäinen laite, joka hyväksyy eri selaimessa kuin tilaaja, ja nimen hän kirjoittaa itse. Minun Aimossa hyväksyjä olisi kirjautunut käyttäjä, jolla on hyväksymisoikeus.",
     ownH: "Et voi hyväksyä omaa tilaustasi.", ownP: "Lähetä tämä linkki hyväksyjälle tai näytä QR-koodi hänelle. Hän hyväksyy omalla laitteellaan.",
+    ownDemo: "Kokeiletko yksin yhdellä laitteella? Avaa hyväksyjän näkymä (demo)", demoName: "Demo-hyväksyjä", backShop: "Palaa ostoskoriin",
+    demoNote: "<b>Demo.</b> Katsot tätä hyväksyjänä samassa selaimessa, jossa tilaus tehtiin. Oikeasti hyväksyjä on toinen henkilö omalla laitteellaan. Tilauksen tietoihin tallentuu, että tämä oli demohyväksyntä.",
+    hintDemo: "Tilauksen tietoihin tallentuu, että tämä oli demohyväksyntä.", demoDone: "Tallennettu demohyväksyntänä: annettu samassa selaimessa, jossa tilaus tehtiin.", honestH: "Miten tämä toimisi Minun Aimossa",
     copy: "Kopioi linkki", copied: "Linkki kopioitu", copyFail: "Kopioi linkki osoiteriviltä",
     ownSmall: "Prototyyppi tunnistaa tilaajan selaimesta. Minun Aimossa hyväksyjä tunnistetaan kirjautumisesta.",
     other: "Tämä laite ei ole hyväksyjän laite. Tällä asiakasnumerolla hyväksyntä tehdään hyväksyjän omalla laitteella: avaa linkki siellä. Täältä voit vain hylätä.",
@@ -184,6 +195,9 @@ const T = {
     name: "Your name", namePh: "e.g. Maija Korhonen, F&B manager", note: "Add a note (optional)", notePh: "e.g. OK for this week only",
     honest: "The prototype does not check who the approver is: the first device that approves in a different browser from the asker becomes the approver's device, and they type their own name. In Minun Aimo the approver would be a signed-in user with the right to approve.",
     ownH: "You cannot approve your own order.", ownP: "Send this link to the approver or show them the QR code. They approve on their own device.",
+    ownDemo: "Trying this alone on one device? Open the approver's view (demo)", demoName: "Demo approver", backShop: "Back to the cart",
+    demoNote: "<b>Demo.</b> You see this as the approver, in the same browser that asked for the order. In real use the approver is another person on their own device. The order record will say this was a demo approval.",
+    hintDemo: "The order record will say this was a demo approval.", demoDone: "Kept as a demo approval: given in the same browser that asked for the order.", honestH: "How this would work in Minun Aimo",
     copy: "Copy link", copied: "Link copied", copyFail: "Copy the link from the address bar",
     ownSmall: "The prototype recognises who asked by their browser. In Minun Aimo the approver is recognised by their sign-in.",
     other: "This is not the approver's device. On this customer number approvals are made on the approver's own device: open the link there. From here you can only reject.",
@@ -471,7 +485,7 @@ function signed(c) {
   const ap = c.wholesale.approval || {}, d = ap.device, n = (ap.clears || []).length;
   let h = d ? `<p class="sig"><b>Signed by ${esc(ap.by)} on ${esc(d.device)}</b> with ${d.method === "browser_key" ? "a key held in that browser, no fingerprint" : "a passkey" + (d.user_verified ? ", after its fingerprint, face or screen lock" : "")} (key ${esc(d.thumbprint)}). The gateway checked the signature against this exact order before it recorded the approval.</p>`
     : `<p class="sig">No approver device signed: ${ap.decision === "rejected" ? "anyone holding the link may reject" : "this account is a simulated customer, a script stands in for its approver, so the link approved and the gateway's own key signed the record"}.</p>`;
-  if (ap.asked_by) h += `<p class="sig">Asked by ${esc(ap.asked_by)}. ${ap.decision === "rejected" ? "Rejected" : "Approved"} by ${esc(ap.by)}.</p>`;
+  if (ap.asked_by) h += `<p class="sig">Asked by ${esc(ap.asked_by)}. ${ap.decision === "rejected" ? "Rejected" : "Approved"} by ${esc(ap.by)}.${ap.demo ? " " + esc(ap.demo) : ""}</p>`;
   if (ap.checkout_digest) h += `<p class="sig">Checkout digest <span class="mono">${esc(ap.checkout_digest)}</span>${ap.signature ? `, record signed with key <span class="mono">${esc(ap.signature.kid)}</span>` : ""}.</p>`;
   if (n) h += `<p class="sig">${ap.clears_confirmed === "each line ticked by the approver" ? "Cleared, each line ticked" : "Cleared, all at once"}: ${esc(PK.clearsText(ap.clears))}.</p>`;
   if (d) h += `<div class="try"><button class="btn small" id="try" type="button">Try to cheat: the same link without the device</button>${tried ? tryHtml() : `<p class="muted">Sends this page's approval link to the gateway again, with no device signature, and shows the answer.</p>`}</div>`;
@@ -548,14 +562,16 @@ function rowsHtml(c) {
 
 // ---- The page
 function view(c) {
-  const w = c.wholesale, open = c.status === "requires_escalation", own = !!c._own;
+  const w = c.wholesale, open = c.status === "requires_escalation", demo = demoOwn(c), own = !!c._own && !demo;
   const rules = w.policy.rules, esc_ = rules.filter(r => r.outcome === "escalate");
+  if (open && demo && !LAST.who) LAST.who = t("demoName");
   const total = (c.totals.find(x => x.type === "total") || {}).amount, sub = (c.totals.find(x => x.type === "subtotal") || {}).amount;
   const am = w.amends, goods = c.line_items.length > 0, so = !goods && (w.proposal || {}).standing;
   if (open && $("#who")) { LAST.who = $("#who").value; LAST.note = $("#note").value; }
   $("#acct").innerHTML = `<b>${esc(c.buyer.name || "")}</b>${w.customer ? esc(`${t("custno")} ${w.customer}`) : ""}`;
   let h = "";
-  if (open && own) h += `<div class="own"><h2>${t("ownH")}</h2><p>${t("ownP")}</p><div class="row"><img alt="" src="/api/qr?u=${encodeURIComponent(location.href)}" onerror="this.remove()"><button class="btn lg" id="copy" type="button">${ICON.copy}<span>${t("copy")}</span></button></div><p class="small">${t("ownSmall")}</p></div>`;
+  if (open && own) h += `<div class="own"><h2>${t("ownH")}</h2><p>${t("ownP")}</p><div class="row"><img alt="" src="/api/qr?u=${encodeURIComponent(location.href)}" onerror="this.remove()"><button class="btn lg" id="copy" type="button">${ICON.copy}<span>${t("copy")}</span></button></div><p><a href="${esc(location.pathname + location.search + "&demo=1")}">${t("ownDemo")}</a></p><p class="small">${t("ownSmall")}</p></div>`;
+  if (open && demo) h += `<div class="notice">${t("demoNote")}</div>`;
   const st = (w.proposal || {}).standing;
   h += `<div><h1>${esc(so ? (open ? t("soOpen") : t("soChanged")) : am && open ? t("amOpen", am.order_label) : open ? t("asks", asker(c)) : t("asked", asker(c)))}</h1>`
     + `<p class="from">${shopMade(c) ? t("byShop") : t("byOther")}</p>`
@@ -565,14 +581,14 @@ function view(c) {
   if (open) {
     h += `<div class="why"><b>${t("why")}</b>${esc_.map(r => `<p>${esc(plainNamed(r))}</p>`).join("")}${own ? "" : tickList(c)}</div>`;
     if (!own) {
-      if (noSign()) h += `<div class="notice">${MODE === "other" ? t("other") : t("cannot")}</div>`;
+      if (!demo && noSign()) h += `<div class="notice">${MODE === "other" ? t("other") : t("cannot")}</div>`;
       else h += `<div class="fields"><label for="who">${t("name")}</label><input type="text" id="who" value="${esc(LAST.who)}" autocomplete="name" placeholder="${esc(t("namePh"))}">
-        <p class="small" style="margin:0">${t("honest")}</p>
-        <details class="note"${LAST.note || opened.has("note") ? " open" : ""} data-fold="note"><summary>${t("note")}</summary><input type="text" id="note" value="${esc(LAST.note)}" placeholder="${esc(t("notePh"))}" aria-label="${esc(t("note"))}"></details></div>`;
+        <details class="note"${LAST.note || opened.has("note") ? " open" : ""} data-fold="note"><summary>${t("note")}</summary><input type="text" id="note" value="${esc(LAST.note)}" placeholder="${esc(t("notePh"))}" aria-label="${esc(t("note"))}"></details>
+        <details class="note"${opened.has("honest") ? " open" : ""} data-fold="honest"><summary>${t("honestH")}</summary><p class="small" style="margin:6px 0 0">${t("honest")}</p></details></div>`;
     }
   } else if (c.status === "ready_for_complete" && w.approval) {
     const act = (am || so) && !goods;
-    h += `<div class="card state">${big("ok", ICON.check)}<h2>${t("approved")}</h2><p>${esc(act ? t("canChange", asker(c)) : t("canOrder", asker(c)))}</p>${late(c) ? `<p class="muted">${esc(act ? t("notYetCh") : t("notYet", w.hold ? clockL(w.hold.price_and_stock_held_until) : ""))}</p>` : ""}</div>`;
+    h += `<div class="card state">${big("ok", ICON.check)}<h2>${t("approved")}</h2><p>${esc(act ? t("canChange", asker(c)) : t("canOrder", asker(c)))}</p>${w.approval.demo ? `<p class="muted">${t("demoDone")}</p>` : ""}${c._own ? `<p><button class="btn" id="backshop" type="button" style="margin-top:8px">${t("backShop")}</button></p>` : ""}${late(c) ? `<p class="muted">${esc(act ? t("notYetCh") : t("notYet", w.hold ? clockL(w.hold.price_and_stock_held_until) : ""))}</p>` : ""}</div>`;
   } else if (c.status === "completed") {
     const head = so ? t("soChanged") : am ? (goods ? t("replPlaced", c.order.label) : t("changed", am.order_label)) : t("placed", c.order.label);
     h += `<div class="card state">${big("ok", ICON.check)}<h2>${esc(head).replace(esc((c.order || {}).label || am && am.order_label || "\u0000"), x => `<span style="white-space:nowrap">${x}</span>`)}</h2>${c.order && (c.order.url || c.order.permalink_url) ? `<p><a class="btn" href="${esc(siteUrl(c.order.url || c.order.permalink_url))}" style="margin-top:8px">${t("details")}</a></p>` : ""}</div>`;
@@ -594,6 +610,8 @@ function view(c) {
   for (const d of document.querySelectorAll("[data-fold]")) d.ontoggle = () => { d.open ? opened.add(d.dataset.fold) : opened.delete(d.dataset.fold); };
   if ($("#try")) $("#try").onclick = tryLink;
   if ($("#copy")) $("#copy").onclick = copyLink;
+  // Back to the cart: this tab was opened from the shop, so it closes; if the browser keeps it, the shop opens here with the same conversation.
+  if ($("#backshop")) $("#backshop").onclick = () => { try { window.close(); } catch (e) {} setTimeout(() => { location.href = "/shop"; }, 300); };
   if (open) gate();
 }
 async function copyLink() {
@@ -605,7 +623,7 @@ async function copyLink() {
 // Approved more than 20 seconds ago and still not ordered: the one who asked has not confirmed it yet.
 const late = c => c.status === "ready_for_complete" && Date.now() - Date.parse((c.wholesale.approval || {}).at || "") > 20000;
 const noSign = () => MODE === "other" || (MODE === "link" && PKS && PKS.link_ok === false);  // nothing here can sign, and the link alone does not approve
-const canYes = () => !!C && !C._own && !noSign() && toClear(C).every(x => ticks.has(x.id));
+const canYes = () => !!C && (demoOwn(C) || (!C._own && !noSign())) && toClear(C).every(x => ticks.has(x.id));
 // Approve works only when every line with no allergen declaration is ticked, and only where this browser can sign.
 function gate() {
   if (!C || busy) return;
@@ -613,7 +631,7 @@ function gate() {
   if ($("#tickn")) $("#tickn").textContent = t("tickN", need.length - left, need.length);
   $("#yes").disabled = !canYes();
   const h = $("#bar .hint");
-  if (!h.classList.contains("bad")) h.textContent = C._own ? t("hintOwn") : noSign() ? t("hintOther") : left ? t("hintTick", left, need.length) : t("hint");
+  if (!h.classList.contains("bad")) h.textContent = demoOwn(C) ? (left ? t("hintTick", left, need.length) : t("hintDemo")) : C._own ? t("hintOwn") : noSign() ? t("hintOther") : left ? t("hintTick", left, need.length) : t("hint");
 }
 function said(text) { lastErr = text || ""; const h = $("#bar .hint"); h.classList.toggle("bad", !!text); if (text) h.textContent = text; else gate(); }
 
@@ -661,17 +679,18 @@ async function decide(approve) {
   const who = $("#who") ? $("#who").value : LAST.who, note = $("#note") ? $("#note").value : LAST.note;
   const clears = toClear(C).filter(x => ticks.has(x.id)).map(x => ({ id: x.id, codes: x.codes }));
   if (approve && !who.trim()) { said(t("needName")); if ($("#who")) $("#who").focus(); return; }
-  const body = { k, approve, approver: who.trim(), note, ...(approve ? { clears } : {}) };
+  const demo = approve && demoOwn(C);  // no device signs a demo approval, and this browser does not become the approver's device
+  const body = { k, approve, approver: who.trim(), note, ...(approve ? { clears } : {}), ...(demo ? { demo: true } : {}) };
   const back = text => { busy = false; $("#no").disabled = false; $("#yes").disabled = !canYes(); $("#no").textContent = t("no"); $("#yes").textContent = text && approve ? t("tryAgain") : t("yes"); said(text); };
   busy = true; $("#yes").disabled = $("#no").disabled = true; said("");
   // Never fall back to the bare link because a question to the gateway was lost: first learn how this account approves.
-  if (approve && !PKS && !(await how())) return back(t("errNet"));
+  if (approve && !demo && !PKS && !(await how())) return back(t("errNet"));
   const b = approve ? $("#yes") : $("#no");
   const say = x => { b.innerHTML = '<span class="spin"></span>' + x; };
   say(approve ? t("approving") : t("rejecting"));
   let r;
   try {
-    if (approve && (MODE === "first" || MODE === "add")) {
+    if (approve && !demo && (MODE === "first" || MODE === "add")) {
       // No device signs for this account here yet: this one becomes an approver, then signs. One press.
       try { await PK.enrol({ cid, k }); }
       catch (e) {
@@ -681,7 +700,7 @@ async function decide(approve) {
       }
       if (!(await how()) || (MODE !== "sign_key" && MODE !== "sign_passkey")) { view(C); return back(t("errAgain")); }
     }
-    if (approve && (MODE === "sign_key" || MODE === "sign_passkey")) {
+    if (approve && !demo && (MODE === "sign_key" || MODE === "sign_passkey")) {
       const pre = await api(`/api/approve/${cid}/device`, body);
       if (!pre.challenge) return back(errText((pre.messages || [{}])[0]) || t("errPrep"));
       try { body.device = await PK.sign(pre); }

@@ -27,6 +27,7 @@ from . import anchor
 from . import seller
 from . import menu
 from . import passkey
+from .catalog import pieces
 from .config import OPERATOR_KEY, PORT, PUBLIC_URL, STAGE, WEB, order_key, order_url
 from .service import Gateway, GatewayError
 
@@ -260,7 +261,9 @@ def order_names(oid: str, request: Request):
     """The order's products by their Finnish names, for the confirmation a customer of the shop reads."""
     o = order_for_reader(oid, request)
     ids = {str(l["item"]["id"]) for l in o["line_items"]} | {str((l["wholesale"].get("substitutes_for") or {}).get("for") or "") for l in o["line_items"]}
-    return {"fi": {i: n for i in ids if i and (n := ((g.cat.get(i) or {}).get("names") or {}).get("fi"))}}
+    return {"fi": {i: n for i in ids if i and (n := ((g.cat.get(i) or {}).get("names") or {}).get("fi"))},
+            # how many pieces one sales unit holds (a box of 10 eggs), so a line can say the count
+            "pieces": {i: n for i in ids if i and (d := g.cat.get(i)) and (n := pieces(d)) and n > 1}}
 
 
 @app.get("/orders/{oid}/peppol/check", tags=["orders"], summary="The Peppol order checked against the UBL 2.1 schema and OpenPeppol's rules, as an access point would before sending")
@@ -332,7 +335,11 @@ def approve_view(cid: str, request: Request, k: str = ""):
 def approve_decide(cid: str, request: Request, body: dict = Body(...)):
     approve, by, note = bool(body.get("approve")), str(body.get("approver") or "").strip()[:60], str(body.get("note") or "")[:300]
     g.approval_view(cid, str(body.get("k") or ""))  # a wrong key is refused before anything else is said
-    if approve and _own_request(cid, request):  # the person who asked in the shop chat cannot also be the one who approves
+    own = approve and _own_request(cid, request)
+    # One person trying the shop alone on one device has nobody to send the link to. The approval page's demo view lets
+    # them see the approver's side in the same browser; the yes is kept as a demo approval, and the order record says so.
+    demo = own and bool(body.get("demo"))
+    if own and not demo:  # the person who asked in the shop chat cannot also be the one who approves
         c = g._load(cid)
         g.store.log(c["_internal"].get("trace"), "gateway", "refused", "The person who asked for this order in the shop chat tried to approve it in their own browser. Refused: an approval comes from someone else, on their own device. Nothing was approved.",
                     {"code": "own_request"}, cid=cid)
@@ -340,6 +347,8 @@ def approve_decide(cid: str, request: Request, body: dict = Body(...)):
     if approve and not by:  # the server never makes up who approved
         raise GatewayError(400, "approver_required", "An approval carries the name of the person who gives it. Nothing was approved.")
     clears = body.get("clears") if isinstance(body.get("clears"), list) else None  # the lines with no allergen declaration the approver ticked, one by one
+    if demo:  # no approver device signs a demo approval, and this browser never becomes the account's approver device
+        return g.decide(cid, body.get("k"), True, by, note, clears=clears, demo=True)
     device = passkey.check(g, cid, body.get("k"), approve, by, note, body.get("device"), request, clears)  # None: a rejection, or a simulated customer whose approver is a script
     return g.decide(cid, body.get("k"), approve, by, note, **({"device": device} if device else {"clears": clears} if clears is not None else {}))
 

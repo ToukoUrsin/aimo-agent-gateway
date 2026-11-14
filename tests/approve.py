@@ -14,6 +14,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
 from fastapi.testclient import TestClient
 
+from gateway import passkey
 from gateway.app import app, g
 from gateway.config import PUBLIC_URL
 from gateway.signing import b64u
@@ -84,6 +85,25 @@ r = other.post(f"/api/approve/{cid}", json={**body, "device": {"id": cred, "clie
 ok(r.status_code == 200 and r.json()["status"] == "ready_for_complete", f"the same yes from the second browser goes through ({r.status_code} {r.json().get('status')})")
 ok(r.json()["wholesale"]["approval"]["by"] == "Maija Korhonen", "the record names the approver")
 
+# One person alone on one device: the approval page's demo view, in the browser that asked. Its yes goes through, is kept
+# as a demo approval inside the signed record, and makes no device the account's approver device.
+cidd, status, kd = ask(shop)
+before = len(passkey.devices(g.store, slug))
+r = asker.post(f"/api/approve/{cidd}", json={"k": kd, "approve": True, "approver": "", "note": "", "demo": True})
+ok(r.status_code != 200, f"a demo approval still needs a name ({r.status_code})")
+r = asker.post(f"/api/approve/{cidd}", json={"k": kd, "approve": True, "approver": "Demo-hyväksyjä", "note": "", "demo": True})
+ap = (r.json().get("wholesale") or {}).get("approval") or {}
+ok(r.status_code == 200 and r.json()["status"] == "ready_for_complete", f"the asker's demo yes goes through ({r.status_code} {r.json().get('status')})")
+ok("Demo approval" in (ap.get("demo") or "") and "browser that asked" in ap["demo"] and ap.get("by") == "Demo-hyväksyjä" and not ap.get("device"), "the approval record says it was a demo approval in the asker's browser, with no approver device")
+v = asker.get(f"/api/approve/{cidd}", params={"k": kd}).json()
+ok(any("Demo approval" in e["text"] for e in v["_events"]), "the ledger says it was a demo approval")
+ok(len(passkey.devices(g.store, slug)) == before, "the asker's browser did not become an approver device")
+cide, status, ke = ask(shop)
+r = other.post(f"/api/approve/{cide}", json={"k": ke, "approve": True, "approver": "Maija Korhonen", "note": "", "demo": True, "clears": [{"id": x["id"], "codes": x["codes"]} for x in g.clears_of(g._load(cide))]})
+ap = (r.json().get("wholesale") or {}).get("approval") or {}
+ok(not ap.get("demo"), f"demo sent from a browser that did not ask is not a demo approval ({r.status_code})")
+other.post(f"/api/approve/{cide}", json={"k": ke, "approve": False, "approver": "", "note": ""})
+
 # The asker may still withdraw their own request.
 cid2, status, k2 = ask(shop)
 r = asker.post(f"/api/approve/{cid2}", json={"k": k2, "approve": False, "approver": "", "note": ""})
@@ -100,7 +120,9 @@ asker.post(f"/api/approve/{cid3}", json={"k": k3, "approve": False, "approver": 
 
 # --- the page itself
 page = (WEB / "approve.html").read_text()
-ok('localStorage.getItem("shop.lang")' in page and '|| "fi"' in page, "the approval page reads the shop's language switch and defaults to Finnish")
+ok('localStorage.getItem("shop.lang")' in page and "navigator.languages" in page, "the approval page reads the shop's language switch, else the browser's language")
+ok('data-fold="honest"' in page and "Miten tämä toimisi Minun Aimossa" in page and "How this would work in Minun Aimo" in page, "the prototype note sits under one line")
+ok("demo=1" in page and "Demo-hyväksyjä" in page and "demo: true" in page, "the demo view prefills a name and sends its yes as a demo approval")
 ok('id="site"' not in page and "lib.js" in page, "no gateway header or nav on the approval page")
 ok("Et voi hyväksyä omaa tilaustasi." in page and "Kopioi linkki" in page, "the asker's own browser is told plainly and offered the link to send")
 ok("Näytä tarkistukset" in page and "Show the checks" in page, "the technical record sits behind one fold")

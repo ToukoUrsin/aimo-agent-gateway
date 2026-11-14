@@ -267,7 +267,9 @@ def system_prompt(acct: dict, lang: str) -> str:
     fi = lang == "fi"
     return SHOP.format(
         name=acct.get("name") or "a kitchen", language="Finnish" if fi else "English", confirm=W[lang]["confirm"],
-        fi_note=": plain kitchen Finnish as a Finnish wholesaler's own web shop writes it, never translated English. Address the person as sinä, never te" if fi else "",
+        fi_note=": plain kitchen Finnish as a Finnish wholesaler's own web shop writes it, never translated English. Address the person as sinä, never te" if fi else
+                (": plain English only. The Finnish words in these instructions are for a Finnish answer; an English answer says cart (never \"ostoskori\"), delivery day, contract price, replacement, approver, "
+                 f"the \"{W['en']['confirm']}\" button, the \"Change\" button and the Orders tab"),
         money="1 560,00 €" if fi else "€1,560.00", day_example="ma 16.11." if fi else "Mon 16 Nov", cards=CARDS, pantry=PANTRY, now=f"{now:%A %d %B %Y, %H:%M}", days=days)
 
 
@@ -1106,6 +1108,18 @@ def build(g, ctx, page) -> APIRouter:
              "invented": [d.get("name") for d in plan.get("dishes") or [] if "model" in str(d.get("recipe"))],
              "invented_fi": [dish_fi(d.get("name")) for d in plan.get("dishes") or [] if "model" in str(d.get("recipe"))],
              **({"photo_reused": True} if plan.get("photo_read") == "reused" else {})}
+        # The cart card shows the first lines under their dish, so the amounts are on screen without a tap. A product used
+        # in two dishes stands under the one that takes most of it. "per" is what one sales unit holds, in g or ml.
+        by = {}
+        for l in plan.get("lines") or []:
+            fs, pk = l.get("for") or [], l.get("pack") or {}
+            if not fs or not l.get("units") or not pk.get("ordered"):
+                continue
+            f, d = max(fs, key=lambda x: x.get("share") or 0), g.cat.get(l["product"]["id"])
+            n = pieces(d) if d else None
+            by.setdefault(f.get("dish"), []).append({"id": l["product"]["id"], "item": f.get("item"), "fi": item_fi(f.get("item")), "per": round(pk["ordered"] / l["units"], 3), "unit": pk.get("unit"),
+                                                      **({"pieces": n} if n and n > 1 else {})})
+        m["by_dish"] = [{"dish": d.get("name"), "lines": by[d.get("name")]} for d in plan.get("dishes") or [] if by.get(d.get("name"))]
         tell = []
         if m.get("photo_reused"):
             tell.append("This same photo was already read earlier today, and that reading is used again, so the same photo gives the same cart. The card says so. Do not say how fast it was.")

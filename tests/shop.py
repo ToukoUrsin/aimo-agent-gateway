@@ -187,6 +187,26 @@ def main():
         check(full2["id"] == full["id"] and len(full2["line_items"]) == 1 and full2["line_items"][0]["wholesale"]["units"] < before and len([x for x in meta2["cart"]["items"] if not x.get("dropped")]) == 1
               and meta2["cart"]["items"][0].get("ref") == meta["cart"]["items"][0].get("ref"), "another amount for a line changes that line in the same cart: no line is added")
 
+    # One person alone on one device: the demo view of the approval page approves in the asker's own browser, the card says so, and the
+    # confirmed order's record keeps it. The cart, the pieces in a sales unit and the lines by dish are on the wedding card.
+    th, tools, said, end = turn(web, th, "1 000 litraa laktoositonta maitojuomaa maanantaiksi")
+    full, meta = cart_of(tools)
+    k = full["continue_url"].split("k=")[1]
+    r = web.post(f"/api/approve/{full['id']}", json={"approve": True, "approver": "Demo-hyväksyjä", "k": k, "demo": True})
+    check(r.status_code == 200 and "Demo approval" in (r.json()["wholesale"]["approval"].get("demo") or ""), "alone on one device: the demo view's yes goes through and is kept as a demo approval")
+    had = {o["id"] for o in placed(web)["orders"]}
+    th, tools, said, end = turn(web, th, action={"type": "confirm", "checkout": full["id"]})
+    done = [o for o in placed(web)["orders"] if o["id"] not in had]
+    check(len(done) == 1, "after the demo approval the asker's button places the order")
+    rec = web.get(f"/orders/{done[0]['id']}", headers={"accept": "application/json"}).json()
+    check("Demo approval" in (rec["wholesale"]["evidence"]["approval"].get("demo") or ""), "the order's record says it was a demo approval")
+    if not SCRIPT:
+        th, tools, said, end = turn(web, None, "Häät lauantaina, 180 henkeä: lohikeitto, broilerin rintafilee, paahdetut perunat, mansikkakermakakku ja kahvi")
+        full, meta = cart_of(tools)
+        by = ((meta.get("cart") or {}).get("menu") or {}).get("by_dish") or []
+        check(len(by) >= 4 and all(d["lines"] and all(l.get("per") and l.get("unit") for l in d["lines"]) for d in by), "the wedding card carries its lines by dish, each with an amount")
+        check(any(n == 10 for n in (meta.get("pieces") or {}).values()), "a box of eggs says how many eggs it holds")
+
     # Errors are plain: nothing to say is a 400, another visitor cannot read the thread, reset forgets it.
     check(web.post("/api/shop/chat", json={"thread": None, "text": "  "}).status_code == 400, "an empty message is a 400")
     other = httpx.Client(base_url=BASE, timeout=30)

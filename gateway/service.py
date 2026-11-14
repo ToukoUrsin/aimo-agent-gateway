@@ -1178,7 +1178,7 @@ class Gateway:
         c["_internal"]["asked_by"] = str(who)[:80]
         self.store.save_checkout(c)
 
-    def decide(self, cid, token, approve: bool, approver: str, note: str = "", device: dict | None = None, clears: list | None = None) -> dict:
+    def decide(self, cid, token, approve: bool, approver: str, note: str = "", device: dict | None = None, clears: list | None = None, demo: bool = False) -> dict:
         c = self._load(cid)
         if not secrets.compare_digest(token or "", c["_internal"]["approval_token"]):
             raise GatewayError(403, "forbidden", "This approval link is not valid.")
@@ -1213,6 +1213,8 @@ class Gateway:
                 rec["clears_confirmed"] = "each line ticked by the approver" if device or clears is not None else "all at once, by link through the API"
         if device:  # the approver's own device signed this decision (gateway/passkey.py checked it); the proof is kept with the approval
             rec["device"] = device
+        if demo and approve:  # one person on one device looked at the approver's side: part of the signed record, so no later page can show it as a real second person
+            rec["demo"] = "Demo approval: given in the browser that asked for the order, through the approval page's demo view. No second person or device was involved."
         # The gateway's own record of the decision. Where no approver device is enrolled, this server-held key stands in for it.
         akey = self.keys((self.account_of(c["_internal"].get("customer")) or {}).get("slug", STAGE))["approver"]
         rec["signature"] = {"kid": akey.kid, "jws": sign_detached(dict(rec), akey)}
@@ -1229,7 +1231,7 @@ class Gateway:
             c["expires_at"] = iso(exp)
             c["wholesale"]["hold"] = {"price_and_stock_held_until": iso(exp)}
             signed_how = f"{device['device']}, {device.get('how') or 'a passkey'}, key {device['thumbprint']}" if device else ""
-            c["messages"].append({"type": "info", "code": "approved", "content": f"Approved by {rec['by']} at {rec['at']}" + (f", signed on their own device ({signed_how})." if device else ".")})
+            c["messages"].append({"type": "info", "code": "approved", "content": f"Approved by {rec['by']} at {rec['at']}" + (f", signed on their own device ({signed_how})." if device else " (demo approval, given in the browser that asked)." if rec.get("demo") else ".")})
             self.store.q("update holds set expires=? where ref=? and state='held'", (exp, cid))
             # A person saw the lines with no allergen declaration and said yes: the account remembers it, so the same product is not asked about twice.
             cust = c["_internal"].get("customer")
@@ -1240,7 +1242,7 @@ class Gateway:
                 self.store.put("allergen_cleared:" + cust, seen)
             names = lambda codes: ", ".join(ALLERGENS.get(x, x) for x in codes)
             cleared_text = (f" Cleared, {rec['clears_confirmed']}: " + "; ".join(f"{u['title']} for {names(u['codes'])}" for u in cleared[:12]) + (f" and {len(cleared) - 12} more" if len(cleared) > 12 else "") + ".") if cleared else ""
-            self.store.log(tr, f"human:{rec['by']}", "approved", f"{rec['by']} approved {what}, overriding {', '.join(rec['overrides'])}. Asked by {rec['asked_by']}." + (f" Signed on their own device ({signed_how})." if device else " No approver device is enrolled on this account, so the link approved and the gateway's key signed the record.")
+            self.store.log(tr, f"human:{rec['by']}", "approved", f"{rec['by']} approved {what}, overriding {', '.join(rec['overrides'])}. Asked by {rec['asked_by']}." + (f" Signed on their own device ({signed_how})." if device else f" {rec['demo']} The gateway's key signed the record." if rec.get("demo") else " No approver device is enrolled on this account, so the link approved and the gateway's key signed the record.")
                            + cleared_text + (f" Note: {note}" if note else ""), {"approval": rec}, cid=cid)
         else:
             c["status"] = "canceled"

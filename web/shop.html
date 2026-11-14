@@ -126,7 +126,11 @@ body{overflow:hidden;background:var(--panel)}
 .cart .hd span{font-size:var(--t2);color:var(--muted);white-space:nowrap}
 .cart .made{margin:0;font-size:var(--t2);font-weight:600;line-height:1.4}
 .chips.try{align-items:center}.chips.try span{font-size:var(--t2);color:var(--muted)}
-.cart .ask{margin:-6px 0 0;font-size:var(--t2);color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cart .ask{margin:-6px 0 0;font-size:var(--t2);color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.nt .dl{display:block;margin-top:3px}
+.nt .morerows{min-height:28px;margin-top:2px;font-size:var(--t2);font-weight:600}
+.appr .alone{display:block;min-height:32px;margin-top:6px;text-align:left;font-size:var(--t2)}
+.okline .demo{font-weight:400;color:var(--muted)}
 .nt{border-left:3px solid var(--esc);background:var(--esc-bg);border-radius:0 var(--r) var(--r) 0;padding:8px 10px;font-size:var(--t2);line-height:1.45;color:var(--ink);overflow-wrap:anywhere}
 .nt b{font-weight:600}
 .nt.info{border-left-color:var(--line-2);background:var(--soft)}
@@ -306,7 +310,8 @@ const T = {
       held_all: (dish, diet, item) => `${dish} on jätetty tilaamatta, koska ${item} ei sovi ruokavalioon${diet ? ` (${diet})` : ""}. Päätä itse, mitä tarjoat sen tilalla.`,
       invented: "Näille ei ole keittiön reseptikorttia, joten määrät ovat arvio. Tarkista ne:", undeclared: "Näillä tuotteilla ei ole valmistajan allergeeni-ilmoitusta, joten niitä ei voitu tarkistaa. Tarkista ne itse ennen kuin vahvistat:", more: n => ` ja ${n} muuta (merkitty riveille)`, no_decl: "ei allergeeni-ilmoitusta",
       made: (n, s, img) => `${img ? "Yhdestä kuvasta" : "Yhdestä viestistä"} ${n} riviä ostoskorissa, ${s} sekunnissa.`, made_again: n => `Yhdestä kuvasta ${n} riviä ostoskorissa. Sama kuva luettiin jo aiemmin tänään, joten käytössä on sama luku.`, share: "Lähetä linkki hyväksyjälle", share_text: "Tilaus odottaa hyväksyntääsi.",
-      need: "Tarvitsee hyväksynnän", need_how: "Hyväksyjä avaa linkin omalla puhelimellaan. Omaa tilaustasi et voi hyväksyä itse.", copy: "Kopioi linkki hyväksyjälle", copied: "Linkki kopioitu", approved: n => `Hyväksynyt: ${n}`, rejected: n => `Hylännyt: ${n}`,
+      need: "Tarvitsee hyväksynnän", need_how: "Hyväksyjä avaa linkin omalla puhelimellaan. Omaa tilaustasi et voi hyväksyä itse.", alone: "Yksin yhdellä laitteella? Avaa hyväksyjän näkymä (demo)", demo_appr: "(demohyväksyntä samassa selaimessa)",
+      also: "Lisäksi:", more_rows: n => `+ ${n} ${n === 1 ? "rivi" : "riviä"}`, copy: "Kopioi linkki hyväksyjälle", copied: "Linkki kopioitu", approved: n => `Hyväksynyt: ${n}`, rejected: n => `Hylännyt: ${n}`,
       cheaper: (n, e) => `Ilman hyväksyntää: ${n}, ${e}`, expired: "Hinnan ja saatavuuden varaus on vanhentunut. Vahvista tilaus, niin ne tarkistetaan uudelleen.",
       B1: (a, m) => `Tilaus on ${a} (alv\u00a00\u00a0%). Ilman hyväksyntää saat tilata enintään\u00a0${m}.`, B2: m => `Viikon tilaukset ylittäisivät ${m}, jonka saat tilata ilman hyväksyntää.`, B3: "Samalle toimituspäivälle on jo tilauksia tai vahvistamattomia ostoskoreja, ja yhteensä ne ylittävät sen, mitä saat tilata ilman hyväksyntää.",
       W3: "Valio Aimon päiväkohtainen raja tilausapurin tilauksille ylittyy.", A1: "Tuotteessa voi olla jäämiä allergeenista, jonka rajasit pois.", S1: "Korvaava tuote ei täytä samoja vaatimuksia kuin alkuperäinen.", other: "Tämä tilaus tarvitsee toisen henkilön hyväksynnän.",
@@ -331,7 +336,7 @@ const T = {
     shelf_h: "Often bought", shelf_tap: "Order again puts your usual amount in a cart", shelf_none: "This customer number has no order history yet.", again: "Order again", again_l: n => `Order again: ${n}`,
     byhand: "The same order by hand, product by product", access: "What Valio Aimo decides and sees",
     fine: "Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system. Prices and stock come from the challenge's test API.",
-    asst: "Order assistant", try: "Try:", reset: "New conversation", input: "Tell me what you plan to serve…", photo: "Attach a photo", send: "Send", photo_on: "The photo goes with your message", remove: "Remove",
+    asst: "Order assistant", try: "Try:", reset: "New conversation", input: "What will you serve?", photo: "Attach a photo", send: "Send", photo_on: "The photo goes with your message", remove: "Remove",
     photo_only: "Here is a photo.", photo_sent: "Photo", retry: "Try again", failed: "The answer stopped halfway.", hello_fail: "Could not reach the order assistant.",
     read: "Reading your request…", read_img: "Reading the photo…", think: "Thinking…", menu: "Working out the cart for the menu…", source: "Building the cart…", props: "Reading Valio Aimo's proposals…",
     issues: "Checking your deliveries…", place: "Confirming the order…", search_s: "Searching products…", write: "Writing the answer…", orders_s: "Looking up your orders…", act: "Updating the cart…",
@@ -360,7 +365,8 @@ const T = {
       held_all: (dish, diet, item) => `${dish} is left out, because ${item} does not fit the diet${diet ? ` (${diet})` : ""}. Yours to decide what to serve instead.`,
       invented: "There is no recipe card for these, so the amounts are an estimate. Check them:", undeclared: "The manufacturer declared no allergens for these, so they could not be checked. Check them yourself before you confirm:", more: n => ` and ${n} more (marked on the lines)`, no_decl: "no allergen declaration",
       made: (n, s, img) => `${img ? "One photo" : "One message"}: ${n} lines in the cart, in ${s} seconds.`, made_again: n => `One photo: ${n} lines in the cart. The same photo was read earlier today, so the same reading is used.`, share: "Send the link to the approver", share_text: "An order is waiting for your approval.",
-      need: "Needs approval", need_how: "The approver opens the link on their own phone. You cannot approve your own order.", copy: "Copy the link for the approver", copied: "Link copied", approved: n => `Approved by ${n}`, rejected: n => `Rejected by ${n}`,
+      need: "Needs approval", need_how: "The approver opens the link on their own phone. You cannot approve your own order.", alone: "Alone on one device? Open the approver's view (demo)", demo_appr: "(demo approval in the same browser)",
+      also: "Also:", more_rows: n => `+ ${n} ${n === 1 ? "line" : "lines"}`, copy: "Copy the link for the approver", copied: "Link copied", approved: n => `Approved by ${n}`, rejected: n => `Rejected by ${n}`,
       cheaper: (n, e) => `Without approval: ${n}, ${e}`, expired: "The hold on price and stock has run out. Confirm the order and they are checked again.",
       B1: (a, m) => `The order is ${a} (ex VAT). Without approval you may order up to ${m}.`, B2: m => `This week's orders would go over the ${m} you may order without approval.`, B3: "There are already orders or unconfirmed carts for this delivery day, and together they go over what you may order without approval.",
       W3: "Valio Aimo's daily limit for orders made with the assistant would be passed.", A1: "A product may contain traces of an allergen you excluded.", S1: "The replacement does not meet the same requirements as the original.", other: "This order needs a second person's approval.",
@@ -376,7 +382,16 @@ const T = {
       sample: "Sample data: this prototype's order history is invented.", same: "Same as last week", issues: "Is there any problem with our deliveries?", conf: "Order confirmation", by: n => `Approved by ${n}`, wait_n: n => `${n} waiting for approval`,
       ah: "Approvals", alede: "Orders over what you may order alone. The approver decides on their own device.", anone: "No orders waiting for approval.", why: { B1: "The order is over what you may order alone.", B2: "This week's orders are over what you may order alone." }, wait: "Waiting for approval", ok: "Approved, confirm the order", load: "Loading…", fail: "Could not load the orders." } },
 };
-let lang = (() => { try { return localStorage.getItem("shop.lang") || "fi"; } catch (e) { return "fi"; } })();
+// The language: ?lang=fi|en in the link, else the choice made with the switch, else the browser's own (Finnish anywhere in its list is Finnish).
+let lang = (() => {
+  const ok = x => x === "fi" || x === "en" ? x : null;
+  let q = null, s = null;
+  try { q = ok(new URLSearchParams(location.search).get("lang")); } catch (e) {}
+  try { s = ok(localStorage.getItem("shop.lang")); } catch (e) {}
+  const l = q || s || ((navigator.languages && navigator.languages.length ? [...navigator.languages] : [navigator.language || ""]).some(x => /^fi\b/i.test(x)) ? "fi" : "en");
+  try { localStorage.setItem("shop.lang", l); } catch (e) {}  // the approval and order pages opened from here read the same choice
+  return l;
+})();
 const t = k => T[lang][k];
 const loc = () => lang === "fi" ? "fi-FI" : "en-GB";
 const eur = c => c == null ? "" : lang === "fi" ? (c / 100).toLocaleString("fi-FI", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €" : "€" + (c / 100).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -447,7 +462,17 @@ function settle(n) {
   if (replay) return;
   const tn = turns[n], top = tn && (tn.me || tn.first);
   if (!top || !top.isConnected) return;
-  requestAnimationFrame(() => log.scrollTo({ top: Math.min(log.scrollHeight - log.clientHeight, Math.max(0, top.offsetTop - 10)), behavior: "smooth" }));
+  requestAnimationFrame(() => {
+    let to = Math.max(0, top.offsetTop - 10);
+    // A cart in this turn: its button ("Vahvista tilaus", or the approval link) is on screen, and so is the card's own top edge.
+    const card = [...log.querySelectorAll(".cart")].filter(c => top.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING).pop();
+    if (card) {
+      const lr = log.getBoundingClientRect(), y = el => el.getBoundingClientRect().top - lr.top + log.scrollTop;
+      const end = card.querySelector(".cta") || card;
+      to = Math.min(Math.max(to, y(end) + end.offsetHeight + 14 - log.clientHeight), Math.max(0, y(card) - 8));
+    }
+    log.scrollTo({ top: Math.min(log.scrollHeight - log.clientHeight, to), behavior: "smooth" });
+  });
 }
 function mk(html) { const d = document.createElement("div"); d.innerHTML = html.trim(); return d.firstElementChild; }
 function addEl(html, before) {
@@ -629,7 +654,24 @@ function itemNotes(S) {
     }
     // a note written on one dish ("Lohikeitto (L, G)") is shown on that dish, in words
     const dishName = x => { const n = String(lang === "fi" ? x.fi : x.name), marks = perDish[x.name]; return marks ? `${n.replace(/\s*\([^)]*\)\s*$/, "")} (${[...new Set(marks)].join(", ")})` : n; };
-    if ((m.dishes || []).length) facts.push(`<b>${esc(L.dishes(m.dishes.length, m.guests))}</b> ${esc(m.dishes.map(dishName).join(", "))}`);
+    // The first lines under their dish, with the amount ordered: the counting is on the card, not behind a tap.
+    const lineOf = id => S.d.line_items.find(l => String(l.item.id) === String(id));
+    const amt = (x, li) => {
+      const un = Number((li.wholesale || {}).units) || 0;
+      if (x.pieces) return `${num(Math.round(un * x.pieces))} ${unitS("pcs")}`;
+      const v = un * x.per, big = x.unit === "ml" ? "l" : "kg", small = x.unit === "ml" ? "ml" : "g";
+      return v >= 999.5 ? `${Number((v / 1000).toFixed(1)).toLocaleString(loc())} ${big}` : `${Math.round(v)} ${small}`;
+    };
+    const groups = live ? (m.by_dish || []).map(g => ({ d: (m.dishes || []).find(x => x.name === g.dish), ls: g.lines.map(x => [x, lineOf(x.id)]).filter(p => p[1]) })).filter(o => o.d && o.ls.length) : [];
+    if (groups.length) {
+      const per = groups.length <= 3 ? 3 : 2, some = groups.slice(0, groups.length <= 6 ? groups.length : 3);
+      let shown = 0;
+      const rows = some.map(o => { const ls = o.ls.slice(0, per); shown += ls.length; return `<span class="dl"><b>${esc(dishName(o.d))}:</b> ${ls.map(([x, li]) => `${esc(lang === "fi" ? x.fi : x.item)} ${esc(amt(x, li))}`).join(", ")}${o.ls.length > per ? " …" : ""}</span>`; });
+      const others = (m.dishes || []).filter(x => !some.some(o => o.d === x));
+      facts.push(`<b>${esc(L.dishes(m.dishes.length, m.guests).replace(/:$/, ""))}</b>${rows.join("")}`
+        + (others.length ? `<span class="dl">${esc(L.also)} ${esc(others.map(dishName).join(", "))}</span>` : "")
+        + (S.d.line_items.length > shown && !S.open.rows ? `<button type="button" class="lnkbtn morerows" data-act="rows">${esc(L.more_rows(S.d.line_items.length - shown))}</button>` : ""));
+    } else if ((m.dishes || []).length) facts.push(`<b>${esc(L.dishes(m.dishes.length, m.guests))}</b> ${esc(m.dishes.map(dishName).join(", "))}`);
     facts.push(...rest);
     if ((m.pantry || []).length) facts.push(`<span class="mu">${esc(L.pantry)} ${esc(m.pantry.map(x => lang === "fi" ? x.fi : x.item).join(", "))}</span>`);
     if (facts.length) out.push(nt(facts.join("<br>"), "info"));
@@ -687,7 +729,8 @@ function rowsHtml(S) {
   const itemOf = id => c ? (c.items || []).findIndex(it => !it.dropped && it.choices && it.choices[it.chosen || 0].lines.some(l => l.id === id) && it.choices.length > 1) : -1;
   return `<ul class="rows">${S.d.line_items.map(l => {
     const w = l.wholesale || {}, sf = w.substitutes_for, i = itemOf(l.item.id);
-    return `<li><b>${esc(num(w.units))} ${esc(unitS((l.item.quantity_unit || {}).display_text))} × ${esc(nameOf(S, l.item.id, l.item.title))}</b><span class="a">${eur(amount(l.totals, "subtotal"))}</span>`
+    const pc = (S.x.pieces || {})[l.item.id];
+    return `<li><b>${esc(num(w.units))} ${esc(unitS((l.item.quantity_unit || {}).display_text))} × ${esc(nameOf(S, l.item.id, l.item.title))}${pc ? ` (${esc(num(Math.round(w.units * pc)))} ${esc(unitS("pcs"))})` : ""}</b><span class="a">${eur(amount(l.totals, "subtotal"))}</span>`
       + (sf || w.contract_price || i >= 0 || und.has(String(l.item.id)) ? `<span class="s">${[sf ? `${esc(L.subst)} ${esc(L.for_(nameOf(S, sf.for, sf.for_title)))}` : "", w.contract_price ? esc(L.contract) : "", und.has(String(l.item.id)) ? esc(L.no_decl) : "", live && i >= 0 && !sf ? `<button type="button" class="lnkbtn" style="min-height:24px;font-size:var(--t1)" data-act="swapopen" data-i="${i}">${esc(L.swap)}</button>` : ""].filter(Boolean).join(" · ")}</span>` : "") + `</li>`;
   }).join("")}</ul>`;
 }
@@ -723,14 +766,14 @@ function render(S) {
     + (stopped ? nt(esc([L.deny_h].concat([...new Set(((w.policy || {}).rules || []).filter(r => r.outcome === "deny").map(r => L.deny_why[r.id] || L.deny_why[r.id[0]] || L.deny_why.other))]).join(" ") || L.deny), "bad") : "") + (expired ? nt(esc(L.expired)) : "")
     + `<dl class="sum"><dt>${esc(L.day)}</dt><dd>${esc(dayS(w.delivery_date))}</dd><dt>${esc(L.ex)}</dt><dd>${eur(amount(d.totals, "subtotal"))}</dd><dt class="tot">${esc(L.inc)}</dt><dd class="tot">${eur(amount(d.totals, "total"))}</dd></dl>`
     + (lateGate ? `<div class="acts" style="margin:10px 0 4px"><button type="button" class="sm" data-act="lateok">${esc(L.late_ok(dayS(w.delivery_date)))}</button></div>` : "")
-    + (esc_ && !lateGate ? `<div class="appr"><div><b>${esc(L.need)}</b>${whyApproval(S).map(s => `<p>${esc(s)}</p>`).join("")}<p class="mu">${esc(L.need_how)}</p></div><div class="qr">${S.x.qr || ""}</div><div class="rest">${navigator.share ? `<button type="button" class="sm" data-act="share">${esc(L.share)}</button>` : ""}<button type="button" class="sm" data-act="copy">${esc(L.copy)}</button>${cheaper}</div></div>` : "")
-    + (ap && ap.decision === "approved" && !off ? `<div class="okline">✓ ${esc(L.approved(ap.by || ""))}</div>` : ap && ap.decision === "rejected" ? `<div class="nt bad">${esc(L.rejected(ap.by || ""))}</div>` : "")
+    + (esc_ && !lateGate ? `<div class="appr"><div><b>${esc(L.need)}</b>${whyApproval(S).map(s => `<p>${esc(s)}</p>`).join("")}<p class="mu">${esc(L.need_how)}</p></div><div class="qr">${S.x.qr || ""}</div><div class="rest">${navigator.share ? `<button type="button" class="sm" data-act="share">${esc(L.share)}</button>` : ""}<button type="button" class="sm" data-act="copy">${esc(L.copy)}</button><button type="button" class="lnkbtn alone" data-act="demoappr">${esc(L.alone)}</button>${cheaper}</div></div>` : "")
+    + (ap && ap.decision === "approved" && !off ? `<div class="okline">✓ ${esc(L.approved(ap.by || ""))}${ap.demo ? ` <span class="demo">${esc(L.demo_appr)}</span>` : ""}</div>` : ap && ap.decision === "rejected" ? `<div class="nt bad">${esc(L.rejected(ap.by || ""))}</div>` : "")
     + (lateGate ? "" : ready || expired ? `<button type="button" class="cta" data-act="confirm">${esc(L.confirm)}</button>` : esc_ ? `<button type="button" class="cta" disabled>${esc(L.confirm)} · ${esc(L.waiting)}</button>` : done && (o.permalink_url || S.x.order_url) ? `<a class="cta" href="${esc(o.permalink_url || S.x.order_url)}" target="_blank" rel="noopener">${esc(L.record)}</a>` : "")
     + `<div class="folds"><button type="button" class="lnkbtn" data-act="rows">${esc(S.open.rows ? L.rows_hide : L.rows(n))}</button><button type="button" class="lnkbtn" data-act="checks">${esc(S.open.checks ? L.checks_hide : L.checks)}</button>${ready || esc_ ? `<button type="button" class="lnkbtn" data-act="cancel">${esc(L.cancel)}</button>` : ""}</div>`
     + (S.open.rows ? rowsHtml(S) : "") + (S.open.checks ? checksHtml(S) : "");
 }
 // A cart that waits for an approver asks the gateway now and then, and turns to "Hyväksynyt" by itself.
-function watch(S) {
+function watch(S, soon) {
   clearTimeout(S.timer);
   if (S.d.status !== "requires_escalation" || replay && false) return;
   const t0 = Date.now();
@@ -746,13 +789,16 @@ function watch(S) {
     } catch (e) {}
     S.timer = setTimeout(tick, 3000);
   };
-  S.timer = setTimeout(tick, 3000);
+  S.timer = setTimeout(tick, soon || 3000);
 }
+document.addEventListener("visibilitychange", () => { if (!document.hidden) for (const S of Object.values(carts)) if (S.d.status === "requires_escalation") watch(S, 200); });
 function cartAct(S, b) {
   const a = b.dataset.act, L = t("c"), c = S.x.cart, i = Number(b.dataset.i);
   if (a === "rows" || a === "checks") { S.open[a] = !S.open[a]; render(S); return; }
   if (a === "share") { navigator.share({ title: L.need, text: L.share_text, url: S.d.continue_url || "" }).catch(() => {}); return; }
   if (a === "lateok") { S.open.late_ok = true; render(S); return; }
+  // One person, one device: the approver's page opens in a new tab as its demo view. That yes is kept as a demo approval.
+  if (a === "demoappr") { const u = S.d.continue_url || ""; if (u) { watch(S, 1500); if (!window.open(u + (u.includes("?") ? "&" : "?") + "demo=1", "_blank")) location.href = u + (u.includes("?") ? "&" : "?") + "demo=1"; } return; }
   if (a === "swapopen") { S.open.swap = S.open.swap === i ? null : i; render(S); const el = $(".alts", S.el); if (el) el.scrollIntoView({ block: "nearest", behavior: "smooth" }); return; }
   if (a === "copy") { const u = S.d.continue_url || ""; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => { b.textContent = L.copied; }).catch(() => { prompt(L.copy, u); }); return; }
   if (a === "plan") { const box = $("[data-frames]", S.el); b.remove(); for (const q of S.quiet) card(q, null, box); return; }
