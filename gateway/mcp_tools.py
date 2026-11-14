@@ -44,7 +44,15 @@ A whole menu or meal plan is ordered in one go. Flow: plan_menu_order -> create_
   recipe cards, maps each ingredient to a product, rounds to pack size and checks allergens, stock and price per line. A short product is replaced by what the ingredient does in the dish
   (cooking cream may stand in as a sauce base, never as a whipped topping), with the reason on the line.
 - status ready: pass its checkout (line_items, delivery_date, exclude_allergens, intent, rationale) to create_checkout unchanged, and tell the buyer what is under not_ordered.
-  status needs_answers: ask the buyer the questions; order nothing from that answer. Do not look up menu ingredients one by one with plan_sourcing."""
+  status needs_answers: ask the buyer the questions; order nothing from that answer. Do not look up menu ingredients one by one with plan_sourcing.
+In a chat with a person (Claude, ChatGPT and other hosts that draw cards): every answer of these tools is also drawn for the person as a card under your message,
+with the options and prices, each rule's outcome, the approval QR and link, the order's signature checks and its buttons. So:
+- Do not repeat what the card shows. Say in one or two short sentences what happened and what the person can do next.
+- When the person asks what the options are, call plan_sourcing and stop there: they choose on the card or tell you. When they have told you what to order, go on to create_checkout without asking again.
+- requires_escalation: say that a second person has to approve and that the card shows the QR and the link. Never open that link yourself, and do not call complete_checkout
+  before you are told the approval is there (the card tells you, or the person does).
+- ready_for_complete on something the person told you to order: call complete_checkout. If they only asked for an offer, ask once before you place it.
+- To show a placed order with its proof, call get_order."""
 
 
 def build(g: Gateway) -> MCPServer:

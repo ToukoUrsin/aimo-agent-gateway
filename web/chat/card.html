@@ -588,12 +588,14 @@ function take(res) {
 }
 function after() {
   if (S.kind === "order") {
-    if (!S.x.audit && can("serverTools")) tool("card_data", { kind: "order", id: S.order.id }).then(r => { if (r && r.card) { S.x = Object.assign({}, S.x, r.card); render(); runChecks(); } }).catch(() => {});
+    if (!S.x.audit) tool("card_data", { kind: "order", id: S.order.id }).then(r => { if (r && r.card) { S.x = Object.assign({}, S.x, r.card); render(); runChecks(); } }).catch(() => {});
     else runChecks();
   }
   if (S.kind === "checkout") {
-    if (S.d.status === "completed" && S.d.order && S.tool === "complete_checkout" && can("serverTools")) tool("card_data", { kind: "order", id: S.d.order.id }).then(r => { if (r && r.order) { S.order = r.order; S.x = Object.assign({}, S.x, r.card); S.kind = "order"; render(); runChecks(); } }).catch(() => {});
+    if (S.d.status === "completed" && S.d.order && S.tool === "complete_checkout") tool("card_data", { kind: "order", id: S.d.order.id }).then(r => { if (r && r.order) { S.order = r.order; S.x = Object.assign({}, S.x, r.card); S.kind = "order"; render(); runChecks(); } }).catch(() => {});
     else if (["requires_escalation", "ready_for_complete"].includes(S.d.status)) watch();
+    // A host that keeps the result's _meta from the card: ask for the extras (QR, mandate, Valio Aimo's key) once.
+    else if (!S.x.keys) tool("card_data", { kind: "checkout", id: S.d.id }).then(r => { if (r && r.card) { S.x = Object.assign({}, S.x, r.card); render(); checkSigs(); } }).catch(() => {});
   }
 }
 async function runChecks() {
@@ -603,11 +605,11 @@ async function runChecks() {
   render();
 }
 // A checkout that waits (for a person, or for the assistant to place it) is read again until it settles.
-let timer = null, t0 = 0;
+let timer = null, t0 = 0, misses = 0;
 function stopWatch() { clearTimeout(timer); timer = null; }
 function watch() {
-  if (timer || !can("serverTools")) return;
-  S.live.stopped = false; t0 = Date.now();
+  if (timer) return;
+  S.live.stopped = false; t0 = Date.now(); misses = 0;
   const next = () => { const age = Date.now() - t0; if (age > 20 * 60000) { timer = null; S.live.stopped = true; render(); return; } timer = setTimeout(tick, age < 3 * 60000 ? 3000 : 8000); };
   const tick = async () => {
     timer = null;
@@ -618,13 +620,14 @@ function watch() {
         const was = S.d, c = r.checkout;
         S.live.at = new Date().toISOString();
         const changed = c.status !== was.status || jcs((c.wholesale || {}).approval || null) !== jcs((was.wholesale || {}).approval || null);
-        S.d = c; S.x = Object.assign({}, S.x, r.card);
+        const fresh = !S.x.keys && r.card && r.card.keys;  // the host kept _meta from the card: the first answer brings the extras
+        S.d = c; S.x = Object.assign({}, S.x, r.card); misses = 0;
         // Draw again only when something changed: a redraw under a finger loses the tap.
-        if (changed) { settled(was, c); render(); }
+        if (changed || fresh) { if (changed) settled(was, c); render(); if (fresh) checkSigs(); }
         else { const el = app.querySelector("[data-checked]"); if (el) el.textContent = ", checked " + clock(S.live.at); }
         if (!["requires_escalation", "ready_for_complete"].includes(c.status)) return;
       }
-    } catch (e) {}
+    } catch (e) { if (++misses >= 4) { S.live.stopped = true; render(); return; } }  // this chat does not let the card call the connector
     next();
   };
   next();
@@ -705,7 +708,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && S.
 (async () => {
   render();
   try {
-    S.host = await request("ui/initialize", { protocolVersion: "2026-01-26", appInfo: { name: "valio-aimo-cards", version: "1.0.0" }, appCapabilities: { availableDisplayModes: ["inline"] } }, 10000);
+    S.host = await request("ui/initialize", { protocolVersion: "2026-01-26", appInfo: { name: "valio-aimo-cards", version: "1.0.0" }, appCapabilities: { availableDisplayModes: ["inline"] } }, 30000);
     applyCtx(S.host.hostContext || {});
   } catch (e) {}
   notify("ui/notifications/initialized");
