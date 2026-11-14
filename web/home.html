@@ -129,28 +129,28 @@ a.door:hover .go{color:var(--ink);transform:translateX(3px)}
 <main class="wrap">
 
 <section class="top">
-  <h1>From “this is what we want to serve” to an order Valio Aimo can fill.</h1>
-  <p class="lead">One door for agents, owned by Valio Aimo and run on Valio Aimo's rules. The kitchen uses it from a chat in Valio Aimo's own web shop. The customer's own purchasing software uses the same door, under the same rules.</p>
+  <h1>From what the kitchen will serve to a confirmed order.</h1>
+  <p class="lead">A chat built to sit inside Valio Aimo's own web shop. The cook writes what the kitchen will serve and gets one cart. A product that runs short gets a replacement from Valio Aimo's own range. Nothing goes out before someone confirms.</p>
 </section>
 
-<h2 class="part"><span>1</span>The kitchen's job, in Valio Aimo's own shop</h2>
+<h2 class="part"><span>1</span>The kitchen's job, in a chat in the web shop</h2>
 <section class="kitchen">
   <div class="say">
     <p class="q">“Salmon soup and a cake for 180 on Saturday.”</p>
-    <p>The signed-in cook or purchasing manager says what they want to serve, in a chat inside the web shop. What comes back is a ready order: quantities worked out, pack sizes rounded, every product and price as Valio Aimo's systems answer for that account. Anything that cannot be filled is said plainly, and an order over the account's limit goes to its approver.</p>
-    <div class="cta"><a class="btn primary lg" href="/shop" id="shopit">Open the shop chat</a><a class="btn" href="/menu" id="door-menu" hidden>From a menu photo</a><a class="btn" href="/byhand">The same order by hand</a></div>
+    <p>The cook writes what the kitchen will serve, in Finnish, on a phone. Back comes one cart: amounts worked out, pack sizes rounded, each line checked for allergens, stock and price. The prices are the test prices from the challenge. A product that runs short gets a replacement from Valio Aimo's own range. An order over the account's limit waits until someone else approves it. The page is our sketch, not Valio Aimo's design.</p>
+    <div class="cta"><a class="btn primary lg" href="/shop" id="shopit">Open the shop chat</a><a class="btn" href="/menu" id="door-menu" hidden>From a menu photo</a><a class="btn" href="/byhand">An order by hand</a></div>
   </div>
-  <p class="aside" id="menuline">The same planner reads a phone photo of a menu. The by-hand page is the same order in a bare web shop search box, product by product, timed.</p>
+  <p class="aside" id="menuline">The chat also reads a photo of a menu. The by-hand page is an order done in a search box, product by product, with a clock.</p>
 </section>
 
-<h2 class="part"><span>2</span>Valio Aimo's rules and view</h2>
+<h2 class="part"><span>2</span>Valio Aimo would set the rules</h2>
 <section class="doors" id="doors">
-  <a class="door" href="/access"><h3>What an agent can see</h3><p>For one customer account: its own range, its own prices, whether its order can be filled. Never another customer, never margins. Valio Aimo switches it per customer, and the page shows what an agent gets right now.</p><span class="go"></span></a>
-  <a class="door" href="/tower"><h3>Control tower</h3><p id="rushline">Every order, approval and refusal on every account. Sixty kitchens' agents ask for the same short milk at once, and the rules split it by contract share. That run is a recording. On the tower you can start a live rush of 12 agents yourself.</p><span class="go"></span></a>
-  <a class="door" href="/seller" id="door-seller" hidden><h3>Valio Aimo's own agent</h3><p id="sellerline">It tells a kitchen what it missed: a standing order that has drifted, stock close to its date, a shortage ahead. Each proposal is a signed offer under the same rules.</p><span class="go"></span></a>
+  <a class="door" href="/access"><h3>What outside software may see</h3><p>Nothing is open by default. Valio Aimo would turn it on for one customer at a time. That customer's purchasing software then sees only that customer's data, never another customer and never margins. The page shows what it gets right now.</p><span class="go"></span></a>
+  <a class="door" href="/tower"><h3>Control tower</h3><p id="rushline">Every order, approval and refusal on every account. A simulated Monday rush: sixty invented kitchens ask for the same short milk at once, and no litre is promised twice. That run is a recording. The split rule is ours. Valio Aimo would set its own.</p><span class="go"></span></a>
+  <a class="door" href="/seller" id="door-seller" hidden><h3>What Valio Aimo proposes to a kitchen</h3><p id="sellerline">It tells a kitchen what it missed: a standing order that has drifted, stock close to its date, a shortage ahead. Each proposal follows the same rules.</p><span class="go"></span></a>
 </section>
 
-<h2 class="part"><span>3</span>Any outside agent, through the same door</h2>
+<h2 class="part"><span>3</span>Outside software, only when Valio Aimo allows it</h2>
 <section class="sheet1" aria-label="The challenge's request, from asking to the order">
   <div class="ask">
     <blockquote>“I need 1,000 litres of lactose-free milk by Monday.”</blockquote>
@@ -158,16 +158,16 @@ a.door:hover .go{color:var(--ink);transform:translateX(3px)}
   </div>
   <ol class="flow">
     <li><b>The software asks</b><span>Any model or script, over MCP or REST. It carries a mandate the buying company signed: what it may order alone.</span></li>
-    <li><b>Valio Aimo answers</b><span>The products that fit, at this account's fixed price with the stock held, as an offer Valio Aimo signs.</span></li>
+    <li><b>The gateway answers</b><span>The products that fit, with the price fixed and the stock held for a while, as a signed offer.</span></li>
     <li><b>Code checks the rules</b><span>The buyer's limits, Valio Aimo's own limits, allergens, first-time products. No model decides.</span></li>
-    <li><b>It orders, or asks a person</b><span>Inside the limits the order goes through alone. Outside them one person approves on their own device, and the device signs.</span></li>
+    <li><b>It orders, or asks a person</b><span>Inside the limits the order goes through alone. Outside them someone else approves on their own device.</span></li>
   </ol>
   <div class="live" id="live" aria-live="polite" aria-label="Live from the gateway">
     <div class="lh" style="padding-bottom:10px"><span class="wait"><span class="spin"></span>Reading the latest order from the ledger</span></div>
   </div>
 </section>
 <section class="doors" style="margin-top:var(--s4)">
-  <div class="door"><h3>Connect an agent</h3><div><p>Point any MCP client at this address, or use the REST API. A chat assistant such as Claude or ChatGPT connects the same way: one more caller, the same rules.</p><div class="row"><input type="text" id="mcp" readonly aria-label="MCP address" placeholder="Loading the address"><button class="btn" id="copy" type="button"></button></div></div></div>
+  <div class="door"><h3>Connect outside software</h3><div><p>Point any MCP client at this address, or use the REST API. Every caller signs in for one customer and gets that customer's rules.</p><div class="row"><input type="text" id="mcp" readonly aria-label="MCP address" placeholder="Loading the address"><button class="btn" id="copy" type="button"></button></div></div></div>
 </section>
 
 <h2 class="sec">Proof</h2>
@@ -195,7 +195,7 @@ async function tick() {
   $("#mcp").value = h.public_url + "/mcp";
   // One sentence, not four tiles: what the numbers say about trusting an agent with orders.
   const p = h.proof, s = [];
-  s.push(h.orders ? `So far agents placed <b>${n(h.orders)}</b> ${h.orders === 1 ? "order" : "orders"} here, and <b>${n(h.alone)}</b> of them (${Math.round(100 * h.alone / h.orders)}%) needed no person.` : "No agent has placed an order on this gateway yet.");
+  s.push(h.orders ? `So far <b>${n(h.orders)}</b> ${h.orders === 1 ? "order was" : "orders were"} placed here, and <b>${n(h.alone)}</b> of them (${Math.round(100 * h.alone / h.orders)}%) needed no approval.` : "No order has been placed here yet.");
   if (p && p.runs) s.push(`The same <b>${n(p.scenarios)}</b> requests went to ${n(p.models)} models from ${n(p.providers)} providers: in <b>${n(p.runs)}</b> test runs, <b class="${p.unsafe ? "bad" : "good"}">${n(p.unsafe ?? 0)}</b> orders broke a rule.`);
   if (h.ledger.events) s.push(h.ledger.intact === false ? `The ledger of <b>${n(h.ledger.events)}</b> signed steps <b class="bad">has been edited</b>: its chain is broken.` : `All <b>${n(h.ledger.events)}</b> steps are signed on the ledger, and the chain that would show any edit is intact.`);
   $("#nowline").innerHTML = s.join(" ");
@@ -321,10 +321,10 @@ async function doors() {
   }
   if (r && r.ready && r.agents_total) {
     const refused = Object.values(r.refused_by_rule || {}).reduce((a, b) => a + b, 0);
-    $("#rushline").textContent = `Every order, approval and refusal on every account. Recorded run: ${n(r.agents_total)} kitchens' agents asked for the same short milk at once. The rules split it by contract share: ${n(r.placed_alone)} orders needed nobody, ${n(r.people.asked)} of ${n(r.agents_total)} agents needed a person, ${n(refused)} were refused by a rule, all in ${Math.round(r.seconds.first_request_to_last_order)} seconds.` + (r.agents_total > 12 ? " On the tower you can start a live rush of 12 agents yourself." : "");
+    $("#rushline").textContent = `Every order, approval and refusal on every account. A simulated Monday rush, recorded: ${n(r.agents_total)} invented kitchens asked for the same short milk at once. It was split by contract share and no litre was promised twice: ${n(r.placed_alone)} orders needed nobody, ${n(r.people.asked)} needed a person, ${n(refused)} were refused by a rule, all in ${Math.round(r.seconds.first_request_to_last_order)} seconds. The split rule is ours. Valio Aimo would set its own.`;
   }
   const t = s && s.total;
-  if (t && t.made) $("#sellerline").textContent = `It tells a kitchen's agent what it missed: a drifted standing order, stock close to its date, a shortage ahead. On the demo accounts: ${n(t.made)} signed proposals, ${n(t.accepted_alone)} accepted by the agent alone, ${n(t.sent_to_person)} sent to a person, ${n(t.refused_before_leaving)} stopped by a rule before leaving.`;
+  if (t && t.made) $("#sellerline").textContent = `It tells a kitchen what it missed: a drifted standing order, stock close to its date, a shortage ahead. On the demo accounts: ${n(t.made)} proposals, ${n(t.accepted_alone)} accepted by the customer's software alone, ${n(t.sent_to_person)} sent to a person, ${n(t.refused_before_leaving)} stopped by a rule before leaving.`;
 }
 doors().catch(() => { });
 </script>

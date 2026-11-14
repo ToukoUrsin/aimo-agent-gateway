@@ -1,0 +1,393 @@
+{
+ "voice": "kokoro af_heart x1.06, tempo 1.06 (local)",
+ "music": "audio/music2.mp3",
+ "used": {
+  "guests": 180,
+  "dishes": 5,
+  "lines": 26,
+  "seconds": 3,
+  "short": {
+   "have": 48,
+   "want": 60,
+   "replacement": "Korvaava tuote: Valio kuohukerma 1 l laktoositon, luomu, 12 l · vastaavuus: parempi · sopimushinta · −25 %/l",
+   "contract": true,
+   "picked": "Vain saatavilla oleva määrä: 48 l\n276,96 €"
+  },
+  "approval": {
+   "order": "1 560,00",
+   "max": "1 500,00",
+   "over": 60,
+   "order_no": "VA-AG-261114-0323",
+   "approver": "✓ Hyväksynyt: Maija Korhonen, ravintolapäällikkö"
+  },
+  "rush": {
+   "kitchens": 60,
+   "wanted": "1,472",
+   "had": "698"
+  },
+  "proof": {
+   "orders": "140",
+   "models": 5,
+   "runs": "190",
+   "first": 4
+  }
+ },
+ "lines": {
+  "a1": {
+   "id": "a1",
+   "text": "A cook knows what the kitchen will serve. In a web shop, they still add it product by product.",
+   "file": "audio/v6-a1-1rocfvj.wav",
+   "dur": 4.746757,
+   "words": [
+    {
+     "w": "A cook knows what the kitchen will serve.",
+     "s": 0,
+     "e": 1.817
+    },
+    {
+     "w": "In a web shop, they still add it product by product.",
+     "s": 2.119,
+     "e": 4.749
+    }
+   ]
+  },
+  "a2": {
+   "id": "a2",
+   "text": "Here they say it once, in a chat built to sit inside Valio Aimo's own web shop.",
+   "file": "audio/v6-a2-1q0smm6.wav",
+   "dur": 4.54,
+   "words": [
+    {
+     "w": "Here they say it once,",
+     "s": 0,
+     "e": 1.109
+    },
+    {
+     "w": "in a chat built to sit inside Valio Aimo's own web shop.",
+     "s": 1.26,
+     "e": 4.545
+    }
+   ]
+  },
+  "a3": {
+   "id": "a3",
+   "text": "A wedding for 180 guests, 5 dishes. One message becomes one cart: 26 lines in 3 seconds.",
+   "file": "audio/v6-a3-1cm40ov.wav",
+   "dur": 6.85254,
+   "words": [
+    {
+     "w": "A wedding for 180 guests, 5 dishes.",
+     "s": 0,
+     "e": 2.768
+    },
+    {
+     "w": "One message becomes one cart:",
+     "s": 3.07,
+     "e": 4.71
+    },
+    {
+     "w": "26 lines in 3 seconds.",
+     "s": 5.012,
+     "e": 6.842
+    }
+   ]
+  },
+  "a4": {
+   "id": "a4",
+   "text": "Products and pack sizes from Valio Aimo's range, with the test prices from the challenge.",
+   "file": "audio/v6-a4-1nn1c08.wav",
+   "dur": 4.844558,
+   "words": [
+    {
+     "w": "Products and pack sizes from Valio Aimo's range,",
+     "s": 0,
+     "e": 2.796
+    },
+    {
+     "w": "with the test prices from the challenge.",
+     "s": 2.947,
+     "e": 4.835
+    }
+   ]
+  },
+  "b1": {
+   "id": "b1",
+   "text": "Now a product runs short. 60 litres of lactose-free whipping cream, and only 48 are in stock.",
+   "file": "audio/v6-b1-1cahscr.wav",
+   "dur": 5.616825,
+   "words": [
+    {
+     "w": "Now a product runs short.",
+     "s": 0,
+     "e": 1.309
+    },
+    {
+     "w": "60 litres of lactose-free whipping cream,",
+     "s": 1.611,
+     "e": 3.869
+    },
+    {
+     "w": "and only 48 are in stock.",
+     "s": 4.02,
+     "e": 5.613
+    }
+   ]
+  },
+  "b2": {
+   "id": "b2",
+   "text": "The rest comes from Valio Aimo's own range, with the reason in one sentence.",
+   "file": "audio/v6-b2-urpbos.wav",
+   "dur": 3.999728,
+   "words": [
+    {
+     "w": "The rest comes from Valio Aimo's own range,",
+     "s": 0,
+     "e": 2.219
+    },
+    {
+     "w": "with the reason in one sentence.",
+     "s": 2.37,
+     "e": 3.988
+    }
+   ]
+  },
+  "b3": {
+   "id": "b3",
+   "text": "One tap shows the other choices. The cook can take only what is in stock.",
+   "file": "audio/v6-b3-xxb8fg.wav",
+   "dur": 3.751973,
+   "words": [
+    {
+     "w": "One tap shows the other choices.",
+     "s": 0,
+     "e": 1.618
+    },
+    {
+     "w": "The cook can take only what is in stock.",
+     "s": 1.92,
+     "e": 3.752
+    }
+   ]
+  },
+  "c1": {
+   "id": "c1",
+   "text": "Now the request from Valio Aimo's brief: 1,000 litres of lactose-free milk. It is €60 over what this account may order alone, so it stops.",
+   "file": "audio/v6-c1-1iw5v0y.wav",
+   "dur": 8.848413,
+   "words": [
+    {
+     "w": "Now the request from Valio Aimo's brief:",
+     "s": 0,
+     "e": 2.144
+    },
+    {
+     "w": "1,000 litres of lactose-free milk.",
+     "s": 2.446,
+     "e": 4.659
+    },
+    {
+     "w": "It is €60 over what this account may order alone,",
+     "s": 4.961,
+     "e": 7.889
+    },
+    {
+     "w": "so it stops.",
+     "s": 8.04,
+     "e": 8.837
+    }
+   ]
+  },
+  "c2": {
+   "id": "c2",
+   "text": "The person who asked cannot approve it.",
+   "file": "audio/v6-c2-1n24nz4.wav",
+   "dur": 1.798662,
+   "words": [
+    {
+     "w": "The person who asked cannot approve it.",
+     "s": 0,
+     "e": 1.787
+    }
+   ]
+  },
+  "c3": {
+   "id": "c3",
+   "text": "Someone else says yes, on their own phone.",
+   "file": "audio/v6-c3-d9nkri.wav",
+   "dur": 1.882109,
+   "words": [
+    {
+     "w": "Someone else says yes, on their own phone.",
+     "s": 0,
+     "e": 1.877
+    }
+   ]
+  },
+  "c4": {
+   "id": "c4",
+   "text": "Only then can the order be confirmed. The confirmation is in the shop.",
+   "file": "audio/v6-c4-1vds1e9.wav",
+   "dur": 3.782517,
+   "words": [
+    {
+     "w": "Only then can the order be confirmed.",
+     "s": 0,
+     "e": 1.875
+    },
+    {
+     "w": "The confirmation is in the shop.",
+     "s": 2.176,
+     "e": 3.791
+    }
+   ]
+  },
+  "d1": {
+   "id": "d1",
+   "text": "Valio Aimo would set the rules. The AI reads the request and the cart. The program picks products, amounts and prices.",
+   "file": "audio/v6-d1-1kgv7z0.wav",
+   "dur": 7.055805,
+   "words": [
+    {
+     "w": "Valio Aimo would set the rules.",
+     "s": 0,
+     "e": 1.545
+    },
+    {
+     "w": "The AI reads the request and the cart.",
+     "s": 1.847,
+     "e": 4.207
+    },
+    {
+     "w": "The program picks products, amounts and prices.",
+     "s": 4.508,
+     "e": 7.039
+    }
+   ]
+  },
+  "d2": {
+   "id": "d2",
+   "text": "Valio Aimo decides, per customer, what outside software may see and do. Pause ordering, and the answer changes.",
+   "file": "audio/v6-d2-ecawa3.wav",
+   "dur": 6.175283,
+   "words": [
+    {
+     "w": "Valio Aimo decides, per customer,",
+     "s": 0,
+     "e": 1.937
+    },
+    {
+     "w": "what outside software may see and do.",
+     "s": 2.088,
+     "e": 3.835
+    },
+    {
+     "w": "Pause ordering, and the answer changes.",
+     "s": 4.137,
+     "e": 6.161
+    }
+   ]
+  },
+  "d3": {
+   "id": "d3",
+   "text": "A recorded Monday rush: 60 simulated kitchens want 1,472 litres of the same milk. 698 are in stock. None is promised twice.",
+   "file": "audio/v6-d3-e137oo.wav",
+   "dur": 10.743107,
+   "words": [
+    {
+     "w": "A recorded Monday rush:",
+     "s": 0,
+     "e": 1.274
+    },
+    {
+     "w": "60 simulated kitchens want 1,472 litres of the same milk.",
+     "s": 1.575,
+     "e": 6.898
+    },
+    {
+     "w": "698 are in stock. None is promised twice.",
+     "s": 7.2,
+     "e": 10.731
+    }
+   ]
+  },
+  "e1": {
+   "id": "e1",
+   "text": "We tested the rules first. The first run let 4 orders through: a bug in our own allergen rule. We fixed it and ran 190 more, on 5 AI models. None breaks a rule.",
+   "file": "audio/v6-e1-698eki.wav",
+   "dur": 10.8039,
+   "words": [
+    {
+     "w": "We tested the rules first.",
+     "s": 0,
+     "e": 1.312
+    },
+    {
+     "w": "The first run let 4 orders through:",
+     "s": 1.614,
+     "e": 3.224
+    },
+    {
+     "w": "a bug in our own allergen rule.",
+     "s": 3.525,
+     "e": 5.192
+    },
+    {
+     "w": "We fixed it and ran 190 more,",
+     "s": 5.493,
+     "e": 7.778
+    },
+    {
+     "w": "on 5 AI models.",
+     "s": 7.929,
+     "e": 9.536
+    },
+    {
+     "w": "None breaks a rule.",
+     "s": 9.838,
+     "e": 10.799
+    }
+   ]
+  },
+  "f1": {
+   "id": "f1",
+   "text": "Not checked yet: no cook has used it, and it runs on the challenge data, not Valio Aimo's systems.",
+   "file": "audio/v6-f1-438qar.wav",
+   "dur": 5.326871,
+   "words": [
+    {
+     "w": "Not checked yet: no cook has used it,",
+     "s": 0,
+     "e": 1.966
+    },
+    {
+     "w": "and it runs on the challenge data,",
+     "s": 2.117,
+     "e": 3.661
+    },
+    {
+     "w": "not Valio Aimo's systems.",
+     "s": 3.812,
+     "e": 5.313
+    }
+   ]
+  },
+  "f2": {
+   "id": "f2",
+   "text": "The way in: the chat goes into Minun Aimo, for a few pilot kitchens.",
+   "file": "audio/v6-f2-1ayj873.wav",
+   "dur": 3.789252,
+   "words": [
+    {
+     "w": "The way in: the chat goes into Minun Aimo,",
+     "s": 0,
+     "e": 2.297
+    },
+    {
+     "w": "for a few pilot kitchens.",
+     "s": 2.448,
+     "e": 3.793
+    }
+   ]
+  }
+ }
+}

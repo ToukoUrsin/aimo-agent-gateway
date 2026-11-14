@@ -56,7 +56,11 @@ details.tech>.in{display:flex;flex-direction:column;gap:var(--s4);margin-top:var
 <body>
 <div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
 <header id="site"></header>
-<main id="main" aria-live="polite"><div class="ohead"><h1>Order</h1></div><div class="card"><span class="wait"><span class="spin"></span>Reading the signed order, then checking its signatures in your browser</span></div></main>
+<main id="main" aria-live="polite"><div class="ohead"><h1 id="h0">Order</h1></div><div class="card"><span class="wait"><span class="spin"></span><span id="w0">Reading the signed order, then checking its signatures in your browser</span></span></div></main>
+<script>
+// Opened from the shop: the first paint is in the shop's language too, before the order has arrived.
+try { if (new URL(document.referrer).pathname === "/shop") { document.documentElement.lang = "fi"; document.getElementById("h0").textContent = "Tilaus"; document.getElementById("w0").textContent = "Haetaan tilausvahvistusta…"; document.querySelector(".banner").textContent = "Prototyyppi Valio Aimon haastedatalla, ei Valio Aimon järjestelmä."; } } catch (e) {}
+</script>
 <script src="/static/lib.js"></script>
 <script src="/static/passkey.js"></script>
 <script>

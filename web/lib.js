@@ -60,18 +60,18 @@ const waitHtml = text => `<span class="wait"><span class="spin"></span><span>${e
 const SITE_NAV = [
   ["/shop", "Chat in the web shop"],
   ["/demo", "The customer's own software"],
-  ["/access", "What an agent can see"],
-  ["/seller", "Valio Aimo's agent"],
+  ["/access", "What outside software may see"],
+  ["/seller", "Valio Aimo's proposals"],
   ["/tower", "Control tower"],
   ["/proof", "Proof"],
 ];
 const SITE_MORE = [
   ["/menu", "Order from a menu photo"],
-  ["/byhand", "The same order by hand"],
+  ["/byhand", "An order by hand"],
   ["/spec", "How it works"],
   ["/architecture", "Architecture"],
   ["/ledger", "Ledger"],
-  ["/demo#connect", "Connect an agent"],
+  ["/demo#connect", "Connect outside software"],
   ["/docs", "REST API"],
 ];
 // Pages that may not exist yet are shown only when the server says they are live (GET /api/pages).

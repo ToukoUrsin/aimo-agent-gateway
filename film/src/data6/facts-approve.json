@@ -1,0 +1,28 @@
+{
+ "capturedAt": "2026-11-14T20:13:44.674Z",
+ "base": "https://trusted-trade-agents.fly.dev",
+ "asker": {
+  "sent": "1 000 litraa laktoositonta maitojuomaa maanantaiksi",
+  "card": "Ostoskori koottu\n1 rivi\n”1 000 litraa laktoositonta maitojuomaa maanantaiksi”\nToimituspäivä\nma 16.11.\nOstokset (alv 0 %)\n1 560,00 €\nYhteensä (sis. alv)\n1 770,60 €\nTarvitsee hyväksynnän\nTilaus on 1 560,00 € (alv 0 %). Ilman hyväksyntää saat tilata enintään 1 500,00 €.\nHyväksyjä avaa linkin omalla puhelimellaan. Omaa tilaustasi et voi hyväksyä itse.\nKopioi linkki hyväksyjälle\nIlman hyväksyntää: Valio Hyvä suomalainen Arki® Eila® kevytmaitojuoma 1 l laktoositon, 1 010,00 €\nVaihda\nVahvista tilaus · odottaa hyväksyntää\nPiilota rivit\nNäytä tarkistukset\nPeru ostoskori\n1 000 kpl × Valio kevytmaito 1 l laktoositon UHT\n1 560,00 €\nVaihda",
+  "appr": "Tarvitsee hyväksynnän\nTilaus on 1 560,00 € (alv 0 %). Ilman hyväksyntää saat tilata enintään 1 500,00 €.\nHyväksyjä avaa linkin omalla puhelimellaan. Omaa tilaustasi et voi hyväksyä itse.\nKopioi linkki hyväksyjälle\nIlman hyväksyntää: Valio Hyvä suomalainen Arki® Eila® kevytmaitojuoma 1 l laktoositon, 1 010,00 €\nVaihda",
+  "cta": "Vahvista tilaus · odottaa hyväksyntää",
+  "ok": "✓ Hyväksynyt: Maija Korhonen, ravintolapäällikkö",
+  "placed": "Vahvistettu tilaus VA-AG-261114-0323\n1 rivi",
+  "after": "Vahvistettu tilaus VA-AG-261114-0323\n1 rivi\n”1 000 litraa laktoositonta maitojuomaa maanantaiksi”\nToimituspäivä\nma 16.11.\nOstokset (alv 0 %)\n1 560,00 €\nYhteensä (sis. alv)\n1 770,60 €\n✓ Hyväksynyt: Maija Korhonen, ravintolapäällikkö\nNäytä tilausvahvistus\nPiilota rivit\nNäytä tarkistukset\n1 000 kpl × Valio kevytmaito 1 l laktoositon UHT\n1 560,00 €",
+  "record_url": "https://trusted-trade-agents.fly.dev/orders/ord_07555925fe39",
+  "record": "Prototyyppi Valio Aimon haastedatalla, ei Valio Aimon järjestelmä.\n← Verkkokauppa\nVerkkokauppa · tilausvahvistus · prototyyppi\nTilaus VA-AG-261114-0323\nhyväksynyt: Maija Korhonen, ravintolapäällikkö\n14.11.2026 klo 22.13\nTilaus\nValio kevytmaito 1 l laktoositon UHT\n1 000 kpl × 1,56 €\n1 560,00 €\nOstokset (alv 0 %)\t1 560,00 €\nAlv 13,5 %\t210,60 €\nYhteensä (sis. alv)\t1 770,60 €\nToimituspäivä\nma 16.11.\nAsiakas\nSandbox Kitchen 9442 · asiakasnumero 95558420\nPyyntösi\n”1 000 litraa laktoositonta maitojuomaa maanantaiksi”\nMaksu\nLasku nykyisillä maksuehdoillasi.\nTilausta ei ole muutettu vahvistuksen jälkeen. 7 tarkistusta tehtiin juuri tässä selaimessa.\nTakaisin verkkokauppaan\nNäytä tarkistukset (tekninen tallenne, englanniksi)"
+ },
+ "own": {
+  "text": "Et voi hyväksyä omaa tilaustasi.\nLähetä tämä linkki hyväksyjälle tai näytä QR-koodi hänelle. Hän hyväksyy omalla laitteellaan.\nKopioi linkki\nPrototyyppi tunnistaa tilaajan selaimesta. Minun Aimossa hyväksyjä tunnistetaan kirjautumisesta.\nSandbox Kitchen 9442 pyytää hyväksyntääsi\nTilauksen kokosi verkkokaupan tilausapuri.\n1 rivi · Toimituspäivä ma 16.11.\nYhteensä (sis. alv)\n1 770,60 €\nOstokset (alv 0 %) 1 560,00 €\nMiksi tämä tarvitsee hyväksyntäsi\nTilaus on 1 560,00 € (alv 0 %). Ilman hyväksyntää saa tilata enintään 1 500,00 €.\nNäytä rivit (1)\nNäytä tarkistukset\nTekninen tallenne (englanniksi)",
+  "refusal_box": [
+   16,
+   103,
+   358,
+   292
+  ]
+ },
+ "approver": {
+  "text": "Sandbox Kitchen 9442 pyytää hyväksyntääsi\nTilauksen kokosi verkkokaupan tilausapuri.\n1 rivi · Toimituspäivä ma 16.11.\nYhteensä (sis. alv)\n1 770,60 €\nOstokset (alv 0 %) 1 560,00 €\nMiksi tämä tarvitsee hyväksyntäsi\nTilaus on 1 560,00 € (alv 0 %). Ilman hyväksyntää saa tilata enintään 1 500,00 €.\nNimesi\nPrototyyppi ei tarkista, kuka hyväksyjä on: hyväksyjän laitteeksi tulee ensimmäinen laite, joka hyväksyy eri selaimessa kuin tilaaja, ja nimen hän kirjoittaa itse. Minun Aimossa hyväksyjä olisi kirjautunut käyttäjä, jolla on hyväksymisoikeus.\nLisää viesti (valinnainen)\nNäytä rivit (1)\nNäytä tarkistukset\nTekninen tallenne (englanniksi)",
+  "after": "Tilauspyyntö: Sandbox Kitchen 9442\nTilauksen kokosi verkkokaupan tilausapuri.\n1 rivi · Toimituspäivä ma 16.11.\nHyväksytty.\nSandbox Kitchen 9442 voi nyt vahvistaa tilauksen.\nNäytä rivit (1)\nNäytä tarkistukset\nTekninen tallenne (englanniksi)"
+ }
+}

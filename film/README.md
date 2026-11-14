@@ -1,5 +1,35 @@
 # The demo film
 
+## Version 6 (14 Nov 2026): the three promises on a phone, in the Finnish /shop page
+
+Cut: `out/demo-v6.mp4`, poster `out/poster-v6.jpg` (the first cart card). Nothing is copied to `../judging/` or
+`../web/`. Brief: `../judging/film6.md`. Composition "Demo" in `src/Root.tsx` now renders `src/Film6.tsx`.
+
+```bash
+cd film
+node capture/shop6.mjs wedding short approve byhand access tower proof   # Playwright WebKit, one shot at a time
+node scripts/make-vo6.mjs                                                # narration from the facts, local voice
+node scripts/timeline6.mjs                                               # scene times and length, no render
+./render6.sh                                                             # drun render, -16 LUFS, poster, review
+```
+
+- Shots: frames in `/bulk3/runs/valio/film6/public/shots/<shot>/`, times, taps and element boxes in
+  `src/data6/shot-<shot>.json`, the page text every number comes from in `src/data6/facts-<shot>.json`.
+  `node capture/shop6.mjs approve` re-records one shot. `FILM_BULK=<dir>` records somewhere else (a trial).
+- The film maps its time onto each recording through the recording's named events (tap, card shown, approved),
+  so a re-capture needs no edit in `Film6.tsx`; the waits are sped up and marked with a speed badge, and stills
+  where the capture script itself waits (the page does not change) are cut.
+- Phones open the pages in Finnish; Valio Aimo's desktop pages (/access, /tower, /proof) are captured in English
+  (the pages keep the FI/EN choice in `localStorage` key `shop.lang`, set by `capture/rec6.mjs`).
+- Voice: the paid ElevenLabs voice had no credit left on 14 Nov, so `make-vo6.mjs` uses a local voice
+  (Kokoro-82M "af_heart" via `scripts/tts6.py`, venv `/bulk3/runs/valio/film6/tts/venv`). Each caption chunk is
+  spoken alone, so the burned captions know when each chunk is said. `--print` shows the narration and numbers.
+- `render6.sh` stages the sources and only the frames the cut shows in `/bulk3/runs/valio/film6/stage`, renders
+  with `drun` (Daytona), then loudness, poster and review sheets (`/bulk3/runs/valio/film6/review/`).
+  `--draft` renders half size, `--frames 0-90` a part. `scripts/shotsheet.py` and `shotframe.py` preview a shot.
+
+## Earlier versions
+
 A 2 minute film of Aimo Agent Gateway, made from recordings of the real product (Remotion, 1920x1080, 30 fps).
 Every number on screen and in the voice-over is read from the product while it is recorded.
 
