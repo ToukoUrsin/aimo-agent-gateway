@@ -21,6 +21,30 @@ def rule(id, title, outcome, detail, path=None):
     return {"id": id, "title": title, "outcome": outcome, "detail": detail, **({"path": path} if path else {})}
 
 
+def fit_mandate(got) -> dict:
+    """The constraint block of a mandate a buyer signed with its own key, laid over the defaults.
+    Fields this gateway does not read are ignored; a field of the wrong type raises ValueError naming it."""
+    def lay(base: dict, got, path: str) -> dict:
+        if not isinstance(got, dict):
+            raise ValueError(path.rstrip(".") or "mandate")
+        out = dict(base)
+        for k, v in got.items():
+            if k not in base:
+                continue
+            b = base[k]
+            if isinstance(b, dict):
+                out[k] = lay(b, v, f"{path}{k}.")
+                continue
+            ok = (isinstance(v, (int, float)) and not isinstance(v, bool) and 0 <= v <= 1_000_000_000) if isinstance(b, (int, float)) and not isinstance(b, bool) \
+                else (isinstance(v, list) and len(v) <= 60 and all(isinstance(x, str) and len(x) <= 80 for x in v)) if isinstance(b, list) \
+                else (isinstance(v, str) and len(v) <= 80)
+            if not ok:
+                raise ValueError(path + k)
+            out[k] = v
+        return out
+    return lay(default_mandate(), got, "")
+
+
 def default_mandate() -> dict:
     """The constraint block of a mandate. Amounts are minor units, ex VAT."""
     return {
@@ -71,7 +95,8 @@ def after_rules(mandate: dict, after: dict) -> list[dict]:
 
 # Valio Aimo's own agent makes proposals (gateway/seller.py). What the buyer's agent may accept alone (rules V5 and V6),
 # and how many proposals Valio Aimo lets its agent make to one customer a day (rule V2, Valio Aimo's side).
-PROPOSALS = {"accept_alone": ["drift", "short_dated", "fill", "shortage"], "max_extra_per_week": 25000}
+PROPOSALS = {"accept_alone": ["drift", "short_dated", "fill", "shortage"], "max_extra_per_week": 25000,
+             "standing_changes": "ask"}  # a change to a standing order binds every week: "ask" a person (rule V7), or "alone" lets the agent accept it
 PROPOSALS_PER_DAY = 5
 PROPOSAL_KINDS = {"drift": "standing order drift", "short_dated": "short-dated stock", "cutoff": "before the cut-off", "shortage": "shortage ahead", "fill": "fill the case"}
 
@@ -101,15 +126,23 @@ def proposal_rules(mandate: dict, profile: dict, p: dict, subtotal: int, spent_w
     if extra:
         out.append(rule("V6", "Extra spend from proposals per week", "escalate", f"This proposal adds {eur(extra)}; with {eur(used)} accepted alone this week that is {eur(used + extra)}, over the {eur(cap)} the agent may accept alone.")
                    if used + extra > cap else rule("V6", "Extra spend from proposals per week", "pass", f"Adds {eur(extra)}; {eur(used + extra)} of the {eur(cap)} a week the agent may accept alone from proposals."))
+    so = p.get("standing")  # the proposal changes a standing order: {title, from, to, starts}
+    if so:
+        what = f"This changes the standing order of {so.get('title')} from {so.get('from')} to {so.get('to')} units, every week from {so.get('starts')}."
+        out.append(rule("V7", "Standing-order changes need a person", "pass", f"{what} The buyer's mandate lets the agent change standing orders alone.")
+                   if lim.get("standing_changes") == "alone" else rule("V7", "Standing-order changes need a person", "escalate", f"{what} The buyer's mandate leaves standing-order changes to a person."))
     return out
+
+
+DAY_CEILING = 2500000  # cents: what agents may place on one account for one delivery day, unless Valio Aimo sets another figure
 
 
 def default_profile() -> dict:
     """Valio Aimo's side: per-customer switches for agent ordering."""
-    return {"enabled": True, "tier": "order", "max_order_total": 1500000, "show_contract_prices": True, "show_exact_stock": False, "keyless_cap": 50000}
+    return {"enabled": True, "tier": "order", "max_order_total": 1500000, "day_ceiling": DAY_CEILING, "show_contract_prices": True, "show_exact_stock": False, "keyless_cap": 50000}
 
 
-def evaluate(lines, subtotal, principal, profile, history, spent_week, requirements, day_auto=0, after=None, proposal=None, cleared=None) -> list[dict]:
+def evaluate(lines, subtotal, principal, profile, history, spent_week, requirements, day_auto=0, after=None, proposal=None, cleared=None, day_placed=0) -> list[dict]:
     """after: set when the lines change an order that is already placed (see after_rules). The money rules then
     judge the difference (new goods less what is credited), and the after-order rules are added."""
     out = []
@@ -153,6 +186,12 @@ def evaluate(lines, subtotal, principal, profile, history, spent_week, requireme
     cap = profile.get("max_order_total")
     if cap and subtotal > cap:
         out.append(rule("W3", "Valio Aimo cap per agent order", "escalate", f"Order is {eur(subtotal)}; Valio Aimo lets agents place up to {eur(cap)} without a person."))
+    # Valio Aimo's own ceiling is Valio Aimo's to lift. It counts everything agents have placed for the delivery day, so
+    # it cannot be split past, and it refuses: a yes from the buyer's approver does not move a limit the seller set.
+    ceil = profile.get("day_ceiling", DAY_CEILING)
+    if ceil and day_placed + subtotal > ceil:
+        out.append(rule("W5", "Valio Aimo ceiling per delivery day", "deny", (f"With the {eur(day_placed)} agents already placed for this delivery day this order would bring it to {eur(day_placed + subtotal)}" if day_placed else f"Order is {eur(subtotal)}")
+                        + f"; Valio Aimo's ceiling for agent orders on this account is {eur(ceil)} per delivery day. No approval on the buyer's side lifts it: only Valio Aimo's account manager can raise it."))
 
     if not principal.get("bound", True):
         # An assistant that signed in instead of holding a key cannot prove an order came from it, so it gets less room.
@@ -218,22 +257,27 @@ def evaluate(lines, subtotal, principal, profile, history, spent_week, requireme
         # for that allergen, and the account remembers who did.
         silent = [(l, sorted(allergens_unchecked(base | own(l, "exclude_allergens"), l))) for l in lines]
         silent = [(l, codes) for l, codes in silent if codes]
+        # A blank can be cleared by a person. A blank on a product whose own name says what is excluded cannot:
+        # shelled almonds with no declaration are refused for a nut-free kitchen, whoever approves.
+        named = [(l, nm) for l, nm in ((l, named_allergens(codes, l)) for l, codes in silent) if nm]
+        for l, nm in named:
+            out.append(rule("A1", "Allergen exclusions", "deny", f"{l['title']} has no allergen declaration from the manufacturer and its own name points at {names(nm)}, which is excluded. "
+                            "A person can clear a blank, but not on a product named for what is excluded.", l["path"]))
+        silent = [(l, codes) for l, codes in silent if not any(l is x for x, _ in named)]
         seen = lambda l, c: ((cleared or {}).get(l["id"]) or {}).get(c)
         open_ = [(l, [c for c in codes if not seen(l, c)]) for l, codes in silent]
         open_ = [(l, codes) for l, codes in open_ if codes] if m.get("undeclared_allergens", "ask") == "ask" else []
         if open_:
             what = names(sorted(set().union(*(codes for _, codes in open_))))
-            hint = {l["id"]: named_allergens(codes, l) for l, codes in open_}  # a name that points at what is excluded goes first, and says so
-            open_.sort(key=lambda x: not hint[x[0]["id"]])
-            which = ", ".join(l["title"] + (f" (its name points at {names(hint[l['id']])})" if hint[l["id"]] else "") for l, _ in open_[:3]) + (f" and {len(open_) - 3} more" if len(open_) > 3 else "")
-            n, rest = len(open_), len(lines) - len(silent)
+            which = ", ".join(l["title"] for l, _ in open_[:3]) + (f" and {len(open_) - 3} more" if len(open_) > 3 else "")
+            n, rest = len(open_), len(lines) - len(silent) - len(named)
             r = rule("A1", "Allergen exclusions", "escalate",
                      f"{'This product has' if len(lines) == 1 else f'{n} of {len(lines)} lines have'} no allergen declaration from the manufacturer, so the exclusion of {what} cannot be checked "
                      f"{'on it' if len(lines) == 1 else 'on ' + ('it' if n == 1 else 'them')}: {which}. A person must decide; the account then remembers who cleared {'it' if n == 1 else 'them'}."
-                     + (f" The other {rest} declare their allergens and none contains or may contain what is excluded." if rest and not hard and not soft else ""))
-            r["undeclared"] = [{"id": l["id"], "title": l["title"], "codes": codes, "what": names(codes), **({"named": hint[l["id"]], "named_what": names(hint[l["id"]])} if hint[l["id"]] else {})} for l, codes in open_]
+                     + (f" The other {rest} declare their allergens and none contains or may contain what is excluded." if rest and not hard and not soft and not named else ""))
+            r["undeclared"] = [{"id": l["id"], "title": l["title"], "codes": codes, "what": names(codes)} for l, codes in open_]
             out.append(r)
-        if not hard and not soft and not open_:
+        if not hard and not soft and not open_ and not named:
             parts = []
             if base:
                 parts.append(f"no line contains or may contain {names(sorted(base))}, excluded on the whole order")

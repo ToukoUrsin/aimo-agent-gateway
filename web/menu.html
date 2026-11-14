@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Order from a menu</title>
+<title>Order from a menu · Aimo Agent Gateway</title>
 <link rel="stylesheet" href="/static/app.css">
 <style>
 /* Order from a menu. Read from a projector and filmed off a laptop: nothing that matters is under 15 px. */
@@ -12,12 +12,13 @@ main{max-width:1320px;margin:0 auto;padding:0 var(--s5) var(--s8)}
 .page-head{padding:var(--s6) 0 var(--s5)}
 body.running .page-head,body.running #start{display:none}
 
-/* Start: two buttons and four sample photos */
+/* Start: two buttons and five sample photos */
 .startc{padding:var(--s5)}
 .pick{display:flex;gap:var(--s2);flex-wrap:wrap;align-items:center}
 .pick .btn{height:46px;padding:0 20px;font-size:var(--t4)}
 .pick .or{color:var(--muted);font-size:var(--t4);margin-left:var(--s2)}
-.samples{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s3);margin-top:var(--s4)}
+.samples{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--s3);margin-top:var(--s4)}
+@media (max-width:1100px) and (min-width:761px){.samples{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:760px){.samples{grid-template-columns:repeat(2,minmax(0,1fr))}.pick .or{flex-basis:100%;margin:var(--s2) 0 0}.pick .btn{flex:1 1 0;padding:0 12px}}
 @media (max-width:640px){.startc{padding:var(--s4)}.samples{gap:var(--s2)}.sample .cap{padding:8px 10px 10px}}
 .sample{border:1px solid var(--line);border-radius:var(--r-l);background:var(--panel);padding:0;cursor:pointer;text-align:left;overflow:hidden;display:flex;flex-direction:column;transition:border-color .15s,box-shadow .2s var(--ease),transform .2s var(--ease)}
@@ -30,6 +31,8 @@ body.running .page-head,body.running #start{display:none}
 .sample b{display:block;font-size:var(--t4);font-weight:600;letter-spacing:-.005em}
 .sample i{display:block;font-style:normal;color:var(--muted);font-size:var(--t3);margin-top:2px}
 .sample.nm .im{filter:grayscale(1)}
+/* Two columns leave the fifth sample alone on its row: it becomes one wide row, photo beside its words. */
+@media (max-width:760px){.samples .sample:nth-child(5):last-child{grid-column:1/-1;flex-direction:row;align-items:stretch}.samples .sample:nth-child(5):last-child .im{flex:0 0 36%;aspect-ratio:auto;min-height:76px;border-bottom:0;border-right:1px solid var(--line)}.samples .sample:nth-child(5):last-child .cap{align-self:center}}
 .disclaim{margin:var(--s4) 0 0;color:var(--muted);font-size:var(--t3);line-height:1.5;max-width:90ch}
 
 /* A run: stats on top, the photo beside the order (photo first on a phone) */
@@ -143,7 +146,7 @@ body.running .page-head,body.running #start{display:none}
 @media (max-width:640px){.line.sub{margin:0 calc(-1 * var(--s4));padding-left:var(--s4);padding-right:var(--s4)}}
 
 /* Lines arrive one by one when a plan first lands; their checks land after them. */
-.reveal .line{animation:lineIn .45s var(--ease) both;animation-delay:var(--d)}
+.reveal .line{animation:lineIn .45s var(--ease) backwards;animation-delay:var(--d)}
 @keyframes lineIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .reveal .chk .mark{animation:land .42s var(--ease) both;animation-delay:calc(var(--d) + 160ms + var(--j) * 70ms)}
 @keyframes land{0%{background:var(--soft);color:transparent;transform:scale(.55)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
@@ -151,16 +154,17 @@ body.running .page-head,body.running #start{display:none}
 @keyframes draw{from{stroke-dashoffset:15}to{stroke-dashoffset:0}}
 .reveal .chk span:last-child{animation:fadeIn .3s ease-out both;animation-delay:calc(var(--d) + 160ms + var(--j) * 70ms)}
 @keyframes fadeIn{from{opacity:.35}to{opacity:1}}
-.after{animation:lineIn .5s var(--ease) both;animation-delay:var(--d,0ms)}
+.after{animation:lineIn .5s var(--ease) backwards;animation-delay:var(--d,0ms)}
 @media (prefers-reduced-motion:reduce){.reveal *,.after,.scan{animation-delay:0s!important}.scan{display:none}}
 
-/* The offer, sticky at the bottom while the lines scroll by */
+/* The offer, sticky at the bottom while the lines scroll by. Always solid: it never fades, and on a phone it is a full-width sheet so no line shows around it. */
+.offerbar.after{animation:none}
 .offerbar{position:sticky;bottom:16px;z-index:6;display:flex;align-items:center;gap:var(--s3) var(--s4);flex-wrap:wrap;background:var(--panel);border:1px solid var(--line-2);border-radius:var(--r-l);box-shadow:var(--pop);padding:12px 12px 12px 18px}
 .offerbar .ob{flex:1 1 280px;min-width:0;line-height:1.4}
 .offerbar .ob b{display:block;font-size:var(--t5);font-weight:600;letter-spacing:-.01em}
 .offerbar .ob span{font-size:var(--t4);color:var(--muted)}
 .offerbar .btn{height:48px;padding:0 22px;font-size:var(--t4)}
-@media (max-width:640px){.offerbar{bottom:8px;padding:10px 12px 12px;gap:8px}.offerbar .ob{flex-basis:100%}.offerbar .ob b{font-size:var(--t4)}.offerbar .ob span{font-size:var(--t4)}.offerbar .btn{width:100%;height:46px}
+@media (max-width:640px){.offerbar{bottom:0;margin:0 calc(-1*var(--s4));padding:12px var(--s4) calc(12px + env(safe-area-inset-bottom,0px));gap:8px;border-width:1px 0 0;border-radius:0;box-shadow:0 -6px 18px rgba(20,20,22,.07)}.offerbar .ob{flex-basis:100%}.offerbar .ob b{font-size:var(--t4)}.offerbar .ob span{font-size:var(--t4)}.offerbar .btn{width:100%;height:46px}
 .line .top{grid-template-columns:minmax(0,1fr) auto}.line .t{grid-column:1/-1}.line .q{text-align:left}.cks{flex:1 1 100%}.cks>summary{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
 .swap p,.kept p{grid-column:1/-1}}
 .rule{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:12px 0;border-top:1px solid var(--line);font-size:var(--t4)}
@@ -251,7 +255,20 @@ body.running #resume{display:none}
 .ctl.on{border-style:solid;border-color:color-mix(in srgb,var(--esc) 45%,var(--line))}
 .ctl.on #ctl-state{color:var(--esc)}
 .hide{display:none}
-#sub,#open{scroll-margin-top:90px}
+#sub,#open,#pantry,#held{scroll-margin-top:90px}
+
+/* A held dish asks one question; pantry staples are listed, not ordered */
+.lft .acts{grid-column:2;display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.lft .answer{grid-column:2;display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.lft .answer input{flex:1 1 220px;height:40px;font-size:var(--t4);min-width:0}
+.pn{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 16px;padding:11px 0;border-top:1px solid var(--line);font-size:var(--t4)}
+.pn:first-child{border-top:0}
+.pn b{font-weight:500;font-size:var(--t5);letter-spacing:-.008em}
+.pn .am{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right;font-size:var(--t5)}
+.pn .w{grid-column:1/-1;color:var(--muted);line-height:1.5}
+.dish .flag{grid-column:1/-1;margin-top:4px}
+.edit .row.two{grid-template-columns:160px minmax(0,220px)}
+.edit select{height:40px;font-size:var(--t4)}
 </style>
 </head>
 <body>
@@ -260,7 +277,7 @@ body.running #resume{display:none}
 <main>
 <div class="page-head">
   <h1>Order from a menu</h1>
-  <p class="lead">Take a photo of a menu or a meal plan. A model reads it. Code works out what to buy, checks every line and makes one order. You approve once.</p>
+  <p class="lead">Take a photo of a menu, a lunch list or a week plan. A model reads it. Code works out what to buy, checks every line and makes one order. If a rule asks for a person, someone other than you approves it on their own device.</p>
 </div>
 
 <div id="resume"></div>
@@ -277,6 +294,7 @@ body.running #resume{display:none}
     <div class="sample" aria-hidden="true"><span class="im"><span class="skel" style="width:100%;height:100%;border-radius:0"></span></span><span class="cap"><span class="skel" style="width:14ch"></span></span></div>
     <div class="sample" aria-hidden="true"><span class="im"><span class="skel" style="width:100%;height:100%;border-radius:0"></span></span><span class="cap"><span class="skel" style="width:13ch"></span></span></div>
     <div class="sample" aria-hidden="true"><span class="im"><span class="skel" style="width:100%;height:100%;border-radius:0"></span></span><span class="cap"><span class="skel" style="width:9ch"></span></span></div>
+    <div class="sample" aria-hidden="true"><span class="im"><span class="skel" style="width:100%;height:100%;border-radius:0"></span></span><span class="cap"><span class="skel" style="width:11ch"></span></span></div>
   </div>
   <p class="disclaim">The sample photos were made with an image model for this page. They are not a real kitchen's menus. Everything that happens after you pick one is real: the reading, the checks, the order.</p>
 </div>
@@ -341,7 +359,7 @@ function stats(fresh) {
   const lines = pl ? pl.totals.lines : null;
   return `<div class="stats" aria-live="polite">
     <div class="stat"><span class="k">Photo to checked order ${c1.bs}</span><b id="clock-now"${c1.live ? " data-live" : ""}>${c1.v}</b><span class="v">${c1.sub}</span></div>
-    <div class="stat"><span class="k">Order lines</span><b id="n-lines">${lines == null ? "–" : fresh ? "0" : lines}</b><span class="v">${pl ? eur(pl.totals.subtotal) + " ex VAT" + (pl.not_ordered.length ? `, ${pl.not_ordered.length} left for a person` : "") : ""}</span></div>
+    <div class="stat"><span class="k">Order lines</span><b id="n-lines">${lines == null ? "–" : fresh ? "0" : lines}</b><span class="v">${pl ? eur(pl.totals.subtotal) + " ex VAT" + (pl.not_ordered.length ? `, ${pl.not_ordered.length} left for a person` : "") + ((pl.pantry || []).length ? `, ${pl.pantry.length} from the pantry` : "") : ""}</span></div>
     <div class="stat"><span class="k">Model cost ${u ? '<span class="bs m">measured</span>' : ""}</span><b>${u ? "€" + u.eur.toFixed(4) : "–"}</b><span class="v">${u ? `${n(u.tokens_in)} tokens in, ${n(u.tokens_out)} out<span class="lg">, at list price</span>.` : ""}</span></div>
     <div class="stat"><span class="k">By hand ${bh.bs}</span><b>${bh.v}</b><span class="v">${bh.sub} <a href="/byhand${r.id && pl ? "?run=" + esc(r.id) : ""}">Time yourself</a></span></div>
   </div>`;
@@ -350,15 +368,19 @@ function stats(fresh) {
 // ---- Beside the photo: what the model read, and the rules code made of the notes
 function readingCard() {
   const rd = S.run.reading; if (!rd) return "";
-  const pl = S.run.plan, src = pl ? Object.fromEntries(pl.dishes.map(d => [d.name, d])) : {};
+  const pl = S.run.plan, src = pl ? pl.dishes : [], fl = Object.fromEntries((S.run.flags || []).map(f => [f.dish_i, f.text]));
+  const b = rd.budget;
   return `<section class="card readc"><div class="ch"><h2 class="h2">What the model read</h2><button class="btn small" id="edit"${S.run.order ? " hidden" : ""}>Change it</button></div>
     <dl class="kv"><dt>Menu</dt><dd>${esc(rd.title || "Untitled")}</dd><dt>Date</dt><dd>${rd.date ? esc(day(rd.date)) : "not on the menu"}${rd.date_text ? ` <span class="muted">(written “${esc(rd.date_text)}”)</span>` : ""}</dd>
-      <dt>For</dt><dd>${rd.guests != null ? n(rd.guests) : "not on the menu"}${rd.guests_text ? ` <span class="muted">(written “${esc(rd.guests_text)}”)</span>` : ""}</dd></dl>
-    <div class="dishes">${rd.dishes.map(d => {
-      const p = (d.portions || rd.guests || 0) * d.days;
+      <dt>For</dt><dd>${rd.guests != null ? n(rd.guests) : "not on the menu"}${rd.guests_text ? ` <span class="muted">(written “${esc(rd.guests_text)}”)</span>` : ""}</dd>
+      <dt>Budget</dt><dd>${b ? "€" + n(b.amount) + (b.per === "guest" ? " per guest" : "") + (b.text ? ` <span class="muted">(written “${esc(b.text)}”)</span>` : "") : "not on the menu"}</dd></dl>
+    <div class="dishes">${rd.dishes.map((d, i) => {
+      const p = src[i] ? src[i].portions : (d.portions || rd.guests || 0) * d.days;
+      const who = (d.only ? `, only for “${esc(d.only)}”` : "") + ((d.skip || []).length ? `, not for ${d.skip.map(x => "“" + esc(x) + "”").join(" and ")}` : "");
       const tag = !d.food ? '<span class="pill deny">not food</span>' : d.card ? '<span class="pill">kitchen\'s card</span>' : d.source === "agent" ? '<span class="pill escalate">agent\'s recipe, check it</span>' : '<span class="pill escalate">model\'s recipe, check it</span>';
       return `<div class="dish"><div><b>${esc(d.name)}</b>${d.notes.length ? ` <span class="n">${d.notes.map(esc).join(", ")}</span>` : ""}</div><div>${tag}</div>
-        <div class="sub">${n(p)} portions${d.days > 1 ? ` (${d.days} days)` : ""}${!d.card && d.recipe.length ? ". Per portion: " + d.recipe.map(i => `${esc(i.item)} ${i.amount} ${i.unit} (${esc(i.role)})`).join(", ") : (src[d.name] && src[d.name].card ? `. ${src[d.name].ingredients} ingredients on the card` : "")}</div></div>`; }).join("")}</div>
+        <div class="sub">${n(p)} portions${d.days > 1 ? ` (${d.days} days)` : ""}${who}${!d.card && d.recipe.length ? ". Per portion: " + d.recipe.map(x => `${esc(x.item)} ${x.amount} ${x.unit} (${esc(x.role)})`).join(", ") : (src[i] && src[i].card ? `. ${src[i].ingredients} ingredients on the card` : "")}</div>
+        ${fl[i] ? `<div class="flag">${esc(fl[i])}</div>` : ""}</div>`; }).join("")}</div>
     ${rd.notes.length ? `<p class="note">Notes on the page: ${rd.notes.map(x => "“" + esc(x) + "”").join(", ")}</p>` : ""}</section>`;
 }
 function rulesCard(pl) {
@@ -373,11 +395,17 @@ function askCard() {
   return `<section class="card edit"><h2 class="h2">${qs.length ? "Before anything is ordered" : "Change the reading"}</h2>
     ${qs.map(q => `<div class="ask">${IC.person.replace("<svg", '<svg style="width:16px;height:16px;flex:none;transform:translateY(2px)"')}<span>${esc(q.text)}</span></div>`).join("")}
     ${qs.length ? '<p class="note">Code found these. Nothing is ordered until they are answered.</p>' : ""}
+    ${(r.flags || []).map(f => `<div class="ask">${IC.person.replace("<svg", '<svg style="width:16px;height:16px;flex:none;transform:translateY(2px)"')}<span>${esc(f.text)}</span></div>`).join("")}
     <label for="e-guests">Guests or portions</label><input type="number" id="e-guests" name="guests" min="1" max="5000" value="${rd.guests ?? ""}" style="max-width:160px">
+    <label for="e-budget">Budget in euros, if the menu has one</label>
+    <div class="row two"><input type="number" id="e-budget" name="budget" min="0" step="0.01" value="${rd.budget ? rd.budget.amount : ""}" placeholder="none" aria-label="Budget">
+      <select id="e-per" name="per" aria-label="Budget for"><option value="total"${rd.budget && rd.budget.per === "guest" ? "" : " selected"}>for the whole order</option><option value="guest"${rd.budget && rd.budget.per === "guest" ? " selected" : ""}>per guest</option></select></div>
     <label>Dishes, and portions when a dish has its own number</label>
     <div id="e-dishes">${rd.dishes.map((d, i) => `<div class="row" data-i="${i}"><input type="text" name="dish" class="e-name" value="${esc(d.name)}" aria-label="Dish"><input type="number" name="portions" class="e-por" min="1" max="5000" value="${d.portions ?? ""}" placeholder="all" aria-label="Portions"><button class="btn small ghost e-del" aria-label="Remove ${esc(d.name)}">Remove</button></div>`).join("")}</div>
+    <button class="btn small" id="e-add-dish" type="button">Add a dish</button>
     <label>Dietary notes</label>
     <div id="e-notes">${rd.notes.map(x => `<div class="row note"><input type="text" name="note" class="e-note" value="${esc(x)}" aria-label="Note"><button class="btn small ghost e-del">Remove</button></div>`).join("")}</div>
+    <button class="btn small" id="e-add-note" type="button">Add a note</button>
     <div class="bar" style="margin-top:var(--s4)"><button class="btn primary lg" id="e-go">Plan with this</button>${qs.length ? "" : '<button class="btn ghost lg" id="e-cancel">Cancel</button>'}</div></section>`;
 }
 
@@ -427,6 +455,9 @@ function lineHtml(l, i, all, step) {
     ? `<span class="chk${done ? "" : " unk"}" style="--j:${j}"><span class="mark ${done ? "ok" : "unk"}">${done ? ICON.check : IC.person}</span><span>${done ? "Allergens: you cleared it" : "Allergens: not declared"}</span></span>`
     : `<span class="chk" style="--j:${j}">${markHtml(l.checks[k].ok)}<span>${label}</span></span>`;
   const per = l.for.map(f => `${esc(cap(f.role))} in ${esc(f.dish)}: ${esc(f.per_portion)} a portion, ${n(f.portions)} portions, ${f.waste_pct}% waste allowance.`).join(" ");
+  const pk = l.pack || {};
+  const usual = pk.instead_of ? ` The kitchen's usual pack (${esc(pk.instead_of.title)}) is far more than this menu needs, so this smaller one is ordered.` : "";
+  const left = pk.leftover_text ? `<div class="over">Needs ${esc(pk.need_text)}, ordered ${esc(pk.ordered_text)}: ${esc(pk.leftover_text)} is left over.${pk.nothing_smaller ? " Nothing smaller is sold for this ingredient." : ""}${usual}</div>` : usual ? `<div class="over">${usual.trim()}</div>` : "";
   return `<div class="line${l.reason ? " sub" : ""}" id="ln-${esc(l.product.id)}" style="--d:${d}ms">
     <div class="top"><span class="t">${esc(l.product.title)}</span><span class="q">${n(l.units)} ${esc(uw(l.unit, l.units))}</span><span class="a">${eur(l.amount)}</span></div>
     <div class="mid"><div class="for">${forHtml(l)}</div>
@@ -434,12 +465,21 @@ function lineHtml(l, i, all, step) {
       <div class="cw">${CHECKS.map(([k, label]) => `<div><b>${label}.</b> ${esc(l.checks[k].text)}</div>`).join("")}<div><b>Amount.</b> ${per}</div></div></details></div>
     ${l.reason ? swapHtml(l, i === S.firstSub ? ' id="sub"' : "") : ""}
     ${l.partial ? keptHtml(l, all) : ""}
+    ${left}
     ${(l.passed_over || []).map(o => `<div class="over">Passed over ${esc(o.title)}: ${esc(o.why)}.</div>`).join("")}
     ${flags.map(f => `<div class="flag">${esc(f)}</div>`).join("")}</div>`;
 }
 
 // ---- The plan: lines, what is left for a person, the offer
-function leftHtml(o) {
+function leftHtml(o, i) {
+  if (o.ask) {
+    const a = o.ask, done = !!S.run.order, open = S.answer && S.answer.i === i ? S.answer.how : "";
+    const head = a.rest ? `${n(a.portions)} portions wait for your answer` : "The whole dish waits for your answer";
+    const label = { for_them: `Another dish for those ${n(a.portions)}`, for_everyone: "Change the dish for everyone", remove: "Take it off the menu" };
+    return `<div class="lft esc"><span class="ic">${IC.person}</span><b>${esc(o.dish || cap(o.item || ""))}</b><span class="k">${esc(head)}</span><span class="w">${esc(o.text)}</span>
+      ${done ? "" : `<div class="acts">${a.choices.map(c => `<button class="btn small${c === open ? " primary" : ""} ans" type="button" data-i="${i}" data-how="${c}">${esc(label[c])}</button>`).join("")}</div>`}
+      ${!done && open && open !== "remove" ? `<form class="answer" data-i="${i}" data-how="${open}"><input type="text" name="newdish" maxlength="90" placeholder="${open === "for_them" ? `The dish for those ${n(a.portions)}` : "The dish for everyone"}" aria-label="${open === "for_them" ? "The dish for those guests" : "The new dish"}" required><button class="btn primary" type="submit">Plan with this</button></form>` : ""}</div>`;
+  }
   const k = { not_in_range: ["out", IC.out, "Not in Valio Aimo's range"], no_fit: ["esc", IC.person, "No product passes the checks"], short: ["esc", IC.person, "Not enough stock, a person decides"] }[o.kind] || ["esc", IC.person, "Left for a person"];
   if (o.portions_refused || o.dish_refused) {
     const diet = (o.diet || []).join(", "), m = String(o.text || "").match(/was refused: (.+?)\. (?:Nothing is ordered|The whole dish)/), rest = String(o.text || "").match(/The other ([\d,]+) portions are ordered\./);
@@ -468,35 +508,51 @@ function planHtml(fresh) {
   if (S.short && !r.order) h += `<div class="shortnote${fresh ? " after" : ""}"><b>Test control is on.</b><span>${esc(S.short.title)} is short on this account: ${n(S.short.leave)} left.</span></div>`;
   const askN = pl.totals.allergen_ask || 0, L = pl.totals.lines;
   const sum = [!askN ? "Every line passed its four checks."
-    : r.order ? `${L - askN} of ${L} lines passed all four checks on data. ${askN} ${askN === 1 ? "has" : "have"} no allergen declaration from the manufacturer; you cleared ${askN === 1 ? "it" : "them"} when you approved, and the account remembers.`
-    : `${L - askN} of ${L} lines passed all four checks. <a href="#why">${askN} ${askN === 1 ? "has" : "have"} no allergen declaration from the manufacturer</a>, so ${askN === 1 ? "it is" : "they are"} not passed on silence: you clear ${askN === 1 ? "it" : "them"} when you approve, and the account remembers.`];
+    : r.order ? `${L - askN} of ${L} lines passed all four checks on data. ${askN} ${askN === 1 ? "has" : "have"} no allergen declaration from the manufacturer; ${esc(r.order.approved_by || "the approver")} cleared ${askN === 1 ? "it" : "each one with its own tick"} on the approval page, and the account remembers.`
+    : `${L - askN} of ${L} lines passed all four checks. <a href="#why">${askN} ${askN === 1 ? "has" : "have"} no allergen declaration from the manufacturer</a>, so ${askN === 1 ? "it is" : "they are"} not passed on silence: the approver clears ${askN === 1 ? "it" : "each one with its own tick"} on the approval page, and the account remembers.`];
   if (subs) sum.push(`<a href="#sub">${subs} line${subs === 1 ? " replaces" : "s replace"} a short product</a> by what it does in the dish.`);
   if (open) sum.push(`<a href="#open">${open} item${open === 1 ? " is" : "s are"} left for a person</a>.`);
+  const pantry = pl.pantry || [], held = pl.not_ordered.filter(o => o.ask).length;
+  if (pantry.length) sum.push(`<a href="#pantry">${pantry.length} kitchen staple${pantry.length === 1 ? " is" : "s are"} left to the pantry</a>.`);
   h += `<section class="card"><div class="ch"><h2 class="h2">${pl.totals.lines} order lines</h2><span class="muted tnum">${eur(pl.totals.subtotal)} ex VAT · delivery ${esc(day(pl.delivery_date))}</span></div>
     <p class="para">${sum.join(" ")}</p>
+    ${pl.budget ? `<p class="pkn${pl.budget.fits ? "" : " bad"}" id="budget"><b>${pl.budget.fits ? "Within the budget." : "Over the budget."}</b> ${esc(pl.budget.text)}</p>` : ""}
+    ${(pl.warnings || []).map(w => `<p class="pkn bad"><b>Severe allergy.</b> ${esc(w.text)}</p>`).join("")}
+    ${(pl.flags || []).map(f => `<p class="pkn bad"><b>Check this recipe.</b> ${esc(f.text)}</p>`).join("")}
     <div class="ol${fresh ? " reveal" : ""}">${shown.map((l, i) => lineHtml(l, i, pl.lines, step)).join("")}</div></section>`;
   if (open) h += `<section class="card${fresh ? " after" : ""}" id="open" style="--d:${end}ms"><div class="ch"><h2 class="h2">Not ordered</h2><span class="pill escalate">${open} for a person</span></div>
-    <p class="para">Code does not guess. These are left out of the order and named here.</p><div class="left">${pl.not_ordered.map(leftHtml).join("")}</div></section>`;
+    <p class="para">${held ? "Code does not guess. A dish that cannot be made safe for some guests waits for one answer from you; the rest of the menu is ordered." : "Code does not guess. These are left out of the order and named here."}</p><div class="left">${pl.not_ordered.map(leftHtml).join("")}</div></section>`;
+  if (pantry.length) h += `<section class="card${fresh ? " after" : ""}" id="pantry" style="--d:${end}ms"><div class="ch"><h2 class="h2">From the pantry</h2><span class="muted">${pantry.length} not ordered</span></div>
+    <p class="para">Salt, spices, oil and the like: this menu needs a small part of the smallest pack, and a kitchen has them on the shelf. They are left off the order and listed with the amount.</p>
+    <div class="left">${pantry.map(x => `<div class="pn"><b>${esc(cap(x.item))}</b><span class="am">${esc(x.amount)}</span><span class="w">For ${esc(andList(x.dishes))}.${x.smallest_pack ? ` The smallest pack is ${esc(x.smallest_pack)}.` : " Not in Valio Aimo's range for this day."}${x.check ? " " + esc(x.check) : ""}</span></div>`).join("")}</div>
+    ${r.order ? "" : `<div class="bar" style="margin-top:var(--s4)"><button class="btn" id="staples-on" type="button">Order these too</button><span class="muted" style="font-size:var(--t3)">Adds ${pantry.length} line${pantry.length === 1 ? "" : "s"} and makes a new offer.</span></div>`}</section>`;
+  else if (r.reading.order_staples && !r.order) h += `<section class="card${fresh ? " after" : ""}" id="pantry" style="--d:${end}ms"><div class="ch"><h2 class="h2">Pantry staples are on the order</h2><button class="btn small" id="staples-off" type="button">Leave them to the pantry</button></div>
+    <p class="para">You asked for the salt, spices, oil and the like to be ordered too, also where the menu needs only a little of a pack.</p></section>`;
   if (r.order) {
     const s = r.seconds, tot = s.total || 1, seg = (v, c, t) => `<span class="${c}" style="flex:${Math.max(v || 0, 0.001)}" title="${t} ${secs(v)}"></span>`;
     top = `<section class="card donec after"><div class="hd">${markHtml(true)}<h2>Order <span class="id">${esc(r.order.label)}</span> is placed</h2></div>
-      <p class="para" style="font-size:var(--t5)">${pl.totals.lines} lines for delivery ${esc(day(pl.delivery_date))}. ${r.order.approved_by_person ? "You approved what the rules sent to a person; the agent then signed the offer." : "Every rule passed, so the agent signed the offer without asking."} <a href="${esc(r.order.url ? new URL(r.order.url, location.href).pathname + new URL(r.order.url, location.href).search : "/orders/" + r.order.id)}">Open the signed order</a></p>
-      <div class="tl" role="img" aria-label="Server clock: reading ${secs(s.read)}, lines and checks ${secs(s.plan)}, your tap ${secs(s.person)}, order ${secs(s.order)}">${seg(s.read, "", "Reading")}${seg(s.plan, "o", "Lines and checks")}${seg(s.person, "p", "Your tap")}${seg(s.order, "o", "Order")}</div>
-      <div class="tlk"><span><i></i>Reading <b>${secs(s.read)}</b></span><span><i class="o"></i>Lines, checks, signed offer <b>${secs(s.plan)}</b></span><span><i class="p"></i>Your tap <b>${secs(s.person)}</b></span><span><i class="o"></i>Order <b>${secs(s.order)}</b></span><span>Total on the server clock <b>${secs(s.total)}</b></span></div>
+      <p class="para" style="font-size:var(--t5)">${pl.totals.lines} lines for delivery ${esc(day(pl.delivery_date))}. ${r.order.approved_by ? doneBy(r.order) : r.order.approved_by_person ? "A person approved what the rules sent to them; the agent then signed the offer." : "Every rule passed, so the agent signed the offer without asking."} <a href="${esc(r.order.url ? new URL(r.order.url, location.href).pathname + new URL(r.order.url, location.href).search : "/orders/" + r.order.id)}">Open the signed order</a></p>
+      <div class="tl" role="img" aria-label="Server clock: reading ${secs(s.read)}, lines and checks ${secs(s.plan)}, ${r.order.approved_by_person ? "the approver" : "your tap"} ${secs(s.person)}, order ${secs(s.order)}">${seg(s.read, "", "Reading")}${seg(s.plan, "o", "Lines and checks")}${seg(s.person, "p", r.order.approved_by_person ? "The approver" : "Your tap")}${seg(s.order, "o", "Order")}</div>
+      <div class="tlk"><span><i></i>Reading <b>${secs(s.read)}</b></span><span><i class="o"></i>Lines, checks, signed offer <b>${secs(s.plan)}</b></span><span><i class="p"></i>${r.order.approved_by_person ? "The approver" : "Your tap"} <b>${secs(s.person)}</b></span><span><i class="o"></i>Order <b>${secs(s.order)}</b></span><span>Total on the server clock <b>${secs(s.total)}</b></span></div>
       <p class="note">Model cost €${r.usage.eur.toFixed(4)} ($${r.usage.usd.toFixed(4)}): ${r.usage.calls.map(c => `${esc(c.step)} with ${esc(c.model)}, ${n(c.in)} tokens in and ${n(c.out)} out, ${secs(c.seconds)}`).join("; ")}. ${esc(r.usage.basis)}</p>
       <div class="bar" style="margin-top:var(--s4)"><button class="btn again">Another menu</button><a class="btn ghost" href="/byhand?run=${esc(r.id)}">Do the same basket by hand, timed</a></div></section>`;
   } else if (ck.status === "ready_for_complete" || ck.status === "requires_escalation") {
     const total = eur((ck.totals.find(t => t.type === "total") || {}).amount);
-    const pk = S.pk || {}, dev = asks.length && pk.approvals === "passkey";
-    const pkn = !asks.length ? "" : S.signErr ? `<p class="pkn bad" role="alert">${esc(S.signErr)}</p>`
-      : dev ? `<p class="pkn">Approvals on this account are signed on an enrolled device (${esc(andList(pk.devices.map(d => d.name)))}). Your tap asks it for its fingerprint, face or screen lock, and the signature covers exactly this offer. A tap or a link alone can no longer approve.</p>`
-      : pk.can_enrol && PK.supported() ? `<p class="pkn">This account approves with a tap. <a href="/enrol?next=/menu">Make this device the approver</a> and the approval is signed inside it with its fingerprint, face or screen lock; after that a tap or a link alone cannot approve.</p>` : "";
-    h += `<div class="offerbar${fresh ? " after" : ""}" style="--d:${end}ms"><div class="ob"><b>One signed offer${ck.signed ? ", signed by Valio Aimo" : ""}</b><span>${pl.totals.lines} lines, ${total} with VAT. ${asks.length ? `${asks.length} rule${asks.length === 1 ? " asks" : "s ask"} for a person.` : "Every rule passed."}</span></div>
-      <button class="btn primary" id="go"${S.phase === "ordering" ? " disabled" : ""}>${S.phase === "ordering" ? '<span class="spin" style="border-color:color-mix(in srgb,var(--accent-ink) 35%,transparent);border-top-color:var(--accent-ink)"></span> Placing the order' : asks.length ? (dev ? "Approve on this device and place the order" : "Approve and place the order") : "Place the order"}</button></div>
+    // An offer a rule sent to a person has no button here: the approver decides on the approval page, on their own device.
+    h += `<div class="offerbar${fresh ? " after" : ""}" style="--d:${end}ms"><div class="ob"><b>One signed offer${ck.signed ? ", signed by Valio Aimo" : ""}</b><span>${pl.totals.lines} lines, ${total} with VAT. ${asks.length ? `${asks.length} rule${asks.length === 1 ? " asks" : "s ask"} for a person, so this page cannot place it.` : "Every rule passed."}</span></div>
+      ${asks.length ? `<a class="btn" href="#await" id="towait">${S.phase === "ordering" ? "Approved, placing the order" : "Waiting for the approver"}</a>`
+        : `<button class="btn primary" id="go"${S.phase === "ordering" ? " disabled" : ""}>${S.phase === "ordering" ? '<span class="spin" style="border-color:color-mix(in srgb,var(--accent-ink) 35%,transparent);border-top-color:var(--accent-ink)"></span> Placing the order' : "Place the order"}</button>`}</div>
+      ${asks.length ? awaitHtml(fresh, end) : ""}
       <section class="card${fresh ? " after" : ""}" id="why" style="--d:${end}ms;scroll-margin-top:90px"><h2 class="h2">${asks.length ? "Why a person approves this" : "The agent may place this alone"}</h2>
       ${asks.length ? `<div style="margin-top:var(--s2)">${asks.map(x => ruleRow(x, "escalate")).join("")}</div>` : '<p class="para">Every rule passed. The agent may place this order on its own.</p>'}
-      ${pkn}<details style="margin-top:var(--s3)"><summary>All ${ck.rules.length} rules the gateway ran</summary>${rulesTable(ck.rules)}</details>
+      <details style="margin-top:var(--s3)"><summary>All ${ck.rules.length} rules the gateway ran</summary>${rulesTable(ck.rules)}</details>
       <p class="note">This is a test account: nothing is delivered or invoiced.</p></section>`;
+  } else if (ck.id && ck.decided && ck.decided.decision === "rejected") {
+    h += `<section class="card calm" id="rejected"><span class="mark bad">${ICON.cross}</span><h2>${esc(ck.decided.by)} rejected this order</h2>
+      <p class="para">Nothing was ordered and the held stock was released.${ck.decided.note ? ` Their note: “${esc(ck.decided.note)}”` : ""} Asked by ${esc(ck.decided.asked_by || "the kitchen")}.</p><div class="bar" style="margin-top:var(--s4)"><button class="btn again">Another menu</button></div></section>`;
+  } else if (ck.id && "decided" in ck) {
+    h += `<section class="card calm" id="rejected"><span class="mark bad">${ICON.cross}</span><h2>The offer expired before the approver decided</h2>
+      <p class="para">Nothing was ordered and the held stock was released. Send the menu again for a fresh offer.</p><div class="bar" style="margin-top:var(--s4)"><button class="btn again">Another menu</button></div></section>`;
   } else if (ck.id) {
     h += `<section class="card calm"><span class="mark bad">${ICON.cross}</span><h2>The gateway did not make an offer</h2>
       <div style="margin-top:var(--s3)">${denies.map(x => ruleRow(x, "deny")).join("")}${(ck.errors || []).map(e => `<div class="rule"><div class="d">${esc(e)}</div></div>`).join("")}</div></section>`;
@@ -509,7 +565,7 @@ function progressHtml() {
   const live = '<span class="tm" id="step-now"></span>';
   return `<section class="card" aria-live="polite"><h2 class="h2">From photo to order</h2>
     <div class="steps-l">
-      <div class="st">${read ? markHtml(true) : markHtml(null)}<b>Reading the photo</b>${read ? `<span class="tm">${secs(sec.read)}</span>` : live}<p>A small model checks that it is a menu while a larger one reads the dishes, the guests, the date and the dietary notes.</p></div>
+      <div class="st">${read ? markHtml(true) : markHtml(null)}<b>Reading the photo</b>${read ? `<span class="tm">${secs(sec.read)}</span>` : live}<p>The model looks at the photo twice at the same time: one short look that only says whether there is anything to cook from, and the read itself. The photo is turned away only when neither finds a dish.</p></div>
       <div class="st${read ? "" : " wait"}">${read ? markHtml(null) : '<span class="mark wait"></span>'}<b>Lines, checks, one signed offer</b><span class="tm"></span><p>Code works out the bill of materials, matches each ingredient to a product and checks pack size, allergens, stock and price. Valio Aimo's gateway signs one offer.</p></div>
     </div>
     <div class="ghost-lines" aria-hidden="true">${[62, 48, 70, 55].map(w => `<div><span class="skel" style="width:${w}%"></span><span class="skel" style="width:100%"></span><span class="skel" style="width:100%"></span></div>`).join("")}</div></section>`;
@@ -528,9 +584,9 @@ function draw() {
   const title = refused ? "Not a menu" : r && r.reading && r.reading.title ? cap(r.reading.title.toLowerCase()) : S.phase === "error" ? "Order from a menu" : "Reading a menu";
 
   let main = "", side = "";
-  if (S.err) main += `<section class="card calm" role="alert"><span class="mark bad">${ICON.cross}</span><h2>${S.retry ? "The answer did not arrive" : "That did not work"}</h2><p class="msg">${esc(S.err)}</p><div class="bar">${S.retry ? `<button class="btn primary lg" id="retry">Try again</button><button class="btn lg again">Start over</button>` : '<button class="btn primary lg again">Try another photo</button>'}</div></section>`;
-  if (refused) main += `<section class="card calm"><span class="mark bad">${ICON.cross}</span><h2>This is not a menu</h2><p class="msg">${esc(r.message)}</p>
-    <p class="note">Looking at it took ${secs(r.seconds.read)} and cost €${r.usage.eur.toFixed(4)} (${n(r.usage.tokens_in)} tokens in, ${n(r.usage.tokens_out)} out). A small model decides this first, so a wrong photo never reaches the larger one.</p>
+  if (S.err) main += `<section class="card calm" role="alert"><span class="mark bad">${ICON.cross}</span><h2>${S.retry ? "The answer did not arrive" : "That did not work"}</h2><p class="msg">${esc(S.err)}</p><div class="bar">${S.retry ? `<button class="btn primary lg" id="retry" type="button">Try again</button><button class="btn lg again" type="button">Start over</button>` : '<button class="btn primary lg again">Try another photo</button>'}</div></section>`;
+  if (refused) main += `<section class="card calm"><span class="mark bad">${ICON.cross}</span><h2>Nothing to cook from</h2><p class="msg">${esc(r.message)}</p>
+    <p class="note">The model looked at it twice and found no dish either time. That took ${secs(r.seconds.read)} and cost €${r.usage.eur.toFixed(4)} (${n(r.usage.tokens_in)} tokens in, ${n(r.usage.tokens_out)} out).</p>
     <div class="bar"><button class="btn primary lg again">Try another photo</button></div></section>`;
   if (!S.err && !refused && (S.phase === "reading" || S.phase === "planning")) main += progressHtml();
   if (asking) main += askCard();
@@ -560,7 +616,24 @@ function wire() {
   const on = (sel, fn) => { const el = $(sel); if (el) el.onclick = fn; };
   document.querySelectorAll(".again").forEach(b => b.onclick = reset);
   on("#go", () => placeOrder());
-  on("#retry", () => { const f = S.retry; S.retry = null; S.err = ""; if (f) f(); });
+  // Try again: the button answers at once, stays the same step's retry until the new attempt has started, and a tap while it works is ignored, not lost.
+  on("#retry", async () => {
+    const f = S.retry, b = $("#retry");
+    if (!f || S.retrying) return;
+    S.retrying = true; b.disabled = true; b.innerHTML = '<span class="spin" style="border-color:color-mix(in srgb,var(--accent-ink) 35%,transparent);border-top-color:var(--accent-ink)"></span> Trying again';
+    try { await f(); } catch (e) { fail(null, DROP + " Try again repeats the step.", f); } finally { S.retrying = false; }
+  });
+  document.querySelectorAll(".ans").forEach(b => b.onclick = () => {
+    const i = +b.dataset.i, how = b.dataset.how, o = S.run.plan.not_ordered[i];
+    if (how === "remove") return answer(o, how);
+    S.answer = S.answer && S.answer.i === i && S.answer.how === how ? null : { i, how };
+    draw(); const f = $(".answer input"); if (f) f.focus();
+  });
+  document.querySelectorAll("form.answer").forEach(f => f.onsubmit = e => { e.preventDefault(); const name = f.newdish.value.trim(); if (name) answer(S.run.plan.not_ordered[+f.dataset.i], f.dataset.how, name); });
+  on("#staples-on", () => plan(null, { order_staples: true }));
+  on("#staples-off", () => plan(null, { order_staples: false }));
+  on("#e-add-dish", () => { const d = document.createElement("div"); d.className = "row"; d.dataset.i = "-1"; d.innerHTML = '<input type="text" name="dish" class="e-name" aria-label="Dish" placeholder="Dish"><input type="number" name="portions" class="e-por" min="1" max="5000" placeholder="all" aria-label="Portions"><button class="btn small ghost e-del" type="button">Remove</button>'; $("#e-dishes").append(d); $(".e-del", d).onclick = () => d.remove(); $(".e-name", d).focus(); });
+  on("#e-add-note", () => { const d = document.createElement("div"); d.className = "row note"; d.innerHTML = '<input type="text" name="note" class="e-note" aria-label="Note" placeholder="For example: 6 gluten-free"><button class="btn small ghost e-del" type="button">Remove</button>'; $("#e-notes").append(d); $(".e-del", d).onclick = () => d.remove(); $(".e-note", d).focus(); });
   on("#edit", () => { S.editing = true; draw(); });
   on("#e-cancel", () => { S.editing = false; draw(); });
   document.querySelectorAll(".e-del").forEach(b => b.onclick = () => b.parentElement.remove());
@@ -568,31 +641,54 @@ function wire() {
   on("#e-go", () => {
     const rd = S.run.reading, g = parseInt($("#e-guests").value, 10);
     const dishes = [...document.querySelectorAll("#e-dishes .row")].map(row => {
-      const old = rd.dishes[+row.dataset.i], name = $(".e-name", row).value.trim(), por = parseInt($(".e-por", row).value, 10);
-      const same = name === old.name;
-      return name ? { name, as_written: same ? old.as_written : name, card: same ? old.card : null, recipe: same ? old.recipe : null, source: same ? old.source : null, food: same ? old.food : true, portions: Number.isFinite(por) ? por : null, days: old.days, notes: old.notes } : null;
+      const old = rd.dishes[+row.dataset.i] || null, name = $(".e-name", row).value.trim(), por = parseInt($(".e-por", row).value, 10);
+      const same = !!old && name === old.name;  // a renamed dish loses its card and recipe: the server works them out again for the new name
+      return name ? { name, as_written: same ? old.as_written : name, card: same ? old.card : null, recipe: same ? old.recipe : null, source: same ? old.source : null, food: same ? old.food : true, portions: Number.isFinite(por) ? por : null, days: old ? old.days : 1, notes: old ? old.notes : [],
+        ...(old && old.only ? { only: old.only } : {}), ...(old && old.skip ? { skip: old.skip } : {}) } : null;
     }).filter(Boolean);
     const notes = [...document.querySelectorAll("#e-notes .e-note")].map(i => i.value.trim()).filter(Boolean);
+    const bud = parseFloat($("#e-budget").value), per = $("#e-per").value, was = rd.budget;
+    const budget = bud > 0 ? { amount: bud, per, text: was && was.amount === bud && was.per === per ? was.text : null } : null;
     S.editing = false;
-    plan({ title: rd.title, date: rd.date, date_text: rd.date_text, guests: Number.isFinite(g) ? g : null, dishes, notes });
+    plan({ title: rd.title, date: rd.date, date_text: rd.date_text, guests: Number.isFinite(g) ? g : null, guests_text: rd.guests_text, budget, order_staples: rd.order_staples, dishes, notes });
   });
 }
 
-function reset() { stopClock(); Object.assign(S, { phase: "idle", photo: null, run: null, err: "", retry: null, editing: false, ms: 0, shown: "" }); remember(null); draw(); $("#start").scrollIntoView({ behavior: "smooth", block: "start" }); }
+// The chef's answer to a held dish. Another dish for those guests: they are taken off the original and the new dish is made for them only,
+// under their note. For everyone: the dish is renamed and the server works out its recipe again. Either way the whole menu is planned again.
+function answer(o, how, name) {
+  const rd = S.run.reading, dishes = rd.dishes.map(d => ({ ...d })), d = dishes[o.dish_i];
+  S.answer = null;
+  if (!d) return;
+  if (how === "remove") dishes.splice(o.dish_i, 1);
+  else if (how === "for_everyone") dishes[o.dish_i] = { name, as_written: name, card: null, recipe: null, source: null, food: true, portions: d.portions, days: d.days, notes: d.notes, ...(d.only ? { only: d.only } : {}), ...(d.skip ? { skip: d.skip } : {}) };
+  else {
+    d.skip = [...new Set([...(d.skip || []), ...(o.notes || [])])];
+    dishes.splice(o.dish_i + 1, 0, { name, as_written: name, portions: Math.max(1, Math.round(o.ask.portions / (d.days || 1))), days: d.days || 1, notes: [], only: (o.notes || [])[0] });
+  }
+  plan({ ...rd, dishes });
+}
+
+function reset() { stopClock(); Object.assign(S, { phase: "idle", photo: null, run: null, err: "", retry: null, editing: false, ms: 0, shown: "", answer: null }); remember(null); draw(); $("#start").scrollIntoView({ behavior: "smooth", block: "start" }); }
 // A failed step keeps what came before it. "Try again" repeats only that step.
 function fail(r, fallback, retry) { stopClock(); const e = errOf(r); S.err = (e && e.content) || fallback; S.retry = retry || null; S.phase = "error"; draw(); const c = $("#out [role=alert]"); if (c) c.scrollIntoView({ behavior: "smooth", block: "center" }); }
 const DROP = "The connection dropped before the answer came back.";
+// A step keeps one key over all its tries: the server does the work once for that key and gives every repeat the same answer,
+// so "Try again" after a lost answer picks up what the server already did. A wait that never ends is cut off here, with the same way back.
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2));
+const within = (p, ms) => new Promise((ok, no) => { const t = setTimeout(() => no(new Error("timeout")), ms); p.then(v => { clearTimeout(t); ok(v); }, e => { clearTimeout(t); no(e); }); });
 // The run id survives a reload, so a plan the server finished is not lost. Per browser only.
 function remember(id) { try { id ? localStorage.setItem("menu.run", id) : localStorage.removeItem("menu.run"); } catch (e) {} }
 // After a dropped answer, ask the server how far the run got before doing the step again.
 async function fetchRun() { try { const x = await api("/api/menu/run/" + S.run.id); return x && x.id ? x : null; } catch (e) { return null; } }
 
 async function begin(photo, body) {
-  Object.assign(S, { phase: "reading", photo, run: null, err: "", editing: false, shown: "" });
+  if (!body.key) body = { ...body, key: uid() };
+  Object.assign(S, { phase: "reading", photo, run: null, err: "", retry: null, editing: false, shown: "", answer: null });
   startClock(); draw(); scrollTo({ top: 0, behavior: "smooth" });
   let r;
   const again = () => begin(photo, body);
-  try { r = await api("/api/menu/read", body); } catch (e) { return fail(null, DROP + " Try again reads the same photo.", again); }
+  try { r = await within(api("/api/menu/read", body), 100000); } catch (e) { return fail(null, DROP + " Try again reads the same photo.", again); }
   if (!r || !r.id) return fail(r, "The photo could not be read.", again);
   S.run = r; remember(r.id);
   if (r.status === "not_a_menu") { stopClock(); S.phase = "refused"; return draw(); }
@@ -600,15 +696,12 @@ async function begin(photo, body) {
   plan();
 }
 
-async function plan(reading) {
-  S.phase = "planning"; S.err = ""; if (!S.t0) { const was = S.ms; startClock(); S.t0 -= was; } draw();
+async function plan(reading, extra, key) {
+  key = key || uid();
+  S.phase = "planning"; S.err = ""; S.retry = null; S.answer = null; if (!S.t0) { const was = S.ms; startClock(); S.t0 -= was; } draw();
   let r;
-  const again = async () => {
-    const x = await fetchRun();
-    if (x && x.plan && !reading) { S.run = x; S.phase = x.status === "needs_answers" ? "asking" : "ready"; return draw(); }  // the server finished it
-    plan(reading);
-  };
-  try { [r] = await Promise.all([api("/api/menu/plan", { run: S.run.id, ...(reading ? { reading } : {}) }), loadPk()]); } catch (e) { return fail(null, DROP + " Try again picks up the plan if the server finished it, or works it out again.", again); }
+  const again = () => plan(reading, extra, key);  // the same key: the server answers with the plan it finished, or works it out once
+  try { [r] = await within(Promise.all([api("/api/menu/plan", { run: S.run.id, key, ...(reading ? { reading } : {}), ...(extra || {}) }), loadPk()]), 100000); } catch (e) { return fail(null, DROP + " Try again picks up the plan if the server finished it, or works it out again.", again); }
   if (!r || !r.id) return fail(r, "The menu could not be planned.", again);
   S.run = r;
   S.phase = r.status === "needs_answers" ? "asking" : "ready";
@@ -616,32 +709,59 @@ async function plan(reading) {
 }
 
 async function loadPk() { try { S.pk = await api("/api/passkey"); } catch (e) { S.pk = null; } }
-// An account with an enrolled approver's device: that device signs this exact decision, then the order is placed.
-async function signAndOrder() {
-  let device;
-  try {
-    const pre = await api("/api/menu/sign", { run: S.run.id });
-    if (!pre.challenge) return fail(pre, "The approval could not be prepared.", () => placeOrder());
-    device = await PK.sign(pre);
-  } catch (e) {
-    S.phase = "ready";
-    S.signErr = e && e.name === "NotAllowedError" ? "Nothing was approved or ordered: the device prompt was closed, or this is not one of the account's approver devices." : "This device could not sign the approval. Nothing was ordered.";
-    return draw();
-  }
-  placeOrder(device);
+// ---- An order a rule sent to a person. This page cannot approve it: it shows the approval link and code, waits, and
+// places the order when the approver has said yes on the approval page, on their own device.
+const APPR = { run: "", state: "", data: null, busy: false, down: false };
+const apprOf = r => APPR.run === (r && r.id) ? APPR : { state: "", data: null, down: false };
+function doneBy(o) {
+  const d = o.approved_on;
+  return `${esc(o.asked_by || "The kitchen")} asked. ${esc(o.approved_by)} approved on the approval page${d ? `, signed on ${esc(d.name)} with ${esc(d.how)}` : ""}${o.cleared ? `, with a tick for each of the ${o.cleared} lines that have no allergen declaration` : ""}. The agent then signed the offer.`;
 }
-async function placeOrder(device) {
-  S.phase = "ordering"; S.signErr = ""; draw();
-  const needs = ((S.run.checkout || {}).rules || []).some(x => x.outcome === "escalate");
-  if (!device && needs && S.pk && S.pk.approvals === "passkey") return signAndOrder();
+function awaitHtml(fresh, end) {
+  const r = S.run, ck = r.checkout || {}, a = apprOf(r), d = a.data || {}, ap = d.approval, askN = (r.plan.totals || {}).allergen_ask || 0;
+  const url = ck.continue_url || d.url || "", here = url ? siteUrl(url) : "";
+  const approved = S.phase === "ordering" || a.state === "approved";
+  const head = approved ? `<h2 class="h2">${esc(ap ? ap.by : "The approver")} approved</h2><span class="wait"><span class="spin"></span>Placing the order</span>`
+    : `<h2 class="h2">Waiting for the approver</h2><span class="wait"><span class="spin"></span>Not decided yet</span>`;
+  return `<section class="card${fresh ? " after" : ""}" id="await" style="--d:${end}ms;scroll-margin-top:90px" aria-live="polite"><div class="ch">${head}</div>
+    <p class="para">The one who asked is not the one who approves. This page has no approve button. The approver opens the link below on their own phone or laptop, sees the order${askN ? `, ticks each of the ${askN} lines with no allergen declaration on its own` : ""} and signs there. The order is placed here the moment they say yes.</p>
+    ${approved || !url ? "" : `<div style="display:flex;gap:var(--s4);align-items:center;margin-top:var(--s3);flex-wrap:wrap"><img alt="QR code for the approval page" src="/api/qr?u=${encodeURIComponent(url)}" style="width:132px;height:132px;border-radius:var(--r);background:#fff;padding:6px;flex:none">
+      <div style="flex:1 1 220px;min-width:0"><div>Scan with the approver's phone, or</div><a id="aplink" href="${esc(here)}" target="_blank" rel="noopener"><b>open the approval page</b></a>
+      <div class="muted" style="font-size:var(--t2);margin-top:6px">The offer holds its price and stock until ${esc(clock(ck.expires_at || d.expires_at))}. A rejection cancels it.</div></div></div>`}
+    <dl class="kv" style="margin-top:var(--s4)"><dt>Asked by</dt><dd>${esc(d.asked_by || "Kitchen manager, on the menu page")}</dd><dt>Approved by</dt><dd>${ap && ap.decision === "approved" ? `${esc(ap.by)}${ap.device ? `, signed on ${esc(ap.device.name)} with ${esc(ap.device.how)}` : ""}` : "nobody yet"}</dd></dl>
+    ${a.down ? `<p class="pkn" role="status">Could not reach the gateway. Still trying.</p>` : ""}</section>`;
+}
+async function watchApproval() {
+  const r = S.run, ck = (r && r.checkout) || {};
+  if (APPR.busy || !r || r.order || S.phase !== "ready" || ck.status !== "requires_escalation") return;
+  if (APPR.run !== r.id) Object.assign(APPR, { run: r.id, state: "", data: null, down: false });
+  APPR.busy = true;
+  let a = null;
+  try { a = await api("/api/menu/approval/" + r.id); } catch (e) { a = null; } finally { APPR.busy = false; }
+  if (S.run !== r || S.phase !== "ready") return;
+  if (!a || !a.state) { if (!APPR.down) { APPR.down = true; redrawWait(); } return; }
+  const was = APPR.state, down = APPR.down;
+  Object.assign(APPR, { state: a.state, data: a, down: false });
+  if (a.state === "approved" || a.state === "ready") return placeOrder();
+  if (a.state === "rejected" || a.state === "gone") { const x = await fetchRun(); if (x) S.run = x; stopClock(); return draw(); }
+  if (a.state === "ordered") { const x = await fetchRun(); if (x && x.order) { S.run = x; stopClock(); S.phase = "done"; remember(null); draw(); } return; }
+  if (was !== a.state || down) redrawWait();
+}
+// Redraw only the waiting card, so the page does not jump while someone reads the plan.
+function redrawWait() { const el = $("#await"); if (el) el.outerHTML = awaitHtml(false, 0); }
+setInterval(() => watchApproval().catch(() => {}), 2000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) watchApproval().catch(() => {}); });
+
+async function placeOrder() {
+  S.phase = "ordering"; draw();
   let r;
   const again = async () => {
     const x = await fetchRun();
     if (x && x.order) { S.run = x; stopClock(); S.phase = "done"; draw(); return scrollTo({ top: 0, behavior: "smooth" }); }  // it was placed: never order twice
     placeOrder();
   };
-  try { r = await api("/api/menu/order", { run: S.run.id, ...(device ? { device } : {}) }); } catch (e) { return fail(null, DROP + " Try again first checks whether the order was placed, so nothing is ordered twice.", again); }
-  if (!device && (errOf(r) || {}).code === "device_required") { await loadPk(); return signAndOrder(); }
+  try { r = await api("/api/menu/order", { run: S.run.id }); } catch (e) { return fail(null, DROP + " Try again first checks whether the order was placed, so nothing is ordered twice.", again); }
+  if ((errOf(r) || {}).code === "approval_pending") { S.phase = "ready"; return draw(); }  // not approved after all: keep waiting
   if (!r || !r.id) return fail(r, "The order could not be placed.", again);
   S.run = r;
   if (r.order) { stopClock(); S.phase = "done"; remember(null); } else S.phase = "ready";

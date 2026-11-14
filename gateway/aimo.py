@@ -30,18 +30,28 @@ class Aimo:
         self.calls = 0
 
     def _post(self, path, ids, day, customer):
-        self.calls += 1
-        try:
-            r = self.http.post(path, json={"customer": customer, "requestedDate": day, "products": ids})
-        except httpx.HTTPError as e:
-            raise AimoError(message="Valio Aimo could not be reached; retry the request.") from e
-        if r.status_code == 429:
-            raise AimoError(code="upstream_rate_limited", message="Valio Aimo is rate limiting this gateway; retry the request.")
-        if r.status_code >= 500:
-            raise AimoError(message="Valio Aimo is temporarily unavailable; retry the request.")
-        if r.status_code >= 400:
-            raise AimoError(status=503, code="upstream_error", message="Valio Aimo rejected the gateway request; retry the request.")
-        return r.json()
+        """One upstream call. A rate limit or a hiccup upstream is waited out here, briefly, so one busy second at Valio Aimo
+        does not fail a kitchen's order. What is still failing after that goes back to the caller as a retryable error."""
+        err = None
+        for wait in (0, 0.6, 1.8, 4.0):
+            if wait:
+                time.sleep(wait)
+            self.calls += 1
+            try:
+                r = self.http.post(path, json={"customer": customer, "requestedDate": day, "products": ids})
+            except httpx.HTTPError:
+                err = AimoError(message="Valio Aimo could not be reached; retry the request.")
+                continue
+            if r.status_code == 429:
+                err = AimoError(code="upstream_rate_limited", message="Valio Aimo is rate limiting this gateway; retry the request.")
+                continue
+            if r.status_code >= 500:
+                err = AimoError(message="Valio Aimo is temporarily unavailable; retry the request.")
+                continue
+            if r.status_code >= 400:
+                raise AimoError(status=503, code="upstream_error", message="Valio Aimo rejected the gateway request; retry the request.")
+            return r.json()
+        raise err
 
     def quote(self, ids: list[str], day: str, customer: str) -> dict[str, dict]:
         """{product_id: {price, avail, time_now}} for the requested delivery day."""

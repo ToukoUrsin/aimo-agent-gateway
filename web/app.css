@@ -49,25 +49,45 @@ img,svg,video{max-width:100%}
 /* Banner and the shared header (lib.js draws the header into <header id="site">) */
 .banner{font-size:var(--t1);line-height:1.4;text-align:center;padding:6px 16px;background:var(--soft);color:var(--muted);border-bottom:1px solid var(--line)}
 .site{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1px solid var(--line)}
-.site .in{display:flex;align-items:center;gap:var(--s5);height:56px;padding:0 var(--s5);max-width:1440px;margin:0 auto}
-.site .brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:600;font-size:var(--t3);letter-spacing:-.01em;white-space:nowrap;color:var(--ink)}
-.site .brand svg{width:22px;height:22px;flex:none}
-.site nav{display:flex;align-items:center;gap:2px;min-width:0}
-.site nav a{text-decoration:none;color:var(--muted);font-size:var(--t3);padding:6px 10px;border-radius:var(--r-s);white-space:nowrap;transition:color .15s,background-color .15s}
-.site nav a:hover{color:var(--ink);background:var(--hover)}
+.site .in{display:flex;align-items:stretch;gap:var(--s6);height:56px;padding:0 var(--s5);max-width:1440px;margin:0 auto}
+.site .brand,.sitefoot .brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:600;font-size:var(--t3);letter-spacing:-.01em;white-space:nowrap;color:var(--ink)}
+.site .brand svg,.sitefoot .brand svg{width:22px;height:22px;flex:none}
+.site nav{display:flex;align-items:stretch;gap:var(--s1);min-width:0}
+.site nav a{position:relative;display:flex;align-items:center;text-decoration:none;color:var(--muted);font-size:var(--t3);padding:0 10px;white-space:nowrap;transition:color .15s}
+.site nav a::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2px;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform .25s var(--ease)}
+.site nav a:hover{color:var(--ink)}
 .site nav a[aria-current=page]{color:var(--ink);font-weight:500}
+.site nav a[aria-current=page]::after{transform:none}
 .site .acts{margin-left:auto;display:flex;align-items:center;gap:var(--s2)}
-.site .menu-btn{display:none}
-.site .sheet{display:none}
-@media (max-width:1100px){
+.site .menu-btn{color:var(--muted)}
+.site .menu-btn:hover,.site .menu-btn[aria-expanded=true]{color:var(--ink)}
+.site .menu-btn .ic{display:none}
+.site .menu-btn .ic svg{display:block}
+.site .menu-btn .lm{display:none}
+.site .menu-btn .ld{display:inline-flex;align-items:center;gap:6px}
+.site .menu-btn .ld::after{content:"";width:5px;height:5px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s var(--ease)}
+.site .menu-btn[aria-expanded=true] .ld::after{transform:translateY(1px) rotate(-135deg)}
+/* The More group: a small list under the button on a laptop, part of the full menu on a phone. */
+.site .sheet{position:absolute;top:calc(100% - 4px);right:max(var(--s5),calc((100vw - 1440px)/2 + var(--s5)));min-width:232px;background:var(--panel);border:1px solid var(--line-2);border-radius:var(--r);box-shadow:var(--pop);padding:var(--s1);animation:drop .18s var(--ease)}
+@keyframes drop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.site .sheet .grp.main{display:none}
+.site .sheet a{display:flex;align-items:center;min-height:34px;padding:0 10px;border-radius:var(--r-s);text-decoration:none;color:var(--ink-2);font-size:var(--t3);white-space:nowrap}
+.site .sheet a:hover{background:var(--hover);color:var(--ink)}
+.site .sheet a[aria-current=page]{color:var(--ink);font-weight:600}
+@media (max-width:940px){
   .site nav{display:none}
-  .site .menu-btn{display:inline-flex}
   .site .in{padding:0 var(--s4);gap:var(--s3)}
-  .site .sheet:not([hidden]){display:block;border-top:1px solid var(--line);padding:var(--s2) var(--s4) var(--s4);background:var(--bg)}
-  .site .sheet a{display:flex;align-items:center;min-height:44px;text-decoration:none;color:var(--ink);font-size:var(--t4);border-bottom:1px solid var(--line)}
-  .site .sheet a:last-child{border-bottom:0}
-  .site .sheet a[aria-current=page]{font-weight:600}
+  .site .menu-btn{color:var(--ink)}
+  .site .menu-btn .ic,.site .menu-btn .lm{display:inline-flex}
+  .site .menu-btn .ld{display:none}
+  .site .sheet{position:static;min-width:0;border:0;border-top:1px solid var(--line);border-radius:0;box-shadow:none;padding:var(--s1) var(--s4) var(--s3);background:var(--bg);max-height:calc(100vh - 96px);overflow-y:auto}
+  .site .sheet .grp.main{display:block}
+  .site .sheet a{min-height:46px;padding:0;border-radius:0;color:var(--ink);font-size:var(--t5);font-weight:500;border-bottom:1px solid var(--line)}
+  .site .sheet a:hover{background:transparent}
+  .site .sheet .grp.more{display:grid;grid-template-columns:1fr 1fr;column-gap:var(--s4);padding-top:var(--s2)}
+  .site .sheet .grp.more a{min-height:40px;font-size:var(--t3);font-weight:400;color:var(--ink-2);border-bottom:0;white-space:normal}
 }
+@media (max-width:480px){.site .in:has(.acts>:not(.menu-btn)) .brand span{display:none}}
 
 /* Containers */
 .wrap{max-width:var(--wrap);margin:0 auto;padding:0 var(--s5)}
@@ -150,7 +170,9 @@ pre{margin:var(--s2) 0 0;padding:var(--s3);background:var(--soft);border:1px sol
 .lrow .lsub{color:var(--esc);font-size:var(--t2);margin-top:2px}
 .lrow .lfacts{color:var(--muted);font-size:var(--t1);margin-top:2px;line-height:1.45}
 .lrow .lt{font-weight:500}
-@media (max-width:560px){
+/* The table stacks by the room it has, not the screen: a narrow column on a wide screen stacks too. */
+.lines{container-type:inline-size}
+@container (max-width:520px){
   .lhead{display:none}
   .lrow{grid-template-columns:auto auto 1fr}
   .lrow .lp{grid-column:1/-1}
@@ -171,6 +193,7 @@ pre{margin:var(--s2) 0 0;padding:var(--s3);background:var(--soft);border:1px sol
 .example>.ex-tag{position:absolute;top:-9px;left:10px;background:var(--panel);padding:0 6px;font-size:11px;font-weight:500;color:var(--muted);letter-spacing:.02em;line-height:18px}
 .example>.ex-body{opacity:.62;pointer-events:none;user-select:none}
 .error-state{color:var(--deny);font-size:var(--t3);display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
+.wait{display:inline-flex;align-items:center;gap:var(--s2);color:var(--muted);font-size:var(--t3);line-height:1.4}
 .spin{display:inline-block;width:12px;height:12px;border:1.5px solid var(--line-2);border-top-color:var(--ink);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-1px;flex:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -188,7 +211,23 @@ pre{margin:var(--s2) 0 0;padding:var(--s3);background:var(--soft);border:1px sol
 @keyframes flash{from{background-color:color-mix(in srgb,var(--ink) 7%,transparent)}to{background-color:transparent}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 
-/* Footer */
-.foot{border-top:1px solid var(--line);margin-top:var(--s8);padding:var(--s5) 0 var(--s7);font-size:var(--t2);color:var(--muted);display:flex;gap:var(--s2) var(--s5);flex-wrap:wrap}
+/* Footer: a page's own notes (.foot), then the one every page shares (lib.js draws .sitefoot) */
+.foot{border-top:1px solid var(--line);margin-top:var(--s8);padding:var(--s4) 0 var(--s6);font-size:var(--t2);color:var(--muted);display:flex;gap:var(--s2) var(--s5);flex-wrap:wrap}
 .foot a{color:var(--muted);text-decoration:none}
 .foot a:hover{color:var(--ink)}
+.sitefoot{border-top:1px solid var(--line);background:var(--soft);margin-top:var(--s8);font-size:var(--t2);color:var(--muted)}
+main:has(>.foot:last-child)+.sitefoot,main:has(>.foot:last-child)~.sitefoot{margin-top:0}
+body:has(>.sitefoot)>main{min-height:calc(100vh - 390px)}
+.sitefoot .in{max-width:var(--wrap);margin:0 auto;padding:var(--s6) var(--s5) var(--s7);display:grid;grid-template-columns:minmax(0,1.5fr) repeat(3,minmax(0,1fr));gap:var(--s5) var(--s6)}
+.sitefoot .fb p{margin:var(--s3) 0 0;max-width:38ch;line-height:1.5}
+.sitefoot .fb p a{color:var(--ink-2)}
+.sitefoot nav{display:flex;flex-direction:column;gap:6px;min-width:0}
+.sitefoot nav b{font-weight:500;color:var(--ink);margin-bottom:2px}
+.sitefoot nav a{color:var(--muted);text-decoration:none;overflow-wrap:anywhere}
+.sitefoot nav a:hover{color:var(--ink)}
+.sitefoot nav a[aria-current=page]{color:var(--ink)}
+@media (max-width:760px){
+  .sitefoot .in{grid-template-columns:1fr 1fr;padding:var(--s5) var(--s4) var(--s6);gap:var(--s5) var(--s4)}
+  .sitefoot .fb{grid-column:1/-1}
+  .sitefoot nav a{padding:3px 0}
+}

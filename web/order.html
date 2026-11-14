@@ -48,7 +48,7 @@ h1{font-size:var(--t8);letter-spacing:-.025em;line-height:1.1;margin-top:4px}
 <body>
 <div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
 <header id="site"></header>
-<main id="main" aria-live="polite"><div><span class="skel" style="width:22ch"></span><span class="skel block" style="height:32px;width:60%;margin-top:10px"></span></div><div class="card"><span class="skel block" style="width:30%"></span><span class="skel block"></span><span class="skel block" style="width:75%"></span></div><div class="card"><span class="skel block" style="width:40%"></span><span class="skel block"></span><span class="skel block"></span><span class="skel block"></span></div></main>
+<main id="main" aria-live="polite"><div class="ohead"><h1>Order</h1></div><div class="card"><span class="wait"><span class="spin"></span>Reading the signed order, then checking its signatures in your browser</span></div></main>
 <script src="/static/lib.js"></script>
 <script src="/static/passkey.js"></script>
 <script>
@@ -171,7 +171,7 @@ async function render() {
     (res ? res.map((r, i) => checkRow(r, first && !calm ? "pending" : lastRes && lastRes[i] && lastRes[i][0] !== r[0] ? (r[0] ? "ok changed" : "bad changed") : r[0] ? "ok" : "bad")).join("") : "") + `</div>
     <div class="cheat"><span class="muted" style="font-size:var(--t2)">Try to cheat:</span>
       <button class="btn small" id="t1" aria-pressed="${tamper.price}">${tamper.price ? "Undo price change" : "Lower a price by 1 cent"}</button><button class="btn small" id="t2" aria-pressed="${tamper.ledger}">${tamper.ledger ? "Undo ledger edit" : "Edit an audit entry"}</button></div>
-    <p class="small-note">Nothing here trusts this server: the page fetches the signed JSON and the public keys, then verifies ES256 signatures over canonical JSON (RFC 8785) with your browser's own crypto.</p></div>`;
+    <p class="small-note">The checks run here, not on the server: this page fetches the signed JSON and the public keys, then verifies ES256 signatures over canonical JSON (RFC 8785) with your browser's own crypto. The page and the keys still come from this server. To take neither from it, run <a href="https://github.com/ToukoUrsin/aimo-agent-gateway/blob/main/verify/verify_order.py"><span class="mono">verify/verify_order.py</span></a> from the public repository on this page's address: one file, no gateway code, Valio Aimo's key pinned in the repository.</p></div>`;
   h += `<div class="card"><h3>Order</h3>${linesTable(o.line_items)}${totalsBlock(o.totals)}
     <dl class="kv" style="margin-top:var(--s4)"><dt>Buyer</dt><dd>${esc(w.buyer.name)} · customer ${esc(w.customer)}</dd><dt>Delivery</dt><dd>${esc(day(w.delivery_date))} · ${esc(w.ship_to || "")}</dd>
     ${w.purchase_order ? `<dt>Buyer's PO</dt><dd class="mono">${esc(w.purchase_order)}</dd>` : ""}${w.intent ? `<dt>Request</dt><dd>“${esc(w.intent)}”</dd>` : ""}<dt>Payment</dt><dd>${esc(w.payment)}</dd></dl></div>`;

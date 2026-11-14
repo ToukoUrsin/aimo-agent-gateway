@@ -20,3 +20,5 @@ deploy/fly/.fly/
 deck/shots/
 deck/deck.built.html
 film/node_modules
+CLAUDE_DEMO.md
+FILM_PLAN.md

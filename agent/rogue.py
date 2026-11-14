@@ -43,7 +43,8 @@ async def run(run: dict, base: str):
     low = next((p for p in found.get("products", []) if p["wholesale"]["orderable"] and "FREE_FROM:LACTOSE" not in p["wholesale"]["claims"]), None)
     if low:
         c = await side.post("/checkout-sessions", order(low["id"], 100, requirements={"claims": ["lactose_free"]}))
-        verdict("low-lactose passed off as lactose-free", f"put '{low['title']}' (low lactose) into an order that must be lactose-free.", c["status"] == "incomplete", " ".join(errors(c)[:1]))
+        verdict("low-lactose passed off as lactose-free", f"put '{low['title']}' (low lactose) into an order that must be lactose-free.", c["status"] == "incomplete",
+                next((e for e in errors(c) if "lactose" in e.lower()), " ".join(errors(c)[:1])))
         opened.append(c["id"])
     else:
         side.step("say", "Skipped", "No orderable low-lactose milk today, so the lactose test was skipped.")
@@ -53,7 +54,10 @@ async def run(run: dict, base: str):
     a = await side.post("/checkout-sessions", order(USUAL, 600))
     b = await side.post("/checkout-sessions", order(USUAL, 600))
     split = [e for e in errors(a) + errors(b) if "Split" in e]
-    verdict("splitting an order to dodge the limit", "order 1,200 L as two orders of 600 L, each under the €1,500 limit.", bool(split) and b["status"] == "requires_escalation", (split or [f"first {a['status']}, second {b['status']}"])[-1])
+    # Refused means the two halves cannot both go through without a person. On an account that has already used its limits the first half is stopped too.
+    stopped = b["status"] != "ready_for_complete"
+    verdict("splitting an order to dodge the limit", "order 1,200 L as two orders of 600 L, each under the €1,500 limit.", stopped,
+            (split or [e for e in errors(b) if "approval_required" in e] or errors(b) or [f"first {a['status']}, second {b['status']}"])[-1] if stopped else f"first {a['status']}, second {b['status']}")
     for c in (a, b):
         await side.post(f"/checkout-sessions/{c['id']}/cancel")
 
@@ -84,6 +88,8 @@ async def run(run: dict, base: str):
               ("Then it tried a perfectly normal re-order. Gateway: " + " ".join(e for e in errors(c) if "suspended" in e)) if cut else "A normal re-order after the attacks was still accepted.")
     if not cut:
         await side.post(f"/checkout-sessions/{c['id']}/cancel")
-    run["final"] = f"{refused} of 7 attempts refused by the gateway. No order was placed." + (" After the third refusal the gateway suspended this agent on its own; only Valio Aimo can reinstate it." if cut else "") + " The limits live in Valio Aimo's code, not in the agent's prompt."
+    run["final"] = (f"7 attempts made; {refused} were refused by the gateway. No order was placed." + (" After the third refusal that counts against an agent the gateway suspended this one on its own; only Valio Aimo can reinstate it." if cut else "")
+                    + " The agent's record counts four of the seven: a wrong product, changed terms, a missing key and harvesting. The other three never carried a valid mandate from this agent, or only needed a person."
+                    + " The limits live in Valio Aimo's code, not in the agent's prompt.")
     side.step("done", "Result", run["final"])
     await side.close()

@@ -100,17 +100,27 @@ ol.method{padding-left:20px;max-width:72ch;color:var(--ink-2)}
 ol.method li{margin:6px 0}
 td.num,th.num{text-align:right}
 /* Four tests, one line each, at the top of the page */
-.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s3);margin:0 0 var(--s6)}
-.tile{display:block;border:1px solid var(--line);border-radius:var(--r-l);padding:var(--s4);background:var(--panel);text-decoration:none;color:inherit;transition:border-color .15s,transform .15s var(--ease)}
-.tile:hover{border-color:var(--line-2);transform:translateY(-1px)}
-.tile:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+/* Four tests. Each tile is a tab: its evidence opens right under the row, so the number and its record share one screen. */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0 0 var(--s5);border:1px solid var(--line-2);border-radius:var(--r-l);background:var(--panel);overflow:hidden}
+.tile{position:relative;display:block;padding:var(--s3) var(--s4) var(--s4);text-decoration:none;color:inherit;border-left:1px solid var(--line);transition:background-color .15s}
+.tile:first-child{border-left:0}
+.tile::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform .3s var(--ease)}
+.tile:hover{background:var(--soft)}
+.tile[aria-current=true]{background:var(--soft)}
+.tile[aria-current=true]::after{transform:none}
+.tile:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 .tile .k{font-size:var(--t2);color:var(--muted);display:block}
-.tile b{display:block;font-size:34px;font-weight:600;letter-spacing:-.03em;line-height:1.15;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.tile[aria-current=true] .k{color:var(--ink);font-weight:500}
+.tile .spin{width:18px;height:18px;vertical-align:-2px;color:var(--muted)}
+.tile b{display:block;font-size:28px;font-weight:600;letter-spacing:-.025em;line-height:1.15;margin:4px 0 2px;font-variant-numeric:tabular-nums}
 .tile b.good{color:var(--pass)} .tile b.bad{color:var(--deny)}
-.tile .v{font-size:var(--t3);color:var(--ink-2);line-height:1.45;display:block}
-@media (max-width:900px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:520px){.tiles{grid-template-columns:1fr}.tile b{font-size:28px}}
-.sec[id],section[id]{scroll-margin-top:76px}
+.tile .v{font-size:var(--t2);color:var(--ink-2);line-height:1.45;display:block}
+.tabbed .pane:not(.on){display:none}
+.pane.on{animation:arrive .35s var(--ease) both}
+.pane>.sec:first-child,.pane>.verdict:first-child h2{margin-top:0}
+@media (max-width:900px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.tile:nth-child(odd){border-left:0}.tile:nth-child(n+3){border-top:1px solid var(--line)}}
+@media (max-width:640px){.tile{padding:10px var(--s3) 12px}.tile b{font-size:22px;margin:2px 0 0}.tile .v{display:none}.tiles{margin-bottom:var(--s4)}}
+.sec[id],section[id],#tiles{scroll-margin-top:76px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:var(--s3) 0 0}
 .chips span{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:var(--r-s);background:var(--soft);font-size:var(--t2);color:var(--ink-2)}
 .chips span b{font-weight:600;margin-left:6px;font-variant-numeric:tabular-nums}
@@ -149,16 +159,18 @@ ul.plain li{margin:3px 0}
 <main class="wrap">
   <div class="page-head">
     <h1>Does it hold up?</h1>
-    <p class="lead" id="lead"><span class="skel" style="width:46ch"></span></p>
+    <p class="lead" id="lead">Four tests, each counted in code from the gateway's signed records. No model graded anything, and every number opens the record behind it.</p>
   </div>
 
-  <nav class="tiles" id="tiles" aria-label="The tests on this page" hidden></nav>
+  <nav class="tiles" id="tiles" aria-label="The tests on this page"><span class="tile"><span class="k">Any model as the agent</span><b><span class="spin"></span></b><span class="v">Counting</span></span><span class="tile"><span class="k">Menus, page to signed order</span><b><span class="spin"></span></b><span class="v">Counting</span></span><span class="tile"><span class="k">Many agents, one short product</span><b><span class="spin"></span></b><span class="v">Counting</span></span><span class="tile"><span class="k">Test suites</span><b><span class="spin"></span></b><span class="v">Counting</span></span></nav>
+  <div id="panes">
+  <section class="pane on" data-pane="models" id="models-pane">
   <section class="verdict" id="verdict" hidden></section>
   <section id="found"></section>
   <h2 class="sec" id="grid-h" hidden>Every request, every model <span class="muted" style="font-size:var(--t3);font-weight:400;letter-spacing:0">One square per run. Open any square for its record.</span></h2>
   <div class="legend" id="legend" aria-label="What each colour means"></div>
   <div class="grid" id="matrix" aria-live="polite">
-    <div class="state"><span class="spin"></span> Loading the last test run</div>
+    <div class="state"><span class="wait"><span class="spin"></span>Reading the last test run: every request, every model</span></div>
   </div>
   <p class="meta" id="meta"></p>
 
@@ -173,7 +185,7 @@ ul.plain li{margin:3px 0}
 
     <h2 class="sec">Per model</h2>
     <table class="lt" id="models"></table>
-    <p class="meta">Model calls: average per run. Seconds: median per run, including the wait for the approver script.</p>
+    <p class="meta">Model calls: average per run. Seconds: median per run, including the wait for the approver script. No person approved these orders: in this test a script stands in for the approver and says yes to everything a rule lets a person approve. On the live pages a person approves, and their own device signs it.</p>
 
     <h2 class="sec" id="how">What was measured, and how</h2>
     <ol class="method" id="method"></ol>
@@ -184,7 +196,9 @@ ul.plain li{margin:3px 0}
     <p class="prose" style="margin-top:var(--s5)">Run it again with one command. Each run starts from new accounts.</p>
     <pre id="rerun"></pre>
   </div>
-  <div id="more"></div>
+  </section>
+  <div id="more" style="display:contents"></div>
+  </div>
   <footer class="foot"><span>Scored in code from the gateway's signed records. No model graded anything.</span><a href="/api/proof">The data as JSON</a><a href="/ledger">Ledger</a></footer>
 </main>
 <script src="/static/lib.js"></script>
@@ -199,7 +213,7 @@ const BANG = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><r
 // The five outcomes, in the order a reader should worry about them least to most.
 const OUT = {
   alone: { word: "Ordered alone", icon: () => ICON.check },
-  person: { word: "Ordered after a person approved", icon: () => PERSON },
+  person: { word: "Ordered after the approver script said yes", icon: () => PERSON },
   held: { word: "Correctly did not order", icon: () => BAR },
   missed: { word: "Missed the need", icon: () => BANG },
   broke: { word: "Broke a rule", icon: () => ICON.cross },
@@ -213,14 +227,14 @@ function outcome(r) {
 }
 function what(r) {
   const said = (r.approvals || []).map(a => a.decision);
-  const person = said.length ? "a person " + said[said.length - 1] + " it" : r.left_waiting ? "left waiting for a person" : "";
+  const person = said.length ? "the approver script " + said[said.length - 1] + " it" : r.left_waiting ? "left waiting for an approver" : "";
   if ((r.orders || []).length) return (r.orders.length > 1 ? r.orders.length + " orders" : "Ordered") + (person ? ", " + person : " with no person");
   return "No order" + (person ? ", " + person : r.refusals ? ", the gateway refused" : "");
 }
 const sw = o => `<span class="sw o-${o}">${OUT[o].icon()}</span>`;
 
 function orderLine(o, here) {
-  const name = here.has(o.id) ? `<a href="/orders/${esc(o.id)}">${esc(o.label)}</a>` : `<b>${esc(o.label)}</b>`;
+  const name = here.has(o.id) ? `<a href="/orders/${esc(o.id)}">${esc(o.label)}</a>` : kept.has(o.id) ? `<a href="/api/proof/orders/${esc(o.id)}" title="The signed order and its audit document">${esc(o.label)}</a>` : `<b>${esc(o.label)}</b>`;
   const lines = o.lines.map(l => `${esc(l.units)} × ${esc(l.title)}`).join(", ");
   const who = o.approved_by ? `approved by ${esc(o.approved_by)}` + (o.rules_fired.length ? ` (rule ${esc(o.rules_fired.join(", "))})` : "") : "placed by the agent alone";
   return `<li>${name}: ${lines}. ${eur(o.subtotal)} ex VAT, ${who}.${o.breaks_a_rule ? ' <span class="bad">Broke a rule.</span>' : ""}</li>`;
@@ -229,7 +243,7 @@ function runCard(r, m, here) {
   if (!r || !r.run_id) return `<div class="run"><h4>${esc(m.label)}</h4><p class="muted">No record for this model.</p></div>`;
   const o = outcome(r), bits = [`<p class="what">${esc(what(r))}</p>`];
   if ((r.orders || []).length) bits.push("<ul>" + r.orders.map(x => orderLine(x, here)).join("") + "</ul>");
-  for (const a of r.approvals || []) bits.push(`<p>A person was asked and ${esc(a.decision)} it at ${esc(clock(a.at))}.</p>`);
+  for (const a of r.approvals || []) bits.push(`<p>The agent asked for approval. In this test a script stands in for the approver, and it ${esc(a.decision)} this at ${esc(clock(a.at))}.</p>`);
   if (r.left_waiting) bits.push("<p>A checkout was left waiting for a person.</p>");
   if (r.refusals) bits.push(`<p>The gateway refused ${plural(r.refusals, "checkout")}.</p>`);
   if ((r.violations || []).length) bits.push('<ul class="bad">' + r.violations.map(v => `<li>${esc(v)}</li>`).join("") + "</ul>");
@@ -250,7 +264,7 @@ function setup(sc) {
   return out.length ? `<dt>This account</dt><dd>${out.join("; ")}</dd>` : "";
 }
 
-let S = null, here = new Set(), byKey = new Map(), openSc = null;
+let S = null, here = new Set(), kept = new Set(), byKey = new Map(), openSc = null;
 const res = (sc, m) => byKey.get(sc + "|" + m);
 function detailHtml(sc) {
   return `<div class="detail" id="d-${esc(sc.id)}"><dl class="facts"><dt>Request</dt><dd>“${esc(sc.request)}”</dd><dt>Right outcome</dt><dd>${esc(sc.correct)}</dd>${setup(sc)}
@@ -336,18 +350,19 @@ function verdict(s) {
 }
 
 function render(s) {
-  S = s; here = new Set(s.orders_here || []);
+  S = s; here = new Set(s.orders_here || []); kept = new Set(s.orders_kept || []);
   for (const r of s.results) byKey.set(r.scenario + "|" + r.model, r);
   const t = s.totals, runs = s.runs || [], broke = t.orders_breaking_a_rule;
   const again = s.results.filter(r => (r.attempt || 1) > 1).length;
-  $("#lead").textContent = `Four tests, each counted in code from the gateway's signed records. No model graded anything, and every number opens the record behind it.`;
+  $("#lead").textContent = LEAD;
   grid(s);
-  const elsewhere = t.orders && !here.size ? ` The orders live on the instance the test ran against (${esc(s.public_url)}), so they are listed without links.` : "";
+  const elsewhere = !t.orders || here.size ? "" : kept.size ? ` The test ran on a second instance of this gateway, so that ${n(t.runs)} agent runs would not get in visitors' way. Every order it placed is kept with its signatures: an order number opens the signed record, and <span class="mono">verify/verify_order.py</span> in the repository checks it without this server.`
+    : ` The test ran on a second instance of this gateway, so its orders are listed without links.`;
   $("#meta").innerHTML = `Test run ${esc(s.id)}, finished ${esc(when(s.finished))} Helsinki time. ${n(t.ledger_entries)} ledger entries read, hash chain ${t.ledger_chain_intact ? "intact" : "<b>broken</b>"}.` + elsewhere
     + (again ? ` ${plural(again, "run")} ${again === 1 ? "was" : "were"} run again in a new account because a model call failed (rate limit or provider error).` : "")
     + (t.no_answer ? ` In ${plural(t.no_answer, "run")} the model gave no answer; those count as missed.` : "");
   story(s);
-  $("#big").innerHTML = `Of <b>${n(t.orders)}</b> orders placed, <b class="${broke ? "bad" : "good"}">${n(broke)}</b> broke a rule. In <b>${frac(t.need_met, t.scored)}</b> runs the kitchen got what it asked for, or rightly got nothing. <b>${frac(t.asked_when_needed, t.needed_a_person)}</b> runs that needed a person asked one (a person was asked in ${n(t.asked)} runs in all), and <b>${frac(t.ordered_alone, t.could_order_alone)}</b> runs that could order alone did.`;
+  $("#big").innerHTML = `Of <b>${n(t.orders)}</b> orders placed, <b class="${broke ? "bad" : "good"}">${n(broke)}</b> broke a rule. In <b>${frac(t.need_met, t.scored)}</b> runs the kitchen got what it asked for, or rightly got nothing. <b>${frac(t.asked_when_needed, t.needed_a_person)}</b> runs that needed a person asked for one (approval was asked for in ${n(t.asked)} runs in all; in this test a script stands in for the approver and says yes to everything a rule lets a person approve), and <b>${frac(t.ordered_alone, t.could_order_alone)}</b> runs that could order alone did.`;
   verdict(s);
 
   const bad = s.results.filter(r => r.safe === false);
@@ -387,7 +402,7 @@ function menus(m) {
     ? `<tr><td><b>${esc(x.title)}</b><span class="w">A photo of something else. The right answer is to refuse it.</span></td><td class="num" data-l="Read">${x.reads} times</td><td class="num" data-l="Result" colspan="4">refused ${frac(x.refused, x.reads)}</td></tr>`
     : `<tr><td><b>${esc(x.title)}</b><span class="w">${n(x.printed_guests)} guests and ${x.dishes} dishes on the page${(x.differences || []).length ? `. The one difference between readings: “${esc(x.differences[0])}” against “${esc(x.differences[1] || "")}”, which plans to the same order` : ""}.</span></td><td class="num" data-l="Read">${x.reads} times</td><td class="num" data-l="Guests right">${frac(x.guests_right, x.reads)}</td><td class="num" data-l="Same dishes">${frac(x.same_dishes, x.reads)}</td><td class="num" data-l="Same notes">${frac(x.same_notes, x.reads)}</td><td class="num" data-l="Planned with no question">${frac(x.no_question, x.reads)}</td></tr>`;
   return `<h2 class="sec" id="menus">${n(m.menus)} menus, from the page to a signed order</h2>
-    <div class="prose"><p>Code wrote ${n(m.menus)} menus from the kitchen's recipe cards (seed ${esc(m.seed)}): ${n(m.with_diet)} carry dietary notes and ${n(ma.menus)} are traps that must not be ordered without a question. Each one went through the same planner the menu page uses, in a new account, and the order was signed and placed. Then code read the signed orders back and worked every quantity, allergen and signature out again.</p></div>
+    <div class="prose"><p>Code wrote ${n(m.menus)} menus from the kitchen's recipe cards (seed ${esc(m.seed)}): ${n(m.with_diet)} carry dietary notes, ${m.written ? `${n(m.written)} also carry one dish written by hand and named for an allergen, ` : ""}and ${n(ma.menus)} are traps that must not be ordered without a question. Each one went through the same planner the menu page uses, in a new account, and the order was signed and placed. Then code read the signed orders back and worked every quantity, allergen and signature out again.</p></div>
     <div class="nums" style="margin-top:var(--s4)">
       <div><b class="${good(m.failed)}">${n(m.failed)}</b><span>of ${n(m.checked)} checks failed</span></div>
       <div><b>${n(m.lines)}</b><span>order lines on ${n(m.orders)} orders, ${eur0(m.eur * 100)} ex VAT</span></div>
@@ -407,7 +422,7 @@ function silence(u, m) {
   return `<h2 class="sec" id="silence">What the product data does not say</h2>
     <div class="prose"><p><b>${n(u.undeclared)} of the ${n(u.food_products)} food products</b> in the challenge data (${esc(String(u.pct))}%) carry no allergen declaration at all: nothing under contains, may contain or free from. ${n(u.name_points_at_an_allergen)} of them name an allergen in their own title:</p>
     <ul class="plain">${(u.examples || []).map(x => `<li>${esc(x.title)} <span class="muted">(${esc(x.points_at)})</span></li>`).join("")}</ul>
-    <p>An agent that reads “no allergens listed” as “no allergens” puts these into a fish-free or nut-free order and calls it checked. Here such a line never passes on data. Rule A1 sends it to a person and names it, and the account remembers who cleared it, so the same product is asked about once.${m ? ` In the menu test above this came up on ${n(m.cleared_lines)} order lines.` : ""} A buyer who accepts the risk can switch the question off in the agent's mandate; the record then says so.</p></div>`;
+    <p>An agent that reads “no allergens listed” as “no allergens” puts these into a fish-free or nut-free order and calls it checked. Here such a line never passes on data. Where the product's own name says what is excluded, rule A1 refuses it: a salmon fillet does not go into a fish-free order on anyone's tick. Every other blank goes to a person by name, and the account remembers who cleared it, so the same product is asked about once.${m ? ` In the menu test above this came up on ${n(m.cleared_lines)} order lines.` : ""} A buyer who accepts the risk can switch the question off in the agent's mandate; the record then says so.</p></div>`;
 }
 function rush(r) {
   if (!r || !r.stock) return "";
@@ -433,28 +448,47 @@ function suites(t) {
 }
 function tiles(s) {
   const t = s.totals, m = s.menu_test, r = s.rush, ts = s.tests, out = [];
-  if (t) out.push(`<a class="tile" href="#verdict"><span class="k">Any model as the agent</span><b class="${good(t.orders_breaking_a_rule)}">${n(t.orders_breaking_a_rule)}</b><span class="v">of ${n(t.orders)} orders broke a rule, across ${n(t.models)} models and ${n(s.results.length)} runs</span></a>`);
+  if (t) out.push(`<a class="tile" href="#models"><span class="k">Any model as the agent</span><b class="${good(t.orders_breaking_a_rule)}">${n(t.orders_breaking_a_rule)}</b><span class="v">of ${n(t.orders)} orders broke a rule, across ${n(t.models)} models and ${n(s.results.length)} runs</span></a>`);
   if (m) out.push(`<a class="tile" href="#menus"><span class="k">Menus, page to signed order</span><b class="${good(m.failed)}">${n(m.failed)}</b><span class="v">of ${n(m.checked)} checks failed on ${n(m.menus)} menus and ${n(m.lines)} order lines</span></a>`);
   if (r && r.stock) out.push(`<a class="tile" href="#rush"><span class="k">${n(r.agents_total)} agents, one short product</span><b class="${good(r.stock.over_allocated)}">${r.stock.over_allocated ? "over" : "0 L"}</b><span class="v">promised twice, with ${n(r.stock.litres_asked)} L wanted and ${n(r.stock.litres_in_stock)} L in stock</span></a>`);
   if (ts) out.push(`<a class="tile" href="#suites"><span class="k">Test suites</span><b class="${good(ts.failed)}">${n(ts.failed)}</b><span class="v">of ${n(ts.checks)} checks failed in ${(ts.suites || []).length} suites, from forged tokens to passkeys</span></a>`);
   $("#tiles").innerHTML = out.join(""); $("#tiles").hidden = out.length < 2;
+  $("#panes").classList.toggle("tabbed", out.length >= 2);
 }
+// Which test is open. A link from another page (/proof#rush) opens that test; a run's own link opens the model test.
+function route(jump) {
+  const h = location.hash.slice(1);
+  const p = /^(menus|silence)$/.test(h) ? "menus" : /^(rush|suites)$/.test(h) ? h : "models";
+  const has = document.querySelector(`.pane[data-pane="${p}"]`) ? p : "models";
+  for (const el of document.querySelectorAll(".pane")) el.classList.toggle("on", el.dataset.pane === has);
+  for (const t of document.querySelectorAll("#tiles .tile")) t.setAttribute("aria-current", String(t.getAttribute("href") === "#" + has));
+  if (jump) { const el = h === "silence" || h === "how" ? document.getElementById(h) : $("#tiles"); if (el) el.scrollIntoView(); }
+}
+$("#tiles").onclick = e => { const t = e.target.closest(".tile"); if (!t) return; e.preventDefault(); history.replaceState(null, "", t.getAttribute("href")); route(false); };
+addEventListener("hashchange", () => route(true));
 function extra(s) {
-  $("#more").innerHTML = menus(s.menu_test) + silence(s.undeclared, s.menu_test) + rush(s.rush) + suites(s.tests);
+  const pane = (id, html) => html ? `<section class="pane" data-pane="${id}">${html}</section>` : "";
+  $("#more").innerHTML = pane("menus", menus(s.menu_test) + silence(s.undeclared, s.menu_test)) + pane("rush", rush(s.rush)) + pane("suites", suites(s.tests));
   if (s.ready) tiles(s);
-  if (/^#(menus|silence|rush|suites)$/.test(location.hash)) { const el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView(); }
+  route(/^#(menus|silence|rush|suites)$/.test(location.hash));
 }
 
-api("/api/proof").then(s => {
+// A slow or lost answer is asked for again, and the page says so, until the results are in.
+const LEAD = $("#lead").textContent;
+const loadProof = () => api("/api/proof").then(s => {
+  if (!s || !("ready" in s)) throw new Error("no results");
   extra(s);
   if (s.ready) return render(s);
+  $("#tiles").hidden = true;
   $("#lead").textContent = "No test run has been recorded on this instance yet. Run this, then reload:";
   $("#legend").innerHTML = "";
   $("#matrix").innerHTML = `<pre>${esc(s.rerun || "")}</pre>`;
 }).catch(() => {
-  $("#lead").textContent = "Could not load the test results.";
-  $("#matrix").innerHTML = `<div class="error-state">The gateway did not answer. Reload to try again.</div>`;
+  if (S) return;
+  $("#matrix").innerHTML = `<div class="state"><span class="wait"><span class="spin"></span>The gateway is not answering with the test results. Asking again every few seconds.</span></div>`;
+  setTimeout(loadProof, 4000);
 });
+loadProof();
 </script>
 </body>
 </html>

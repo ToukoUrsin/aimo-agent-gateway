@@ -1,0 +1,42 @@
+{
+  "_about": "Test photos of what a kitchen really has, made with an image model (gemini-3-pro-image) for this test; no real kitchen, person or company. Each entry says what must be read from the photo. dishes: one folded fragment per dish, found in the dish as written or as named. marks: dietary rules written on single dishes. notes: rules from notes on the page as [kind, scope, head count]. held: dishes that must wait for the chef's answer, with the portions held. tests/menu.py reads every photo through POST /api/menu/read and plans it.",
+  "lounaslista.jpg": {
+    "what": "A phone photo of a printed Finnish lunch list taped to a steel door. The head count is handwritten under it.",
+    "menu": true, "guests": 120, "budget": null,
+    "dishes": ["lihapul", "lohikeit", "wok", "hernekeit", "pannukak", "makaronilaatik"], "max_dishes": 7,
+    "marks": {"lihapul": ["lactose"], "lohikeit": ["gluten", "lactose"], "wok": ["gluten", "milk"], "hernekeit": ["gluten", "milk"], "pannukak": ["lactose"], "makaronilaatik": ["lactose"]},
+    "notes": [], "held": {}
+  },
+  "whiteboard.jpg": {
+    "what": "A handwritten week plan on a whiteboard, Finnish, with two dietary counts in red marker.",
+    "menu": true, "guests": 80, "budget": null,
+    "dishes": ["kalakeit", "jauheliha", "kasvissose", "broileripasta", "pinaattilet"], "max_dishes": 6,
+    "marks": {}, "notes": [["gluten", "guests", 3], ["milk", "guests", 2]], "held": {}
+  },
+  "staffparty.jpg": {
+    "what": "A typed staff party note with guests, an allergy note and a budget.",
+    "menu": true, "guests": 60, "budget": {"amount": 900, "per": "total"},
+    "dishes": ["satay", "lasagne", "greek salad", "garlic bread", "brownie"], "max_dishes": 5,
+    "marks": {}, "notes": [["peanut", "guests", 8]], "severe": true, "held": {"satay": 8}
+  },
+  "wedding-margin.jpg": {
+    "what": "A printed wedding menu with dietary notes scribbled in the margin.",
+    "menu": true, "guests": 96, "budget": null,
+    "dishes": ["beetroot", "roast beef", "gratin", "almond cake", "coffee"], "max_dishes": 6,
+    "marks": {}, "notes": [["vegan", "guests", 4], ["gluten", "guests", 6], ["nut", "guests", 2]], "held": {"almond cake": 2}
+  },
+  "email.jpg": {
+    "what": "A screenshot of an email ordering a seminar lunch, with dietary counts and a budget per person in the text.",
+    "menu": true, "guests": 45, "budget": {"amount": 12, "per": "guest"},
+    "dishes": ["salmon soup", "rye bread", "karelian", "blueberry pie", "coffee"], "max_dishes": 7,
+    "marks": {}, "notes": [["lactose", "guests", 5], ["gluten", "guests", 1]], "held": {}
+  },
+  "lowlight.jpg": {
+    "what": "A slanted low-light phone photo of a Finnish Christmas party menu on a clipboard, with a handwritten note.",
+    "menu": true, "guests": 40, "budget": null,
+    "dishes": ["sienikeit", "karjalanpaisti", "rosolli", "riisipuuro", "kahvi"], "max_dishes": 7,
+    "marks": {}, "notes": [["vegan", "guests", 3]], "held": {}
+  },
+  "receipt.jpg": {"what": "A grocery receipt. Nothing to cook from.", "menu": false},
+  "pricelist.jpg": {"what": "A wholesaler's price list. Products with prices, no dishes.", "menu": false}
+}

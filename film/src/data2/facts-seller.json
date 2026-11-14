@@ -3,64 +3,63 @@
   "name": "seller",
   "dir": "shots/seller",
   "scheme": "light",
-  "capturedAt": "2026-11-14T05:06:10.965Z",
+  "capturedAt": "2026-11-14T06:35:29.139Z",
   "css": [
    1440,
    1800
   ],
   "scale": 2,
-  "dur": 5.46,
+  "dur": 7.114,
   "frames": [
-   0.186,
-   4.908
+   0.976,
+   4.995
   ],
   "events": [],
   "boxT": [
-   0.009,
-   0.141,
-   0.267,
-   0.382,
-   0.497,
-   0.625,
-   0.741,
-   0.854,
-   0.972,
-   1.093,
-   1.21,
-   1.328,
-   1.441,
-   1.556,
-   1.67,
-   1.783,
-   1.897,
-   2.012,
-   2.144,
-   2.262,
-   2.377,
-   2.492,
-   2.608,
-   2.722,
-   2.836,
-   2.949,
-   3.064,
-   3.179,
+   0.046,
+   0.167,
+   0.3,
+   0.417,
+   0.535,
+   0.652,
+   0.765,
+   0.879,
+   0.992,
+   1.167,
+   1.38,
+   1.508,
+   1.862,
+   1.977,
+   2.092,
+   2.211,
+   2.324,
+   2.446,
+   2.559,
+   2.699,
+   3.055,
+   3.178,
    3.294,
-   3.414,
-   3.539,
-   3.655,
-   3.778,
-   3.892,
-   4.01,
-   4.126,
-   4.242,
-   4.359,
-   4.474,
-   4.604,
-   4.724,
-   4.842,
-   5.015,
-   5.203,
-   5.321
+   3.41,
+   3.709,
+   3.907,
+   4.023,
+   4.153,
+   4.302,
+   4.416,
+   4.566,
+   4.682,
+   4.892,
+   5.007,
+   5.121,
+   5.239,
+   5.411,
+   5.541,
+   5.682,
+   5.868,
+   6.038,
+   6.17,
+   6.888,
+   7.001
   ],
   "boxes": {
    "head": [
@@ -68,271 +67,265 @@
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
+     500
     ],
     [
      184,
      87,
      1072,
-     489
-    ],
-    [
-     184,
-     87,
-     1072,
-     489
+     500
     ]
    ],
    "tiles": [
@@ -340,541 +333,529 @@
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
+     112
     ],
     [
      184,
      391,
      1072,
-     129
-    ],
-    [
-     184,
-     391,
-     1072,
-     129
+     112
     ]
    ],
    "bar": [
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
+     548,
      1072,
      39
     ],
     [
      184,
-     536,
-     1072,
-     39
-    ],
-    [
-     184,
-     536,
+     548,
      1072,
      39
     ]
@@ -882,271 +863,265 @@
    "list": [
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
+     655,
      1072,
      5536
     ],
     [
      184,
-     643,
-     1072,
-     5536
-    ],
-    [
-     184,
-     643,
+     655,
      1072,
      5536
     ]
@@ -1154,277 +1129,270 @@
    "prop": [
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
+     655,
      1072,
      396
     ],
     [
      184,
-     643,
-     1072,
-     396
-    ],
-    [
-     184,
-     643,
+     655,
      1072,
      396
     ]
    ],
    "run": [
-    null,
     null,
     null,
     null,
@@ -1475,8 +1443,8 @@
    "summary": {
     "owner": "Whatever agent a kitchen buys with, the customer relationship stays with Valio Aimo: this is Valio Aimo's own agent, speaking in its name and signing with its key. It proposes; the kitchen's agent and people decide.",
     "total": {
-     "made": 41,
-     "open": 4,
+     "made": 49,
+     "open": 12,
      "accepted_alone": 13,
      "sent_to_person": 6,
      "approved_by_person": 6,
@@ -1693,6 +1661,46 @@
       "proposals_on": true
      },
      {
+      "account": "sandbox-80bc9305",
+      "buyer": "Sandbox Kitchen 7377",
+      "kind": "sandbox",
+      "made": 4,
+      "open": 4,
+      "accepted_alone": 0,
+      "sent_to_person": 0,
+      "approved_by_person": 0,
+      "declined": 0,
+      "refused_before_leaving": 0,
+      "refused_by_rule": {},
+      "euros_added_ex_vat": 0,
+      "extra_ex_vat": 0,
+      "short_dated_saved": {
+       "l": 0,
+       "kg": 0
+      },
+      "proposals_on": true
+     },
+     {
+      "account": "sandbox-65d0d4a4",
+      "buyer": "Sandbox Kitchen 9188",
+      "kind": "sandbox",
+      "made": 4,
+      "open": 4,
+      "accepted_alone": 0,
+      "sent_to_person": 0,
+      "approved_by_person": 0,
+      "declined": 0,
+      "refused_before_leaving": 0,
+      "refused_by_rule": {},
+      "euros_added_ex_vat": 0,
+      "extra_ex_vat": 0,
+      "short_dated_saved": {
+       "l": 0,
+       "kg": 0
+      },
+      "proposals_on": true
+     },
+     {
       "account": "sandbox-6f0971fd",
       "buyer": "Sandbox Kitchen 9552",
       "kind": "sandbox",
@@ -1755,13 +1763,1067 @@
       "proposals_on": true
      }
     ],
-    "at": "2026-11-14T07:06:10+02:00",
+    "at": "2026-11-14T08:35:28+02:00",
     "operator": true,
     "account": "nordic-harbour",
     "view": "valio"
    },
    "proposals": {
     "proposals": [
+     {
+      "id": "prp_77ccfe44ee",
+      "kind": "short_dated",
+      "kind_title": "Short-dated stock",
+      "status": "open",
+      "made_at": "2026-11-14T07:22:55+02:00",
+      "buyer": "Sandbox Kitchen 7377",
+      "account": "sandbox-80bc9305",
+      "delivery_date": "2026-11-16",
+      "title": "40 Alpro Almond drink, Original  1L, best before Sat 21 Nov, 35% off",
+      "basis": {
+       "product": "Alpro Almond drink, Original  1L",
+       "lot": "SD461360-30D9",
+       "best_before": "Sat 21 Nov",
+       "units_in_lot": 40,
+       "usual_per_week": 97,
+       "usual_of": "products in the same category",
+       "days_to_use": 6,
+       "used_by_then": 83,
+       "offered_units": 40,
+       "off_pct": 35,
+       "unit_price_now": "€1.58",
+       "unit_price_usual": "€2.43",
+       "seeded": "Seeded: the challenge data has no lots or best-before dates, so this lot is made up for the demo."
+      },
+      "total_ex_vat": 6320,
+      "extra_ex_vat": 6320,
+      "rules": [
+       {
+        "id": "M1",
+        "title": "Valid mandate",
+        "outcome": "pass",
+        "detail": "Judged under the mandate Sandbox Kitchen 7377 has on file with Valio Aimo. The agent that answers is judged again under its own mandate."
+       },
+       {
+        "id": "W1",
+        "title": "Agent ordering enabled by Valio Aimo",
+        "outcome": "pass",
+        "detail": "Agent ordering is on for this account."
+       },
+       {
+        "id": "B1",
+        "title": "Spend limit per order",
+        "outcome": "pass",
+        "detail": "€63.20 ex VAT is within the €1,500.00 limit."
+       },
+       {
+        "id": "B3",
+        "title": "Split-order check",
+        "outcome": "pass",
+        "detail": "Agent-only orders for this delivery day total €1,311.20 including this one, within €1,500.00."
+       },
+       {
+        "id": "B2",
+        "title": "Spend limit per week",
+        "outcome": "pass",
+        "detail": "€871.20 of €6,000.00 used this week including this order."
+       },
+       {
+        "id": "N1",
+        "title": "First-time products",
+        "outcome": "escalate",
+        "detail": "Never ordered on this account before: Alpro Almond drink, Original  1L. A person must decide."
+       },
+       {
+        "id": "Q1",
+        "title": "Unusual quantity",
+        "outcome": "pass",
+        "detail": "This product was never ordered on this account before, so there is no usual quantity to compare with; rule N1 asks a person about first-time products."
+       },
+       {
+        "id": "V1",
+        "title": "Valio Aimo's proposals switched on",
+        "outcome": "pass",
+        "detail": "Valio Aimo's agent may make proposals to this customer."
+       },
+       {
+        "id": "V2",
+        "title": "Proposals per customer per day",
+        "outcome": "pass",
+        "detail": "Proposal 3 of at most 5 today."
+       },
+       {
+        "id": "V3",
+        "title": "A declined proposal is never made again",
+        "outcome": "pass",
+        "detail": "The customer has not declined this proposal before."
+       },
+       {
+        "id": "V4",
+        "title": "A proposal may not go over the weekly cap",
+        "outcome": "pass",
+        "detail": "€871.20 of the buyer's €6,000.00 a week, including this proposal."
+       },
+       {
+        "id": "V5",
+        "title": "Proposals the agent may accept alone",
+        "outcome": "pass",
+        "detail": "The mandate lets the agent accept short-dated stock proposals alone."
+       },
+       {
+        "id": "V6",
+        "title": "Extra spend from proposals per week",
+        "outcome": "pass",
+        "detail": "Adds €63.20; €63.20 of the €250.00 a week the agent may accept alone from proposals."
+       }
+      ],
+      "decision": "needs_human_approval",
+      "reason": {
+       "text": "40 Alpro Almond drink 1 L best before Sat 21 Nov, 35% off at €1.58 per unit versus usual €2.43.",
+       "by": "Claude Haiku 5.5"
+      },
+      "lines": [
+       {
+        "title": "Alpro Almond drink, Original  1L",
+        "units": 40,
+        "price": 158,
+        "list_price": 243
+       }
+      ],
+      "authority": {
+       "decision": "needs_human_approval",
+       "reasons": [
+        "Never ordered on this account before: Alpro Almond drink, Original  1L. A person must decide."
+       ]
+      },
+      "answer": null,
+      "order": null,
+      "closed": null,
+      "alone": null,
+      "signed": true
+     },
+     {
+      "id": "prp_92a4622077",
+      "kind": "shortage",
+      "kind_title": "Shortage ahead",
+      "status": "open",
+      "made_at": "2026-11-14T07:22:55+02:00",
+      "buyer": "Sandbox Kitchen 7377",
+      "account": "sandbox-80bc9305",
+      "delivery_date": "2026-11-16",
+      "title": "400 Valio Gefilus® AB sour milk 1% 1 l lactose free for the 400 Valio semi skimmed milk 1 l lactose free UHT that cannot come",
+      "basis": {
+       "product": "Valio semi skimmed milk 1 l lactose free UHT",
+       "standing_units": 400,
+       "can_be_delivered": 0,
+       "short_by": 400,
+       "why": "",
+       "replacement": "Valio Gefilus® AB sour milk 1% 1 l lactose free",
+       "replacement_units": 400,
+       "listed_by_valio_aimo": false,
+       "price_difference_pct": -5.8,
+       "delivery": "Mon 16 Nov",
+       "how_chosen": "Recipe card: Strawberry cream cake uses Valio semi skimmed milk 1 l lactose free UHT as moistening; the replacement fits that role. Same category and storage class. Keeps every free-from and diet claim; adds no allergens."
+      },
+      "total_ex_vat": 58800,
+      "extra_ex_vat": 0,
+      "rules": [
+       {
+        "id": "M1",
+        "title": "Valid mandate",
+        "outcome": "pass",
+        "detail": "Judged under the mandate Sandbox Kitchen 7377 has on file with Valio Aimo. The agent that answers is judged again under its own mandate."
+       },
+       {
+        "id": "W1",
+        "title": "Agent ordering enabled by Valio Aimo",
+        "outcome": "pass",
+        "detail": "Agent ordering is on for this account."
+       },
+       {
+        "id": "B1",
+        "title": "Spend limit per order",
+        "outcome": "pass",
+        "detail": "€588.00 ex VAT is within the €1,500.00 limit."
+       },
+       {
+        "id": "B3",
+        "title": "Split-order check",
+        "outcome": "escalate",
+        "detail": "The agent already ordered €1,248.00 for this delivery day without a person. With this order that is €1,836.00, over the €1,500.00 limit, so it is treated as one order."
+       },
+       {
+        "id": "B2",
+        "title": "Spend limit per week",
+        "outcome": "pass",
+        "detail": "€1,396.00 of €6,000.00 used this week including this order."
+       },
+       {
+        "id": "S1",
+        "title": "Substitution",
+        "outcome": "escalate",
+        "detail": "Valio Gefilus® AB sour milk 1% 1 l lactose free replaces Valio semi skimmed milk 1 l lactose free UHT: it is not on Valio Aimo's substitute list for the requested product.",
+        "path": "$.line_items[0]"
+       },
+       {
+        "id": "N1",
+        "title": "First-time products",
+        "outcome": "pass",
+        "detail": "Every product has been ordered on this account before or is an allowed substitute."
+       },
+       {
+        "id": "Q1",
+        "title": "Unusual quantity",
+        "outcome": "pass",
+        "detail": "This product was never ordered on this account before, so there is no usual quantity to compare with; rule N1 asks a person about first-time products."
+       },
+       {
+        "id": "V1",
+        "title": "Valio Aimo's proposals switched on",
+        "outcome": "pass",
+        "detail": "Valio Aimo's agent may make proposals to this customer."
+       },
+       {
+        "id": "V2",
+        "title": "Proposals per customer per day",
+        "outcome": "pass",
+        "detail": "Proposal 3 of at most 5 today."
+       },
+       {
+        "id": "V3",
+        "title": "A declined proposal is never made again",
+        "outcome": "pass",
+        "detail": "The customer has not declined this proposal before."
+       },
+       {
+        "id": "V4",
+        "title": "A proposal may not go over the weekly cap",
+        "outcome": "pass",
+        "detail": "€1,396.00 of the buyer's €6,000.00 a week, including this proposal."
+       },
+       {
+        "id": "V5",
+        "title": "Proposals the agent may accept alone",
+        "outcome": "pass",
+        "detail": "The mandate lets the agent accept shortage ahead proposals alone."
+       }
+      ],
+      "decision": "needs_human_approval",
+      "reason": {
+       "text": "400 units of Valio semi skimmed lactose free UHT milk cannot be delivered; sour milk 1% offered, 5.8% cheaper, Mon 16 Nov. Recipe card: Strawberry cream cake uses Valio semi skimmed milk 1 l lactose free UHT as moistening; the replacement fits that role.",
+       "by": "Claude Haiku 5.5"
+      },
+      "lines": [
+       {
+        "title": "Valio Gefilus® AB sour milk 1% 1 l lactose free",
+        "units": 400,
+        "price": 147,
+        "list_price": 173,
+        "substitutes_for": "Valio semi skimmed milk 1 l lactose free UHT"
+       }
+      ],
+      "authority": {
+       "decision": "needs_human_approval",
+       "reasons": [
+        "The agent already ordered €1,248.00 for this delivery day without a person. With this order that is €1,836.00, over the €1,500.00 limit, so it is treated as one order.",
+        "Valio Gefilus® AB sour milk 1% 1 l lactose free replaces Valio semi skimmed milk 1 l lactose free UHT: it is not on Valio Aimo's substitute list for the requested product."
+       ]
+      },
+      "answer": null,
+      "order": null,
+      "closed": null,
+      "alone": null,
+      "signed": true
+     },
+     {
+      "id": "prp_ab52e9e6b2",
+      "kind": "fill",
+      "kind_title": "Fill the case",
+      "status": "open",
+      "made_at": "2026-11-14T07:22:49+02:00",
+      "buyer": "Sandbox Kitchen 7377",
+      "account": "sandbox-80bc9305",
+      "delivery_date": "2026-11-16",
+      "title": "Add 4 Oddlygood® Barista oat drink 1 l UHT gluten free to make 10 full cases (100 units)",
+      "basis": {
+       "product": "Oddlygood® Barista oat drink 1 l UHT gluten free",
+       "standing_units": 96,
+       "case_size": 10,
+       "full": "9 full cases of 10 units",
+       "full_before": "9 full cases",
+       "full_after": "10 full cases",
+       "add": 4,
+       "fills_to": "100 units (10 full cases)",
+       "fills_to_units": 100,
+       "price_break": null,
+       "delivery": "Mon 16 Nov"
+      },
+      "total_ex_vat": 548,
+      "extra_ex_vat": 548,
+      "rules": [
+       {
+        "id": "M1",
+        "title": "Valid mandate",
+        "outcome": "pass",
+        "detail": "Judged under the mandate Sandbox Kitchen 7377 has on file with Valio Aimo. The agent that answers is judged again under its own mandate."
+       },
+       {
+        "id": "W1",
+        "title": "Agent ordering enabled by Valio Aimo",
+        "outcome": "pass",
+        "detail": "Agent ordering is on for this account."
+       },
+       {
+        "id": "B1",
+        "title": "Spend limit per order",
+        "outcome": "pass",
+        "detail": "€5.48 ex VAT is within the €1,500.00 limit."
+       },
+       {
+        "id": "B3",
+        "title": "Split-order check",
+        "outcome": "pass",
+        "detail": "Agent-only orders for this delivery day total €1,253.48 including this one, within €1,500.00."
+       },
+       {
+        "id": "B2",
+        "title": "Spend limit per week",
+        "outcome": "pass",
+        "detail": "€813.48 of €6,000.00 used this week including this order."
+       },
+       {
+        "id": "N1",
+        "title": "First-time products",
+        "outcome": "pass",
+        "detail": "Every product has been ordered on this account before or is an allowed substitute."
+       },
+       {
+        "id": "Q1",
+        "title": "Unusual quantity",
+        "outcome": "pass",
+        "detail": "No line is more than 3x the usual order."
+       },
+       {
+        "id": "V1",
+        "title": "Valio Aimo's proposals switched on",
+        "outcome": "pass",
+        "detail": "Valio Aimo's agent may make proposals to this customer."
+       },
+       {
+        "id": "V2",
+        "title": "Proposals per customer per day",
+        "outcome": "pass",
+        "detail": "Proposal 1 of at most 5 today."
+       },
+       {
+        "id": "V3",
+        "title": "A declined proposal is never made again",
+        "outcome": "pass",
+        "detail": "The customer has not declined this proposal before."
+       },
+       {
+        "id": "V4",
+        "title": "A proposal may not go over the weekly cap",
+        "outcome": "pass",
+        "detail": "€813.48 of the buyer's €6,000.00 a week, including this proposal."
+       },
+       {
+        "id": "V5",
+        "title": "Proposals the agent may accept alone",
+        "outcome": "pass",
+        "detail": "The mandate lets the agent accept fill the case proposals alone."
+       },
+       {
+        "id": "V6",
+        "title": "Extra spend from proposals per week",
+        "outcome": "pass",
+        "detail": "Adds €5.48; €5.48 of the €250.00 a week the agent may accept alone from proposals."
+       }
+      ],
+      "decision": "agent_may_accept",
+      "reason": {
+       "text": "Adding 4 Oddlygood oat drinks makes 10 full cases of 100 units, delivered Mon 16 Nov.",
+       "by": "Claude Haiku 5.5"
+      },
+      "lines": [
+       {
+        "title": "Oddlygood® Barista oat drink 1 l UHT gluten free",
+        "units": 4,
+        "price": 137,
+        "list_price": null
+       }
+      ],
+      "authority": {
+       "decision": "agent_may_accept",
+       "reasons": [],
+       "basis": [
+        "V5: The mandate lets the agent accept fill the case proposals alone.",
+        "V6: Adds €5.48; €5.48 of the €250.00 a week the agent may accept alone from proposals."
+       ]
+      },
+      "answer": null,
+      "order": null,
+      "closed": null,
+      "alone": null,
+      "signed": true
+     },
+     {
+      "id": "prp_2206a9f203",
+      "kind": "short_dated",
+      "kind_title": "Short-dated stock",
+      "status": "open",
+      "made_at": "2026-11-14T07:22:49+02:00",
+      "buyer": "Sandbox Kitchen 7377",
+      "account": "sandbox-80bc9305",
+      "delivery_date": "2026-11-16",
+      "title": "50 Valio coffee milk 1 l lactose free UHT, best before Wed 18 Nov, 30% off",
+      "basis": {
+       "product": "Valio coffee milk 1 l lactose free UHT",
+       "lot": "SD464237-2F0C",
+       "best_before": "Wed 18 Nov",
+       "units_in_lot": 60,
+       "usual_per_week": 120,
+       "usual_of": "this product",
+       "days_to_use": 3,
+       "used_by_then": 52,
+       "offered_units": 50,
+       "off_pct": 30,
+       "unit_price_now": "€0.91",
+       "unit_price_usual": "€1.30",
+       "seeded": "Seeded: the challenge data has no lots or best-before dates, so this lot is made up for the demo."
+      },
+      "total_ex_vat": 4550,
+      "extra_ex_vat": 4550,
+      "rules": [
+       {
+        "id": "M1",
+        "title": "Valid mandate",
+        "outcome": "pass",
+        "detail": "Judged under the mandate Sandbox Kitchen 7377 has on file with Valio Aimo. The agent that answers is judged again under its own mandate."
+       },
+       {
+        "id": "W1",
+        "title": "Agent ordering enabled by Valio Aimo",
+        "outcome": "pass",
+        "detail": "Agent ordering is on for this account."
+       },
+       {
+        "id": "B1",
+        "title": "Spend limit per order",
+        "outcome": "pass",
+        "detail": "€45.50 ex VAT is within the €1,500.00 limit."
+       },
+       {
+        "id": "B3",
+        "title": "Split-order check",
+        "outcome": "pass",
+        "detail": "Agent-only orders for this delivery day total €1,293.50 including this one, within €1,500.00."
+       },
+       {
+        "id": "B2",
+        "title": "Spend limit per week",
+        "outcome": "pass",
+        "detail": "€853.50 of €6,000.00 used this week including this order."
+       },
+       {
+        "id": "N1",
+        "title": "First-time products",
+        "outcome": "pass",
+        "detail": "Every product has been ordered on this account before or is an allowed substitute."
+       },
+       {
+        "id": "Q1",
+        "title": "Unusual quantity",
+        "outcome": "pass",
+        "detail": "No line is more than 3x the usual order."
+       },
+       {
+        "id": "V1",
+        "title": "Valio Aimo's proposals switched on",
+        "outcome": "pass",
+        "detail": "Valio Aimo's agent may make proposals to this customer."
+       },
+       {
+        "id": "V2",
+        "title": "Proposals per customer per day",
+        "outcome": "pass",
+        "detail": "Proposal 1 of at most 5 today."
+       },
+       {
+        "id": "V3",
+        "title": "A declined proposal is never made again",
+        "outcome": "pass",
+        "detail": "The customer has not declined this proposal before."
+       },
+       {
+        "id": "V4",
+        "title": "A proposal may not go over the weekly cap",
+        "outcome": "pass",
+        "detail": "€853.50 of the buyer's €6,000.00 a week, including this proposal."
+       },
+       {
+        "id": "V5",
+        "title": "Proposals the agent may accept alone",
+        "outcome": "pass",
+        "detail": "The mandate lets the agent accept short-dated stock proposals alone."
+       },
+       {
+        "id": "V6",
+        "title": "Extra spend from proposals per week",
+        "outcome": "pass",
+        "detail": "Adds €45.50; €45.50 of the €250.00 a week the agent may accept alone from proposals."
+       }
+      ],
+      "decision": "agent_may_accept",
+      "reason": {
+       "text": "Valio coffee milk is 30% off and best before Wed 18 Nov; your kitchen should use 52 units by then.",
+       "by": "Claude Haiku 5.5"
+      },
+      "lines": [
+       {
+        "title": "Valio coffee milk 1 l lactose free UHT",
+        "units": 50,
+        "price": 91,
+        "list_price": 130
+       }
+      ],
+      "authority": {
+       "decision": "agent_may_accept",
+       "reasons": [],
+       "basis": [
+        "V5: The mandate lets the agent accept short-dated stock proposals alone.",
+        "V6: Adds €45.50; €45.50 of the €250.00 a week the agent may accept alone from proposals."
+       ]
+      },
+      "answer": null,
+      "order": null,
+      "closed": null,
+      "alone": null,
+      "signed": true
+     },
+     {
+      "id": "prp_690a830144",
+      "kind": "short_dated",
+      "kind_title": "Short-dated stock",
+      "status": "open",
+      "made_at": "2026-11-14T07:21:52+02:00",
+      "buyer": "Sandbox Kitchen 9188",
+      "account": "sandbox-65d0d4a4",
+      "delivery_date": "2026-11-16",
+      "title": "40 Alpro Almond drink, Original  1L, best before Sat 21 Nov, 35% off",
+      "basis": {
+       "product": "Alpro Almond drink, Original  1L",
+       "lot": "SD461360-5B63",
+       "best_before": "Sat 21 Nov",
+       "units_in_lot": 40,
+       "usual_per_week": 96,
+       "usual_of": "products in the same category",
+       "days_to_use": 6,
+       "used_by_then": 82,
+       "offered_units": 40,
+       "off_pct": 35,
+       "unit_price_now": "€1.58",
+       "unit_price_usual": "€2.43",
+       "seeded": "Seeded: the challenge data has no lots or best-before dates, so this lot is made up for the demo."
+      },
+      "total_ex_vat": 6320,
+      "extra_ex_vat": 6320,
+      "rules": [
+       {
+        "id": "M1",
+        "title": "Valid mandate",
+        "outcome": "pass",
+        "detail": "Judged under the mandate Sandbox Kitchen 9188 has on file with Valio Aimo. The agent that answers is judged again under its own mandate."
+       },
+       {
+        "id": "W1",
+        "title": "Agent ordering enabled by Valio Aimo",
+        "outcome": "pass",
+        "detail": "Agent ordering is on for this account."
+       },
+       {
+        "id": "B1",
+        "title": "Spend limit per order",
+        "outcome": "pass",
+        "detail": "€63.20 ex VAT is within the €1,500.00 limit."
+       },
+       {
+        "id": "B2",
+        "title": "Spend limit per week",
+        "outcome": "pass",
+        "detail": "€63.20 of €6,000.00 used this week including this order."
+       },
+       {
+        "id": "N1",
+        "title": "First-time products",
+        "outcome": "escalate",
+        "detail": "Never ordered on this account before: Alpro Almond drink, Original  1L. A person must decide."
+       },
+       {
+        "id": "Q1",
+        "title": "Unusual quantity",
+        "outcome": "pass",
+        "detail": "This product was never ordered on this account before, so there is no usual quantity to compare with; rule N1 asks a person about first-time products."
+       },
+       {
+        "id": "V1",
+        "title": "Valio Aimo's proposals switched on",
+        "outcome": "pass",
+        "detail": "Valio Aimo's agent may make proposals to this customer."
+       },
+       {
+        "id": "V2",
+        "title": "Proposals per customer per day",
+        "outcome": "pass",
+        "detail": "Proposal 3 of at most 5 today."
+       },
+       {
+        "id": "V3",
+        "title": "A declined proposal is never made again",
+        "outcome": "pass",
+        "detail": "The customer has not declined this proposal before."
+       },
+       {
+        "id": "V4",
+        "title": "A proposal may not go over the weekly cap",
+        "outcome": "pass",
+        "detail": "€63.20 of the buyer's €6,000.00 a week, including this proposal."
+       },
+       {
+        "id": "V5",
+        "title": "Proposals the agent may accept alone",
+        "outcome": "pass",
+        "detail": "The mandate lets the agent accept short-dated stock proposals alone."
+       },
+       {
+        "id": "V6",
+        "title": "Extra spend from proposals per week",
+        "outcome": "pass",
+        "detail": "Adds €63.20; €63.20 of the €250.00 a week the agent may accept alone from proposals."
+       }
+      ],
+      "decision": "needs_human_approval",
+      "reason": {
+       "text": "Short-dated Alpro Almond 1L, best before Sat 21 Nov; 40 units at 35% off fit your usual use before then.",
+       "by": "Claude Haiku 5.5"
+      },
+      "lines": [
+       {
+        "title": "Alpro Almond drink, Original  1L",
+        "units": 40,
+        "price": 158,
+        "list_price": 243
+       }
+      ],
+      "authority": {
+       "decision": "needs_human_approval",
+       "reasons": [
+        "Never ordered on this account before: Alpro Almond drink, Original  1L. A person must decide."
+       ]
+      },
+      "answer": null,
+      "order": null,
+      "closed": null,
+      "alone": null,
+      "signed": true
+     },
+     {
+      "id": "prp_614a8f7a4f",
+      "kind": "cutoff",
+      "kind_title": "Before the cut-off",
+      "status": "open",
+      "made_at": "2026-11-14T07:21:52+02:00",
+      "buyer": "Sandbox Kitchen 9188",
+      "account": "sandbox-65d0d4a4",
+      "delivery_date": "2026-11-16",
+      "title": "Your usual basket for Mon 16 Nov, ready to order",
+      "basis": {
+       "usual_order_by": "Friday 14:00",
+       "past_order_times": [
+        "2026-09-18T13:30+03:00",
+        "2026-09-25T13:35+03:00",
+        "2026-10-02T13:50+03:00",
+        "2026-10-09T13:22+03:00",
+        "2026-10-16T13:24+03:00",
+        "2026-10-23T13:07+03:00",
+        "2026-10-30T13:35+02:00",
+        "2026-11-06T12:57+02:00"
+       ],
+       "ordered_for_delivery": false,
+       "cutoff": "2026-11-15T17:00+02:00",
+       "hours_to_cutoff": 34,
+       "delivery": "Mon 16 Nov",
+       "lines": 4,
+       "seeded": "Seeded: the challenge data has no standing orders or usage, so these weekly figures are made up for the demo."
+      },
+      "total_ex_vat": 170652,
+      "extra_ex_vat": 0,
+      "rules": [
+       {
+        "id": "M1",
+        "title": "Valid mandate",
+        "outcome": "pass",
+        "detail": "Judged under the mandate Sandbox Kitchen 9188 has on file with Valio Aimo. The agent that answers is judged again under its own mandate."
+       },
+       {
+        "id": "W1",
+        "title": "Agent ordering enabled by Valio Aimo",
+        "outcome": "pass",
+        "detail": "Agent ordering is on for this account."
+       },
+       {
+        "id": "B1",
+        "title": "Spend limit per order",
+        "outcome": "escalate",
+        "detail": "Order is €1,706.52 ex VAT, €206.52 over the agent's €1,500.00 limit."
+       },
+       {
+        "id": "B2",
+        "title": "Spend limit per week",
+        "outcome": "pass",
+        "detail": "€1,706.52 of €6,000.00 used this week including this order."
+       },
+       {
+        "id": "N1",
+        "title": "First-time products",
+        "outcome": "pass",
+        "detail": "Every product has been ordered on this account before or is an allowed substitute."
+       },
+       {
+        "id": "Q1",
+        "title": "Unusual quantity",
+        "outcome": "pass",
+        "detail": "No line is more than 3x the usual order."
+       },
+       {
+        "id": "V1",
+        "title": "Valio Aimo's proposals switched on",
+        "outcome": "pass",
+        "detail": "Valio Aimo's agent may make proposals to this customer."
+       },
+       {
+        "id": "V2",
+        "title": "Proposals per customer per day",
+        "outcome": "pass",
+        "detail": "Proposal 3 of at most 5 today."
+       },
+       {
+        "id": "V3",
+        "title": "A declined proposal is never made again",
+        "outcome": "pass",
+        "detail": "The customer has not declined this proposal before."
+       },
+       {
+        "id": "V4",
+        "title": "A proposal may not go over the weekly cap",
+        "outcome": "pass",
+        "detail": "€1,706.52 of the buyer's €6,000.00 a week, including this proposal."
+       },
+       {
+        "id": "V5",
+        "title": "Proposals the agent may accept alone",
+        "outcome": "escalate",
+        "detail": "The mandate does not let the agent accept before the cut-off proposals alone, so a person decides."
+       }
+      ],
+      "decision": "needs_human_approval",
+      "reason": {
+       "text": "Your usual 4-line basket for Mon 16 Nov is not yet ordered; the cut-off is in 34 hours.",
+       "by": "Claude Haiku 5.5"
+      },
+      "lines": [
+       {
+        "title": "Valio semi skimmed milk 1 l lactose free UHT",
+        "units": 400,
+        "price": 156,
+        "list_price": 183
+       },
+       {
+        "title": "Arla Cafè milk 1 L UHT lactose free",
+        "units": 300,
+        "price": 265,
+        "list_price": 312
+       },
+       {
+        "title": "Oddlygood® Barista oat drink 1 l UHT gluten free",
+        "units": 96,
+        "price": 137,
+        "list_price": 183
+       },
+       {
+        "title": "Valio coffee milk 1 l lactose free UHT",
+        "units": 120,
+        "price": 130,
+        "list_price": 195
+       }
+      ],
+      "authority": {
+       "decision": "needs_human_approval",
+       "reasons": [
+        "Order is €1,706.52 ex VAT, €206.52 over the agent's €1,500.00 limit.",
+        "The mandate does not let the agent accept before the cut-off proposals alone, so a person decides."
+       ]
+      },
+      "answer": null,
+      "order": null,
+      "closed": null,
+      "alone": null,
+      "signed": true
+     },
+     {
+      "id": "prp_8b63b1db7f",
+      "kind": "fill",
+      "kind_title": "Fill the case",
+      "status": "open",
+      "made_at": "2026-11-14T07:21:47+02:00",
+      "buyer": "Sandbox Kitchen 9188",
+      "account": "sandbox-65d0d4a4",
+      "delivery_date": "2026-11-16",
+      "title": "Add 4 Oddlygood® Barista oat drink 1 l UHT gluten free to make 10 full cases (100 units)",
+      "basis": {
+       "product": "Oddlygood® Barista oat drink 1 l UHT gluten free",
+       "standing_units": 96,
+       "case_size": 10,
+       "full": "9 full cases of 10 units",
+       "full_before": "9 full cases",
+       "full_after": "10 full cases",
+       "add": 4,
+       "fills_to": "100 units (10 full cases)",
+       "fills_to_units": 100,
+       "price_break": null,
+       "delivery": "Mon 16 Nov"
+      },
+      "total_ex_vat": 548,
+      "extra_ex_vat": 548,
+      "rules": [
+       {
+        "id": "M1",
+        "title": "Valid mandate",
+        "outcome": "pass",
+        "detail": "Judged under the mandate Sandbox Kitchen 9188 has on file with Valio Aimo. The agent that answers is judged again under its own mandate."
+       },
+       {
+        "id": "W1",
+        "title": "Agent ordering enabled by Valio Aimo",
+        "outcome": "pass",
+        "detail": "Agent ordering is on for this account."
+       },
+       {
+        "id": "B1",
+        "title": "Spend limit per order",
+        "outcome": "pass",
+        "detail": "€5.48 ex VAT is within the €1,500.00 limit."
+       },
+       {
+        "id": "B2",
+        "title": "Spend limit per week",
+        "outcome": "pass",
+        "detail": "€5.48 of €6,000.00 used this week including this order."
+       },
+       {
+        "id": "N1",
+        "title": "First-time products",
+        "outcome": "pass",
+        "detail": "Every product has been ordered on this account before or is an allowed substitute."
+       },
+       {
+        "id": "Q1",
+        "title": "Unusual quantity",
+        "outcome": "pass",
+        "detail": "No line is more than 3x the usual order."
+       },
+       {
+        "id": "V1",
+        "title": "Valio Aimo's proposals switched on",
+        "outcome": "pass",
+        "detail": "Valio Aimo's agent may make proposals to this customer."
+       },
+       {
+        "id": "V2",
+        "title": "Proposals per customer per day",
+        "outcome": "pass",
+        "detail": "Proposal 1 of at most 5 today."
+       },
+       {
+        "id": "V3",
+        "title": "A declined proposal is never made again",
+        "outcome": "pass",
+        "detail": "The customer has not declined this proposal before."
+       },
+       {
+        "id": "V4",
+        "title": "A proposal may not go over the weekly cap",
+        "outcome": "pass",
+        "detail": "€5.48 of the buyer's €6,000.00 a week, including this proposal."
+       },
+       {
+        "id": "V5",
+        "title": "Proposals the agent may accept alone",
+        "outcome": "pass",
+        "detail": "The mandate lets the agent accept fill the case proposals alone."
+       },
+       {
+        "id": "V6",
+        "title": "Extra spend from proposals per week",
+        "outcome": "pass",
+        "detail": "Adds €5.48; €5.48 of the €250.00 a week the agent may accept alone from proposals."
+       }
+      ],
+      "decision": "agent_may_accept",
+      "reason": {
+       "text": "Adding 4 Oddlygood Barista oat drink 1 l takes standing stock to 10 full cases, 100 units, delivered Mon 16 Nov.",
+       "by": "Claude Haiku 5.5"
+      },
+      "lines": [
+       {
+        "title": "Oddlygood® Barista oat drink 1 l UHT gluten free",
+        "units": 4,
+        "price": 137,
+        "list_price": null
+       }
+      ],
+      "authority": {
+       "decision": "agent_may_accept",
+       "reasons": [],
+       "basis": [
+        "V5: The mandate lets the agent accept fill the case proposals alone.",
+        "V6: Adds €5.48; €5.48 of the €250.00 a week the agent may accept alone from proposals."
+       ]
+      },
+      "answer": null,
+      "order": null,
+      "closed": null,
+      "alone": null,
+      "signed": true
+     },
+     {
+      "id": "prp_08bdbf4026",
+      "kind": "short_dated",
+      "kind_title": "Short-dated stock",
+      "status": "open",
+      "made_at": "2026-11-14T07:21:47+02:00",
+      "buyer": "Sandbox Kitchen 9188",
+      "account": "sandbox-65d0d4a4",
+      "delivery_date": "2026-11-16",
+      "title": "50 Valio coffee milk 1 l lactose free UHT, best before Wed 18 Nov, 30% off",
+      "basis": {
+       "product": "Valio coffee milk 1 l lactose free UHT",
+       "lot": "SD464237-4C46",
+       "best_before": "Wed 18 Nov",
+       "units_in_lot": 60,
+       "usual_per_week": 120,
+       "usual_of": "this product",
+       "days_to_use": 3,
+       "used_by_then": 51,
+       "offered_units": 50,
+       "off_pct": 30,
+       "unit_price_now": "€0.91",
+       "unit_price_usual": "€1.30",
+       "seeded": "Seeded: the challenge data has no lots or best-before dates, so this lot is made up for the demo."
+      },
+      "total_ex_vat": 4550,
+      "extra_ex_vat": 4550,
+      "rules": [
+       {
+        "id": "M1",
+        "title": "Valid mandate",
+        "outcome": "pass",
+        "detail": "Judged under the mandate Sandbox Kitchen 9188 has on file with Valio Aimo. The agent that answers is judged again under its own mandate."
+       },
+       {
+        "id": "W1",
+        "title": "Agent ordering enabled by Valio Aimo",
+        "outcome": "pass",
+        "detail": "Agent ordering is on for this account."
+       },
+       {
+        "id": "B1",
+        "title": "Spend limit per order",
+        "outcome": "pass",
+        "detail": "€45.50 ex VAT is within the €1,500.00 limit."
+       },
+       {
+        "id": "B2",
+        "title": "Spend limit per week",
+        "outcome": "pass",
+        "detail": "€45.50 of €6,000.00 used this week including this order."
+       },
+       {
+        "id": "N1",
+        "title": "First-time products",
+        "outcome": "pass",
+        "detail": "Every product has been ordered on this account before or is an allowed substitute."
+       },
+       {
+        "id": "Q1",
+        "title": "Unusual quantity",
+        "outcome": "pass",
+        "detail": "No line is more than 3x the usual order."
+       },
+       {
+        "id": "V1",
+        "title": "Valio Aimo's proposals switched on",
+        "outcome": "pass",
+        "detail": "Valio Aimo's agent may make proposals to this customer."
+       },
+       {
+        "id": "V2",
+        "title": "Proposals per customer per day",
+        "outcome": "pass",
+        "detail": "Proposal 1 of at most 5 today."
+       },
+       {
+        "id": "V3",
+        "title": "A declined proposal is never made again",
+        "outcome": "pass",
+        "detail": "The customer has not declined this proposal before."
+       },
+       {
+        "id": "V4",
+        "title": "A proposal may not go over the weekly cap",
+        "outcome": "pass",
+        "detail": "€45.50 of the buyer's €6,000.00 a week, including this proposal."
+       },
+       {
+        "id": "V5",
+        "title": "Proposals the agent may accept alone",
+        "outcome": "pass",
+        "detail": "The mandate lets the agent accept short-dated stock proposals alone."
+       },
+       {
+        "id": "V6",
+        "title": "Extra spend from proposals per week",
+        "outcome": "pass",
+        "detail": "Adds €45.50; €45.50 of the €250.00 a week the agent may accept alone from proposals."
+       }
+      ],
+      "decision": "agent_may_accept",
+      "reason": {
+       "text": "Coffee milk 1 l lactose free: 50 units at 30% off, best before Wed 18 Nov, 51 used in 3 days.",
+       "by": "Claude Haiku 5.5"
+      },
+      "lines": [
+       {
+        "title": "Valio coffee milk 1 l lactose free UHT",
+        "units": 50,
+        "price": 91,
+        "list_price": 130
+       }
+      ],
+      "authority": {
+       "decision": "agent_may_accept",
+       "reasons": [],
+       "basis": [
+        "V5: The mandate lets the agent accept short-dated stock proposals alone.",
+        "V6: Adds €45.50; €45.50 of the €250.00 a week the agent may accept alone from proposals."
+       ]
+      },
+      "answer": null,
+      "order": null,
+      "closed": null,
+      "alone": null,
+      "signed": true
+     },
      {
       "id": "prp_73747c8526",
       "kind": "shortage",
@@ -10039,7 +11101,7 @@
       ],
       "notes": [],
       "ranked_by": "nothing to rank",
-      "at": "2026-11-14T07:01:32+02:00"
+      "at": "2026-11-14T08:29:40+02:00"
      },
      {
       "account": "sumusaari-spa-hotel",
@@ -10060,7 +11122,7 @@
       ],
       "notes": [],
       "ranked_by": "nothing to rank",
-      "at": "2026-11-14T07:01:36+02:00"
+      "at": "2026-11-14T08:29:44+02:00"
      },
      {
       "account": "hallavaara-hotels",
@@ -10081,7 +11143,7 @@
       ],
       "notes": [],
       "ranked_by": "nothing to rank",
-      "at": "2026-11-14T07:01:39+02:00"
+      "at": "2026-11-14T08:29:47+02:00"
      },
      {
       "account": "pulpetti-school-meals",
@@ -10097,7 +11159,7 @@
       ],
       "notes": [],
       "ranked_by": "nothing to rank",
-      "at": "2026-11-14T07:01:43+02:00"
+      "at": "2026-11-14T08:29:51+02:00"
      },
      {
       "account": "tyrskylinja-ferries",
@@ -10123,7 +11185,7 @@
       ],
       "notes": [],
       "ranked_by": "nothing to rank",
-      "at": "2026-11-14T07:01:46+02:00"
+      "at": "2026-11-14T08:29:54+02:00"
      },
      {
       "account": "kaneli-corner-cafes",
@@ -10149,7 +11211,7 @@
       ],
       "notes": [],
       "ranked_by": "nothing to rank",
-      "at": "2026-11-14T07:01:49+02:00"
+      "at": "2026-11-14T08:29:57+02:00"
      },
      {
       "account": "koivukumpu-hospital",
@@ -10159,7 +11221,7 @@
       "skipped": [],
       "notes": [],
       "ranked_by": "nothing to rank",
-      "at": "2026-11-14T07:01:52+02:00"
+      "at": "2026-11-14T08:30:00+02:00"
      },
      {
       "account": "ratas-works-canteen",
@@ -10169,7 +11231,7 @@
       "skipped": [],
       "notes": [],
       "ranked_by": "nothing to rank",
-      "at": "2026-11-14T07:01:54+02:00"
+      "at": "2026-11-14T08:30:02+02:00"
      },
      {
       "account": "kolme-kauhaa-lunch",
@@ -10179,13 +11241,13 @@
       "skipped": [
        {
         "kind": "fill",
-        "title": "Add 2 GOHAR 5KG JASMIN RICE to make a full case",
+        "title": "Add 2 GOHAR 5KG JASMIN RICE to make 2 full cases (8 units)",
         "why": "already proposed"
        }
       ],
       "notes": [],
       "ranked_by": "nothing to rank",
-      "at": "2026-11-14T07:01:57+02:00"
+      "at": "2026-11-14T08:30:05+02:00"
      },
      {
       "account": "kuohu-events",
@@ -10195,7 +11257,7 @@
       "skipped": [],
       "notes": [],
       "ranked_by": "nothing to rank",
-      "at": "2026-11-14T07:01:59+02:00"
+      "at": "2026-11-14T08:30:07+02:00"
      }
     ]
    },
@@ -10205,8 +11267,8 @@
  "summary": {
   "owner": "Whatever agent a kitchen buys with, the customer relationship stays with Valio Aimo: this is Valio Aimo's own agent, speaking in its name and signing with its key. It proposes; the kitchen's agent and people decide.",
   "total": {
-   "made": 41,
-   "open": 4,
+   "made": 49,
+   "open": 12,
    "accepted_alone": 13,
    "sent_to_person": 6,
    "approved_by_person": 6,
@@ -10423,6 +11485,46 @@
     "proposals_on": true
    },
    {
+    "account": "sandbox-80bc9305",
+    "buyer": "Sandbox Kitchen 7377",
+    "kind": "sandbox",
+    "made": 4,
+    "open": 4,
+    "accepted_alone": 0,
+    "sent_to_person": 0,
+    "approved_by_person": 0,
+    "declined": 0,
+    "refused_before_leaving": 0,
+    "refused_by_rule": {},
+    "euros_added_ex_vat": 0,
+    "extra_ex_vat": 0,
+    "short_dated_saved": {
+     "l": 0,
+     "kg": 0
+    },
+    "proposals_on": true
+   },
+   {
+    "account": "sandbox-65d0d4a4",
+    "buyer": "Sandbox Kitchen 9188",
+    "kind": "sandbox",
+    "made": 4,
+    "open": 4,
+    "accepted_alone": 0,
+    "sent_to_person": 0,
+    "approved_by_person": 0,
+    "declined": 0,
+    "refused_before_leaving": 0,
+    "refused_by_rule": {},
+    "euros_added_ex_vat": 0,
+    "extra_ex_vat": 0,
+    "short_dated_saved": {
+     "l": 0,
+     "kg": 0
+    },
+    "proposals_on": true
+   },
+   {
     "account": "sandbox-6f0971fd",
     "buyer": "Sandbox Kitchen 9552",
     "kind": "sandbox",
@@ -10485,13 +11587,1067 @@
     "proposals_on": true
    }
   ],
-  "at": "2026-11-14T07:06:10+02:00",
+  "at": "2026-11-14T08:35:28+02:00",
   "operator": true,
   "account": "nordic-harbour",
   "view": "valio"
  },
  "proposals": {
   "proposals": [
+   {
+    "id": "prp_77ccfe44ee",
+    "kind": "short_dated",
+    "kind_title": "Short-dated stock",
+    "status": "open",
+    "made_at": "2026-11-14T07:22:55+02:00",
+    "buyer": "Sandbox Kitchen 7377",
+    "account": "sandbox-80bc9305",
+    "delivery_date": "2026-11-16",
+    "title": "40 Alpro Almond drink, Original  1L, best before Sat 21 Nov, 35% off",
+    "basis": {
+     "product": "Alpro Almond drink, Original  1L",
+     "lot": "SD461360-30D9",
+     "best_before": "Sat 21 Nov",
+     "units_in_lot": 40,
+     "usual_per_week": 97,
+     "usual_of": "products in the same category",
+     "days_to_use": 6,
+     "used_by_then": 83,
+     "offered_units": 40,
+     "off_pct": 35,
+     "unit_price_now": "€1.58",
+     "unit_price_usual": "€2.43",
+     "seeded": "Seeded: the challenge data has no lots or best-before dates, so this lot is made up for the demo."
+    },
+    "total_ex_vat": 6320,
+    "extra_ex_vat": 6320,
+    "rules": [
+     {
+      "id": "M1",
+      "title": "Valid mandate",
+      "outcome": "pass",
+      "detail": "Judged under the mandate Sandbox Kitchen 7377 has on file with Valio Aimo. The agent that answers is judged again under its own mandate."
+     },
+     {
+      "id": "W1",
+      "title": "Agent ordering enabled by Valio Aimo",
+      "outcome": "pass",
+      "detail": "Agent ordering is on for this account."
+     },
+     {
+      "id": "B1",
+      "title": "Spend limit per order",
+      "outcome": "pass",
+      "detail": "€63.20 ex VAT is within the €1,500.00 limit."
+     },
+     {
+      "id": "B3",
+      "title": "Split-order check",
+      "outcome": "pass",
+      "detail": "Agent-only orders for this delivery day total €1,311.20 including this one, within €1,500.00."
+     },
+     {
+      "id": "B2",
+      "title": "Spend limit per week",
+      "outcome": "pass",
+      "detail": "€871.20 of €6,000.00 used this week including this order."
+     },
+     {
+      "id": "N1",
+      "title": "First-time products",
+      "outcome": "escalate",
+      "detail": "Never ordered on this account before: Alpro Almond drink, Original  1L. A person must decide."
+     },
+     {
+      "id": "Q1",
+      "title": "Unusual quantity",
+      "outcome": "pass",
+      "detail": "This product was never ordered on this account before, so there is no usual quantity to compare with; rule N1 asks a person about first-time products."
+     },
+     {
+      "id": "V1",
+      "title": "Valio Aimo's proposals switched on",
+      "outcome": "pass",
+      "detail": "Valio Aimo's agent may make proposals to this customer."
+     },
+     {
+      "id": "V2",
+      "title": "Proposals per customer per day",
+      "outcome": "pass",
+      "detail": "Proposal 3 of at most 5 today."
+     },
+     {
+      "id": "V3",
+      "title": "A declined proposal is never made again",
+      "outcome": "pass",
+      "detail": "The customer has not declined this proposal before."
+     },
+     {
+      "id": "V4",
+      "title": "A proposal may not go over the weekly cap",
+      "outcome": "pass",
+      "detail": "€871.20 of the buyer's €6,000.00 a week, including this proposal."
+     },
+     {
+      "id": "V5",
+      "title": "Proposals the agent may accept alone",
+      "outcome": "pass",
+      "detail": "The mandate lets the agent accept short-dated stock proposals alone."
+     },
+     {
+      "id": "V6",
+      "title": "Extra spend from proposals per week",
+      "outcome": "pass",
+      "detail": "Adds €63.20; €63.20 of the €250.00 a week the agent may accept alone from proposals."
+     }
+    ],
+    "decision": "needs_human_approval",
+    "reason": {
+     "text": "40 Alpro Almond drink 1 L best before Sat 21 Nov, 35% off at €1.58 per unit versus usual €2.43.",
+     "by": "Claude Haiku 5.5"
+    },
+    "lines": [
+     {
+      "title": "Alpro Almond drink, Original  1L",
+      "units": 40,
+      "price": 158,
+      "list_price": 243
+     }
+    ],
+    "authority": {
+     "decision": "needs_human_approval",
+     "reasons": [
+      "Never ordered on this account before: Alpro Almond drink, Original  1L. A person must decide."
+     ]
+    },
+    "answer": null,
+    "order": null,
+    "closed": null,
+    "alone": null,
+    "signed": true
+   },
+   {
+    "id": "prp_92a4622077",
+    "kind": "shortage",
+    "kind_title": "Shortage ahead",
+    "status": "open",
+    "made_at": "2026-11-14T07:22:55+02:00",
+    "buyer": "Sandbox Kitchen 7377",
+    "account": "sandbox-80bc9305",
+    "delivery_date": "2026-11-16",
+    "title": "400 Valio Gefilus® AB sour milk 1% 1 l lactose free for the 400 Valio semi skimmed milk 1 l lactose free UHT that cannot come",
+    "basis": {
+     "product": "Valio semi skimmed milk 1 l lactose free UHT",
+     "standing_units": 400,
+     "can_be_delivered": 0,
+     "short_by": 400,
+     "why": "",
+     "replacement": "Valio Gefilus® AB sour milk 1% 1 l lactose free",
+     "replacement_units": 400,
+     "listed_by_valio_aimo": false,
+     "price_difference_pct": -5.8,
+     "delivery": "Mon 16 Nov",
+     "how_chosen": "Recipe card: Strawberry cream cake uses Valio semi skimmed milk 1 l lactose free UHT as moistening; the replacement fits that role. Same category and storage class. Keeps every free-from and diet claim; adds no allergens."
+    },
+    "total_ex_vat": 58800,
+    "extra_ex_vat": 0,
+    "rules": [
+     {
+      "id": "M1",
+      "title": "Valid mandate",
+      "outcome": "pass",
+      "detail": "Judged under the mandate Sandbox Kitchen 7377 has on file with Valio Aimo. The agent that answers is judged again under its own mandate."
+     },
+     {
+      "id": "W1",
+      "title": "Agent ordering enabled by Valio Aimo",
+      "outcome": "pass",
+      "detail": "Agent ordering is on for this account."
+     },
+     {
+      "id": "B1",
+      "title": "Spend limit per order",
+      "outcome": "pass",
+      "detail": "€588.00 ex VAT is within the €1,500.00 limit."
+     },
+     {
+      "id": "B3",
+      "title": "Split-order check",
+      "outcome": "escalate",
+      "detail": "The agent already ordered €1,248.00 for this delivery day without a person. With this order that is €1,836.00, over the €1,500.00 limit, so it is treated as one order."
+     },
+     {
+      "id": "B2",
+      "title": "Spend limit per week",
+      "outcome": "pass",
+      "detail": "€1,396.00 of €6,000.00 used this week including this order."
+     },
+     {
+      "id": "S1",
+      "title": "Substitution",
+      "outcome": "escalate",
+      "detail": "Valio Gefilus® AB sour milk 1% 1 l lactose free replaces Valio semi skimmed milk 1 l lactose free UHT: it is not on Valio Aimo's substitute list for the requested product.",
+      "path": "$.line_items[0]"
+     },
+     {
+      "id": "N1",
+      "title": "First-time products",
+      "outcome": "pass",
+      "detail": "Every product has been ordered on this account before or is an allowed substitute."
+     },
+     {
+      "id": "Q1",
+      "title": "Unusual quantity",
+      "outcome": "pass",
+      "detail": "This product was never ordered on this account before, so there is no usual quantity to compare with; rule N1 asks a person about first-time products."
+     },
+     {
+      "id": "V1",
+      "title": "Valio Aimo's proposals switched on",
+      "outcome": "pass",
+      "detail": "Valio Aimo's agent may make proposals to this customer."
+     },
+     {
+      "id": "V2",
+      "title": "Proposals per customer per day",
+      "outcome": "pass",
+      "detail": "Proposal 3 of at most 5 today."
+     },
+     {
+      "id": "V3",
+      "title": "A declined proposal is never made again",
+      "outcome": "pass",
+      "detail": "The customer has not declined this proposal before."
+     },
+     {
+      "id": "V4",
+      "title": "A proposal may not go over the weekly cap",
+      "outcome": "pass",
+      "detail": "€1,396.00 of the buyer's €6,000.00 a week, including this proposal."
+     },
+     {
+      "id": "V5",
+      "title": "Proposals the agent may accept alone",
+      "outcome": "pass",
+      "detail": "The mandate lets the agent accept shortage ahead proposals alone."
+     }
+    ],
+    "decision": "needs_human_approval",
+    "reason": {
+     "text": "400 units of Valio semi skimmed lactose free UHT milk cannot be delivered; sour milk 1% offered, 5.8% cheaper, Mon 16 Nov. Recipe card: Strawberry cream cake uses Valio semi skimmed milk 1 l lactose free UHT as moistening; the replacement fits that role.",
+     "by": "Claude Haiku 5.5"
+    },
+    "lines": [
+     {
+      "title": "Valio Gefilus® AB sour milk 1% 1 l lactose free",
+      "units": 400,
+      "price": 147,
+      "list_price": 173,
+      "substitutes_for": "Valio semi skimmed milk 1 l lactose free UHT"
+     }
+    ],
+    "authority": {
+     "decision": "needs_human_approval",
+     "reasons": [
+      "The agent already ordered €1,248.00 for this delivery day without a person. With this order that is €1,836.00, over the €1,500.00 limit, so it is treated as one order.",
+      "Valio Gefilus® AB sour milk 1% 1 l lactose free replaces Valio semi skimmed milk 1 l lactose free UHT: it is not on Valio Aimo's substitute list for the requested product."
+     ]
+    },
+    "answer": null,
+    "order": null,
+    "closed": null,
+    "alone": null,
+    "signed": true
+   },
+   {
+    "id": "prp_ab52e9e6b2",
+    "kind": "fill",
+    "kind_title": "Fill the case",
+    "status": "open",
+    "made_at": "2026-11-14T07:22:49+02:00",
+    "buyer": "Sandbox Kitchen 7377",
+    "account": "sandbox-80bc9305",
+    "delivery_date": "2026-11-16",
+    "title": "Add 4 Oddlygood® Barista oat drink 1 l UHT gluten free to make 10 full cases (100 units)",
+    "basis": {
+     "product": "Oddlygood® Barista oat drink 1 l UHT gluten free",
+     "standing_units": 96,
+     "case_size": 10,
+     "full": "9 full cases of 10 units",
+     "full_before": "9 full cases",
+     "full_after": "10 full cases",
+     "add": 4,
+     "fills_to": "100 units (10 full cases)",
+     "fills_to_units": 100,
+     "price_break": null,
+     "delivery": "Mon 16 Nov"
+    },
+    "total_ex_vat": 548,
+    "extra_ex_vat": 548,
+    "rules": [
+     {
+      "id": "M1",
+      "title": "Valid mandate",
+      "outcome": "pass",
+      "detail": "Judged under the mandate Sandbox Kitchen 7377 has on file with Valio Aimo. The agent that answers is judged again under its own mandate."
+     },
+     {
+      "id": "W1",
+      "title": "Agent ordering enabled by Valio Aimo",
+      "outcome": "pass",
+      "detail": "Agent ordering is on for this account."
+     },
+     {
+      "id": "B1",
+      "title": "Spend limit per order",
+      "outcome": "pass",
+      "detail": "€5.48 ex VAT is within the €1,500.00 limit."
+     },
+     {
+      "id": "B3",
+      "title": "Split-order check",
+      "outcome": "pass",
+      "detail": "Agent-only orders for this delivery day total €1,253.48 including this one, within €1,500.00."
+     },
+     {
+      "id": "B2",
+      "title": "Spend limit per week",
+      "outcome": "pass",
+      "detail": "€813.48 of €6,000.00 used this week including this order."
+     },
+     {
+      "id": "N1",
+      "title": "First-time products",
+      "outcome": "pass",
+      "detail": "Every product has been ordered on this account before or is an allowed substitute."
+     },
+     {
+      "id": "Q1",
+      "title": "Unusual quantity",
+      "outcome": "pass",
+      "detail": "No line is more than 3x the usual order."
+     },
+     {
+      "id": "V1",
+      "title": "Valio Aimo's proposals switched on",
+      "outcome": "pass",
+      "detail": "Valio Aimo's agent may make proposals to this customer."
+     },
+     {
+      "id": "V2",
+      "title": "Proposals per customer per day",
+      "outcome": "pass",
+      "detail": "Proposal 1 of at most 5 today."
+     },
+     {
+      "id": "V3",
+      "title": "A declined proposal is never made again",
+      "outcome": "pass",
+      "detail": "The customer has not declined this proposal before."
+     },
+     {
+      "id": "V4",
+      "title": "A proposal may not go over the weekly cap",
+      "outcome": "pass",
+      "detail": "€813.48 of the buyer's €6,000.00 a week, including this proposal."
+     },
+     {
+      "id": "V5",
+      "title": "Proposals the agent may accept alone",
+      "outcome": "pass",
+      "detail": "The mandate lets the agent accept fill the case proposals alone."
+     },
+     {
+      "id": "V6",
+      "title": "Extra spend from proposals per week",
+      "outcome": "pass",
+      "detail": "Adds €5.48; €5.48 of the €250.00 a week the agent may accept alone from proposals."
+     }
+    ],
+    "decision": "agent_may_accept",
+    "reason": {
+     "text": "Adding 4 Oddlygood oat drinks makes 10 full cases of 100 units, delivered Mon 16 Nov.",
+     "by": "Claude Haiku 5.5"
+    },
+    "lines": [
+     {
+      "title": "Oddlygood® Barista oat drink 1 l UHT gluten free",
+      "units": 4,
+      "price": 137,
+      "list_price": null
+     }
+    ],
+    "authority": {
+     "decision": "agent_may_accept",
+     "reasons": [],
+     "basis": [
+      "V5: The mandate lets the agent accept fill the case proposals alone.",
+      "V6: Adds €5.48; €5.48 of the €250.00 a week the agent may accept alone from proposals."
+     ]
+    },
+    "answer": null,
+    "order": null,
+    "closed": null,
+    "alone": null,
+    "signed": true
+   },
+   {
+    "id": "prp_2206a9f203",
+    "kind": "short_dated",
+    "kind_title": "Short-dated stock",
+    "status": "open",
+    "made_at": "2026-11-14T07:22:49+02:00",
+    "buyer": "Sandbox Kitchen 7377",
+    "account": "sandbox-80bc9305",
+    "delivery_date": "2026-11-16",
+    "title": "50 Valio coffee milk 1 l lactose free UHT, best before Wed 18 Nov, 30% off",
+    "basis": {
+     "product": "Valio coffee milk 1 l lactose free UHT",
+     "lot": "SD464237-2F0C",
+     "best_before": "Wed 18 Nov",
+     "units_in_lot": 60,
+     "usual_per_week": 120,
+     "usual_of": "this product",
+     "days_to_use": 3,
+     "used_by_then": 52,
+     "offered_units": 50,
+     "off_pct": 30,
+     "unit_price_now": "€0.91",
+     "unit_price_usual": "€1.30",
+     "seeded": "Seeded: the challenge data has no lots or best-before dates, so this lot is made up for the demo."
+    },
+    "total_ex_vat": 4550,
+    "extra_ex_vat": 4550,
+    "rules": [
+     {
+      "id": "M1",
+      "title": "Valid mandate",
+      "outcome": "pass",
+      "detail": "Judged under the mandate Sandbox Kitchen 7377 has on file with Valio Aimo. The agent that answers is judged again under its own mandate."
+     },
+     {
+      "id": "W1",
+      "title": "Agent ordering enabled by Valio Aimo",
+      "outcome": "pass",
+      "detail": "Agent ordering is on for this account."
+     },
+     {
+      "id": "B1",
+      "title": "Spend limit per order",
+      "outcome": "pass",
+      "detail": "€45.50 ex VAT is within the €1,500.00 limit."
+     },
+     {
+      "id": "B3",
+      "title": "Split-order check",
+      "outcome": "pass",
+      "detail": "Agent-only orders for this delivery day total €1,293.50 including this one, within €1,500.00."
+     },
+     {
+      "id": "B2",
+      "title": "Spend limit per week",
+      "outcome": "pass",
+      "detail": "€853.50 of €6,000.00 used this week including this order."
+     },
+     {
+      "id": "N1",
+      "title": "First-time products",
+      "outcome": "pass",
+      "detail": "Every product has been ordered on this account before or is an allowed substitute."
+     },
+     {
+      "id": "Q1",
+      "title": "Unusual quantity",
+      "outcome": "pass",
+      "detail": "No line is more than 3x the usual order."
+     },
+     {
+      "id": "V1",
+      "title": "Valio Aimo's proposals switched on",
+      "outcome": "pass",
+      "detail": "Valio Aimo's agent may make proposals to this customer."
+     },
+     {
+      "id": "V2",
+      "title": "Proposals per customer per day",
+      "outcome": "pass",
+      "detail": "Proposal 1 of at most 5 today."
+     },
+     {
+      "id": "V3",
+      "title": "A declined proposal is never made again",
+      "outcome": "pass",
+      "detail": "The customer has not declined this proposal before."
+     },
+     {
+      "id": "V4",
+      "title": "A proposal may not go over the weekly cap",
+      "outcome": "pass",
+      "detail": "€853.50 of the buyer's €6,000.00 a week, including this proposal."
+     },
+     {
+      "id": "V5",
+      "title": "Proposals the agent may accept alone",
+      "outcome": "pass",
+      "detail": "The mandate lets the agent accept short-dated stock proposals alone."
+     },
+     {
+      "id": "V6",
+      "title": "Extra spend from proposals per week",
+      "outcome": "pass",
+      "detail": "Adds €45.50; €45.50 of the €250.00 a week the agent may accept alone from proposals."
+     }
+    ],
+    "decision": "agent_may_accept",
+    "reason": {
+     "text": "Valio coffee milk is 30% off and best before Wed 18 Nov; your kitchen should use 52 units by then.",
+     "by": "Claude Haiku 5.5"
+    },
+    "lines": [
+     {
+      "title": "Valio coffee milk 1 l lactose free UHT",
+      "units": 50,
+      "price": 91,
+      "list_price": 130
+     }
+    ],
+    "authority": {
+     "decision": "agent_may_accept",
+     "reasons": [],
+     "basis": [
+      "V5: The mandate lets the agent accept short-dated stock proposals alone.",
+      "V6: Adds €45.50; €45.50 of the €250.00 a week the agent may accept alone from proposals."
+     ]
+    },
+    "answer": null,
+    "order": null,
+    "closed": null,
+    "alone": null,
+    "signed": true
+   },
+   {
+    "id": "prp_690a830144",
+    "kind": "short_dated",
+    "kind_title": "Short-dated stock",
+    "status": "open",
+    "made_at": "2026-11-14T07:21:52+02:00",
+    "buyer": "Sandbox Kitchen 9188",
+    "account": "sandbox-65d0d4a4",
+    "delivery_date": "2026-11-16",
+    "title": "40 Alpro Almond drink, Original  1L, best before Sat 21 Nov, 35% off",
+    "basis": {
+     "product": "Alpro Almond drink, Original  1L",
+     "lot": "SD461360-5B63",
+     "best_before": "Sat 21 Nov",
+     "units_in_lot": 40,
+     "usual_per_week": 96,
+     "usual_of": "products in the same category",
+     "days_to_use": 6,
+     "used_by_then": 82,
+     "offered_units": 40,
+     "off_pct": 35,
+     "unit_price_now": "€1.58",
+     "unit_price_usual": "€2.43",
+     "seeded": "Seeded: the challenge data has no lots or best-before dates, so this lot is made up for the demo."
+    },
+    "total_ex_vat": 6320,
+    "extra_ex_vat": 6320,
+    "rules": [
+     {
+      "id": "M1",
+      "title": "Valid mandate",
+      "outcome": "pass",
+      "detail": "Judged under the mandate Sandbox Kitchen 9188 has on file with Valio Aimo. The agent that answers is judged again under its own mandate."
+     },
+     {
+      "id": "W1",
+      "title": "Agent ordering enabled by Valio Aimo",
+      "outcome": "pass",
+      "detail": "Agent ordering is on for this account."
+     },
+     {
+      "id": "B1",
+      "title": "Spend limit per order",
+      "outcome": "pass",
+      "detail": "€63.20 ex VAT is within the €1,500.00 limit."
+     },
+     {
+      "id": "B2",
+      "title": "Spend limit per week",
+      "outcome": "pass",
+      "detail": "€63.20 of €6,000.00 used this week including this order."
+     },
+     {
+      "id": "N1",
+      "title": "First-time products",
+      "outcome": "escalate",
+      "detail": "Never ordered on this account before: Alpro Almond drink, Original  1L. A person must decide."
+     },
+     {
+      "id": "Q1",
+      "title": "Unusual quantity",
+      "outcome": "pass",
+      "detail": "This product was never ordered on this account before, so there is no usual quantity to compare with; rule N1 asks a person about first-time products."
+     },
+     {
+      "id": "V1",
+      "title": "Valio Aimo's proposals switched on",
+      "outcome": "pass",
+      "detail": "Valio Aimo's agent may make proposals to this customer."
+     },
+     {
+      "id": "V2",
+      "title": "Proposals per customer per day",
+      "outcome": "pass",
+      "detail": "Proposal 3 of at most 5 today."
+     },
+     {
+      "id": "V3",
+      "title": "A declined proposal is never made again",
+      "outcome": "pass",
+      "detail": "The customer has not declined this proposal before."
+     },
+     {
+      "id": "V4",
+      "title": "A proposal may not go over the weekly cap",
+      "outcome": "pass",
+      "detail": "€63.20 of the buyer's €6,000.00 a week, including this proposal."
+     },
+     {
+      "id": "V5",
+      "title": "Proposals the agent may accept alone",
+      "outcome": "pass",
+      "detail": "The mandate lets the agent accept short-dated stock proposals alone."
+     },
+     {
+      "id": "V6",
+      "title": "Extra spend from proposals per week",
+      "outcome": "pass",
+      "detail": "Adds €63.20; €63.20 of the €250.00 a week the agent may accept alone from proposals."
+     }
+    ],
+    "decision": "needs_human_approval",
+    "reason": {
+     "text": "Short-dated Alpro Almond 1L, best before Sat 21 Nov; 40 units at 35% off fit your usual use before then.",
+     "by": "Claude Haiku 5.5"
+    },
+    "lines": [
+     {
+      "title": "Alpro Almond drink, Original  1L",
+      "units": 40,
+      "price": 158,
+      "list_price": 243
+     }
+    ],
+    "authority": {
+     "decision": "needs_human_approval",
+     "reasons": [
+      "Never ordered on this account before: Alpro Almond drink, Original  1L. A person must decide."
+     ]
+    },
+    "answer": null,
+    "order": null,
+    "closed": null,
+    "alone": null,
+    "signed": true
+   },
+   {
+    "id": "prp_614a8f7a4f",
+    "kind": "cutoff",
+    "kind_title": "Before the cut-off",
+    "status": "open",
+    "made_at": "2026-11-14T07:21:52+02:00",
+    "buyer": "Sandbox Kitchen 9188",
+    "account": "sandbox-65d0d4a4",
+    "delivery_date": "2026-11-16",
+    "title": "Your usual basket for Mon 16 Nov, ready to order",
+    "basis": {
+     "usual_order_by": "Friday 14:00",
+     "past_order_times": [
+      "2026-09-18T13:30+03:00",
+      "2026-09-25T13:35+03:00",
+      "2026-10-02T13:50+03:00",
+      "2026-10-09T13:22+03:00",
+      "2026-10-16T13:24+03:00",
+      "2026-10-23T13:07+03:00",
+      "2026-10-30T13:35+02:00",
+      "2026-11-06T12:57+02:00"
+     ],
+     "ordered_for_delivery": false,
+     "cutoff": "2026-11-15T17:00+02:00",
+     "hours_to_cutoff": 34,
+     "delivery": "Mon 16 Nov",
+     "lines": 4,
+     "seeded": "Seeded: the challenge data has no standing orders or usage, so these weekly figures are made up for the demo."
+    },
+    "total_ex_vat": 170652,
+    "extra_ex_vat": 0,
+    "rules": [
+     {
+      "id": "M1",
+      "title": "Valid mandate",
+      "outcome": "pass",
+      "detail": "Judged under the mandate Sandbox Kitchen 9188 has on file with Valio Aimo. The agent that answers is judged again under its own mandate."
+     },
+     {
+      "id": "W1",
+      "title": "Agent ordering enabled by Valio Aimo",
+      "outcome": "pass",
+      "detail": "Agent ordering is on for this account."
+     },
+     {
+      "id": "B1",
+      "title": "Spend limit per order",
+      "outcome": "escalate",
+      "detail": "Order is €1,706.52 ex VAT, €206.52 over the agent's €1,500.00 limit."
+     },
+     {
+      "id": "B2",
+      "title": "Spend limit per week",
+      "outcome": "pass",
+      "detail": "€1,706.52 of €6,000.00 used this week including this order."
+     },
+     {
+      "id": "N1",
+      "title": "First-time products",
+      "outcome": "pass",
+      "detail": "Every product has been ordered on this account before or is an allowed substitute."
+     },
+     {
+      "id": "Q1",
+      "title": "Unusual quantity",
+      "outcome": "pass",
+      "detail": "No line is more than 3x the usual order."
+     },
+     {
+      "id": "V1",
+      "title": "Valio Aimo's proposals switched on",
+      "outcome": "pass",
+      "detail": "Valio Aimo's agent may make proposals to this customer."
+     },
+     {
+      "id": "V2",
+      "title": "Proposals per customer per day",
+      "outcome": "pass",
+      "detail": "Proposal 3 of at most 5 today."
+     },
+     {
+      "id": "V3",
+      "title": "A declined proposal is never made again",
+      "outcome": "pass",
+      "detail": "The customer has not declined this proposal before."
+     },
+     {
+      "id": "V4",
+      "title": "A proposal may not go over the weekly cap",
+      "outcome": "pass",
+      "detail": "€1,706.52 of the buyer's €6,000.00 a week, including this proposal."
+     },
+     {
+      "id": "V5",
+      "title": "Proposals the agent may accept alone",
+      "outcome": "escalate",
+      "detail": "The mandate does not let the agent accept before the cut-off proposals alone, so a person decides."
+     }
+    ],
+    "decision": "needs_human_approval",
+    "reason": {
+     "text": "Your usual 4-line basket for Mon 16 Nov is not yet ordered; the cut-off is in 34 hours.",
+     "by": "Claude Haiku 5.5"
+    },
+    "lines": [
+     {
+      "title": "Valio semi skimmed milk 1 l lactose free UHT",
+      "units": 400,
+      "price": 156,
+      "list_price": 183
+     },
+     {
+      "title": "Arla Cafè milk 1 L UHT lactose free",
+      "units": 300,
+      "price": 265,
+      "list_price": 312
+     },
+     {
+      "title": "Oddlygood® Barista oat drink 1 l UHT gluten free",
+      "units": 96,
+      "price": 137,
+      "list_price": 183
+     },
+     {
+      "title": "Valio coffee milk 1 l lactose free UHT",
+      "units": 120,
+      "price": 130,
+      "list_price": 195
+     }
+    ],
+    "authority": {
+     "decision": "needs_human_approval",
+     "reasons": [
+      "Order is €1,706.52 ex VAT, €206.52 over the agent's €1,500.00 limit.",
+      "The mandate does not let the agent accept before the cut-off proposals alone, so a person decides."
+     ]
+    },
+    "answer": null,
+    "order": null,
+    "closed": null,
+    "alone": null,
+    "signed": true
+   },
+   {
+    "id": "prp_8b63b1db7f",
+    "kind": "fill",
+    "kind_title": "Fill the case",
+    "status": "open",
+    "made_at": "2026-11-14T07:21:47+02:00",
+    "buyer": "Sandbox Kitchen 9188",
+    "account": "sandbox-65d0d4a4",
+    "delivery_date": "2026-11-16",
+    "title": "Add 4 Oddlygood® Barista oat drink 1 l UHT gluten free to make 10 full cases (100 units)",
+    "basis": {
+     "product": "Oddlygood® Barista oat drink 1 l UHT gluten free",
+     "standing_units": 96,
+     "case_size": 10,
+     "full": "9 full cases of 10 units",
+     "full_before": "9 full cases",
+     "full_after": "10 full cases",
+     "add": 4,
+     "fills_to": "100 units (10 full cases)",
+     "fills_to_units": 100,
+     "price_break": null,
+     "delivery": "Mon 16 Nov"
+    },
+    "total_ex_vat": 548,
+    "extra_ex_vat": 548,
+    "rules": [
+     {
+      "id": "M1",
+      "title": "Valid mandate",
+      "outcome": "pass",
+      "detail": "Judged under the mandate Sandbox Kitchen 9188 has on file with Valio Aimo. The agent that answers is judged again under its own mandate."
+     },
+     {
+      "id": "W1",
+      "title": "Agent ordering enabled by Valio Aimo",
+      "outcome": "pass",
+      "detail": "Agent ordering is on for this account."
+     },
+     {
+      "id": "B1",
+      "title": "Spend limit per order",
+      "outcome": "pass",
+      "detail": "€5.48 ex VAT is within the €1,500.00 limit."
+     },
+     {
+      "id": "B2",
+      "title": "Spend limit per week",
+      "outcome": "pass",
+      "detail": "€5.48 of €6,000.00 used this week including this order."
+     },
+     {
+      "id": "N1",
+      "title": "First-time products",
+      "outcome": "pass",
+      "detail": "Every product has been ordered on this account before or is an allowed substitute."
+     },
+     {
+      "id": "Q1",
+      "title": "Unusual quantity",
+      "outcome": "pass",
+      "detail": "No line is more than 3x the usual order."
+     },
+     {
+      "id": "V1",
+      "title": "Valio Aimo's proposals switched on",
+      "outcome": "pass",
+      "detail": "Valio Aimo's agent may make proposals to this customer."
+     },
+     {
+      "id": "V2",
+      "title": "Proposals per customer per day",
+      "outcome": "pass",
+      "detail": "Proposal 1 of at most 5 today."
+     },
+     {
+      "id": "V3",
+      "title": "A declined proposal is never made again",
+      "outcome": "pass",
+      "detail": "The customer has not declined this proposal before."
+     },
+     {
+      "id": "V4",
+      "title": "A proposal may not go over the weekly cap",
+      "outcome": "pass",
+      "detail": "€5.48 of the buyer's €6,000.00 a week, including this proposal."
+     },
+     {
+      "id": "V5",
+      "title": "Proposals the agent may accept alone",
+      "outcome": "pass",
+      "detail": "The mandate lets the agent accept fill the case proposals alone."
+     },
+     {
+      "id": "V6",
+      "title": "Extra spend from proposals per week",
+      "outcome": "pass",
+      "detail": "Adds €5.48; €5.48 of the €250.00 a week the agent may accept alone from proposals."
+     }
+    ],
+    "decision": "agent_may_accept",
+    "reason": {
+     "text": "Adding 4 Oddlygood Barista oat drink 1 l takes standing stock to 10 full cases, 100 units, delivered Mon 16 Nov.",
+     "by": "Claude Haiku 5.5"
+    },
+    "lines": [
+     {
+      "title": "Oddlygood® Barista oat drink 1 l UHT gluten free",
+      "units": 4,
+      "price": 137,
+      "list_price": null
+     }
+    ],
+    "authority": {
+     "decision": "agent_may_accept",
+     "reasons": [],
+     "basis": [
+      "V5: The mandate lets the agent accept fill the case proposals alone.",
+      "V6: Adds €5.48; €5.48 of the €250.00 a week the agent may accept alone from proposals."
+     ]
+    },
+    "answer": null,
+    "order": null,
+    "closed": null,
+    "alone": null,
+    "signed": true
+   },
+   {
+    "id": "prp_08bdbf4026",
+    "kind": "short_dated",
+    "kind_title": "Short-dated stock",
+    "status": "open",
+    "made_at": "2026-11-14T07:21:47+02:00",
+    "buyer": "Sandbox Kitchen 9188",
+    "account": "sandbox-65d0d4a4",
+    "delivery_date": "2026-11-16",
+    "title": "50 Valio coffee milk 1 l lactose free UHT, best before Wed 18 Nov, 30% off",
+    "basis": {
+     "product": "Valio coffee milk 1 l lactose free UHT",
+     "lot": "SD464237-4C46",
+     "best_before": "Wed 18 Nov",
+     "units_in_lot": 60,
+     "usual_per_week": 120,
+     "usual_of": "this product",
+     "days_to_use": 3,
+     "used_by_then": 51,
+     "offered_units": 50,
+     "off_pct": 30,
+     "unit_price_now": "€0.91",
+     "unit_price_usual": "€1.30",
+     "seeded": "Seeded: the challenge data has no lots or best-before dates, so this lot is made up for the demo."
+    },
+    "total_ex_vat": 4550,
+    "extra_ex_vat": 4550,
+    "rules": [
+     {
+      "id": "M1",
+      "title": "Valid mandate",
+      "outcome": "pass",
+      "detail": "Judged under the mandate Sandbox Kitchen 9188 has on file with Valio Aimo. The agent that answers is judged again under its own mandate."
+     },
+     {
+      "id": "W1",
+      "title": "Agent ordering enabled by Valio Aimo",
+      "outcome": "pass",
+      "detail": "Agent ordering is on for this account."
+     },
+     {
+      "id": "B1",
+      "title": "Spend limit per order",
+      "outcome": "pass",
+      "detail": "€45.50 ex VAT is within the €1,500.00 limit."
+     },
+     {
+      "id": "B2",
+      "title": "Spend limit per week",
+      "outcome": "pass",
+      "detail": "€45.50 of €6,000.00 used this week including this order."
+     },
+     {
+      "id": "N1",
+      "title": "First-time products",
+      "outcome": "pass",
+      "detail": "Every product has been ordered on this account before or is an allowed substitute."
+     },
+     {
+      "id": "Q1",
+      "title": "Unusual quantity",
+      "outcome": "pass",
+      "detail": "No line is more than 3x the usual order."
+     },
+     {
+      "id": "V1",
+      "title": "Valio Aimo's proposals switched on",
+      "outcome": "pass",
+      "detail": "Valio Aimo's agent may make proposals to this customer."
+     },
+     {
+      "id": "V2",
+      "title": "Proposals per customer per day",
+      "outcome": "pass",
+      "detail": "Proposal 1 of at most 5 today."
+     },
+     {
+      "id": "V3",
+      "title": "A declined proposal is never made again",
+      "outcome": "pass",
+      "detail": "The customer has not declined this proposal before."
+     },
+     {
+      "id": "V4",
+      "title": "A proposal may not go over the weekly cap",
+      "outcome": "pass",
+      "detail": "€45.50 of the buyer's €6,000.00 a week, including this proposal."
+     },
+     {
+      "id": "V5",
+      "title": "Proposals the agent may accept alone",
+      "outcome": "pass",
+      "detail": "The mandate lets the agent accept short-dated stock proposals alone."
+     },
+     {
+      "id": "V6",
+      "title": "Extra spend from proposals per week",
+      "outcome": "pass",
+      "detail": "Adds €45.50; €45.50 of the €250.00 a week the agent may accept alone from proposals."
+     }
+    ],
+    "decision": "agent_may_accept",
+    "reason": {
+     "text": "Coffee milk 1 l lactose free: 50 units at 30% off, best before Wed 18 Nov, 51 used in 3 days.",
+     "by": "Claude Haiku 5.5"
+    },
+    "lines": [
+     {
+      "title": "Valio coffee milk 1 l lactose free UHT",
+      "units": 50,
+      "price": 91,
+      "list_price": 130
+     }
+    ],
+    "authority": {
+     "decision": "agent_may_accept",
+     "reasons": [],
+     "basis": [
+      "V5: The mandate lets the agent accept short-dated stock proposals alone.",
+      "V6: Adds €45.50; €45.50 of the €250.00 a week the agent may accept alone from proposals."
+     ]
+    },
+    "answer": null,
+    "order": null,
+    "closed": null,
+    "alone": null,
+    "signed": true
+   },
    {
     "id": "prp_73747c8526",
     "kind": "shortage",
@@ -18769,7 +20925,7 @@
     ],
     "notes": [],
     "ranked_by": "nothing to rank",
-    "at": "2026-11-14T07:01:32+02:00"
+    "at": "2026-11-14T08:29:40+02:00"
    },
    {
     "account": "sumusaari-spa-hotel",
@@ -18790,7 +20946,7 @@
     ],
     "notes": [],
     "ranked_by": "nothing to rank",
-    "at": "2026-11-14T07:01:36+02:00"
+    "at": "2026-11-14T08:29:44+02:00"
    },
    {
     "account": "hallavaara-hotels",
@@ -18811,7 +20967,7 @@
     ],
     "notes": [],
     "ranked_by": "nothing to rank",
-    "at": "2026-11-14T07:01:39+02:00"
+    "at": "2026-11-14T08:29:47+02:00"
    },
    {
     "account": "pulpetti-school-meals",
@@ -18827,7 +20983,7 @@
     ],
     "notes": [],
     "ranked_by": "nothing to rank",
-    "at": "2026-11-14T07:01:43+02:00"
+    "at": "2026-11-14T08:29:51+02:00"
    },
    {
     "account": "tyrskylinja-ferries",
@@ -18853,7 +21009,7 @@
     ],
     "notes": [],
     "ranked_by": "nothing to rank",
-    "at": "2026-11-14T07:01:46+02:00"
+    "at": "2026-11-14T08:29:54+02:00"
    },
    {
     "account": "kaneli-corner-cafes",
@@ -18879,7 +21035,7 @@
     ],
     "notes": [],
     "ranked_by": "nothing to rank",
-    "at": "2026-11-14T07:01:49+02:00"
+    "at": "2026-11-14T08:29:57+02:00"
    },
    {
     "account": "koivukumpu-hospital",
@@ -18889,7 +21045,7 @@
     "skipped": [],
     "notes": [],
     "ranked_by": "nothing to rank",
-    "at": "2026-11-14T07:01:52+02:00"
+    "at": "2026-11-14T08:30:00+02:00"
    },
    {
     "account": "ratas-works-canteen",
@@ -18899,7 +21055,7 @@
     "skipped": [],
     "notes": [],
     "ranked_by": "nothing to rank",
-    "at": "2026-11-14T07:01:54+02:00"
+    "at": "2026-11-14T08:30:02+02:00"
    },
    {
     "account": "kolme-kauhaa-lunch",
@@ -18909,13 +21065,13 @@
     "skipped": [
      {
       "kind": "fill",
-      "title": "Add 2 GOHAR 5KG JASMIN RICE to make a full case",
+      "title": "Add 2 GOHAR 5KG JASMIN RICE to make 2 full cases (8 units)",
       "why": "already proposed"
      }
     ],
     "notes": [],
     "ranked_by": "nothing to rank",
-    "at": "2026-11-14T07:01:57+02:00"
+    "at": "2026-11-14T08:30:05+02:00"
    },
    {
     "account": "kuohu-events",
@@ -18925,7 +21081,7 @@
     "skipped": [],
     "notes": [],
     "ranked_by": "nothing to rank",
-    "at": "2026-11-14T07:01:59+02:00"
+    "at": "2026-11-14T08:30:07+02:00"
    }
   ]
  }

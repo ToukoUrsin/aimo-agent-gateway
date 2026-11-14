@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Valio Aimo order card</title>
+<!--
+  One self-contained file: the card a chat draws under each tool call of the Valio Aimo agent gateway (MCP Apps, SEP-1865).
+  No network, no libraries: everything it shows arrives in the tool result over postMessage, and it talks back the same way.
+  Signatures are checked here, in the frame, with WebCrypto. Source: web/chat/card.html in the public repo.
+-->
+<style>
+:root{color-scheme:light dark;
+  --d-bg:#fff;--d-bg2:#f5f5f3;--d-bg3:#ecebe8;--d-tx:#141413;--d-tx2:#5c5b57;--d-tx3:#8b8a84;
+  --d-line:rgba(20,20,19,.11);--d-line2:rgba(20,20,19,.26);--d-ok:#1a7a43;--d-warn:#8a5a00;--d-bad:#b42318}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --d-bg:#1f1e1d;--d-bg2:#292826;--d-bg3:#33322f;--d-tx:#f4f3ee;--d-tx2:#b9b7ae;--d-tx3:#8d8b83;
+  --d-line:rgba(244,243,238,.12);--d-line2:rgba(244,243,238,.28);--d-ok:#6fd195;--d-warn:#e8b964;--d-bad:#f2918a}}
+:root[data-theme="dark"]{
+  --d-bg:#1f1e1d;--d-bg2:#292826;--d-bg3:#33322f;--d-tx:#f4f3ee;--d-tx2:#b9b7ae;--d-tx3:#8d8b83;
+  --d-line:rgba(244,243,238,.12);--d-line2:rgba(244,243,238,.28);--d-ok:#6fd195;--d-warn:#e8b964;--d-bad:#f2918a}
+:root{
+  --bg:var(--color-background-primary,var(--d-bg));--bg2:var(--color-background-secondary,var(--d-bg2));--bg3:var(--color-background-tertiary,var(--d-bg3));
+  --tx:var(--color-text-primary,var(--d-tx));--tx2:var(--color-text-secondary,var(--d-tx2));--tx3:var(--color-text-tertiary,var(--d-tx3));
+  --line:var(--color-border-secondary,var(--d-line));--line2:var(--color-border-primary,var(--d-line2));
+  --ok:var(--color-text-success,var(--d-ok));--warn:var(--color-text-warning,var(--d-warn));--bad:var(--color-text-danger,var(--d-bad));
+  --sans:var(--font-sans,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif);
+  --mono:var(--font-mono,ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace)}
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent}
+body{font:400 13.5px/1.45 var(--sans);color:var(--tx);-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;font-variant-numeric:tabular-nums;padding:1px}
+h1,h2,p,ul,figure{margin:0;padding:0}
+ul{list-style:none}
+button{font:inherit;color:inherit}
+.card{border:1px solid var(--line);border-radius:14px;background:var(--bg);overflow:hidden;min-width:0}
+.hd{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 16px 0}
+.brand{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--tx2);white-space:nowrap;min-width:0}
+.brand i{width:7px;height:7px;border-radius:2px;background:var(--tx);flex:none}
+.brand span{font-weight:400;color:var(--tx3);overflow:hidden;text-overflow:ellipsis}
+.tt{padding:7px 16px 14px}
+.tt h1{font-size:17px;line-height:1.25;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+.tt p{margin-top:3px;color:var(--tx2);font-size:13px}
+.sec{border-top:1px solid var(--line);padding:13px 16px}
+.lab{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3);margin-bottom:8px}
+.mut{color:var(--tx2)}.dim{color:var(--tx3)}.sm{font-size:12.5px}.xs{font-size:11.5px}
+.m{font-family:var(--mono);font-size:11.5px;letter-spacing:-.01em;overflow-wrap:anywhere}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;line-height:1.5;padding:1px 8px 1px 7px;border-radius:999px;border:1px solid var(--line2);white-space:nowrap;flex:none}
+.chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.chip.ok,.chip.warn,.chip.bad{border-color:color-mix(in srgb,currentColor 38%,transparent)}
+.pill{display:inline-block;font-size:11.5px;line-height:1.5;padding:0 7px;border-radius:6px;background:var(--bg2);color:var(--tx2);margin:0 4px 4px 0}
+.btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 13px;border-radius:8px;border:1px solid var(--tx);background:var(--tx);color:var(--bg);font-weight:600;font-size:13px;line-height:1;cursor:pointer;white-space:nowrap}
+.btn.ghost{background:transparent;color:var(--tx);border-color:var(--line2)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.lnk{appearance:none;background:none;border:0;padding:0;color:var(--tx2);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:2.5px;cursor:pointer;font-size:inherit}
+.btn:focus-visible,.lnk:focus-visible,summary:focus-visible{outline:2px solid var(--tx);outline-offset:2px;border-radius:6px}
+@media (pointer:coarse){.btn{height:42px;padding:0 16px;font-size:14px}}
+.acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ic{width:16px;height:16px;flex:none;display:inline-grid;place-items:center;vertical-align:-3px}
+.ic svg{width:16px;height:16px;display:block}
+details>summary{list-style:none;cursor:pointer}
+details>summary::-webkit-details-marker{display:none}
+summary .car{display:inline-block;width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);margin:0 2px 1px 6px;opacity:.7;transition:transform .15s}
+details[open]>summary .car{transform:rotate(45deg)}
+
+/* options of a plan */
+.opt{border-top:1px solid var(--line);padding:13px 16px 14px}
+.o-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.tag{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--tx2)}
+.price{font-size:15px;font-weight:600;white-space:nowrap}
+.price small{font-size:11.5px;font-weight:400;color:var(--tx3);margin-left:3px}
+.o-line{display:flex;justify-content:space-between;gap:12px;margin-top:3px;font-size:14px;font-weight:500;line-height:1.35}
+.o-line .per{font-size:12.5px;font-weight:400;color:var(--tx2);white-space:nowrap}
+.o-sub{font-size:12.5px;color:var(--tx2);margin-top:2px}
+.cov{display:flex;align-items:center;gap:9px;margin-top:9px;font-size:12.5px;color:var(--tx2)}
+.bar{flex:1;height:4px;border-radius:2px;background:var(--bg3);overflow:hidden;min-width:40px;display:flex}
+.bar i{display:block;height:100%;background:var(--tx)}
+.bar i.b2{background:var(--tx3)}
+.bar.short i{background:var(--warn)}
+.trade{font-size:12.5px;color:var(--tx2);margin-top:8px}
+.o-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-top:10px}
+.why{font-size:12.5px;min-width:0}
+.why summary{font-weight:600}
+.why ul{margin-top:5px;color:var(--tx2);font-weight:400}
+.why li{margin-top:3px;padding-left:10px;text-indent:-10px}
+.why li::before{content:"· "}
+.way{border-top:1px solid var(--line);margin-top:12px;padding-top:11px}
+.way .a{font-size:14px;font-weight:500;line-height:1.35}
+.fold.ways{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.notes{font-size:12.5px;color:var(--tx2)}
+.notes>*+*{margin-top:7px}
+.rows{margin-top:8px}
+.rw{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-top:1px solid var(--line);font-size:12.5px}
+.rw:first-child{border-top:0}
+.rw b{font-weight:500;color:var(--tx)}
+.rw .r{text-align:right;white-space:nowrap}
+
+/* lines, totals, facts */
+.li{display:grid;grid-template-columns:1fr auto;gap:1px 12px;padding:9px 0;border-top:1px solid var(--line)}
+.li:first-of-type{border-top:0;padding-top:0}
+.li:last-of-type{padding-bottom:0}
+.li .a{font-size:14px;font-weight:500;line-height:1.35}
+.li .a .q{font-weight:600}
+.li .p{font-size:14px;font-weight:600;white-space:nowrap;text-align:right}
+.li .f{grid-column:1/-1;font-size:12px;color:var(--tx2);line-height:1.5}
+.li .f s{color:var(--tx3)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13px}
+.kv dt{color:var(--tx2)}
+.kv dd{margin:0;text-align:right;min-width:0}
+.tots>div{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:2px 0}
+.tots>div>span:first-child{color:var(--tx2)}
+.tots .tot{font-weight:600;font-size:14.5px;padding-top:8px;border-top:1px solid var(--line);margin-top:6px}
+.tots .tot>span:first-child{color:var(--tx)}
+.kv.left dd{text-align:left}
+
+/* rules and checks */
+.rules li{display:flex;gap:9px;padding:5px 0;font-size:13px;align-items:flex-start}
+.rules .ic{margin-top:1.5px}
+.rules b{font-weight:600}
+.rules p{color:var(--tx2);font-size:12.5px;margin-top:1px}
+.rid{font-family:var(--mono);font-size:10.5px;color:var(--tx3);border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:5px;vertical-align:1px}
+.fold{font-size:12.5px;color:var(--tx2);margin-top:6px}
+.fold[open] summary{margin-bottom:2px}
+.chk{border-top:1px solid var(--line)}
+.chk:first-of-type{border-top:0}
+.chk summary{display:flex;gap:9px;align-items:flex-start;padding:7px 0;font-size:13px;font-weight:500}
+.chk summary .ic{margin-top:1.5px}
+.chk p{font-size:12.5px;color:var(--tx2);padding:0 0 9px 25px}
+.chk.fail summary{color:var(--bad)}
+.chk .soft{font-weight:400;color:var(--tx3)}
+
+/* the hand-off to a second person */
+.hand{display:flex;gap:14px;align-items:flex-start}
+.qr{flex:none;width:104px;height:104px;border-radius:8px;background:#fff;padding:4px;border:1px solid var(--line)}
+.qr svg{display:block;width:100%;height:100%}
+.hand .tx{min-width:0;flex:1}
+.hand .tx p{font-size:13px}
+.hand .acts{margin-top:10px}
+.live{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:12.5px;color:var(--tx2)}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--warn);flex:none;animation:pu 1.6s ease-in-out infinite}
+@keyframes pu{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+.done{display:flex;gap:9px;align-items:flex-start;font-size:13.5px}
+.done b{font-weight:600}
+@media (max-width:359px){.hand{flex-direction:column}.qr{width:128px;height:128px}}
+
+/* payment, peppol, signature line */
+.meter{margin-top:9px}
+.meter .bar{height:6px;border-radius:3px}
+.meter p{font-size:12px;color:var(--tx2);margin-top:5px}
+.sig{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--tx2);padding:10px 16px;border-top:1px solid var(--line)}
+.sig .ic{margin-top:1px}
+.sig.fail{color:var(--bad)}
+pre{margin:9px 0 0;padding:10px 11px;border-radius:8px;background:var(--bg2);font:400 11px/1.5 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;color:var(--tx2);max-height:none}
+pre .t{color:var(--tx3)}
+pre.raw{max-height:340px;overflow:auto}
+.amt-bad{color:var(--bad);font-weight:600}
+.ft{border-top:1px solid var(--line);padding:9px 16px 10px;font-size:11.5px;color:var(--tx3);background:var(--bg2)}
+.ft summary{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.ft .note{margin-top:0}
+.toast{position:sticky;bottom:0;margin:0 16px 10px;padding:7px 10px;border-radius:8px;background:var(--tx);color:var(--bg);font-size:12.5px;text-align:center}
+.sk{height:10px;border-radius:5px;background:var(--bg3);margin:9px 0;animation:sh 1.3s ease-in-out infinite}
+.sk.w6{width:62%}.sk.w4{width:41%}
+@keyframes sh{0%,100%{opacity:1}50%{opacity:.45}}
+.prod{border-top:1px solid var(--line);padding:12px 16px}
+.prod .f{font-size:12.5px;color:var(--tx2);margin-top:5px}
+.prod .f b{font-weight:600;color:var(--tx)}
+.prod .claims{margin-top:7px}
+h2{font-size:14.5px;font-weight:600;line-height:1.3;margin-top:3px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main id="app" aria-live="polite"></main>
+<script>
+(() => {
+"use strict";
+const app = document.getElementById("app");
+const S = { host: null, ctx: {}, input: null, res: null, d: null, x: {}, tool: "", open: {}, tamper: false, xml: false, live: {}, toast: "", checks: null, sig: {} };
+
+// ------------------------------------------------------------------ words and numbers
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const nf = (n, lo = 0, hi = 2) => Number(n).toLocaleString("en-US", { minimumFractionDigits: lo, maximumFractionDigits: Math.max(lo, hi) });
+const eur = c => (c < 0 ? "−" : "") + "€" + nf(Math.abs(c) / 100, 2);
+const TZ = "Europe/Helsinki";
+const fixIso = s => String(s).replace(/([+-]\d\d)(\d\d)$/, "$1:$2");
+const day = s => { try { const d = new Date(String(s).length === 10 ? s + "T12:00:00Z" : fixIso(s)); return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: String(s).length === 10 ? "UTC" : TZ }).replace(/,/g, ""); } catch (e) { return String(s); } };
+const dayTime = s => { try { return new Date(fixIso(s)).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: TZ }).replace(/,/g, ""); } catch (e) { return String(s); } };
+const clock = s => { try { return new Date(fixIso(s)).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: TZ }); } catch (e) { return String(s); } };
+const left = s => { const ms = new Date(fixIso(s)) - Date.now(); if (!(ms > 0)) return "passed"; const m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60); return d ? `${d} d ${h} h left` : h ? `${h} h ${m % 60} min left` : `${Math.max(1, m)} min left`; };
+const until = s => `<span data-left="${esc(s)}">${left(s)}</span>`;
+const country = c => { try { return new Intl.DisplayNames(["en"], { type: "region" }).of(c) || c; } catch (e) { return c; } };
+const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
+const LABELS = { GOODS_FROM_FINLAND_BLUE_SWAN: "Hyvää Suomesta", EU_ORGANIC_FARMING: "EU organic", KEY_FLAG: "Avainlippu", NORDIC_SWAN: "Nordic Swan" };
+const claim = c => { const [k, v] = String(c).split(":"); if (v === undefined) return LABELS[c] || cap(String(c).toLowerCase().replace(/_/g, " ")); const w = v.toLowerCase().replace(/_/g, " "); return k === "FREE_FROM" ? cap(w) + " free" : k === "DIET" ? cap(w) : cap(w); };
+// The gateway words its notes for the assistant: claim codes and tool names. A person reads the same sentence without them.
+const plain = t => esc(String(t).replace(/'?\b([A-Z]+(?:_[A-Z]+)*:[A-Z]+(?:_[A-Z]+)*)\b'?/g, (_, c) => "“" + claim(c).toLowerCase() + "”").replace(/\s*\((?:see|use|call) [a-z_]+\)/g, ""));
+const names = a => (a || []).map(x => x.name || x.code).join(", ");
+const total = (ts, type) => ((ts || []).find(t => t.type === type) || {}).amount;
+const OPT = { usual_product: "Your usual", as_requested: "As requested", lowest_price: "Lowest price", split_with_substitute: "Split with a substitute", partial_only: "What is in stock", most_reliable: "Most reliable", finnish_origin: "Finnish origin", combined: "Combined" };
+const AUTH = { agent_may_order: ["ok", "The assistant may order this alone"], needs_human_approval: ["warn", "Needs a person"], not_allowed: ["bad", "Not allowed"], invalid: ["bad", "Cannot be ordered like this"],
+  agent_may_accept: ["ok", "The assistant may accept this alone"], agent_may_resolve: ["ok", "The assistant may settle this alone"], needs_person: ["warn", "Needs a person"], needs_valid_mandate: ["bad", "Needs a valid mandate"] };
+const IC = {
+  ok: '<span class="ic ok"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.4 8.6l3 3 6.2-7.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>',
+  warn: '<span class="ic warn"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.1" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6.4 5.6v4.8M9.6 5.6v4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>',
+  bad: '<span class="ic bad"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>',
+  wait: '<span class="ic dim"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 3"/></svg></span>',
+  soft: '<span class="ic dim"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.4 8.6l3 3 6.2-7.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2.4 2.4"/></svg></span>',
+};
+const fold = (k, summary, body, cls = "fold") => `<details class="${cls}" data-k="${esc(k)}"${S.open[k] ? " open" : ""}><summary>${summary}<span class="car"></span></summary>${body}</details>`;
+
+// ------------------------------------------------------------------ talking to the chat host (JSON-RPC over postMessage, MCP Apps 2026-01-26)
+let seq = 1;
+const waiting = new Map();
+const post = m => { try { window.parent.postMessage(m, "*"); } catch (e) {} };
+const request = (method, params, ms = 30000) => new Promise((res, rej) => {
+  const id = seq++;
+  waiting.set(id, { res, rej });
+  post({ jsonrpc: "2.0", id, method, params: params || {} });
+  setTimeout(() => { if (waiting.delete(id)) rej(new Error("The chat did not answer.")); }, ms);
+});
+const notify = (method, params) => post({ jsonrpc: "2.0", method, params: params || {} });
+const can = k => !!(S.host && S.host.hostCapabilities && S.host.hostCapabilities[k]);
+window.addEventListener("message", ev => {
+  if (ev.source !== window.parent) return;
+  const m = ev.data;
+  if (!m || m.jsonrpc !== "2.0") return;
+  if (m.method === undefined) {
+    const w = waiting.get(m.id);
+    if (w) { waiting.delete(m.id); m.error ? w.rej(Object.assign(new Error(m.error.message || "refused"), { code: m.error.code })) : w.res(m.result); }
+    return;
+  }
+  const p = m.params || {};
+  if (m.method === "ui/notifications/tool-input") { S.input = p.arguments || {}; if (!S.res) render(); }
+  else if (m.method === "ui/notifications/tool-result") take(p);
+  else if (m.method === "ui/notifications/tool-cancelled") { S.cancelled = p.reason || "cancelled"; render(); }
+  else if (m.method === "ui/notifications/host-context-changed") applyCtx(p);
+  else if (m.method === "ui/resource-teardown") { stopWatch(); post({ jsonrpc: "2.0", id: m.id, result: {} }); }
+  else if (m.method === "ping") post({ jsonrpc: "2.0", id: m.id, result: {} });
+  else if (m.id !== undefined) post({ jsonrpc: "2.0", id: m.id, error: { code: -32601, message: "Method not found" } });
+});
+function applyCtx(c) {
+  Object.assign(S.ctx, c || {});
+  const root = document.documentElement;
+  if (c.theme) { root.dataset.theme = c.theme; root.style.colorScheme = c.theme; }
+  const st = c.styles || {};
+  for (const [k, v] of Object.entries(st.variables || {})) if (v && /^--[\w-]+$/.test(k)) root.style.setProperty(k, v);
+  if (st.css && st.css.fonts && !document.getElementById("hostfonts")) { const el = document.createElement("style"); el.id = "hostfonts"; el.textContent = st.css.fonts; document.head.appendChild(el); }
+  const sa = c.safeAreaInsets;
+  if (sa) document.body.style.padding = `${Math.max(1, sa.top || 0)}px ${Math.max(1, sa.right || 0)}px ${Math.max(1, sa.bottom || 0)}px ${Math.max(1, sa.left || 0)}px`;
+  if (c.toolInfo && c.toolInfo.tool && c.toolInfo.tool.name) S.tool = S.tool || c.toolInfo.tool.name;
+}
+let sized = [0, 0];
+function size() {
+  const html = document.documentElement, was = html.style.height;
+  html.style.height = "max-content";
+  const h = Math.ceil(html.getBoundingClientRect().height), w = Math.ceil(window.innerWidth);
+  html.style.height = was;
+  if (h !== sized[1] || w !== sized[0]) { sized = [w, h]; notify("ui/notifications/size-changed", { width: w, height: h }); }
+}
+const parse = r => { if (r && r.structuredContent && typeof r.structuredContent === "object") return r.structuredContent; try { return JSON.parse(((r && r.content) || []).find(c => c.type === "text").text); } catch (e) { return null; } };
+async function tool(name, args) { return parse(await request("tools/call", { name, arguments: args }, 45000)); }
+async function say(text) {
+  try { const r = await request("ui/message", { role: "user", content: [{ type: "text", text }] }, 60000); if (r && r.isError) throw new Error("refused"); return true; }
+  catch (e) { const ok = await copy(text); toast(ok ? "Copied. Paste it into the chat." : "Tell the assistant: " + text); return false; }
+}
+const tell = text => { if (can("updateModelContext")) request("ui/update-model-context", { content: [{ type: "text", text }] }).catch(() => {}); };
+async function openLink(url) {
+  try { await request("ui/open-link", { url }, 60000); }
+  catch (e) { try { if (!window.open(url, "_blank", "noopener")) throw e; } catch (e2) { const ok = await copy(url); toast(ok ? "Link copied. Open it in a browser." : url); } }
+}
+async function copy(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) {}
+  try { const t = document.createElement("textarea"); t.value = text; t.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(t); t.select(); const ok = document.execCommand("copy"); t.remove(); return ok; } catch (e) { return false; }
+}
+let toastT;
+function toast(text) { S.toast = text; render(); clearTimeout(toastT); toastT = setTimeout(() => { S.toast = ""; render(); }, 4200); }
+
+// ------------------------------------------------------------------ signatures, checked here: JCS (RFC 8785) + ES256, the same thing the gateway signs
+const subtle = (window.crypto && window.crypto.subtle) || null;
+const jcs = v => v === null || typeof v !== "object" ? JSON.stringify(v) : Array.isArray(v) ? "[" + v.map(jcs).join(",") + "]" : "{" + Object.keys(v).sort().map(k => JSON.stringify(k) + ":" + jcs(v[k])).join(",") + "}";
+const utf8 = s => new TextEncoder().encode(s);
+const b64u = b => { let s = ""; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); };
+const b64d = s => Uint8Array.from(atob(String(s).replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0));
+const ecKey = jwk => subtle.importKey("jwk", { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y }, { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
+async function verifyBytes(jwk, input, sig) { try { return await subtle.verify({ name: "ECDSA", hash: "SHA-256" }, await ecKey(jwk), b64d(sig), utf8(input)); } catch (e) { return false; } }
+async function verifyDetached(obj, jws, jwk) { if (!jws || !jwk) return false; const [h, mid, sig] = String(jws).split("."); return mid === "" && verifyBytes(jwk, h + "." + b64u(utf8(jcs(obj))), sig); }
+async function verifyJwt(token, jwk) { if (!token || !jwk) return null; const [h, p, sig] = String(token).split("."); if (!(await verifyBytes(jwk, h + "." + p, sig))) return null; return JSON.parse(new TextDecoder().decode(b64d(p))); }
+const sha256hex = async b => Array.from(new Uint8Array(await subtle.digest("SHA-256", b)), x => x.toString(16).padStart(2, "0")).join("");
+const without = (o, ...keys) => Object.fromEntries(Object.entries(o).filter(([k]) => !keys.includes(k)));
+const peek = jwt => { try { return JSON.parse(new TextDecoder().decode(b64d(String(jwt).split(".")[1]))); } catch (e) { return null; } };
+function derToRaw(der) {
+  let i = 2 + (der[1] & 0x80 ? der[1] & 0x7f : 0);
+  const part = () => { i++; const n = der[i++]; let v = der.subarray(i, i + n); i += n; while (v.length > 32 && v[0] === 0) v = v.subarray(1); const out = new Uint8Array(32); out.set(v, 32 - v.length); return out; };
+  const r = part(), s = part(), raw = new Uint8Array(64); raw.set(r, 0); raw.set(s, 32); return raw;
+}
+// The approver's device signed exactly this decision. d: approval.device from the signed record.
+async function deviceOk(d, ap) {
+  try {
+    const cdj = b64d(d.client_data_json), cd = JSON.parse(new TextDecoder().decode(cdj)), own = d.method === "browser_key";
+    const want = b64u(new Uint8Array(await subtle.digest("SHA-256", utf8(jcs(d.signed)))));
+    if (cd.type !== (own ? "aimo.key.get" : "webauthn.get") || cd.challenge !== want) return false;
+    if (d.signed.checkout_digest !== ap.checkout_digest || d.signed.decision !== ap.decision || d.signed.by !== ap.by) return false;
+    if ("clears" in d.signed && jcs(d.signed.clears || []) !== jcs(ap.clears || [])) return false;
+    if (own) return await subtle.verify({ name: "ECDSA", hash: "SHA-256" }, await subtle.importKey("spki", b64d(d.public_key), { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]), b64d(d.signature), cdj);
+    const ad = b64d(d.authenticator_data), hash = new Uint8Array(await subtle.digest("SHA-256", cdj)), data = new Uint8Array(ad.length + 32);
+    data.set(ad, 0); data.set(hash, ad.length);
+    if (d.alg === "RS256") return await subtle.verify("RSASSA-PKCS1-v1_5", await subtle.importKey("spki", b64d(d.public_key), { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]), b64d(d.signature), data);
+    return await subtle.verify({ name: "ECDSA", hash: "SHA-256" }, await subtle.importKey("spki", b64d(d.public_key), { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]), derToRaw(b64d(d.signature)), data);
+  } catch (e) { return false; }
+}
+// The checks behind an order. Returns [[ok, title, detail, soft?], ...]; soft = reported by the gateway, not recomputed in this frame.
+async function orderChecks(o, audit, seller) {
+  const ev = o.wholesale.evidence, out = [];
+  const c1 = await verifyDetached(without(o, "proof"), o.proof.jws, seller);
+  out.push([c1, c1 ? "Valio Aimo signed this confirmation" : "This is not what Valio Aimo signed", c1 ? `Every field of this order is covered by Valio Aimo's signature (ES256 over the canonical JSON). Key ${seller.kid}.` : "The document does not match Valio Aimo's signature. It was changed after signing."]);
+  const m = await verifyJwt(ev.mandate, audit.keys.buyer);
+  out.push([!!m, "The buying company signed the assistant's mandate", m ? `Mandate ${m.jti} from ${m.iss}: alone up to ${eur(m.mandate.budget.max_per_order)} an order. ` + ((ev.mandate_key || {}).held_by === "buyer" ? "Signed with a key the buyer registered itself." : "Checked against the buyer key this gateway keeps for demo accounts.") : "The mandate's signature does not match the buyer's registered key."]);
+  const rc = ev.keyless_receipt;
+  let acc = null;
+  if (ev.agent_class === "keyless") {
+    if (m && rc && rc.mandate_jti === m.jti && await verifyDetached(without(rc, "proof"), rc.proof.jws, seller)) acc = { iss: rc.agent, mandate_jti: rc.mandate_jti, checkout_digest: rc.checkout_digest };
+    out.push([!!acc, "The assistant accepted the offer under its mandate", acc ? "This assistant signed in and holds no key, so it cannot sign. Valio Aimo signed a receipt of what it accepted, and gives such assistants less room (rule T1)." : "The receipt of the assistant's acceptance does not verify."]);
+  } else {
+    acc = m && m.cnf ? await verifyJwt(ev.agent_acceptance, m.cnf.jwk) : null;
+    out.push([!!acc && acc.mandate_jti === m.jti, "The agent accepted with the key named in its mandate", acc ? `Signed by ${acc.iss}. A copied mandate is useless without this key.` : "The acceptance is not signed with the agent key the mandate is bound to."]);
+  }
+  const dig = audit.offer ? await sha256hex(utf8(jcs(audit.offer))) : "";
+  const c4 = !!acc && dig === ev.offer_digest && acc.checkout_digest === dig && await verifyDetached(audit.offer, ev.offer_signature, seller) && jcs(audit.offer.totals) === jcs(o.totals);
+  out.push([c4, c4 ? "Both sides signed exactly the same terms" : "These are not the terms both sides signed", c4 ? `The offer's digest (sha-256 ${dig.slice(0, 20)}…) is what Valio Aimo signed and what the assistant accepted, and its totals equal this order's.` : "The offer that was accepted is not the offer behind this order: the totals differ."]);
+  const ap = ev.approval;
+  if (ap) {
+    const c5 = await verifyDetached(without(ap, "signature"), ap.signature.jws, audit.keys.approver);
+    out.push([c5, `${ap.by} approved it`, c5 ? `Recorded ${dayTime(ap.at)}, lifting ${(ap.overrides || []).join(", ") || "the stop"}.` + (ap.asked_by ? ` Asked by ${ap.asked_by}.` : "") : "The approval record's signature does not verify."]);
+    if (ap.device) { const c6 = await deviceOk(ap.device, ap); out.push([c6, "The approval was signed on the approver's own device", c6 ? `A key on ${ap.device.device || "their device"} signed this offer's digest, the decision and the name${ap.device.user_verified ? ", after the device checked the person" : ""}. Nobody without that device can make this signature: not the assistant, not Valio Aimo, not this server.` : "The device signature does not match this approval."]); }
+  } else out.push([true, "No person was needed", "Every rule passed, so the mandate alone authorised this order."]);
+  const led = audit.ledger || {};
+  if (led.intact !== undefined) out.push([!!led.intact, "The audit ledger has not been edited", led.intact ? `As the gateway reports: ${led.events_checked || "all"} entries chain hash to hash. This one is not recomputed in the chat; the order page recomputes it in your browser.` : `The chain breaks at entry ${led.first_bad_seq}.`, true]);
+  return out;
+}
+
+// ------------------------------------------------------------------ pieces
+const head = (title, sub, chip) => `<header class="hd"><div class="brand"><i></i>Valio Aimo <span>agent gateway</span></div>${chip || ""}</header><div class="tt"><h1>${title}</h1>${sub ? `<p>${sub}</p>` : ""}</div>`;
+const chip = (cls, text) => `<span class="chip ${cls}">${esc(text)}</span>`;
+const sigLine = (id, what) => `<div class="sig" data-sig="${id}">${IC.wait}<span>${esc(what)}: checking the signature here…</span></div>`;
+function foot() {
+  const raw = S.res && ((S.res.content || []).find(c => c.type === "text") || {}).text;
+  const body = raw ? `<pre class="raw">${esc(raw.length > 9000 ? raw.slice(0, 9000) + "\n… " + nf(raw.length - 9000) + " more characters" : raw)}</pre><p class="xs" style="margin-top:6px">This text is what the assistant reads, and all that a connector without cards shows.</p>` : "";
+  const note = "Prototype on Valio Aimo's challenge data. Not a Valio Aimo system.";
+  return `<footer class="ft">${raw ? `<details data-k="raw"${S.open.raw ? " open" : ""}><summary><span>${note}</span><span style="white-space:nowrap">Raw answer, ${nf(raw.length)} characters<span class="car"></span></span></summary>${body}</details>` : `<p class="note">${note}</p>`}</footer>`;
+}
+const wrap = inner => `<div class="card">${inner}${foot()}</div>${S.toast ? `<div class="toast" role="status">${esc(S.toast)}</div>` : ""}`;
+const facts = w => {
+  if (!w) return "";
+  const a = w.allergens || {}, bits = [];
+  if (w.origin) bits.push(esc(country(w.origin)));
+  if (a.declared === false) bits.push('<span class="warn">allergens not declared by the maker</span>');
+  else if ((a.contains || []).length) bits.push("contains " + esc(names(a.contains)));
+  if ((a.may_contain || []).length) bits.push("may contain " + esc(names(a.may_contain)));
+  return bits.join(" · ");
+};
+function authBlock(k, a) {
+  const [cls, text] = AUTH[(a || {}).decision] || ["dim", (a || {}).decision || ""];
+  const rs = ((a || {}).reasons || []).length ? a.reasons : (a || {}).basis || [];
+  if (!rs.length) return `<div class="why"><span class="${cls}"><b>${esc(text)}</b></span></div>`;
+  return `<details class="why" data-k="${esc(k)}"${S.open[k] ? " open" : ""}><summary class="${cls}">${esc(text)}<span class="car"></span></summary><ul>${rs.map(r => `<li>${esc(r)}</li>`).join("")}</ul></details>`;
+}
+function lines(items, withFacts = true) {
+  return (items || []).map(l => {
+    const w = l.wholesale || {}, it = l.item || {}, n = typeof l.quantity === "object" ? l.quantity.total : (w.units ?? l.quantity);
+    const sub = total(l.totals, "subtotal") ?? l.line_total_ex_vat;
+    const sf = w.substitutes_for || l.substitutes_for;
+    const f = [];
+    if (it.price != null) f.push(`${eur(it.price)} each${it.list_price && it.list_price > it.price ? ` <s>${eur(it.list_price)}</s>` : ""}`);
+    if (w.gtin) f.push(`GTIN <span class="m">${esc(w.gtin)}</span>`);
+    if (w.supplier) f.push(esc(cap(String(w.supplier).toLowerCase())));
+    const fx = facts(w);
+    if (fx) f.push(fx);
+    if (w.lot) f.push(`lot <span class="m">${esc(w.lot)}</span>`);
+    return `<div class="li"><div class="a"><span class="q">${nf(n)} ×</span> ${esc(it.title)}${sf ? ` <span class="dim sm">in place of ${esc(typeof sf === "object" ? sf.for_title || sf.title || sf.id : sf)}</span>` : ""}</div><div class="p">${sub != null ? eur(sub) : ""}</div>${withFacts && f.length ? `<div class="f">${f.join(" · ")}</div>` : ""}</div>`;
+  }).join("");
+}
+const totals = (ts, bad) => `<div class="tots"><div><span>Subtotal ex VAT</span><span>${eur(total(ts, "subtotal"))}</span></div><div><span>${esc(((ts || []).find(t => t.type === "tax") || {}).display_text || "VAT")}</span><span>${eur(total(ts, "tax") || 0)}</span></div><div class="tot"><span>Total</span><span${bad ? ' class="amt-bad"' : ""}>${eur(total(ts, "total"))}</span></div></div>`;
+function rules(pol, k) {
+  const rs = (pol || {}).rules || [], stop = rs.filter(r => r.outcome !== "pass"), pass = rs.filter(r => r.outcome === "pass");
+  const li = r => `<li>${r.outcome === "pass" ? IC.ok : r.outcome === "escalate" ? IC.warn : IC.bad}<div><b>${esc(r.title)}</b><span class="rid">${esc(r.id)}</span><p>${esc(r.detail)}</p></div></li>`;
+  if (!rs.length) return "";
+  const passed = pass.length ? fold(k, `${stop.length ? IC.ok + " " : ""}${pass.length} ${stop.length ? "other " : ""}rule${pass.length === 1 ? "" : "s"} passed`, `<ul class="rules">${pass.map(li).join("")}</ul>`) : "";
+  return (stop.length ? `<ul class="rules">${stop.map(li).join("")}</ul>` : "") + passed;
+}
+function payment(k, pay, sub, placed) {
+  const m = S.x.mandate;
+  let meter = "", auth = "";
+  if (m && m.max_per_week) {
+    const before = placed ? Math.max(0, m.spent_week - (sub || 0)) : m.spent_week, pct = v => Math.max(0, Math.min(100, 100 * v / m.max_per_week));
+    const over = before + (sub || 0) > m.max_per_week;
+    meter = `<div class="meter"><div class="bar${over ? " short" : ""}" role="img" aria-label="Weekly room used"><i class="b2" style="width:${pct(before)}%"></i><i style="width:${Math.min(100 - pct(before), pct(sub || 0))}%"></i></div><p>${eur(sub || 0)} ${placed ? "this order" : "this offer"}${before ? ` on top of ${eur(before)} in the last 7 days` : ""}, of the ${eur(m.max_per_week)} a week the buyer signed for.</p></div>`;
+  }
+  if (m) auth = fold(k, "What authorises the spend", `<p style="margin-top:5px">Mandate <span class="m">${esc(m.id)}</span>, signed by ${esc(m.buyer || "the buyer")}: this assistant may order alone${m.max_per_order != null ? ` up to ${eur(m.max_per_order)} an order` : ""}${m.max_per_week != null ? ` and ${eur(m.max_per_week)} a week` : ""}${m.expires ? `, until ${dayTime(m.expires)}` : ""}. Above that a person signs. The mandate records who allowed the order; the invoice is the claim for payment, and Valio Aimo collects it the way it does today.${m.key_held_by === "gateway" ? " On this demo account the gateway keeps the buyer's signing key." : ""}</p>`);
+  return `<section class="sec"><p class="lab">Payment</p><p class="sm">Invoice on the account's existing terms with Valio Aimo. <span class="mut">Nothing is paid in the chat, and no card or payment token passes through the assistant.</span></p>${meter}${auth}</section>`;
+}
+
+// ------------------------------------------------------------------ views
+function vLoading() {
+  const a = S.input || {}, t = S.tool;
+  const doing = { plan_sourcing: () => `Finding ${a.need_quantity ? nf(a.need_quantity) + " " + (a.need_unit || "") + " of " : ""}${a.query || "products"}${a.delivery_date ? " for " + day(a.delivery_date) : ""}`, search_catalog: () => `Searching the catalog for ${a.query || "products"}`, lookup_catalog: () => "Looking up products",
+    create_checkout: () => "Asking Valio Aimo for a signed offer", update_checkout: () => "Asking for a fresh signed offer", complete_checkout: () => "Placing the order", get_checkout: () => "Reading the offer", get_order: () => "Reading the order", usual_orders: () => "Reading what this kitchen usually orders",
+    list_proposals: () => "Reading proposals from Valio Aimo's agent", list_order_issues: () => "Checking placed orders for problems", plan_menu_order: () => "Working out the order for the menu" }[t];
+  return `<div class="card">${head(esc(doing ? doing() : "Asking Valio Aimo"), "", "")}<div class="sec"><div class="sk"></div><div class="sk w6"></div><div class="sk w4"></div></div></div>`;
+}
+function vError(d) {
+  const ms = (d.messages || []).filter(m => m.content);
+  const code = (ms[0] || {}).code || "";
+  const need = /mandate|unauthor|401/.test(code);
+  return wrap(head(need ? "Connect the account first" : "Valio Aimo said no", "", chip("bad", "Stopped")) + `<section class="sec">${ms.map(m => `<div class="done" style="margin-bottom:6px">${IC.bad}<div><p>${esc(m.content)}</p>${m.code ? `<p class="m dim">${esc(m.code)}</p>` : ""}</div></div>`).join("") || `<p class="mut">No reason was given.</p>`}${d.retry_after != null ? `<p class="sm mut">Try again in ${esc(d.retry_after)} s.</p>` : ""}</section>`);
+}
+function vPlan(d) {
+  const need = d.need || {}, unit = need.unit || "", q = (S.input || {}).query, P = S.x.products || {};
+  const req = ((d.requirements || {}).claims || []).map(claim).concat(((d.requirements || {}).exclude_allergens || []).map(a => "no " + String(a).toLowerCase())).join(", ");
+  const opts = d.options || [];
+  const cut = Object.values(P).map(p => p.order_by).filter(Boolean).sort()[0];
+  const title = `${need.quantity ? nf(need.quantity) + " " + esc(unit) + " " : ""}${esc(q || req || "Options")}`;
+  const sub = `Delivery ${day(d.delivery_date)}${cut ? ` · order by ${dayTime(cut)} · ${until(cut)}` : ""}`;
+  const one = (o, i) => {
+    const pct = o.covers_pct == null ? 100 : o.covers_pct, short = pct < 100;
+    const per = o.covers ? `${eur(Math.round(o.total_ex_vat / o.covers))} / ${esc(unit || "unit")}` : "";
+    const ls = (o.line_items || []).map(l => {
+      const p = P[l.item.id] || {}, sf = (l.wholesale || {}).substitutes_for;
+      return `<div class="o-line"><span>${nf(l.units ?? l.quantity)} × ${esc(l.item.title)}${sf ? ` <span class="dim sm">in place of your usual</span>` : ""}</span>${(o.line_items || []).length > 1 ? `<span class="per">${eur(l.line_total_ex_vat)}</span>` : ""}</div>${facts(p) ? `<div class="o-sub">${facts(p)}</div>` : ""}`;
+    }).join("");
+    const text = `Go with "${OPT[o.label] || o.label}": ${(o.line_items || []).map(l => `${nf(l.units ?? l.quantity)} × ${l.item.title} (product ${l.item.id})`).join(" and ")}, ${eur(o.total_ex_vat)} ex VAT, delivery ${day(d.delivery_date)}. Get the signed offer.`;
+    return `<article class="opt"><div class="o-top"><span class="tag">${esc(OPT[o.label] || cap(String(o.label).replace(/_/g, " ")))}</span><span class="price">${eur(o.total_ex_vat)}<small>ex VAT${per ? " · " + per : ""}</small></span></div>${ls}
+      ${need.quantity && short ? `<div class="cov"><div class="bar short"><i style="width:${pct}%"></i></div><span class="warn">Only ${nf(o.covers)} of ${nf(need.quantity)} ${esc(unit)}</span></div>` : ""}
+      <p class="trade">${esc(o.tradeoff)}${(o.differs_from_usual || []).length ? " " + esc(o.differs_from_usual.join(" ")) : ""}</p>
+      <div class="o-foot">${authBlock("auth" + i, o.authority)}${["not_allowed", "invalid"].includes((o.authority || {}).decision) ? "" : `<button class="btn${i ? " ghost" : ""}" data-act="say" data-text="${esc(text)}">Choose</button>`}</div></article>`;
+  };
+  const shown = opts.slice(0, 3).map(one).join(""), more = opts.slice(3);
+  const notes = [];
+  for (const m of d.messages || []) notes.push(`<p${m.type === "warning" ? ' class="warn"' : ""}>${plain(m.content)}</p>`);
+  if ((d.kinds_to_choose || []).length) notes.push(`<div class="acts">${d.kinds_to_choose.map(k => { const n = k.kind || k; return `<button class="btn ghost" data-act="say" data-text="${esc("I mean " + n + ".")}">${esc(cap(n))}</button>`; }).join("")}</div>`);
+  if ((d.not_offered || []).length) notes.push(`<p>Left out: ${d.not_offered.map(n => `${n.products} where ${plain(n.meaning)}`).join("; ")}.</p>`);
+  const aq = d.also_qualifying || [];
+  if (aq.length) notes.push(fold("aq", `${aq.length} more product${aq.length === 1 ? "" : "s"} qualify`, `<div class="rows">${aq.map(a => { const pk = Object.keys(a).find(k => k.startsWith("price_per_")); return `<div class="rw"><span><b>${esc(a.title)}</b>${a.ordered_before ? " · ordered before" : ""}</span><span class="r">${a.total_ex_vat != null ? eur(a.total_ex_vat) : ""}${pk ? ` <span class="dim">· ${eur(a[pk])} / ${esc(pk.slice(10).replace("piece", "pc").toUpperCase().replace("PC", "pc"))}</span>` : ""}</span></div>`; }).join("")}</div>`, ""));
+  return wrap(head(title, sub, req ? `<span class="chip">${esc(req)}</span>` : "") + (shown || "") + (more.length ? fold("moreopts", `${more.length} more option${more.length === 1 ? "" : "s"}`, more.map((o, i) => one(o, i + 3)).join(""), "sec fold") : "")
+    + (notes.length ? `<section class="sec notes">${notes.join("")}</section>` : "") + (d.proof ? sigLine("doc", "Options signed by Valio Aimo") : ""));
+}
+function approvalLine(ap) {
+  const dv = ap.device;
+  return `<div class="done">${ap.decision === "approved" ? IC.ok : IC.bad}<div><b>${ap.decision === "approved" ? "Approved" : "Rejected"} by ${esc(ap.by)}</b> at ${clock(ap.at)}${dv ? `, signed on their own device${dv.device ? " (" + esc(dv.device) + ")" : ""}` : ", by link"}.${ap.note ? ` <span class="mut">“${esc(ap.note)}”</span>` : ""}${(ap.overrides || []).length ? `<p class="sm mut">Lifts ${esc(ap.overrides.join(", "))} for this offer only. The rules ran again when it was approved.</p>` : ""}</div></div>`;
+}
+function vCheckout(c) {
+  const w = c.wholesale || {}, st = c.status, ap = w.approval, sub = total(c.totals, "subtotal");
+  const rejected = ap && ap.decision === "rejected";
+  const [title, ch] = st === "requires_escalation" ? ["Stopped for a second person", chip("warn", "Needs approval")]
+    : rejected ? ["Rejected", chip("bad", "Rejected")]
+    : st === "ready_for_complete" ? [ap ? "Approved, ready to order" : "Signed offer, ready to order", chip("ok", ap ? "Approved" : "All rules passed")]
+    : st === "completed" ? [`Order ${esc((c.order || {}).label || "")} placed`, chip("ok", "Placed")]
+    : st === "canceled" ? ["Offer cancelled", chip("", "Cancelled")] : ["This cannot be ordered as it stands", chip("bad", "Stopped")];
+  let top = "";
+  if (st === "requires_escalation") {
+    const phone = S.ctx.platform === "mobile";
+    const stale = S.live.stopped;
+    top = `<section class="sec"><div class="hand">${S.x.qr && !phone ? `<figure class="qr" role="img" aria-label="QR code of the approval page">${S.x.qr}</figure>` : ""}<div class="tx"><p><b>The assistant cannot approve its own order.</b> ${S.x.qr && !phone ? "Scan this with the approver's phone, or open the page there." : "Open the approval page on the approver's phone."} They sign with their own device.</p>
+      <div class="acts"><button class="btn" data-act="open" data-url="${esc(c.continue_url || "")}">Open approval page</button><button class="btn ghost" data-act="copy" data-text="${esc(c.continue_url || "")}">Copy link</button></div>
+      <p class="live">${stale ? "" : '<span class="pulse"></span>'}<span>${can("serverTools") ? (stale ? `Stopped watching. <button class="lnk" data-act="watch">Check again</button>` : `Waiting for their decision<span data-checked>${S.live.at ? ", checked " + clock(S.live.at) : ""}</span>. This card updates by itself.`) : "When they have approved, tell the assistant to go on."}</span></p></div></div></section>`;
+  } else if (ap && st !== "completed") {
+    top = `<section class="sec">${approvalLine(ap)}${st === "ready_for_complete" ? `<div class="acts" style="margin-top:11px"><button class="btn" data-act="say" data-text="${esc(`${ap.by} approved it. Place the order now.`)}">Place the order</button></div>` : ""}</section>`;
+  } else if (st === "ready_for_complete") {
+    top = `<section class="sec"><div class="done">${IC.ok}<div><b>Every rule passed.</b> The assistant may place this alone, under its mandate.</div></div><div class="acts" style="margin-top:11px"><button class="btn" data-act="say" data-text="Place the order.">Place the order</button></div></section>`;
+  } else if (st === "completed" && c.order) {
+    top = `<section class="sec"><div class="done">${IC.ok}<div><b>Order ${esc(c.order.label)}</b> was placed from this offer${ap && ap.decision === "approved" ? `, approved by ${esc(ap.by)}` : ", with no person needed"}.</div></div><div class="acts" style="margin-top:11px"><button class="btn ghost" data-act="say" data-text="${esc(`Show me order ${c.order.label} with its proof.`)}">Show the order and its proof</button></div></section>`;
+  }
+  const msgs = (c.messages || []).filter(m => !["approval_required", "approved"].includes(m.code) && m.content);
+  const stopSec = st === "incomplete" || msgs.length ? `<section class="sec"><ul class="rules">${msgs.map(m => `<li>${m.type === "error" ? IC.bad : m.type === "warning" ? IC.warn : IC.ok}<div><p style="color:var(--tx)">${esc(m.content)}</p></div></li>`).join("")}</ul></section>` : "";
+  const rs = rules(w.policy, "rules");
+  const over = st === "completed" || st === "canceled";
+  const dl = `<dl class="kv left" style="margin-top:11px"><dt>Delivery</dt><dd>${day(w.delivery_date)}${w.ship_to ? " to " + esc(w.ship_to) : ""}</dd>${w.order_by && !over ? `<dt>Order by</dt><dd>${dayTime(w.order_by)} · ${until(w.order_by)}</dd>` : ""}${(w.hold || {}).price_and_stock_held_until && !over ? `<dt>Held</dt><dd>price and stock until ${clock(w.hold.price_and_stock_held_until)} · ${until(w.hold.price_and_stock_held_until)}</dd>` : ""}</dl>`;
+  return wrap(head(title, w.intent ? "“" + esc(w.intent) + "”" : "", ch) + top + stopSec
+    + (rs ? `<section class="sec"><p class="lab">${st === "requires_escalation" ? "Why it stopped" : "Rules, run in code"}</p>${rs}</section>` : "")
+    + `<section class="sec">${lines(c.line_items)}<div style="margin-top:11px">${totals(c.totals)}</div>${dl}</section>`
+    + (over ? "" : payment("pay", w.payment, sub, false))
+    + (c.ap2 ? sigLine("offer", "Offer signed by Valio Aimo") : ""));
+}
+function vOrder(o) {
+  const w = o.wholesale || {}, ev = w.evidence || {}, ap = ev.approval, pp = S.x.peppol, sub = total(o.totals, "subtotal");
+  const exp = (((o.fulfillment || {}).expectations || [])[0] || {}).description || `Delivery ${day(w.delivery_date)}`;
+  const shown = S.tamper ? S.tampered : o;
+  let proof;
+  if (!subtle) proof = `<p class="sm mut">This frame has no WebCrypto, so the signatures cannot be checked here. The order page checks them in your browser.</p>`;
+  else if (!S.x.audit) proof = `<p class="sm mut">Reading the signed documents…</p>`;
+  else if (!S.checks) proof = `<p class="sm mut">${IC.wait} Checking the signatures here…</p>`;
+  else proof = S.checks.map((c, i) => `<details class="chk${c[0] ? "" : " fail"}" data-k="chk${i}"${S.open["chk" + i] || !c[0] ? " open" : ""}><summary>${c[0] ? (c[3] ? IC.soft : IC.ok) : IC.bad}<span>${esc(c[1])}${c[3] ? ' <span class="soft">· reported</span>' : ""}</span></summary><p>${esc(c[2])}</p></details>`).join("");
+  const kid = ((S.x.keys || {}).seller || {}).kid || (o.proof || {}).kid || "";
+  const tam = subtle && S.x.audit ? `<div class="acts" style="margin-top:10px"><button class="btn ghost" data-act="tamper">${S.tamper ? "Put the cent back" : "Change the total by one cent"}</button><span class="xs dim" style="flex:1;min-width:150px">${S.tamper ? "The copy in this card was changed. The signature no longer fits." : "Try it: edit this card's copy of the order and watch the checks."}</span></div>` : "";
+  const pc = pp && pp.check;
+  const peppolSec = pp ? `<section class="sec"><p class="lab">Peppol BIS Ordering 3 · Order</p>
+    <div class="done">${pc && pc.ok ? IC.ok : pc && pc.ok === false ? IC.bad : IC.wait}<div>${pc && pc.ok ? `<b>A valid Peppol order.</b> Passed the UBL 2.1 schema and OpenPeppol's own rules: ${pc.fired} rules fired, ${(pc.errors || []).length} errors, ${(pc.warnings || []).length} warnings.` : pc && pc.ok === false ? `<b>Not valid.</b> ${esc(((pc.errors || [])[0] || {}).text || "")}` : esc((pc || {}).why || "Not validated.")}${pc && pc.at ? ` <span class="mut">Validated ${dayTime(pc.at)} at the gateway.</span>` : ""}</div></div>
+    <div class="acts" style="margin-top:10px"><button class="btn ghost" data-act="xml">${S.xml ? "Hide the document" : "Open the document"}</button><button class="btn ghost" data-act="dl">Download XML</button></div>
+    ${S.xml ? `<pre>${esc(pp.xml).replace(/(&lt;\/?)([\w:.-]+)/g, '<span class="t">$1$2</span>').replace(/(\/?&gt;)/g, '<span class="t">$1</span>')}</pre>` : ""}
+    ${pp.stand_in ? `<p class="xs dim" style="margin-top:8px">${esc(pp.stand_in)}</p>` : ""}</section>` : "";
+  return wrap(head(`Order <span style="white-space:nowrap">${esc(o.label)}</span>`, esc(exp), chip(S.tamper ? "bad" : "ok", S.tamper ? "Changed" : "Placed and signed"))
+    + `<section class="sec">${lines(shown.line_items)}<div style="margin-top:11px">${totals(shown.totals, S.tamper)}</div>
+       <p class="sm mut" style="margin-top:10px">${ap ? `Approved by ${esc(ap.by)}${ap.device ? " on their own device" : ""}. ` : "No person was needed. "}Placed ${dayTime(w.placed_at)} by <span class="m">${esc(w.placed_by || "")}</span>.</p></section>`
+    + `<section class="sec"><p class="lab">Proof · checked here in the chat, not by Valio Aimo</p>${proof}${tam}${kid ? `<p class="xs dim" style="margin-top:9px">Valio Aimo's key <span class="m">${esc(kid)}</span>. Compare it with verify/pinned-keys.json in the public repo.</p>` : ""}</section>`
+    + peppolSec + payment("pay", w.payment, sub, true)
+    + `<section class="sec"><div class="acts"><button class="btn ghost" data-act="open" data-url="${esc(o.permalink_url || S.x.order_url || "")}">Open the order page</button><button class="btn ghost" data-act="say" data-text="${esc(`Is there any problem with order ${o.label}?`)}">Any problems?</button></div></section>`);
+}
+function vUsual(d) {
+  const row = u => `<div class="rw"><span><b>${esc(u.title)}</b><br><span class="dim">${esc(u.kind || "")} · ${u.past_orders} past orders</span></span><span class="r"><b>${u.usual_amount ? nf(u.usual_amount.quantity) + " " + esc(u.usual_amount.unit) : nf(u.usual_units)}</b><br><span class="dim">usually</span></span></div>`;
+  const us = d.usual || [], ot = d.other_kinds_ordered || [];
+  return wrap(head(d.query ? `What this kitchen usually orders: ${esc(d.query)}` : "What this kitchen usually orders", "From the account's past orders at Valio Aimo.", "")
+    + `<section class="sec">${us.length ? `<div class="rows" style="margin-top:0">${us.map(row).join("")}</div>` : `<p class="mut">Nothing of that kind has been ordered before.</p>`}${us[0] && us[0].usual_amount ? `<div class="acts" style="margin-top:11px"><button class="btn" data-act="say" data-text="${esc(`Order the usual: ${nf(us[0].usual_amount.quantity)} ${us[0].usual_amount.unit} of ${us[0].title} for the next delivery day.`)}">Order the usual ${nf(us[0].usual_amount.quantity)} ${esc(us[0].usual_amount.unit)}</button></div>` : ""}</section>`
+    + (ot.length ? `<section class="sec"><p class="lab">Other kinds it orders</p><div class="rows" style="margin-top:0">${ot.map(row).join("")}</div></section>` : "")
+    + (d.proof ? sigLine("doc", "Signed by Valio Aimo") : ""));
+}
+function vCatalog(d) {
+  const ps = d.products || [], dd = (d.wholesale || {}).delivery_date;
+  const one = p => {
+    const w = p.wholesale || {}, v = (p.variants || [])[0] || {}, a = w.allergens || {}, pr = w.price || {}, dl = w.delivery || {};
+    const price = pr.unit_price ?? (v.price || {}).amount, cmp = pr.comparison;
+    const av = w.availability || (v.availability || {}).band;
+    const avc = av === "available" ? "ok" : av === "limited" ? "warn" : av ? "bad" : "";
+    return `<article class="prod"><div class="o-top"><h2 style="margin:0">${esc(p.title)}</h2>${price != null ? `<span class="price">${eur(price)}${cmp ? `<small>${eur(cmp.amount)} / ${esc(cmp.per)}</small>` : ""}</span>` : ""}</div>
+      <p class="f">${[w.brand, w.supplier && cap(String(w.supplier).toLowerCase()), w.origin && country(w.origin), w.storage].filter(Boolean).map(esc).join(" · ")}</p>
+      <p class="f">${av ? `<span class="${avc}"><b style="color:inherit">${esc(cap(String(av).replace(/_/g, " ")))}</b></span>` : ""}${w.orderable === false && w.reason ? ` · ${esc(String(w.reason).replace(/_/g, " "))}` : ""}${dl.order_by ? ` · order by ${dayTime(dl.order_by)}` : ""}${dl.earliest_date ? ` · delivers ${day(dl.earliest_date)}` : ""}</p>
+      <p class="f">${a.declared === false ? '<span class="warn"><b style="color:inherit">Allergens not declared by the maker.</b></span>' : `<b>Contains</b> ${esc(names(a.contains) || "no listed allergen")}${(a.may_contain || []).length ? ` · <b>may contain</b> ${esc(names(a.may_contain))}` : ""}`}</p>
+      ${(w.claims || []).length || (w.labels || []).length ? `<p class="claims">${(w.claims || []).slice(0, 6).concat(w.labels || []).map(c => `<span class="pill">${esc(claim(c))}</span>`).join("")}${(w.claims || []).length > 6 ? `<span class="pill">+${w.claims.length - 6}</span>` : ""}</p>` : ""}
+      <p class="xs dim" style="margin-top:4px">GTIN <span class="m">${esc(w.gtin || ((v.barcodes || [])[0] || {}).value || "")}</span>${w.data_source ? ` · ${esc(w.data_source)}` : ""}</p></article>`;
+  };
+  const more = ps.slice(4);
+  return wrap(head(`${ps.length} product${ps.length === 1 ? "" : "s"}${(S.input || {}).query ? ` for “${esc(S.input.query)}”` : ""}`, dd ? `For delivery ${day(dd)}. Price, stock band and cut-off are this account's own.` : "", "")
+    + ps.slice(0, 4).map(one).join("") + (more.length ? fold("moreprod", `${more.length} more`, more.map(one).join(""), "sec fold") : "")
+    + ((d.messages || []).length ? `<section class="sec notes">${d.messages.map(m => `<p>${esc(m.content)}</p>`).join("")}</section>` : "") + (d.proof ? sigLine("doc", "Signed by Valio Aimo") : ""));
+}
+function vProposals(d) {
+  const ps = d.proposals || (d.type === "proposal" || d.kind_title ? [d] : []);
+  const one = (p, i) => {
+    const open = !p.status || p.status === "open";
+    const basis = Object.entries(p.basis || {}).filter(([, v]) => v !== null && typeof v !== "object").slice(0, 5);
+    return `<article class="opt"><div class="o-top"><span class="tag">${esc(p.kind_title || p.kind || "Proposal")}</span><span class="price">${p.extra_ex_vat ? "+" + eur(p.extra_ex_vat) : eur(p.total_ex_vat || 0)}<small>${p.extra_ex_vat ? "added" : "ex VAT"}</small></span></div>
+      <h2>${esc(p.title)}</h2><p class="trade">${esc(p.reason || "")}${p.reason_written_by ? ` <span class="dim">· worded by ${esc(p.reason_written_by)}</span>` : ""}</p>
+      <div style="margin-top:9px">${lines(p.line_items, false)}</div>
+      ${basis.length ? fold("basis" + i, "The numbers behind it", `<dl class="kv left sm" style="margin-top:6px">${basis.map(([k, v]) => `<dt>${esc(cap(k.replace(/_/g, " ")))}</dt><dd>${esc(v)}</dd>`).join("")}</dl>`) : ""}
+      <div class="o-foot">${authBlock("pauth" + i, p.authority)}${open ? `<div class="acts"><button class="btn ghost" data-act="say" data-text="${esc(`Decline proposal ${p.id} (${p.title}).`)}">Decline</button><button class="btn" data-act="say" data-text="${esc(`Accept proposal ${p.id} (${p.title}).`)}">Accept</button></div>` : `<span class="chip">${esc(cap(String(p.status).replace(/_/g, " ")))}</span>`}</div>
+      ${p.expires_at && open ? `<p class="xs dim" style="margin-top:8px">Answer by ${dayTime(p.expires_at)} · ${until(p.expires_at)}</p>` : ""}</article>`;
+  };
+  return wrap(head(ps.length ? `Valio Aimo's agent proposes ${ps.length === 1 ? "one change" : ps.length + " changes"}` : "No proposals from Valio Aimo's agent", ps.length ? "Each one passed Valio Aimo's own rules before it was sent. A declined proposal is never made again." : esc(((d.messages || [])[0] || {}).content || ""), "")
+    + ps.map(one).join("") + (d.proof ? sigLine("doc", "Signed by Valio Aimo") : ""));
+}
+function vIssues(d) {
+  const is = d.issues || (d.what_happened ? [d] : []);
+  const net = w => w.net_ex_vat < 0 ? `${eur(-w.net_ex_vat)} less` : w.net_ex_vat > 0 ? `${eur(w.net_ex_vat)} more` : "Same price";
+  const way = (x, i) => (w, j) => `<div class="way"><div class="o-top"><span class="a">${esc(w.title)}</span><span class="price" style="font-size:14px">${net(w)}</span></div><p class="o-sub">${esc(w.effect || "")}</p><div class="o-foot">${authBlock(`w${i}_${j}`, w.authority)}<button class="btn ghost" data-act="say" data-text="${esc(`Settle issue ${x.id} with option ${w.option} (${w.title}).`)}">Choose</button></div></div>`;
+  const one = (x, i) => {
+    const ws = x.ways_out || [], open = x.status === "open" && !x.pending;
+    return `<article class="opt"><div class="o-top"><span class="tag">${esc(cap(String(x.kind || "issue").replace(/_/g, " ")))} · order ${esc((x.order || {}).label || "")}</span><span class="chip ${x.status === "open" ? "warn" : "ok"}">${esc(cap(x.status || ""))}</span></div>
+    <h2>${esc(x.what_happened || "")}</h2>${x.recall && x.recall.note ? `<p class="trade">${esc(x.recall.note)}</p>` : ""}
+    ${open ? ws.slice(0, 2).map(way(x, i)).join("") + (ws.length > 2 ? fold("ways" + i, `${ws.length - 2} more way${ws.length === 3 ? "" : "s"} out`, ws.slice(2).map((w, j) => way(x, i)(w, j + 2)).join(""), "fold ways") : "") : ""}
+    ${x.pending ? `<p class="trade">${esc(x.pending.title || "")}. ${esc(x.pending.next || "")}</p>` : ""}${x.resolution ? `<p class="trade">${esc(typeof x.resolution === "string" ? x.resolution : x.resolution.title || x.resolution.text || "Settled.")}</p>` : ""}</article>`;
+  };
+  return wrap(head(is.length ? `${is.length} problem${is.length === 1 ? "" : "s"} on placed orders` : "No problems on placed orders", is.length ? "Reported by Valio Aimo, each with its ways out. Settling one amends the signed order." : esc(((d.messages || [])[0] || {}).content || ""), "")
+    + is.map(one).join("") + (d.proof ? sigLine("doc", "Signed by Valio Aimo") : ""));
+}
+function vOther(d) {
+  const ms = (d.messages || []).map(m => m.content).concat(d.message ? [d.message] : []).filter(Boolean);
+  const facts = Object.entries(d).filter(([k, v]) => !["ucp", "proof", "messages", "message"].includes(k) && v !== null && typeof v !== "object").slice(0, 8);
+  return wrap(head(esc(cap(String(S.tool || "Answer").replace(/_/g, " "))), "", d.status ? `<span class="chip">${esc(cap(String(d.status).replace(/_/g, " ")))}</span>` : "")
+    + `<section class="sec">${ms.map(m => `<p style="margin-bottom:6px">${esc(m)}</p>`).join("")}${facts.length ? `<dl class="kv left">${facts.map(([k, v]) => `<dt>${esc(cap(k.replace(/_/g, " ")))}</dt><dd>${esc(v)}</dd>`).join("")}</dl>` : ""}${!ms.length && !facts.length ? `<p class="mut">The full answer is below.</p>` : ""}</section>` + (d.proof ? sigLine("doc", "Signed by Valio Aimo") : ""));
+}
+
+// ------------------------------------------------------------------ state
+const kindOf = d => !d ? "none" : (d.ucp || {}).status === "error" ? "error" : d.checkout && d.card ? "checkout" : d.order && d.card ? "order"
+  : Array.isArray(d.options) && d.need ? "plan" : d.ap2 && d.id ? "checkout" : d.label && d.proof && (d.wholesale || {}).evidence ? "order"
+  : Array.isArray(d.usual) ? "usual" : Array.isArray(d.products) ? "catalog" : Array.isArray(d.proposals) || d.type === "proposal" ? "proposals" : Array.isArray(d.issues) || d.what_happened ? "issues" : "other";
+function take(res) {
+  S.res = res;
+  const meta = ((res && res._meta) || {})["fi.valioaimo/card"] || {};
+  S.x = meta; S.tool = S.tool || meta.tool || "";
+  S.d = parse(res);
+  if (res && res.isError && !S.d) S.d = { ucp: { status: "error" }, messages: [{ content: (((res.content || [])[0]) || {}).text || "The tool failed." }] };
+  S.kind = kindOf(S.d);
+  if (S.kind === "checkout" && S.d.status === "completed" && S.x.order) { S.order = S.x.order; S.kind = "order"; }
+  else if (S.kind === "order") S.order = S.d;
+  S.checks = null; S.tamper = false;
+  render();
+  after();
+}
+function after() {
+  if (S.kind === "order") {
+    if (!S.x.audit && can("serverTools")) tool("card_data", { kind: "order", id: S.order.id }).then(r => { if (r && r.card) { S.x = Object.assign({}, S.x, r.card); render(); runChecks(); } }).catch(() => {});
+    else runChecks();
+  }
+  if (S.kind === "checkout") {
+    if (S.d.status === "completed" && S.d.order && S.tool === "complete_checkout" && can("serverTools")) tool("card_data", { kind: "order", id: S.d.order.id }).then(r => { if (r && r.order) { S.order = r.order; S.x = Object.assign({}, S.x, r.card); S.kind = "order"; render(); runChecks(); } }).catch(() => {});
+    else if (["requires_escalation", "ready_for_complete"].includes(S.d.status)) watch();
+  }
+}
+async function runChecks() {
+  if (!subtle || !S.x.audit || !S.order) return;
+  const o = S.tamper ? S.tampered : S.order;
+  try { S.checks = await orderChecks(o, S.x.audit, (S.x.keys || {}).seller || S.x.audit.keys.seller); } catch (e) { S.checks = [[false, "The checks could not run here", String(e && e.message || e)]]; }
+  render();
+}
+// A checkout that waits (for a person, or for the assistant to place it) is read again until it settles.
+let timer = null, t0 = 0;
+function stopWatch() { clearTimeout(timer); timer = null; }
+function watch() {
+  if (timer || !can("serverTools")) return;
+  S.live.stopped = false; t0 = Date.now();
+  const next = () => { const age = Date.now() - t0; if (age > 20 * 60000) { timer = null; S.live.stopped = true; render(); return; } timer = setTimeout(tick, age < 3 * 60000 ? 3000 : 8000); };
+  const tick = async () => {
+    timer = null;
+    if (document.hidden) return next();
+    try {
+      const r = await tool("card_data", { kind: "checkout", id: S.d.id });
+      if (r && r.checkout) {
+        const was = S.d, c = r.checkout;
+        S.live.at = new Date().toISOString();
+        const changed = c.status !== was.status || jcs((c.wholesale || {}).approval || null) !== jcs((was.wholesale || {}).approval || null);
+        S.d = c; S.x = Object.assign({}, S.x, r.card);
+        // Draw again only when something changed: a redraw under a finger loses the tap.
+        if (changed) { settled(was, c); render(); }
+        else { const el = app.querySelector("[data-checked]"); if (el) el.textContent = ", checked " + clock(S.live.at); }
+        if (!["requires_escalation", "ready_for_complete"].includes(c.status)) return;
+      }
+    } catch (e) {}
+    next();
+  };
+  next();
+}
+function settled(was, c) {
+  const ap = (c.wholesale || {}).approval;
+  if (was.status === "requires_escalation" && ap && ap.decision === "approved" && c.status === "ready_for_complete") {
+    // The card never speaks for the person: it tells the assistant what changed and shows the button. The person presses it.
+    tell(`Checkout ${c.id} was approved by ${ap.by} at ${clock(ap.at)}${ap.device ? " on their own device" : ""}. It is now ready_for_complete: when the user asks, call complete_checkout to place the order.`);
+  } else if (ap && ap.decision === "rejected") tell(`Checkout ${c.id} was rejected by ${ap.by}${ap.note ? `: ${ap.note}` : ""}. Do not place it.`);
+}
+
+// ------------------------------------------------------------------ draw
+function render() {
+  let html;
+  try {
+    html = S.cancelled && !S.res ? `<div class="card">${head("Cancelled", esc(S.cancelled), "")}</div>` : !S.res ? vLoading()
+      : S.kind === "error" ? vError(S.d) : S.kind === "plan" ? vPlan(S.d) : S.kind === "checkout" ? vCheckout(S.d.checkout && S.d.card ? S.d.checkout : S.d) : S.kind === "order" ? vOrder(S.order)
+      : S.kind === "usual" ? vUsual(S.d) : S.kind === "catalog" ? vCatalog(S.d) : S.kind === "proposals" ? vProposals(S.d) : S.kind === "issues" ? vIssues(S.d) : S.kind === "none" ? wrap(head("No answer to draw", "", "")) : vOther(S.d);
+  } catch (e) { html = wrap(head("This answer could not be drawn", esc(String(e && e.message || e)), "")); }
+  app.innerHTML = html;
+  for (const [id, v] of Object.entries(S.sig)) paintSig(id, v);
+  if (S.res && !S.sigStarted) { S.sigStarted = true; checkSigs(); }
+  requestAnimationFrame(size);
+}
+function paintSig(id, v) {
+  const el = app.querySelector(`[data-sig="${id}"]`);
+  if (!el) return;
+  el.classList.toggle("fail", v.ok === false);
+  el.innerHTML = (v.ok ? IC.ok : v.ok === false ? IC.bad : IC.soft) + `<span>${esc(v.text)}</span>`;
+}
+async function checkSigs() {
+  const d = S.d, seller = (S.x.keys || {}).seller;
+  const set = (id, v) => { S.sig[id] = v; paintSig(id, v); requestAnimationFrame(size); };
+  const kid = seller ? ` Key ${String(seller.kid).slice(0, 12)}…` : "";
+  if (!d) return;
+  if (S.kind === "checkout" && d.ap2) {
+    if (!subtle || !seller) return set("offer", { ok: null, text: `Offer signed by Valio Aimo (ES256), digest sha-256 ${String(d.ap2.checkout_digest).slice(0, 16)}…. This frame cannot check it; the approval page can.` });
+    const c = S.d, ok = await verifyDetached(without(c, "ap2"), c.ap2.merchant_authorization, seller);
+    set("offer", ok ? { ok: true, text: `Offer signed by Valio Aimo, checked here in the chat. Digest sha-256 ${String(c.ap2.checkout_digest).slice(0, 16)}…: what the approver signs and what the order must match.${kid}` } : { ok: false, text: "This offer does not match Valio Aimo's signature." });
+  } else if (d.proof && d.proof.jws) {
+    if (!subtle || !seller) return set("doc", { ok: null, text: "Signed by Valio Aimo (ES256). This frame cannot check signatures itself." });
+    const ok = await verifyDetached(without(d, "proof"), d.proof.jws, seller);
+    set("doc", ok ? { ok: true, text: `Signed by Valio Aimo, checked here in the chat.${kid}` } : { ok: false, text: "This answer does not match Valio Aimo's signature." });
+  }
+}
+app.addEventListener("toggle", e => { const k = e.target && e.target.dataset && e.target.dataset.k; if (k) { S.open[k] = e.target.open; requestAnimationFrame(size); } }, true);
+app.addEventListener("click", async e => {
+  const b = e.target.closest("[data-act]");
+  if (!b) return;
+  const act = b.dataset.act;
+  if (act === "say") { b.disabled = true; const ok = await say(b.dataset.text); if (ok) toast("Sent to the chat."); else b.disabled = false; }
+  else if (act === "open") openLink(b.dataset.url);
+  else if (act === "copy") toast((await copy(b.dataset.text)) ? "Link copied." : b.dataset.text);
+  else if (act === "watch") { watch(); render(); }
+  else if (act === "xml") { S.xml = !S.xml; render(); }
+  else if (act === "tamper") {
+    S.tamper = !S.tamper;
+    if (S.tamper) { S.tampered = JSON.parse(JSON.stringify(S.order)); const t = S.tampered.totals.find(x => x.type === "total"); t.amount += 1; }
+    S.checks = null; render(); runChecks();
+  }
+  else if (act === "dl") {
+    const pp = S.x.peppol, name = `${S.order.label}-peppol-order.xml`;
+    try {
+      if (!can("downloadFile")) throw new Error("no download");
+      const r = await request("ui/download-file", { contents: [{ type: "resource", resource: { uri: `file:///${name}`, mimeType: "application/xml", text: pp.xml } }] }, 60000);
+      if (r && r.isError) throw new Error("refused");
+    } catch (err) {
+      try { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([pp.xml], { type: "application/xml" })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); if (!S.xml) { S.xml = true; render(); } }
+      catch (e2) { openLink(pp.url); }
+    }
+  }
+});
+setInterval(() => { for (const el of app.querySelectorAll("[data-left]")) el.textContent = left(el.dataset.left); }, 30000);
+try { new ResizeObserver(() => requestAnimationFrame(size)).observe(document.body); } catch (e) {}
+document.addEventListener("visibilitychange", () => { if (!document.hidden && S.kind === "checkout" && !timer && S.d && ["requires_escalation", "ready_for_complete"].includes(S.d.status) && !S.live.stopped) watch(); });
+
+(async () => {
+  render();
+  try {
+    S.host = await request("ui/initialize", { protocolVersion: "2026-01-26", appInfo: { name: "valio-aimo-cards", version: "1.0.0" }, appCapabilities: { availableDisplayModes: ["inline"] } }, 10000);
+    applyCtx(S.host.hostContext || {});
+  } catch (e) {}
+  notify("ui/notifications/initialized");
+  // ChatGPT's older bridge hands the result over on a global; use it if the standard notification has not come.
+  setTimeout(() => { const o = window.openai; if (!S.res && o && o.toolOutput) take({ structuredContent: o.toolOutput, _meta: o.toolResponseMetadata || {}, content: [{ type: "text", text: JSON.stringify(o.toolOutput) }] }); }, 1500);
+})();
+})();
+</script>
+</body>
+</html>

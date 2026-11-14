@@ -14,7 +14,7 @@
 .chain.bad{background:var(--deny-bg);color:var(--deny)}
 .chain b{font-weight:600}
 .chain .meta{font-size:var(--t1);opacity:.85;text-align:right;white-space:nowrap}
-.filters{display:grid;grid-template-columns:minmax(0,1.6fr) repeat(4,minmax(0,1fr));gap:var(--s2);position:sticky;top:57px;z-index:5;background:var(--bg);padding:var(--s2) 0 var(--s3)}
+.filters{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.3fr) minmax(0,.9fr) minmax(0,.9fr) minmax(0,1.2fr);gap:var(--s2);position:sticky;top:57px;z-index:5;background:var(--bg);padding:var(--s2) 0 var(--s3)}
 .filters input[type=search]{padding-left:34px;background:var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2397979e' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='4.5'/%3E%3Cpath d='m10.5 10.5 3 3'/%3E%3C/svg%3E") no-repeat 11px center}
 .count{font-size:var(--t2);color:var(--muted);display:flex;justify-content:space-between;gap:var(--s3);padding:0 0 var(--s2);border-bottom:1px solid var(--line);flex-wrap:wrap}
 .count button{all:unset;cursor:pointer;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:3px}
@@ -72,7 +72,7 @@
     <p class="lead">Every step agents, people and the gateway took, in order. Each entry carries the hash of the one before it, so changing any entry breaks every link after it. Your browser checks the chain below.</p>
     <p class="lead" style="font-size:14px">Valio Aimo reads every entry. A customer reads its own and gets everyone else's withheld, and can still check the whole chain. In this demo you can read as either: the customers are invented, and nobody else ever sees your own sandbox.</p>
   </div>
-  <div class="chain" id="chain" role="status"><span class="spin"></span><span>Loading the latest entries</span></div>
+  <div class="chain" id="chain" role="status"><span class="spin"></span><span>Reading the latest entries, then checking the chain in your browser</span></div>
   <div class="filters" role="search">
     <input class="q" type="search" id="q" placeholder="Search text, order, agent, rule" aria-label="Search the ledger">
     <select id="f_view" aria-label="Read as"><option value="valio">Read as Valio Aimo (demo)</option><option value="me">Read as a customer (you)</option></select>
@@ -80,7 +80,7 @@
     <select id="f_kind" aria-label="Kind"><option value="">All kinds</option></select>
     <select id="f_cid" aria-label="Order"><option value="">All orders</option></select>
   </div>
-  <div class="count" id="count"><span><span class="skel" style="width:20ch"></span></span></div>
+  <div class="count" id="count"></div>
   <ol class="tl" id="tl" aria-live="polite"></ol>
   <div class="more" id="more" hidden><button class="btn" id="morebtn" type="button">Show older entries</button></div>
   <footer class="foot"><span>The same data as JSON for agents and scripts:</span><a href="/ledger?format=json">/ledger?format=json</a><a href="/spec#rules">The rules</a></footer>
@@ -243,12 +243,11 @@ $("#morebtn").onclick = async () => {
 };
 document.addEventListener("keydown", e => { if (e.key === "/" && document.activeElement.tagName !== "INPUT") { e.preventDefault(); $("#q").focus(); } });
 
-(async () => {
+(async function start(again) {
   const p = new URLSearchParams(location.search);
-  $("#q").value = p.get("q") || "";
-  if (p.get("view") === "me") $("#f_view").value = "me";
+  if (!again) { $("#q").value = p.get("q") || ""; if (p.get("view") === "me") $("#f_view").value = "me"; }
   try { await load(true); }
-  catch (e) { $("#chain").className = "chain bad"; $("#chain").innerHTML = `${markHtml(false)}<span>Could not load the ledger. Reload to try again.</span>`; $("#count").textContent = ""; return; }
+  catch (e) { $("#chain").className = "chain"; $("#chain").innerHTML = `<span class="spin"></span><span>The gateway is not answering with the ledger. Asking again every few seconds.</span>`; $("#count").textContent = ""; setTimeout(() => start(true), 4000); return; }
   for (const [k, id] of [["acct", "#f_acct"], ["kind", "#f_kind"], ["cid", "#f_cid"]]) if (p.get(k)) $(id).value = p.get(k);
   draw();
   // New entries arrive while you watch. An older gateway sends the whole ledger each time, so ask it less often.

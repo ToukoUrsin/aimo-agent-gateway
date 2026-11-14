@@ -1,12 +1,12 @@
 {
- "id": "20261114T061657Z",
- "at": "2026-11-14T06:17:56Z",
- "seconds": 59,
+ "id": "20261114T083306Z",
+ "at": "2026-11-14T08:33:57Z",
+ "seconds": 51,
  "seed": 2026,
  "menus": 60,
  "orders": 60,
- "lines": 1334,
- "eur": 61849,
+ "lines": 1168,
+ "eur": 64641,
  "asked": 0,
  "nothing": 0,
  "refused": 0,
@@ -26,28 +26,34 @@
  },
  "with_diet": 52,
  "diets": {
-  "egg-free": 4,
-  "gluten-free": 16,
+  "egg-free": 3,
+  "gluten-free": 13,
   "lactose-free": 16,
-  "milk-free": 8,
+  "milk-free": 6,
   "nut-free": 16,
-  "vegan": 4,
-  "vegetarian": 8
+  "peanut-free": 6,
+  "vegan": 3,
+  "vegetarian": 7
  },
- "held_dishes": 4,
- "held_portions": 1659,
- "portions": 85860,
- "left_for_person": 58,
+ "written": 21,
+ "lost": 8,
+ "flags": 8,
+ "questions": 54,
+ "pantry_lines": 151,
+ "held_dishes": 3,
+ "held_portions": 1323,
+ "portions": 90907,
+ "left_for_person": 56,
  "approved_by_person": 60,
- "cleared_lines": 216,
- "median_plan_s": 0.87,
+ "cleared_lines": 266,
+ "median_plan_s": 0.53,
  "checks": [
   {
    "id": "allergen",
    "title": "No excluded allergen on any order",
    "unit": "order lines",
    "what": "Every line of every order with an order-wide exclusion (a nut-free kitchen), against the manufacturer's contains and may-contain data.",
-   "passed": 335,
+   "passed": 238,
    "failed": 0,
    "examples": []
   },
@@ -55,8 +61,44 @@
    "id": "diet",
    "title": "Dietary portions get a product that fits",
    "unit": "dietary lines",
-   "what": "Each line that serves lactose-free, gluten-free, milk-free, egg-free, vegan or vegetarian portions, against the manufacturer's data and claims.",
-   "passed": 956,
+   "what": "Each line that serves nut-free, peanut-free, lactose-free, gluten-free, milk-free, egg-free, vegan or vegetarian portions, against the manufacturer's data and claims, traces included.",
+   "passed": 931,
+   "failed": 0,
+   "examples": []
+  },
+  {
+   "id": "guests",
+   "title": "A note about some guests stays with those guests",
+   "unit": "dish ingredients",
+   "what": "A note with a head count never becomes a ban on the whole order. In every dish exactly that share of the portions is ordered under the note or held with a question, and every portion is accounted for.",
+   "passed": 1226,
+   "failed": 0,
+   "examples": []
+  },
+  {
+   "id": "named",
+   "title": "A dish keeps the ingredient it is named for",
+   "unit": "dishes",
+   "what": "Each dish name, in English or Finnish, against its recipe. Where the named ingredient is missing the plan must flag the dish; where the dish is the allergen, those guests' portions must be held.",
+   "passed": 286,
+   "failed": 0,
+   "examples": []
+  },
+  {
+   "id": "pack",
+   "title": "No pack far bigger than the need",
+   "unit": "order lines",
+   "what": "Ordered against needed on every line. More than one and a half times the need is allowed only when the line says nothing smaller is sold and what is left over, and no smaller pack of the kitchen's own products was in stock.",
+   "passed": 1163,
+   "failed": 0,
+   "examples": []
+  },
+  {
+   "id": "pantry",
+   "title": "Staples left to the pantry are small and named",
+   "unit": "pantry lines",
+   "what": "Every staple left off the order is listed with its amount, is at most a third of the smallest pack sold, matches the recipe cards' sums and is not on the order.",
+   "passed": 151,
    "failed": 0,
    "examples": []
   },
@@ -65,7 +107,7 @@
    "title": "Enough is ordered, and at most one pack too much",
    "unit": "ingredients",
    "what": "Portions times the recipe card's amount plus its waste allowance, worked out again here, against pack size times packs ordered.",
-   "passed": 1182,
+   "passed": 1120,
    "failed": 0,
    "examples": []
   },
@@ -74,7 +116,7 @@
    "title": "Nothing is dropped silently",
    "unit": "dish ingredients",
    "what": "Every ingredient of every dish is on an order line or named under not ordered. A refused dish is named once and none of it is ordered.",
-   "passed": 1512,
+   "passed": 1584,
    "failed": 0,
    "examples": []
   },
@@ -92,7 +134,7 @@
    "title": "No allergen pass without data",
    "unit": "orders",
    "what": "Where a product has no allergen declaration and something is excluded, the signed record shows a person cleared it. It never says the line passed.",
-   "passed": 35,
+   "passed": 37,
    "failed": 0,
    "examples": []
   },
@@ -101,14 +143,14 @@
    "title": "A substitute is marked as one",
    "unit": "substitute lines",
    "what": "A product that differs from what the recipe names is marked on the signed order with what it replaces.",
-   "passed": 44,
+   "passed": 47,
    "failed": 0,
    "examples": []
   }
  ],
- "checked": 4124,
+ "checked": 6843,
  "failed": 0,
- "file": "evals/menu-runs/20261114T061657Z.jsonl",
+ "file": "evals/menu-runs/20261114T083306Z.jsonl",
  "rerun": "AIMO_DATA=/tmp/aimo-menu-eval uv run -q python -m agent.menu_evals",
  "photos": {
   "reads_each": 10,
@@ -126,7 +168,7 @@
     "no_question": 10,
     "dishes": 8,
     "differences": [],
-    "median_s": 7.5
+    "median_s": 7.6
    },
    {
     "id": "school",
@@ -141,7 +183,7 @@
     "no_question": 10,
     "dishes": 9,
     "differences": [],
-    "median_s": 8.1
+    "median_s": 7.2
    },
    {
     "id": "hotel",
@@ -151,12 +193,34 @@
     "failed_calls": 0,
     "refused": 0,
     "guests_right": 10,
-    "same_dishes": 10,
+    "same_dishes": 6,
     "same_notes": 10,
     "no_question": 10,
     "dishes": 14,
-    "differences": [],
-    "median_s": 11.2
+    "differences": [
+     "smoked salmon with lemon and dill",
+     "smoked salmon, lemon and dill"
+    ],
+    "median_s": 7.8
+   },
+   {
+    "id": "lounas",
+    "title": "Lounaslista",
+    "printed_guests": 120,
+    "reads": 10,
+    "failed_calls": 0,
+    "refused": 0,
+    "guests_right": 10,
+    "same_dishes": 4,
+    "same_notes": 10,
+    "no_question": 10,
+    "dishes": 6,
+    "differences": [
+     "chicken and vegetable stir fry with rice",
+     "chicken and vegetable stir-fry with rice",
+     "chicken and vegetable wok with rice"
+    ],
+    "median_s": 10.6
    },
    {
     "id": "notmenu",

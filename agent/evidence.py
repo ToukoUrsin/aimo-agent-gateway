@@ -24,6 +24,7 @@ OUT = ROOT / "evals" / "tests-latest.json"
 # id, what a reader is told it covers, command, and whether it needs its own server ("port") opened as localhost or 127.0.0.1.
 SUITES = [
     {"id": "flow", "title": "One order end to end", "what": "Offer, signature, approval, order, and the refusals on the way: wrong product, missed cut-off, a price that moved.", "cmd": ["uv", "run", "-q", "python", "-m", "tests.flow"]},
+    {"id": "need", "title": "The right product for the words", "what": "Milk gets milk, 600 eggs are 600 eggs, 'chicken' asks which; a wrong date, a dropped connection and a busy upstream API on the way in.", "cmd": ["uv", "run", "-q", "python", "-m", "tests.need"]},
     {"id": "controls", "title": "What an agent can see and do", "what": "No stock counts, no other customers' data, rate limits, the per-reader ledger.", "cmd": ["uv", "run", "-q", "python", "-m", "tests.controls"]},
     {"id": "after", "title": "After the order", "what": "Short pick, delay and batch recall: what the agent may settle alone and what goes to a person.", "cmd": ["uv", "run", "-q", "python", "-m", "tests.after"]},
     {"id": "menu", "title": "Menu to order", "what": "Recipe quantities, pack sizes, dietary rules per dish, a shortage solved by what the ingredient does, a photo that is not a menu.", "cmd": ["uv", "run", "-q", "python", "-m", "tests.menu"]},
@@ -32,6 +33,7 @@ SUITES = [
     {"id": "attack", "title": "Attacks from outside", "what": "Forged tokens, replayed offers, other accounts' orders, oversized input, spoofed addresses, against a fresh server.", "cmd": ["uv", "run", "-q", "python", "-m", "tests.attack"], "server": {"port": 8665, "host": "127.0.0.1"}},
     {"id": "passkey", "title": "Approval signed on a person's device", "what": "Enrol a device, sign a decision with it, verify it in the browser, and the ways around it that must fail. Uses a software passkey in a test browser.", "cmd": ["node", "tests/passkey.mjs"],
      "server": {"port": 8673, "host": "localhost"}, "env": {"BASE": "http://localhost:8673"}},
+    {"id": "peppol", "title": "Peppol order export", "what": "Plain, substituted, menu-sized, and amended orders validated against the OASIS UBL 2.1 Order schema and the published OpenPeppol T01 Schematron.", "cmd": ["uv", "run", "-q", "python", "-m", "tests.peppol"]},
 ]
 
 

@@ -13,11 +13,13 @@ import time
 from collections import Counter
 from datetime import datetime, timedelta
 
+from cryptography.hazmat.primitives.asymmetric import ec
+
 from . import policy
 from .aimo import Aimo, AimoError, facts, parse_ts
-from .catalog import ALLERGENS, UNITS, Catalog, declares_allergens
+from .catalog import ALLERGENS, UNITS, Catalog, declares_allergens, kind, pieces
 from .config import CURRENCY, DEMO_CUSTOMER, EXT, FREEZE_NOW, HOLD_MINUTES, PUBLIC_URL, STAGE, TZ, UCP_VERSION, order_url
-from .signing import Key, digest, jwt_encode, jwt_peek, jwt_verify, now, sign_detached
+from .signing import Key, b64d, digest, jwt_encode, jwt_peek, jwt_verify, now, public_jwk, sign_detached
 from .store import Store
 
 BUYER_NAME = "Nordic Harbour Hotels"
@@ -70,6 +72,8 @@ def _need_key(unit: str) -> str | None:
         return "l"
     if u in ("kg", "kgm", "kilogram", "kilograms", "kilo", "kilos"):
         return "kg"
+    if u in ("pcs", "pc", "piece", "pieces", "kpl", "each", "egg", "eggs", "portion", "portions"):
+        return "pcs"
     return None
 
 
@@ -304,19 +308,60 @@ class Gateway:
         }
         return jwt_encode(claims, k["org"], typ="mandate+jwt")
 
+    def buyer_keys(self, iss) -> list[dict]:
+        """Public keys a buying company registered itself. Their private halves never reach this gateway."""
+        return self.store.get("buyer_keys:" + str(iss), [])
+
+    def register_buyer_key(self, slug: str, jwk) -> dict:
+        """The buying company registers its own signing key: the public half only. From then on it can sign its agents' mandates itself,
+        and an order placed under one carries a signature this gateway could not have made."""
+        a = self.account(slug)
+        if not a:
+            raise GatewayError(404, "not_found", "No such account.")
+        if not isinstance(jwk, dict) or "d" in jwk:
+            raise GatewayError(400, "bad_key", "Send the public half of the key only, as a JWK. A JWK with a private part (d) is refused and not stored.")
+        try:
+            if jwk.get("kty") != "EC" or jwk.get("crv") != "P-256":
+                raise ValueError
+            x, y = b64d(str(jwk["x"])), b64d(str(jwk["y"]))
+            pub = public_jwk(ec.EllipticCurvePublicNumbers(int.from_bytes(x, "big"), int.from_bytes(y, "big"), ec.SECP256R1()).public_key())  # raises unless the point is on the curve
+        except Exception:
+            raise GatewayError(400, "bad_key", "The key must be a P-256 public key as a JWK (kty EC, crv P-256, x, y), the kind ES256 signs with.")
+        self._register(a)
+        keys = [k for k in self.buyer_keys(a["iss"]) if k["jwk"]["kid"] != pub["kid"]][-4:] + [{"jwk": pub, "at": iso()}]
+        self.store.put("buyer_keys:" + a["iss"], keys)
+        self.store.log(None, "human:buyer admin", "control", f"{a['name']} registered its own signing key with Valio Aimo (key {pub['kid'][:16]}…). The gateway holds the public half only: mandates signed with it are the buyer's own.",
+                       {"kid": pub["kid"]}, acct=a["customer"])
+        return {"kid": pub["kid"], "issuer": a["iss"], "audience": self.audience, "customer": a["customer"], "agent_prefix": f"agent:{a['slug']}/", "mandate": self.store.get("mandate_config:" + a["customer"]),
+                "keys": [k["jwk"]["kid"] for k in keys]}
+
     def identify(self, token: str | None) -> dict | None:
         if not token:
             return None
         bad = lambda code, detail: {"ok": False, "error": code, "detail": detail}
         try:
             _, c = jwt_peek(token)
+            if not isinstance(c, dict):
+                raise ValueError
         except Exception:
             return bad("mandate_invalid_signature", "The mandate is not a readable JWT.")
         buyer = self.store.get("buyer:" + str(c.get("iss")))
         if not buyer:
             return bad("mandate_scope_mismatch", "Unknown issuer: this company has not registered a signing key with Valio Aimo.")
-        if jwt_verify(token, buyer["jwk"]) is None:
+        own = next((k["jwk"] for k in self.buyer_keys(c.get("iss")) if jwt_verify(token, k["jwk"]) is not None), None)
+        if own is None and jwt_verify(token, buyer["jwk"]) is None:
             return bad("mandate_invalid_signature", "The mandate's signature does not match the buyer's registered key.")
+        if own:  # the buyer wrote and signed this mandate itself, so nothing in it has passed through this gateway's hands: read it strictly
+            if not isinstance(c.get("jti"), str) or not re.fullmatch(r"[A-Za-z0-9_.:-]{6,80}", c["jti"]) or not isinstance(c.get("exp"), (int, float)):
+                return bad("mandate_scope_mismatch", "A mandate needs an id (jti) and an expiry (exp).")
+            if not isinstance(c.get("sub"), str) or not re.fullmatch(re.escape(f"agent:{buyer.get('slug')}/") + r"[A-Za-z0-9_.-]{1,60}", c["sub"]):
+                return bad("mandate_scope_mismatch", f"The agent named in the mandate (sub) must be one of this company's own: agent:{buyer.get('slug')}/<name>.")
+            try:
+                c["mandate"] = policy.fit_mandate(c.get("mandate") or {})
+            except ValueError as e:
+                return bad("mandate_scope_mismatch", f"The mandate's constraint block cannot be read: {e} has the wrong type.")
+            if c.get("cnf") is not None and not (isinstance(c["cnf"], dict) and isinstance(c["cnf"].get("jwk"), dict) and c["cnf"]["jwk"].get("kty") == "EC" and "d" not in c["cnf"]["jwk"]):
+                return bad("mandate_scope_mismatch", "cnf.jwk must be the agent's public key.")
         if c.get("exp", 0) < now():
             return bad("mandate_expired", "The mandate has expired.")
         if c.get("aud") != self.audience:
@@ -325,7 +370,8 @@ class Gateway:
             return bad("mandate_expired", "The buyer has revoked this mandate.")
         jwk = (c.get("cnf") or {}).get("jwk")
         p = {"ok": True, "token": token, "jti": c["jti"], "exp": c["exp"], "buyer": c["iss"], "buyer_name": buyer["name"], "customer": buyer["customer"], "slug": buyer.get("slug"), "world": buyer.get("world", "main"),
-             "agent": c.get("sub"), "agent_name": c.get("agent_name"), "agent_jwk": jwk, "bound": bool(jwk), "mandate": c.get("mandate") or {}, "ship_to": buyer.get("ship_to")}
+             "agent": c.get("sub"), "agent_name": str(c.get("agent_name") or "")[:60] or None, "agent_jwk": jwk, "bound": bool(jwk), "mandate": c.get("mandate") or {}, "ship_to": buyer.get("ship_to"),
+             "mandate_key": {"kid": (own or buyer["jwk"])["kid"], "held_by": "buyer" if own else "gateway"}}
         ag = self.store.get("agent:" + str(p["agent"]))
         if ag and ag.get("status") == "suspended":
             p["suspended"] = ag.get("reason") or "suspended"
@@ -339,14 +385,31 @@ class Gateway:
 
     # ---------------------------------------------------------------- lookups
     def _day(self, day) -> str:
-        day = str(day or "").strip()
-        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", day):
-            day = (datetime.now(TZ) + timedelta(days=1)).strftime("%Y-%m-%d")
-        return day
+        """The delivery day as YYYY-MM-DD. No date given: the next day that is not a Sunday. A date that cannot be read is an error, never a silent guess."""
+        if isinstance(day, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}([T ].*)?", day.strip()):
+            day = day.strip()[:10]
+            try:
+                datetime.strptime(day, "%Y-%m-%d")
+                return day
+            except ValueError:
+                pass
+        if day not in (None, ""):
+            raise GatewayError(400, "invalid_delivery_date", f"delivery_date must be a date as YYYY-MM-DD, for example 2026-11-16. Got {str(day)[:40]!r}.")
+        d = (parse_ts(FREEZE_NOW) or datetime.now(TZ)) + timedelta(days=1)
+        if d.weekday() == 6:
+            d += timedelta(days=1)
+        return d.strftime("%Y-%m-%d")
+
+    @staticmethod
+    def _asked_day(req: dict):
+        """The delivery date of a request, wherever the agent put it: at the top or under "wholesale"."""
+        w = req.get("wholesale") if isinstance(req.get("wholesale"), dict) else {}
+        return w.get("delivery_date") or req.get("delivery_date") or w.get("requested_date") or req.get("requested_date")
 
     def _live(self, ids, day, principal, exclude_ref="") -> dict:
         if not principal or not principal.get("ok"):
-            return {i: {"orderable": False, "reason": "mandate_required", "available": 0.0, "stock_known": False} for i in ids}
+            why = (principal or {}).get("detail") or "Present the buyer's mandate as Authorization: Bearer <mandate>."
+            return {i: {"orderable": False, "reason": (principal or {}).get("error") or "mandate_required", "said": why[0].lower() + why[1:].rstrip("."), "available": 0.0, "stock_known": False} for i in ids}
         customer = principal["customer"]
         try:
             raw = self.aimo.quote([i for i in ids if self.cat.get(i)], day, customer)
@@ -357,6 +420,8 @@ class Gateway:
         return self.allocation.cap(self.seller.mark(self.after.block({i: facts(raw.get(i), day, self.store.reserved(i, exclude_ref, world)) for i in ids}, world, day, None if customer == "public" else customer), exclude_ref), world, day, customer, exclude_ref)
 
     def _content(self, d, f, key) -> float | None:
+        if key == "pcs":   # 600 eggs are 60 boxes of ten, not 600 boxes
+            return float(pieces(d) or 1)
         if key is None:
             return 1.0
         if d["content"].get(key):
@@ -454,9 +519,15 @@ class Gateway:
 
     def search(self, req: dict, principal=None, trace=None) -> dict:
         w = req.get("wholesale") or {}
-        day, need = self._day(w.get("delivery_date")), w.get("need")
+        day, need = self._day(self._asked_day(req)), w.get("need")
         limit = max(1, min(int((req.get("pagination") or {}).get("limit", 10)), 25))
-        docs, f, notes = self.cat.search(req.get("query", ""), req.get("filters") or {}, limit=60)
+        same, f, notes, picked = self.cat.pick(req.get("query", ""), req.get("filters") or {})
+        docs = picked["text"]
+        if same and picked["how"] == "named":  # what was asked for comes first; products that only share its words follow
+            ids = {d["id"] for d in same}
+            docs = same[:60] + [d for d in docs if d["id"] not in ids]
+            if picked["other"]:
+                notes.append(f"{len(same)} products are plainly {' / '.join(picked['kinds'])}; they come first. Other kinds that share the words: {', '.join(list(picked['other'])[:5])}.")
         self._harvest_check(principal, [d["id"] for d in docs[:limit]], trace)
         cats = Counter(d["category"] for d in docs)
         example = {}
@@ -510,7 +581,9 @@ class Gateway:
             return []
         listed = [s for s in od["subs"] if self.cat.get(s) and s != od["id"]]
         listed_set = set(listed)
-        rest = [d["id"] for d in self.cat.docs if d["category"] == od["category"] and d["temp"] == od["temp"] and d["id"] != od["id"] and d["id"] not in listed_set]
+        # Beyond Valio Aimo's own list: products that are the same kind of thing (milk for milk, never coffee milk), same storage class first.
+        same = [d for d in self.cat.by_kind.get(kind(od), []) if d["id"] != od["id"] and d["id"] not in listed_set]
+        rest = [d["id"] for d in sorted(same, key=lambda d: d["temp"] != od["temp"])]
         ids = (listed + rest)[:120]
         live = self._live(ids + [od["id"]], day, principal)
         of, out = live[od["id"]], []
@@ -524,7 +597,8 @@ class Gateway:
             tier = "best" if s["listed"] else "better" if (d.get("brand") == od.get("brand") or abs(s["price_delta_pct"] or 0) <= 10) else "good"
             out.append({"id": d["id"], "title": d["title"], "tier": tier, "listed_by_valio_aimo": s["listed"], "price_delta_pct": s["price_delta_pct"], "per": s["per"],
                         "unit_price": f.get("price"), "availability": self._availability(f), "delivery_reliability": d.get("reliability"),
-                        "why": ("On Valio Aimo's substitute list. " if s["listed"] else "Same category and storage class. ") + "Keeps every free-from and diet claim; adds no allergens."})
+                        "why": ("On Valio Aimo's substitute list. " if s["listed"] else f"The same kind of product ({kind(od)})" + (". " if d["temp"] == od["temp"] else f", but {d['temp']} where yours is {od['temp']}. "))
+                               + "Keeps every free-from and diet claim; adds no allergens."})
         order = {"best": 0, "better": 1, "good": 2}
         out.sort(key=lambda x: (order[x["tier"]], abs(x["price_delta_pct"] or 0)))
         return out[:limit]
@@ -532,7 +606,7 @@ class Gateway:
     # ----------------------------------------------------------------- plan
     def plan(self, req: dict, principal=None, trace=None) -> dict:
         """Turn a need ('1,000 L by Monday') into ranked, ready-to-order options, with the policy outcome of each."""
-        need, day = req.get("need") or {}, self._day(req.get("delivery_date"))
+        need, day = req.get("need") or {}, self._day(self._asked_day(req))
         if not isinstance(need, dict) or not isinstance(need.get("quantity"), (int, float)) or isinstance(need.get("quantity"), bool) or not math.isfinite(need.get("quantity")) or need.get("quantity") <= 0 or not isinstance(need.get("unit"), str) or not need.get("unit").strip():
             raise GatewayError(400, "invalid_need", "need.quantity must be a positive number and need.unit must be a non-empty string.")
         if req.get("filters") is not None and not isinstance(req.get("filters"), dict):
@@ -540,18 +614,46 @@ class Gateway:
         key = _need_key(need.get("unit", ""))
         reqs = {"claims": self.cat.canon_claims((req.get("filters") or {}).get("claims")), "exclude_allergens": self.cat.canon_allergens((req.get("filters") or {}).get("exclude_allergens")),
                 "labels": self.cat.canon_labels((req.get("filters") or {}).get("labels"))}
-        docs, f, notes = self.cat.search(req.get("query", ""), req.get("filters") or {}, limit=60)
-        reqs = {k: sorted(set(reqs[k]) | set(f.get(k) or [])) for k in reqs}
+        query = req.get("query", "")
         pref = self.cat.get(req.get("preferred_product")) if req.get("preferred_product") else None
-        if not f.get("categories") and docs:
-            top = pref["category"] if pref else Counter(d["category"] for d in docs[:15]).most_common(1)[0][0]
-            dropped = len([d for d in docs if d["category"] != top])
-            docs = [d for d in docs if d["category"] == top]
-            if dropped:
-                notes.append(f"Kept category {top} (where most matches are) and left out {dropped} look-alikes from other categories. Pass filters.categories to change this.")
+        hist = self._history(principal)
+        # A request for milk gets milk: coffee milk and sour milk are other kinds, however cheap. They are named, not offered.
+        docs, f, notes, picked = self.cat.pick(query, req.get("filters") or {}, pref)
+        reqs = {k: sorted(set(reqs[k]) | set(f.get(k) or [])) for k in reqs}
+        choices = picked["choices"]
+        if choices and not pref:
+            # The request does not say which kind ("chicken", "pasta", "cream"). What this account has ordered settles it; otherwise the agent is asked.
+            past = {k: sum(hist[d["id"]]["orders"] for d in v if d["id"] in hist) for k, v in choices.items()}
+            usual = max(past, key=past.get) if any(past.values()) else None
+            listed = ", ".join(f"{k} ({len(v)})" for k, v in list(choices.items())[:6])
+            if usual:
+                docs, f, _, picked = self.cat.pick(query, req.get("filters") or {}, use_kind=usual)
+                notes.append(f"'{query}' does not say which kind: {listed}. This account has ordered {usual} {past[usual]} time(s), so that is what is offered. Ask for another kind by name to get it.")
+            else:
+                resp = {"ucp": self._env(), "need": need, "delivery_date": day, "requirements": {k: v for k, v in reqs.items() if v}, "options": [],
+                        "kinds_to_choose": [{"kind": k, "products": len(v), "example": {"id": v[0]["id"], "title": v[0]["title"]}} for k, v in list(choices.items())[:8]],
+                        "messages": [{"type": "info", "content": n} for n in notes] + [{"type": "warning", "code": "which_kind", "content":
+                                     f"'{query}' does not say which kind of product is meant, and this account has not ordered any of them before: {listed}. Nothing is offered until the kind is named. "
+                                     "Call again with one of these kinds as the query if the request settles it; otherwise ask the kitchen."}]}
+                self._logp(principal, trace, "plan", f"Asked for {need.get('quantity'):g} {need.get('unit')} of '{query}' by {nice_day(day)}. That could be {listed}, so no option was offered and the agent was told to say which.",
+                           {"need": need, "kinds_to_choose": [k for k in choices][:8]})
+                return self._prove(resp)
+        other_kinds = picked["other"]
+        names = " / ".join(picked["kinds"])
+        if picked["kinds"] and not docs:
+            n = sum(len(self.cat.by_kind.get(k, [])) for k in picked["kinds"])
+            notes.append(f"Valio Aimo lists {n} product(s) that are {names}, and none of them meets the requirements of this request. Nothing of another kind is offered in their place.")
+        elif picked["kinds"] and other_kinds and picked["how"] != "usual":
+            n = sum(len(v) for v in other_kinds.values())
+            notes.append(f"Offered from the {len(docs)} products that are plainly {names}. Left out {n} of other kinds that share the words ({', '.join(f'{k} {len(v)}' for k, v in list(other_kinds.items())[:5])}). Ask for one of those by name to get it.")
+        elif not picked["kinds"]:
+            notes.append(f"Nothing in Valio Aimo's range is called '{query}'. Try the plain name of the product.")
+        docs.sort(key=lambda d: d["id"] not in hist)   # what the account has ordered before is always priced
         if pref and pref["id"] not in [d["id"] for d in docs]:
             docs.insert(0, pref)
-        docs = docs[:40]
+        if len(docs) > 200:
+            notes.append(f"Priced the first 200 of {len(docs)} products of this kind. Add a requirement or a brand to narrow it.")
+        docs = docs[:200]
         live = self._live([d["id"] for d in docs], day, principal)
         cands, skipped = [], Counter()
         for d in docs:
@@ -564,12 +666,14 @@ class Gateway:
             else:
                 cands.append((d, fx, fit))
         cands.sort(key=lambda c: c[1]["price"] / c[2]["content_per_unit"])
-        full = [c for c in cands if c[2]["covers_pct"] >= 100]
+        # Cheapest means what the kitchen pays for its need, not the price per kilo of a case six times too big.
+        full = sorted((c for c in cands if c[2]["covers_pct"] >= 100), key=lambda c: (c[2].get("line_total_ex_vat", 0), c[1]["price"] / c[2]["content_per_unit"]))
 
         def line(c, units, sub_for=None):
             d, fx, fit = c
             return {"item": {"id": d["id"], "title": d["title"]}, "quantity": round(units * 10 ** d["scale"]), "units": units, "unit": UNITS.get(d["unit"], (0, d["unit"]))[1],
                     "covers": round(units * fit["content_per_unit"], 2), "unit_price": fx["price"], "line_total_ex_vat": round(fx["price"] * units),
+                    **({"pieces_per_unit": int(fit["content_per_unit"])} if key == "pcs" and fit["content_per_unit"] > 1 else {}),
                     **({"wholesale": {"substitutes_for": sub_for}} if sub_for else {})}
 
         options = []
@@ -584,7 +688,6 @@ class Gateway:
             options.append({"_sig": sig, "label": label, "tradeoff": tradeoff, "covers": round(covered, 2), "covers_pct": round(min(100, 100 * covered / need["quantity"]), 1) if need.get("quantity") else None,
                             "total_ex_vat": total, "authority": pre, "line_items": lines})
 
-        hist = self._history(principal)
         pref_label, pref_text = "as_requested", "Exactly the product asked for"
         if not pref:
             usual = sorted([c for c in cands if c[0]["id"] in hist], key=lambda c: -hist[c[0]["id"]]["orders"])
@@ -641,7 +744,7 @@ class Gateway:
                 if diffs:
                     o["differs_from_usual"] = diffs
         used = {l["item"]["id"] for o in options for l in o["line_items"]}
-        others = [{"id": c[0]["id"], "title": c[0]["title"], "price_per_" + (key or "unit"): round(c[1]["price"] / c[2]["content_per_unit"]), "units_needed": c[2]["units_needed"],
+        others = [{"id": c[0]["id"], "title": c[0]["title"], "price_per_" + {"pcs": "piece"}.get(key, key or "unit"): round(c[1]["price"] / c[2]["content_per_unit"]), "units_needed": c[2]["units_needed"],
                    "covers_pct": c[2]["covers_pct"], "total_ex_vat": c[2].get("line_total_ex_vat"), "ordered_before": c[0]["id"] in hist, "delivery_reliability": c[0].get("reliability")}
                   for c in cands if c[0]["id"] not in used][:8]
         for o in options:
@@ -649,6 +752,8 @@ class Gateway:
         skipped_txt = [{"reason": r, "products": n, "meaning": REASONS.get(r, "pack content unknown, so quantity cannot be computed")} for r, n in skipped.most_common()]
         resp = {"ucp": self._env(), "need": need, "delivery_date": day, "requirements": {k: v for k, v in reqs.items() if v}, "options": options[:5],
                 "also_qualifying": others, "not_offered": skipped_txt, "messages": [{"type": "info", "content": n} for n in notes]}
+        if other_kinds:
+            resp["other_kinds"] = [{"kind": k, "products": len(v), "example": {"id": v[0]["id"], "title": v[0]["title"]}} for k, v in list(other_kinds.items())[:8]]
         if any(fx.get("stale") for fx in live.values()):
             resp["data_stale"] = True
         if not options:
@@ -670,6 +775,10 @@ class Gateway:
                 return [], [], [{"type": "error", "code": "mandate_quantity_limit", "severity": "unrecoverable", "path": "$.line_items",
                                  "content": f"Rule M2: this request is over the mandate's {max_units:g} sales-unit per-order limit."}]
         subs = [str((it.get("wholesale") or {}).get("substitutes_for")) for it in items if (it.get("wholesale") or {}).get("substitutes_for")]
+        today = (parse_ts(FREEZE_NOW) or datetime.now(TZ)).strftime("%Y-%m-%d")
+        if day < today:
+            return [], [], [{"type": "error", "code": "delivery_date_passed", "severity": "recoverable", "path": "$.wholesale.delivery_date",
+                             "content": f"The delivery date {nice_day(day)} has already passed. Ask for a date from {nice_day(today)} on."}]
         live = self._live(list(dict.fromkeys(ids + subs)), day, principal, exclude_ref)
         plines, out, errors = [], [], []
         for n, it in enumerate(items):
@@ -689,7 +798,7 @@ class Gateway:
             if not units:
                 continue
             if not f["orderable"]:
-                err(f["reason"], f"{d['title']} cannot be ordered for {nice_day(day)}: {REASONS.get(f['reason'], f['reason'])}." + (f" The cut-off was {f['cutoff']}." if f["reason"] == "cutoff_passed" else ""),
+                err(f["reason"], f"{d['title']} cannot be ordered for {nice_day(day)}: {f.get('said') or REASONS.get(f['reason'], f['reason'])}." + (f" The cut-off was {f['cutoff']}." if f["reason"] == "cutoff_passed" else ""),
                     alternatives=self.substitutes(d["id"], day, principal, 3))
                 continue
             if qty % d["increment"]:
@@ -723,6 +832,35 @@ class Gateway:
     def _history(self, principal):
         return self.store.get("history:" + principal["customer"], {}) if principal and principal.get("ok") else {}
 
+    def usual(self, query: str = "", principal=None, trace=None) -> dict:
+        """What this account orders, how often and how much at a time. "We need some milk" then gets one proposal to confirm, not three questions."""
+        if not principal or not principal.get("ok"):
+            raise GatewayError(401, (principal or {}).get("error", "mandate_required"), (principal or {}).get("detail", "An account's order history needs its mandate."))
+        hist, query = self._history(principal), (query or "").strip()
+        asked = near = None
+        if query:
+            picked = self.cat.pick(query, {})[3]
+            asked, near = set(picked["kinds"]) | set(picked["choices"]), set(picked["other"])
+
+        def row(pid, h):
+            d = self.cat.get(pid)
+            per, unit = next(((d["content"][k], u) for k, u in (("l", "L"), ("kg", "KG")) if d["content"].get(k)), (pieces(d) or 1, "pcs"))
+            return {"id": pid, "title": d["title"], "kind": kind(d), "past_orders": h["orders"], "usual_units": h["typical_units"],
+                    "usual_amount": {"quantity": round(h["typical_units"] * per, 2), "unit": unit}}
+
+        have = sorted(((p, h) for p, h in hist.items() if self.cat.get(p)), key=lambda x: -x[1]["orders"])
+        mine = [row(p, h) for p, h in have if asked is None or kind(self.cat.get(p)) in asked]
+        also = [row(p, h) for p, h in have if near and kind(self.cat.get(p)) in near]
+        resp = {"ucp": self._env(), "query": query, "usual": mine[:12], "messages": []}
+        if also:
+            resp["other_kinds_ordered"] = also[:6]
+        if query and not mine:
+            resp["messages"].append({"type": "info", "code": "no_history", "content": f"This account has not ordered '{query}' through Valio Aimo before" + (", only other kinds that share the word." if also else ".")})
+        self._logp(principal, trace, "usual", (f"Asked what this account usually orders for '{query}'. " if query else "Asked what this account usually orders. ")
+                   + (f"{mine[0]['title']}: {mine[0]['past_orders']} past orders, usually {mine[0]['usual_amount']['quantity']:g} {mine[0]['usual_amount']['unit']} at a time." if mine else "Nothing in its history."),
+                   {"query": query, "usual": [m["id"] for m in mine[:12]]})
+        return self._prove(resp)
+
     def _cleared(self, principal) -> dict:
         """Products with no allergen declaration that a person cleared on this account: {product: {allergen: {by, at, checkout}}}."""
         return self.store.get("allergen_cleared:" + principal["customer"], {}) if principal and principal.get("ok") else {}
@@ -740,6 +878,11 @@ class Gateway:
                     and not c["wholesale"].get("approval") and parse_ts(c["expires_at"]).timestamp() > time.time())
         return placed + open_
 
+    def _day_placed(self, customer, day) -> int:
+        """Everything already placed through agents for this delivery day, approved by a person or not. Valio Aimo's ceiling counts it."""
+        docs = [json.loads(r[0]) for r in self.store.q("select doc from orders where customer=? order by created desc", (customer,))]
+        return sum(next((t["amount"] for t in o["totals"] if t["type"] == "subtotal"), 0) for o in docs if o["wholesale"]["delivery_date"] == day)
+
     def _preview(self, lines, day, principal, reqs) -> dict:
         """What the guardrails would say about these lines, without creating anything."""
         plines, _, errors = self._lines(lines, day, principal)
@@ -749,7 +892,8 @@ class Gateway:
         prof = self.store.get("profile:" + principal["customer"], policy.default_profile()) if principal and principal.get("ok") else policy.default_profile()
         prof["global_pause"] = bool(self.store.get("global_pause", False))
         spent = self.store.spent_since(principal["customer"], time.time() - policy.WEEK) if principal and principal.get("ok") else 0
-        rules = policy.evaluate(plines, subtotal, principal, prof, self._history(principal), spent, reqs, self._day_auto(principal["customer"], day) if principal and principal.get("ok") else 0, cleared=self._cleared(principal))
+        rules = policy.evaluate(plines, subtotal, principal, prof, self._history(principal), spent, reqs, self._day_auto(principal["customer"], day) if principal and principal.get("ok") else 0, cleared=self._cleared(principal),
+                                day_placed=self._day_placed(principal["customer"], day) if principal and principal.get("ok") else 0)
         dec = policy.decision(rules)
         return {"decision": {"auto": "agent_may_order", "escalate": "needs_human_approval", "deny": "not_allowed"}[dec], "reasons": [r["detail"] for r in rules if r["outcome"] != "pass"]}
 
@@ -764,14 +908,16 @@ class Gateway:
         totals = [{"type": "subtotal", "amount": subtotal}] + [{"type": "tax", "display_text": f"VAT {r:g} %", "amount": a} for r, a in sorted(taxes.items())] + [{"type": "total", "amount": subtotal + sum(taxes.values())}]
         messages, rules, dec = list(errors), [], "invalid"
         amends = inputs.get("amends")  # set by after.py: this checkout changes an order that is already placed, and may carry no goods
-        if not inputs["line_items"] and not amends:
+        standing = (inputs.get("proposal") or {}).get("standing")  # set by seller.py: a standing-order change, which may carry no goods
+        if not inputs["line_items"] and not amends and not standing:
             messages.append({"type": "error", "code": "empty_checkout", "severity": "recoverable", "content": "No line items."})
         cust = principal["customer"] if principal and principal.get("ok") else None
-        if not errors and (inputs["line_items"] or amends):
+        if not errors and (inputs["line_items"] or amends or standing):
             prof = self.store.get("profile:" + cust, policy.default_profile()) if cust else policy.default_profile()
             prof["global_pause"] = bool(self.store.get("global_pause", False))
             spent = self.store.spent_since(cust, time.time() - policy.WEEK) if cust else 0
-            rules = policy.evaluate(plines, subtotal, principal, prof, self._history(principal), spent, reqs, self._day_auto(cust, day, cid) if cust else 0, after=amends, proposal=inputs.get("proposal"), cleared=self._cleared(principal))
+            rules = policy.evaluate(plines, subtotal, principal, prof, self._history(principal), spent, reqs, self._day_auto(cust, day, cid) if cust else 0, after=amends, proposal=inputs.get("proposal"), cleared=self._cleared(principal),
+                                    day_placed=self._day_placed(cust, day) if cust else 0)
             dec = policy.decision(rules)
             for r in rules:
                 if r["outcome"] == "escalate":
@@ -940,9 +1086,47 @@ class Gateway:
         c = self._load(cid)
         if not secrets.compare_digest(token or "", c["_internal"]["approval_token"]):
             raise GatewayError(403, "forbidden", "This approval link is not valid.")
-        return self.public(self.store.checkout(cid)) | {"_events": self.store.events(ref=c["_internal"].get("trace"), cid=cid)}
+        return self.public(self.store.checkout(cid)) | {"_events": self.store.events(ref=c["_internal"].get("trace"), cid=cid), "_asked_by": c["_internal"].get("asked_by") or c["wholesale"].get("agent")}
 
-    def decide(self, cid, token, approve: bool, approver: str, note: str = "", device: dict | None = None) -> dict:
+    @staticmethod
+    def clears_of(c) -> list[dict]:
+        """What approving this checkout clears: each product with no allergen declaration, with the excluded allergens it is cleared for."""
+        out = {}
+        for r in c["wholesale"]["policy"]["rules"]:
+            for u in r.get("undeclared") or []:
+                e = out.setdefault(u["id"], {"id": u["id"], "title": u["title"], "codes": []})
+                e["codes"] = sorted(set(e["codes"]) | set(u["codes"]))
+        return [{**out[k], "what": ", ".join(ALLERGENS.get(x, x) for x in out[k]["codes"])} for k in sorted(out)]
+
+    def check_clears(self, c, sent) -> list[dict]:
+        """The approver ticks each line with no allergen declaration on its own. The list they send must be exactly the
+        product and allergen pairs the rule asked about: one line short, or one line more, and nothing is approved."""
+        want = self.clears_of(c)
+        pairs = lambda rows: {(str(x.get("id")), str(code)) for x in rows if isinstance(x, dict) for code in (x.get("codes") if isinstance(x.get("codes"), list) else [])}
+        if not isinstance(sent, list):
+            sent = []
+        missing, extra = pairs(want) - pairs(sent), pairs(sent) - pairs(want)
+        if extra:
+            raise GatewayError(400, "clears_mismatch", "This approval names a product or allergen that the allergen rule did not ask about on this order. Nothing was approved.")
+        if missing:
+            left = len({i for i, _ in missing})
+            raise GatewayError(400, "clears_mismatch", f"{left} of the {len(want)} lines with no allergen declaration {'was' if left == 1 else 'were'} not confirmed. Each one is ticked on its own, or the order is rejected. Nothing was approved.")
+        return want
+
+    @staticmethod
+    def _material(c) -> tuple:
+        """What an approver says yes to: the lines, the money and what each rule answered."""
+        return (next((t["amount"] for t in c["totals"] if t["type"] == "total"), 0), c["status"],
+                sorted((l["item"]["id"], l["quantity"]) for l in c["line_items"]),
+                sorted((r["id"], r["outcome"], r.get("path") or "") for r in c["wholesale"]["policy"]["rules"] if r["outcome"] != "pass"))
+
+    def set_asker(self, cid, who: str):
+        """Name the person who asked for this checkout (the menu page does), so the record keeps who asked apart from who approved."""
+        c = self._load(cid)
+        c["_internal"]["asked_by"] = str(who)[:80]
+        self.store.save_checkout(c)
+
+    def decide(self, cid, token, approve: bool, approver: str, note: str = "", device: dict | None = None, clears: list | None = None) -> dict:
         c = self._load(cid)
         if not secrets.compare_digest(token or "", c["_internal"]["approval_token"]):
             raise GatewayError(403, "forbidden", "This approval link is not valid.")
@@ -950,8 +1134,31 @@ class Gateway:
         c = self._load(cid)
         if c["status"] != "requires_escalation":
             raise GatewayError(409, "invalid_state", f"Nothing to decide: checkout is {c['status']}.")
-        rec = {"decision": "approved" if approve else "rejected", "by": approver or "Approver", "at": iso(), "note": note, "checkout_digest": c["_internal"]["digest"],
-               "overrides": [r["id"] for r in c["wholesale"]["policy"]["rules"] if r["outcome"] == "escalate"]}
+        approver = str(approver or "").strip()
+        if approve and not approver:
+            raise GatewayError(400, "approver_required", "An approval carries the name of the person who gives it. Nothing was approved.")
+        if approve:
+            # The rules are run again at the moment of the yes: a cap lowered, an agent suspended, a week's budget used up
+            # or a price moved since the offer was signed all show up here, and a person is never asked to approve yesterday's offer.
+            fresh = self._assemble(cid, c["_internal"]["inputs"], self.identify(c["_internal"].get("principal_token")), c["_internal"].get("trace"), internal=dict(c["_internal"]))
+            if self._material(fresh) != self._material(c):
+                self._sign_checkout(fresh)
+                now_says = [r["detail"] for r in fresh["wholesale"]["policy"]["rules"] if r["outcome"] == "deny"] or [r["detail"] for r in fresh["wholesale"]["policy"]["rules"] if r["outcome"] == "escalate"]
+                self.store.log(c["_internal"].get("trace"), "gateway", "exception", "The rules were run again when the approver said yes, and the answer was no longer the one on the offer. Nothing was approved; the offer was replaced by a fresh one.", cid=cid)
+                raise GatewayError(409, "offer_changed", "Nothing was approved: this offer changed after it was signed. " + ("It can no longer be ordered: " if fresh["status"] == "incomplete" else "It now needs no approval. " if fresh["status"] == "ready_for_complete" else "The page now shows the current one: ")
+                                   + (" ".join(now_says[:3]) if fresh["status"] != "ready_for_complete" else ""))
+        rec = {"decision": "approved" if approve else "rejected", "by": approver or "Someone holding the link", "at": iso(), "note": note, "checkout_digest": c["_internal"]["digest"],
+               "overrides": [r["id"] for r in c["wholesale"]["policy"]["rules"] if r["outcome"] == "escalate"],
+               "asked_by": c["_internal"].get("asked_by") or c["wholesale"].get("agent") or "the buyer's agent"}
+        cleared = []
+        if approve:
+            # A device-signed approval, or one that sends a list, names each line it clears and must match the rule exactly.
+            # A plain link approval through the API with no list (test scripts, the floor's approver scripts) clears them all at once, and the record says so.
+            listed = (device or {}).get("signed", {}).get("clears") if device else clears
+            cleared = self.check_clears(c, listed) if device or clears is not None else self.clears_of(c)
+            if cleared:
+                rec["clears"] = cleared
+                rec["clears_confirmed"] = "each line ticked by the approver" if device or clears is not None else "all at once, by link through the API"
         if device:  # the approver's own device signed this decision (gateway/passkey.py checked it); the proof is kept with the approval
             rec["device"] = device
         # The gateway's own record of the decision. Where no approver device is enrolled, this server-held key stands in for it.
@@ -969,17 +1176,20 @@ class Gateway:
             exp = min(exp, cutoff.timestamp()) if cutoff and not FREEZE_NOW else exp
             c["expires_at"] = iso(exp)
             c["wholesale"]["hold"] = {"price_and_stock_held_until": iso(exp)}
-            c["messages"].append({"type": "info", "code": "approved", "content": f"Approved by {rec['by']} at {rec['at']}" + (f", signed on their own device ({device['device']})." if device else ".")})
+            signed_how = f"{device['device']}, {device.get('how') or 'a passkey'}, key {device['thumbprint']}" if device else ""
+            c["messages"].append({"type": "info", "code": "approved", "content": f"Approved by {rec['by']} at {rec['at']}" + (f", signed on their own device ({signed_how})." if device else ".")})
             self.store.q("update holds set expires=? where ref=? and state='held'", (exp, cid))
             # A person saw the lines with no allergen declaration and said yes: the account remembers it, so the same product is not asked about twice.
-            asked = [u for r in c["wholesale"]["policy"]["rules"] for u in r.get("undeclared") or []]
             cust = c["_internal"].get("customer")
-            if asked and cust:
+            if cleared and cust:
                 seen = self.store.get("allergen_cleared:" + cust, {})
-                for u in asked:
+                for u in cleared:
                     seen.setdefault(u["id"], {}).update({code: {"by": rec["by"], "at": rec["at"], "checkout": cid} for code in u["codes"]})
                 self.store.put("allergen_cleared:" + cust, seen)
-            self.store.log(tr, f"human:{rec['by']}", "approved", f"{rec['by']} approved {what}, overriding {', '.join(rec['overrides'])}." + (f" Signed on their own device ({device['device']}, key {device['thumbprint']})." if device else "") + (f" Note: {note}" if note else ""), {"approval": rec}, cid=cid)
+            names = lambda codes: ", ".join(ALLERGENS.get(x, x) for x in codes)
+            cleared_text = (f" Cleared, {rec['clears_confirmed']}: " + "; ".join(f"{u['title']} for {names(u['codes'])}" for u in cleared[:12]) + (f" and {len(cleared) - 12} more" if len(cleared) > 12 else "") + ".") if cleared else ""
+            self.store.log(tr, f"human:{rec['by']}", "approved", f"{rec['by']} approved {what}, overriding {', '.join(rec['overrides'])}. Asked by {rec['asked_by']}." + (f" Signed on their own device ({signed_how})." if device else " No approver device is enrolled on this account, so the link approved and the gateway's key signed the record.")
+                           + cleared_text + (f" Note: {note}" if note else ""), {"approval": rec}, cid=cid)
         else:
             c["status"] = "canceled"
             self.store.settle(cid, "released")
@@ -1002,12 +1212,10 @@ class Gateway:
         fail = lambda code, text, sev="recoverable": self.public(c) | {"messages": c["messages"] + [{"type": "error", "code": code, "severity": sev, "content": text}]}
         if c["status"] == "completed":
             return self.public(c)
-        if c["status"] != "ready_for_complete":
-            return fail("invalid_state", f"Checkout is '{c['status']}', not ready_for_complete." + (" A person must approve it first at continue_url." if c["status"] == "requires_escalation" else ""))
-        if not principal or not principal.get("ok"):
-            return fail((principal or {}).get("error", "mandate_required"), (principal or {}).get("detail", "Completing an order needs a valid mandate."), "unrecoverable")
         proof = ((req or {}).get("ap2") or {}).get("checkout_mandate")
-        if principal.get("agent_jwk"):
+        # Who is asking comes before whether the offer is ready: a commit without the agent's key, or over other terms, is refused and counted
+        # against the agent in every state of the offer, also while it waits for a person.
+        if principal and principal.get("ok") and principal.get("agent_jwk"):
             claims = jwt_verify(proof, principal["agent_jwk"]) if proof else None
             if not claims:
                 self.store.log(tr, "gateway", "refused", "Refused to complete: the request was not signed with the agent key the mandate is bound to.", cid=cid)
@@ -1017,6 +1225,10 @@ class Gateway:
                 self.store.log(tr, "gateway", "refused", "Refused to complete: the agent signed different terms than the current signed offer.", cid=cid)
                 self.agent_note(principal, "strike", cid=cid, trace=tr)
                 return fail("mandate_scope_mismatch", "The signed digest does not match the current checkout. Fetch it again and sign that.")
+        if c["status"] != "ready_for_complete":
+            return fail("invalid_state", f"Checkout is '{c['status']}', not ready_for_complete." + (" A person must approve it first at continue_url." if c["status"] == "requires_escalation" else ""))
+        if not principal or not principal.get("ok"):
+            return fail((principal or {}).get("error", "mandate_required"), (principal or {}).get("detail", "Completing an order needs a valid mandate."), "unrecoverable")
         # Re-check live price and stock at the moment of commitment.
         fresh = self._assemble(cid, c["_internal"]["inputs"], principal, tr, internal=dict(c["_internal"]))
         ft = next(x["amount"] for x in fresh["totals"] if x["type"] == "total")
@@ -1032,7 +1244,8 @@ class Gateway:
             c["_internal"]["keyless_receipt"] = self._prove({"type": "keyless_acceptance", "agent": principal["agent"], "mandate_jti": principal["jti"], "checkout_id": cid, "checkout_digest": c["_internal"]["digest"], "at": iso()})
         c["_internal"]["accepted_offer"] = json.loads(json.dumps({k: v for k, v in c.items() if k not in ("ap2", "_internal")}))
         # A change to a placed order that brings no new goods becomes a signed amendment, not an order.
-        order = self.after.settle(c, principal, proof) if c["wholesale"].get("amends") and not c["line_items"] else self._order(c, principal, proof)
+        order = self.after.settle(c, principal, proof) if c["wholesale"].get("amends") and not c["line_items"] else \
+            self.seller.change_standing(c, principal, proof) if (c["wholesale"].get("proposal") or {}).get("standing") and not c["line_items"] else self._order(c, principal, proof)
         c["status"] = "completed"
         c["order"] = {"id": order["id"], "label": order["label"], "permalink_url": order["permalink_url"]}
         c["wholesale"]["hold"] = None
@@ -1056,7 +1269,9 @@ class Gateway:
                 "delivery_date": w["delivery_date"], "ship_to": w.get("ship_to"), "customer": w["customer"], "buyer": c["buyer"], "placed_by": w["agent"], "channel": "agent", "purchase_order": w.get("purchase_order"), "intent": w.get("intent"),
                 "placed_at": iso(), "payment": w["payment"],
                 "evidence": {"mandate_id": w["mandate_id"], "mandate": principal["token"], "offer_digest": c["_internal"]["digest"], "offer_signature": c["ap2"]["merchant_authorization"],
-                             "agent_acceptance": proof, "agent_class": "key" if proof else "keyless", "keyless_receipt": c["_internal"].get("keyless_receipt"), "approval": w.get("approval"), "policy": w["policy"]},
+                             "agent_acceptance": proof, "agent_class": "key" if proof else "keyless", "keyless_receipt": c["_internal"].get("keyless_receipt"), "approval": w.get("approval"), "policy": w["policy"],
+                             # whose hands the buyer's signing key is in: "buyer" = the company registered its own public key and this gateway never held the private half
+                             "mandate_key": principal.get("mandate_key")},
                 "documents": {"peppol_order": order_url(oid, "/peppol/order.xml"), "peppol_order_response": order_url(oid, "/peppol/order-response.xml"), "audit": f"{PUBLIC_URL}/orders/{oid}/audit"},
             },
         }
@@ -1093,6 +1308,10 @@ class Gateway:
         c = self.store.checkout(o["checkout_id"])
         ok, n, bad = self.store.verify_chain()
         buyer = self.store.get("buyer:" + str(o["wholesale"]["buyer"].get("id")), {})
+        tok = (o["wholesale"].get("evidence") or {}).get("mandate")
+        own = next((k["jwk"] for k in self.buyer_keys(o["wholesale"]["buyer"].get("id")) if tok and jwt_verify(tok, k["jwk"]) is not None), None)
+        if own:  # the mandate behind this order was signed with a key the buyer registered itself
+            buyer = {**buyer, "jwk": own}
         return {"order": o["id"], "label": o["label"], "events": self.after.events(o, self.store.events(ref=c["_internal"].get("trace"), cid=c["id"])), "ledger": {"intact": ok, "events_checked": n, "first_bad_seq": bad},
                 "offer": c["_internal"].get("accepted_offer"), "keys": {"seller": self.key.jwk, "buyer": buyer.get("jwk"), "approver": buyer.get("approver_jwk")},
                 "after": self.after.for_order(o)}  # issues raised after the order, the signed amendments and linked orders

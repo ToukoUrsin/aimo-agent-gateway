@@ -6,9 +6,17 @@ Covers: a typed menu planned in code into 30+ checked lines; "nut-free" keeping 
 absurd readings (10,000 guests, a line that is not food) asked about and not ordered; a shortage solved by what the ingredient does
 in the dish, with the reason on the line; a whipped topping never getting cooking cream; one signed order for the whole basket;
 a photo that is not a menu refused; a sample photo placed as an order in under 60 seconds with /api/menu/latest reporting it.
+A dish keeps the ingredient it is named for (a recipe without it is flagged, never silent); a note about some guests holds only their
+portions, dish by dish, and only a note about the whole kitchen bans a thing on the whole order; the smallest pack that covers the need,
+leftovers shown, small amounts in grams; kitchen staples needed in a small part of a pack listed as "from the pantry" with one switch to
+order them; a budget on the menu compared with the order; the same request sent twice answered once; and the eight photos in
+tests/menus/ (six messy real menus, a receipt, a price list) read and planned through the real path against tests/menus/expected.json.
 """
+import base64
 import copy
+import json
 import os
+import pathlib
 import secrets
 import time
 
@@ -107,6 +115,102 @@ ok(not any(any(f["dish"] == "Hazelnut praline cake" for f in l["for"]) for l in 
    and sum(o.get("dish") == "Hazelnut praline cake" for o in blocked_cake["not_ordered"]) == 1
    and "nut-free" in cake_question.get("text", ""),
    "a dish refused by its nut rule is one question and none of its other ingredients is ordered")
+
+# ---- 2b. the ingredient a dish is named for, notes about some of the guests, packs, the pantry, the budget
+SATAY = {"name": "Peanut satay chicken skewers", "source": "agent", "recipe": [
+    {"item": "chicken breast", "role": "main", "amount": 130, "unit": "g"}, {"item": "peanuts", "fi": "maapähkinä", "role": "sauce base", "amount": 30, "unit": "g"},
+    {"item": "rapeseed oil", "role": "frying fat", "amount": 5, "unit": "ml"}, {"item": "garlic", "role": "seasoning", "amount": 3, "unit": "g"}, {"item": "salt", "role": "seasoning", "amount": 1, "unit": "g"}]}
+SALAD = {"name": "Green salad", "source": "agent", "recipe": [
+    {"item": "lettuce", "role": "body", "amount": 50, "unit": "g"}, {"item": "cucumber", "role": "vegetable", "amount": 40, "unit": "g"}, {"item": "tomato", "role": "vegetable", "amount": 40, "unit": "g"},
+    {"item": "olive oil", "role": "seasoning", "amount": 5, "unit": "ml"}, {"item": "black pepper", "role": "seasoning", "amount": 0.3, "unit": "g"}]}
+PARTY = {"title": "Staff party", "date": menu.WEDDING["date"], "guests": 60, "notes": ["8 guests severe peanut allergy"], "budget": {"amount": 900, "per": "total", "text": "Budget 900 €"},
+         "dishes": [SATAY, {"name": "Creamy salmon soup"}, SALAD, {"name": "Coffee and tea"}]}
+
+
+def party(**change):
+    return menu.normalize({**copy.deepcopy(PARTY), **change}, "agent")
+
+
+def has(line, codes):
+    return bool(set(codes) & (set(doc(line)["contains"]) | set(doc(line)["may_contain"])))
+
+
+no_peanut = [i for i in SATAY["recipe"] if i["item"] != "peanuts"]
+ok([c["label"] for c in menu.missing_named(SATAY["name"], "", no_peanut)] == ["peanuts"] and not menu.missing_named(SATAY["name"], "", SATAY["recipe"]),
+   "a satay recipe without peanuts is caught in code against the dish name; the same recipe with peanuts passes")
+ok(not menu.missing_named("Lohikeitto", "", [{"item": "salmon fillet"}]) and menu.missing_named("Lohikeitto", "", [{"item": "potato"}]) and not menu.named("Pähkinätön suklaakakku") == menu.named("Pähkinäkakku")
+   and not menu.name_codes("Nut-free brownie") and menu.name_codes("Pähkinäkakku"), "dish names are read in Finnish too (lohikeitto is salmon), and “nut-free” or “pähkinätön” in a name is not a nut")
+ok(not [(c["id"], a) for c in menu.CARDS.values() for a in [c["name"], *c["aliases"]] if len(c["ingredients"]) > 1 and menu.missing_named(a, a, c["ingredients"])],
+   "every kitchen recipe card that is cooked from ingredients has what its own names promise")
+lost = plan(party(dishes=[{**SATAY, "recipe": no_peanut}, SALAD]))
+fl = [f for f in lost.get("flags", []) if f["kind"] == "named_missing"]
+ok(len(fl) == 1 and fl[0]["ingredients"] == ["peanuts"] and "named for peanuts" in fl[0]["text"] and fl[0]["dish"] == SATAY["name"], "a recipe that lost the named ingredient is flagged on the plan, never silent: " + fl[0]["text"][:100] + "...")
+ok(any(o.get("dish") == SATAY["name"] and (o.get("ask") or {}).get("portions") == 8 and o.get("named") for o in lost["not_ordered"]),
+   "and the satay is still held for the 8 guests with a peanut allergy: the dish name is enough, whatever the recipe says")
+
+pp = plan(party())
+rule = pp["diet"][0]
+ok(pp["status"] == "ready" and rule["scope"] == "guests" and rule["count"] == 8 and rule["severe"] and pp["requirements"]["exclude_allergens"] == [] and pp["checkout"]["exclude_allergens"] == [],
+   "“8 guests severe peanut allergy” is a rule for 8 of 60 guests, not a ban on the whole order: " + rule["rule"][:90] + "...")
+qs = [o for o in pp["not_ordered"] if o.get("dish") == SATAY["name"] and o.get("ask")]
+ok(len(qs) == 1 and qs[0]["ask"] == {"portions": 8, "rest": 52, "choices": ["for_them", "for_everyone"], "severe": True} and qs[0]["named"]
+   and "Change the dish for those 8, or for everyone?" in qs[0]["text"] and "Nothing is ordered for those 8" in qs[0]["text"], "the satay holds 8 portions and asks one plain question: " + qs[0]["text"][:140] + "...")
+ok("The allergy is severe" in qs[0]["text"] and "safer answer" in qs[0]["text"], "severe: the question says the other 52 portions bring peanuts into the kitchen and which answer is safer")
+sat = [(l, f) for l in pp["lines"] for f in l["for"] if f["dish"] == SATAY["name"]]
+ok(sat and all(f["portions"] == 52 and not f["diet"] for _, f in sat) and any(f["item"] == "chicken breast" for _, f in sat), f"the other 52 portions of the satay are ordered ({len(sat)} ingredients), none for the 8")
+free = [l for l in pp["lines"] if any("peanut-free" in f["diet"] for f in l["for"])]
+ok(len(free) >= 8 and not any(has(l, {"AP"}) or menu.NUT_WORDS.search(doc(l)["_text"]) for l in free) and all(any(f["portions"] == 8 and "peanut-free" in f["diet"] for f in l["for"]) or all(f["portions"] == 60 for f in l["for"]) for l in free),
+   f"in every other dish the 8 portions get products with no peanuts, traces included ({len(free)} lines)")
+nuts = [l for l in pp["lines"] if has(l, {"AP"})]
+ok(not nuts or (any(w["kind"] == "cross_contact" and "8 guests severe peanut allergy" in w["text"] for w in pp["warnings"]) and all(not f["diet"] for l in nuts for f in l["for"])),
+   "severe: a product with peanuts ordered for the other guests is named in a warning to keep it apart" if nuts else "no product with peanuts could be ordered for this day, so there is nothing to warn about")
+warn = next((w for w in pp["warnings"] if w["kind"] == "cross_contact"), None)
+blank_rest = [l for l in pp["lines"] if not has(l, {"AP"}) and not (doc(l)["contains"] or doc(l)["may_contain"] or doc(l).get("free_from")) and "AP" not in ((l.get("requirements") or {}).get("exclude_allergens") or [])]
+ok(warn is None or (warn["undeclared"] == len(blank_rest) and (not blank_rest or "more" in warn["text"] and blank_rest[0]["product"]["title"] in warn["text"])),
+   f"the warning counts only the undeclared lines that are for the other guests alone ({len(blank_rest)}); the ones for the 8 are already asked from the approver, so no line is counted twice")
+lac = plan(party(notes=["5 lactose-free"]))["diet"][0]
+ok(lac["scope"] == "guests" and lac["count"] == 5 and "for that share of the portions in every dish, any product with milk in it must carry" in lac["rule"], "a note for 5 lactose-free guests reads as a sentence: " + lac["rule"][:120])
+ok(plan(party(notes=["12 nut-free"]))["checkout"]["exclude_allergens"] == [] and plan(party(notes=["12 nut-free"]))["diet"][0]["count"] == 12
+   and set(plan(party(notes=["Nut-free kitchen"]))["checkout"]["exclude_allergens"]) == {"AN", "AP"}, "“12 nut-free” covers 12 guests; only “Nut-free kitchen” excludes nuts on the whole order")
+kitchen = plan(party(notes=["Nut-free kitchen"]))
+kq = [o for o in kitchen["not_ordered"] if o.get("dish") == SATAY["name"]]
+ok(len(kq) == 1 and kq[0].get("dish_refused") and kq[0]["ask"]["choices"] == ["for_everyone", "remove"] and not any(f["dish"] == SATAY["name"] for l in kitchen["lines"] for f in l["for"]),
+   "in a nut-free kitchen the whole satay waits for one answer and none of it is ordered")
+
+# packs
+small = plan(reading(guests=8, notes=[]))
+every = [("wedding for 180", base), ("wedding for 8", small), ("staff party", pp)]
+far = [(name, l["product"]["title"], l["pack"]["need_text"], l["pack"]["ordered_text"]) for name, x in every for l in x["lines"]
+       if l["pack"]["ordered"] >= menu.FAR * l["pack"]["need"] and l["pack"]["ordered"] - l["pack"]["need"] >= 1 and not l["partial"] and not (l["pack"]["nothing_smaller"] and l["pack"]["leftover_text"])]
+ok(not far, "no line orders a pack far bigger than the need unless nothing smaller is sold, and then it says what is left over" + (": " + str(far[:3]) if far else ""))
+big = [l for l in small["lines"] if l["pack"]["leftover"]]
+ok(big and all(l["pack"]["leftover_text"] and "is left over" in l["checks"]["pack"]["text"] for l in big), f"a dinner for 8: {len(big)} lines say what is left over, e.g. " + big[0]["checks"]["pack"]["text"][-90:])
+onion = next(l for l in small["lines"] if any(f["item"] == "onion" for f in l["for"]))
+ok(onion["pack"]["ordered"] <= 2000 and "10KG" not in onion["product"]["title"].upper(), f"a dinner for 8 does not get the 10 kg onion sack: {onion['product']['title']} for {onion['pack']['need_text']}")
+ok(menu.qty(200, "g") == "200 g" and menu.qty(4.2, "g") == "4.2 g" and menu.qty(1500, "g") == "1.5 kg" and menu.qty(84, "ml") == "84 ml" and menu.qty(2900, "ml") == "2.9 l",
+   "small amounts are written in grams and millilitres: 200 g, 4.2 g, 84 ml; 1.5 kg and 2.9 l above a kilo")
+texts = [t for _, x in every for l in x["lines"] for t in (l["pack"]["need_text"], l["pack"]["ordered_text"], l["pack"]["leftover_text"] or "")] + [x_["amount"] for _, x in every for x_ in x["pantry"]]
+ok(texts and not any(t.startswith("0 ") or t.startswith("0.0") for t in texts), "nowhere does an amount read “0 kg”")
+
+# the pantry
+pan = {x["item"]: x for x in small["pantry"]}
+ordered_items = {f["item"] for l in small["lines"] for f in l["for"]}
+ok(len(pan) >= 3 and "salt" in pan and not set(pan) & ordered_items and all(menu.STAPLE.search(i) for i in pan) and all(x["amount"] and x["text"].startswith(x["item"].capitalize() + ": " + x["amount"]) for x in pan.values()),
+   f"a dinner for 8: {len(pan)} kitchen staples are left to the pantry with the amount, not ordered ({', '.join(x['item'] + ' ' + x['amount'] for x in list(pan.values())[:4])})")
+ok(all(x["smallest"] is None or x["need"] <= x["smallest"] * menu.STAPLE_SHARE + 1e-6 for x in pan.values()), "each is a small part (a third or less) of the smallest pack sold")
+ok("salt" not in {x["item"] for x in base["pantry"]} and any(f["item"] == "salt" for l in base["lines"] for f in l["for"]), "for 180 guests salt is a real amount and is ordered")
+withp = plan(reading(guests=8, notes=[], order_staples=True))
+ok(withp["pantry"] == [] and set(pan) <= {f["item"] for l in withp["lines"] for f in l["for"]} | {o["item"] for o in withp["not_ordered"]} and withp["totals"]["lines"] > small["totals"]["lines"],
+   f"one switch orders them too: {withp['totals']['lines']} lines instead of {small['totals']['lines']}, nothing left under pantry")
+ok(not any(i in pan for i in ("sugar cubes", "coffee", "tea", "potato", "butter")), "what goes on the table or is the dish itself is never left to the pantry")
+
+# the budget
+b = pp["budget"]
+ok(b and b["limit"] == 90000 and b["fits"] is True and b["subtotal"] == pp["totals"]["subtotal"] and "under the budget" in b["text"], "a budget on the menu is compared with the order: " + b["text"][:110])
+over = plan(party(budget={"amount": 2, "per": "guest"}))["budget"]
+ok(over["limit"] == 12000 and over["fits"] is False and "over the budget" in over["text"], "a budget per guest is multiplied by the guests, and an order over it says so: " + over["text"][:110])
+twice = menu.normalize(menu.normalize(copy.deepcopy(PARTY), "agent"), "agent")
+ok(twice["budget"]["amount"] == 900 and plan(party(budget=None))["budget"] is None, "the budget survives being read twice (still €900), and a menu without one has none")
 
 # ---- 3. wrong or absurd readings are asked about, not ordered
 def asked(rd, word):
@@ -210,9 +314,9 @@ if MODEL:
     from gateway.app import app
     web = TestClient(app, base_url="https://testserver")  # https so the visitor's session cookie is kept whatever PUBLIC_URL is
     r = web.post("/api/menu/read", json={"sample": "notmenu"}).json()
-    ok(r["status"] == "not_a_menu" and not r.get("reading") and not r.get("plan") and "Nothing was read and nothing is ordered" in r["message"], "the photo of a closing checklist is refused: " + r["message"][:90])
-    ok(len(r["usage"]["calls"]) == 1 and r["usage"]["calls"][0]["step"] == "is it a menu" and r["usage"]["tokens_in"] == r["usage"]["calls"][0]["in"],
-       "a refused photo is charged only for the guard call, using the API usage fields")
+    ok(r["status"] == "not_a_menu" and not r.get("reading") and not r.get("plan") and "nothing to cook from" in r["message"] and "Nothing is ordered" in r["message"], "the photo of a closing checklist is refused: " + r["message"][:90])
+    ok({c["step"] for c in r["usage"]["calls"]} == {"is it a menu", "read the menu"} and r["usage"]["tokens_in"] == sum(c["in"] for c in r["usage"]["calls"]) > 0,
+       "a photo is refused only when both looks find nothing to cook from; the cost is the two calls, from the API usage fields")
     ok(web.post("/api/menu/plan", json={"run": r["id"]}).status_code == 409 and web.post("/api/menu/order", json={"run": r["id"]}).status_code == 409, "and a refused photo cannot be planned or ordered")
     t = time.time()
     r = web.post("/api/menu/read", json={"sample": "wedding"}).json()
@@ -221,6 +325,17 @@ if MODEL:
     r = web.post("/api/menu/plan", json={"run": r["id"]}).json()
     ok(r["status"] == "ready" and r["plan"]["totals"]["lines"] >= 30 and r["checkout"]["signed"], f"planned into {r['plan']['totals']['lines']} lines with a signed offer")
     ok(not any(nutty(g.cat.get(l["product"]["id"])) for l in r["plan"]["lines"]), "nut-free from the photo: no product with nuts in the basket")
+    if r["checkout"]["status"] == "requires_escalation":
+        # The menu page cannot approve. In this test a script stands in for the approver: it approves by the approval link, as the approval page would.
+        from gateway.app import g as live
+        cid = r["checkout"]["id"]
+        held = web.post("/api/menu/order", json={"run": r["id"]})
+        ok(held.status_code == 409 and held.json()["messages"][0]["code"] == "approval_pending", "the menu page cannot place an order that waits for its approver: " + held.json()["messages"][0]["content"][:80])
+        ok(web.get(f"/api/menu/approval/{r['id']}").json()["state"] == "waiting", "the menu page is told the order waits for the approver")
+        live.decide(cid, live.store.checkout(cid)["_internal"]["approval_token"], True, "Head chef (test script)", "Approved by the test's stand-in approver.")
+        w = web.get(f"/api/menu/approval/{r['id']}").json()
+        ok(w["state"] == "approved" and w["approval"]["by"] == "Head chef (test script)" and w["approval"]["asked_by"] == "Kitchen manager, on the menu page",
+           f"after the approver says yes the menu page sees it: asked by {w['approval']['asked_by']}, approved by {w['approval']['by']}")
     r = web.post("/api/menu/order", json={"run": r["id"]}).json()
     took = time.time() - t
     ok(r["status"] == "ordered" and r["order"]["label"] and took < 60 and r["seconds"]["total"] < 60, f"photo to placed order in {r['seconds']['total']:.1f} s (under 60), order {r['order']['label']}")
@@ -232,5 +347,70 @@ if MODEL:
                                                                                     "guests": 180, "event_date": "2026-11-21", "notes": ["Nut-free kitchen"]}).json()
     ok(typed["status"] == "ready" and typed["checkout"]["line_items"] and typed["usage"]["tokens_in"] == 0 and typed.get("proof"), f"POST /menu/plan with typed dishes: {typed['totals']['lines']} lines, signed, no model used")
     ok(web.post("/menu/plan", json={"dishes": ["Creamy salmon soup"], "guests": 20}).status_code == 401, "POST /menu/plan without a mandate is refused")
+
+    # ---- 7. the model's recipe is checked against the dish name (calls Gemini)
+    rd = menu.normalize({"guests": 60, "dishes": [{"name": "Peanut satay chicken skewers"}, {"name": "Lohikeitto"}, {"name": "Almond cake with berries"}], "notes": ["8 guests severe peanut allergy"]}, "agent")
+    calls = menu.complete(rd)
+    got = {d["name"]: [i["item"] for i in d["recipe"]] for d in rd["dishes"] if not d["card"]}
+    left = menu.flags(rd)
+    ok(calls and all(d["card"] or d["recipe"] for d in rd["dishes"]) and all(not menu.missing_named(d["name"], d["as_written"], d["recipe"]) or any(f["dish"] == d["name"] for f in left) for d in rd["dishes"] if not d["card"]),
+       "every proposed recipe has the ingredient its dish is named for, or the dish is flagged: " + "; ".join(f"{k}: {', '.join(v[:5])}" for k, v in got.items())[:230])
+    sat = next(d for d in rd["dishes"] if "satay" in d["name"].lower())
+    ok(any("peanut" in i["item"] for i in sat["recipe"]), "the satay keeps its peanuts although 8 guests are allergic: the note is applied in code afterwards, not by the model")
+
+    # ---- 8. messy real menus: six photos of what a kitchen has, a receipt and a price list, through the real path
+    folder = pathlib.Path(__file__).parent / "menus"
+    expected = {k: v for k, v in json.loads((folder / "expected.json").read_text()).items() if not k.startswith("_")}
+    fold = menu.fold
+
+    def find_dish(rd, frag):
+        return next((i for i, d in enumerate(rd["dishes"]) if fold(frag) in fold(d["as_written"]) or fold(frag) in fold(d["name"])), None)
+
+    ok(len(expected) == 8 and sum(1 for e in expected.values() if e["menu"]) == 6 and all((folder / f).stat().st_size < 400_000 for f in expected), "tests/menus has six messy menus and two photos with nothing to cook from, each a small JPEG with what must be read next to it")
+    for f, e in expected.items():
+        image = "data:image/jpeg;base64," + base64.b64encode((folder / f).read_bytes()).decode()
+        key = "t-" + secrets.token_hex(6)
+        r = web.post("/api/menu/read", json={"image": image, "key": key}).json()
+        if not e["menu"]:
+            ok(r["status"] == "not_a_menu" and not r.get("reading") and "nothing to cook from" in r["message"], f"{f}: refused, nothing to cook from: " + r["message"][:80])
+            continue
+        rd = r.get("reading") or {}
+        ok(r["status"] == "read" and not r.get("questions"), f"{f} ({e['what'][:60]}) is read as a menu with nothing to ask" + ("" if r["status"] == "read" else ": " + str(r.get("message") or r.get("questions"))[:200]))
+        idx = {frag: find_dish(rd, frag) for frag in e["dishes"]}
+        ok(rd["guests"] == e["guests"] and None not in idx.values() and len(set(idx.values())) == len(idx) and len(rd["dishes"]) <= e["max_dishes"],
+           f"{f}: {rd['guests']} guests and {len(rd['dishes'])} dishes: " + ", ".join(d["name"] for d in rd["dishes"])[:170] + ("" if None not in idx.values() else f" (missing {[k for k, v in idx.items() if v is None]})"))
+        ok((rd.get("budget") or {}).get("amount") == (e["budget"] or {}).get("amount") and (rd.get("budget") or {}).get("per") == (e["budget"] or {}).get("per"),
+           f"{f}: budget " + ((rd["budget"]["text"] or "") + f" read as €{rd['budget']['amount']:g} {'per guest' if rd['budget']['per'] == 'guest' else 'in total'}" if rd.get("budget") else "none on the page, none read"))
+        again = web.post("/api/menu/read", json={"image": image, "key": key}).json()
+        ok(again["id"] == r["id"] and again["usage"] == r["usage"], f"{f}: the same request sent again (same key) gets the same reading and no second model call")
+        pl = web.post("/api/menu/plan", json={"run": r["id"], "key": key}).json()
+        plan_ = pl.get("plan") or {}
+        ok(pl["status"] == "ready" and plan_["totals"]["lines"] >= 12 and pl["checkout"]["signed"], f"{f}: planned into {plan_.get('totals', {}).get('lines')} lines, {len(plan_.get('pantry') or [])} from the pantry, {len(plan_.get('not_ordered') or [])} not ordered, one signed offer"
+           + ("" if pl["status"] == "ready" else ": " + str(pl.get("questions") or pl.get("messages"))[:200]))
+        rules = plan_["diet"]
+        notes = sorted([x["kind"], x["scope"], x["count"]] for x in rules if x["scope"] != "dish")
+        ok(notes == sorted(e["notes"]) and plan_["requirements"]["exclude_allergens"] == [] and (plan_.get("checkout") or {}).get("exclude_allergens", []) == [],
+           f"{f}: notes about some guests stay with those guests ({'; '.join(x['note'] + ' = ' + str(x['count']) + ' of ' + str(rd['guests']) for x in rules if x['scope'] == 'guests') or 'none on the page'}); nothing is excluded on the whole order")
+        if e.get("severe"):
+            ok(all(x["severe"] for x in rules if x["scope"] == "guests"), f"{f}: “severe” is read from the note")
+        if e["marks"]:
+            marks = {frag: sorted(x["kind"] for x in rules if x["scope"] == "dish" and x.get("dish") == idx[frag]) for frag in e["marks"]}
+            ok(marks == {k: sorted(v) for k, v in e["marks"].items()}, f"{f}: the marks on each dish are rules for that dish only: " + ", ".join(f"{rd['dishes'][idx[k]]['as_written'][:26]} = {'+'.join(v)}" for k, v in marks.items())[:230])
+        held = {frag: sum(o["ask"]["portions"] for o in plan_["not_ordered"] if o.get("ask") and o.get("dish_i") == idx[frag] and o.get("named")) for frag in e["held"]}
+        ok(held == e["held"], f"{f}: held by its own name for the guests of the note: {held or 'no dish'}" + "".join(". " + o["text"][:150] for o in plan_["not_ordered"] if o.get("named"))[:330])
+        missing = [fl_["dish"] for fl_ in plan_["flags"] if fl_["kind"] == "named_missing"]
+        got_all = all(not menu.missing_named(d["name"], d["as_written"], d["recipe"]) or d["name"] in missing for d in rd["dishes"] if not d["card"] and d["food"])
+        ok(got_all, f"{f}: every dish has the ingredient it is named for" + (f", or says so ({', '.join(missing)})" if missing else ""))
+        far = [l["product"]["title"] for l in plan_["lines"] if l["pack"]["ordered"] >= menu.FAR * l["pack"]["need"] and l["pack"]["ordered"] - l["pack"]["need"] >= 1 and not l["partial"] and not (l["pack"]["nothing_smaller"] and l["pack"]["leftover_text"])]
+        zero = [t for l in plan_["lines"] for t in (l["pack"]["need_text"], l["pack"]["ordered_text"]) if t.startswith("0 ")] + [x["amount"] for x in plan_["pantry"] if x["amount"].startswith("0 ")]
+        ok(not far and not zero and not {x["item"] for x in plan_["pantry"]} & {f_["item"] for l in plan_["lines"] for f_ in l["for"]},
+           f"{f}: no pack far bigger than the need unless nothing smaller is sold, no “0 kg”, pantry staples not also ordered" + (f" (far: {far[:3]})" if far else ""))
+        if e["budget"]:
+            b = plan_["budget"]
+            ok(b and b["limit"] == round(e["budget"]["amount"] * 100) * (e["guests"] if e["budget"]["per"] == "guest" else 1) and b["fits"] == (plan_["totals"]["subtotal"] <= b["limit"]), f"{f}: " + b["text"][:150])
+        same = web.post("/api/menu/plan", json={"run": r["id"], "key": key}).json()
+        ok(same["checkout"]["id"] == pl["checkout"]["id"], f"{f}: the same plan request sent again gets the same offer, not a second one")
+    one = web.get("/api/menu/samples").json()
+    ok(any(x["id"] == "lounas" for x in one["samples"]) and web.get("/static/samples/lounaslista.jpg").status_code == 200, "the Finnish lunch list is one of the samples on /menu")
 
 print(f"\n{n} checks passed" + ("" if MODEL else " (the parts that call Gemini were skipped)"))

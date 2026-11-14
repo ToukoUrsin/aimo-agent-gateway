@@ -18,18 +18,17 @@ from dataclasses import dataclass, field
 import anthropic
 import httpx
 
-# What the console offers. id is what goes into run["model"].
+# Frontier models only. id is what goes into run["model"]. pick: offered in the console, where a person waits for the answer.
 MODELS = [
-    {"id": "claude-opus-5-5", "label": "Claude Opus 5.5", "provider": "anthropic"},
-    {"id": "claude-sonnet-5-5", "label": "Claude Sonnet 5.5", "provider": "anthropic"},
-    {"id": "claude-haiku-5-5", "label": "Claude Haiku 5.5", "provider": "anthropic"},
-    {"id": "gpt-6-sol", "label": "GPT-6 Sol", "provider": "openai"},
-    {"id": "gpt-6-luna", "label": "GPT-6 Luna", "provider": "openai"},
-    {"id": "gpt-6.1-sol", "label": "GPT-6.1 Sol", "provider": "openai"},
-    {"id": "gpt-5.6-luna", "label": "GPT-5.6 Luna", "provider": "openai"},
-    {"id": "gemini-3.8-flash", "label": "Gemini 3.8 Flash", "provider": "google"},
-    {"id": "gemma-4-31b-it", "label": "Gemma 4 31B (open weights)", "provider": "google"},
+    {"id": "claude-opus-5-5", "label": "Claude Opus 5.5", "provider": "anthropic", "pick": True},
+    {"id": "gpt-6.1-sol", "label": "GPT-6.1 Sol", "provider": "openai", "pick": True},
+    {"id": "gemini-4-hydrogen", "label": "Gemini 4 Hydrogen", "provider": "google", "pick": True},  # the Gemini a person waits for
+    {"id": "gemini-4-carbon", "label": "Gemini 4 Carbon", "provider": "google", "pick": False},     # the Gemini for work nobody waits on (the test runs)
+    # The one model here that is not a frontier model, kept for one reason: a buyer that must run its agent on its own hardware uses open weights.
+    {"id": "gemma-4-31b-it", "label": "Gemma 4 31B (open weights)", "provider": "google", "pick": True},
 ]
+# Models in earlier recorded runs, so their records still read well. None of them is used any more.
+PAST = {"claude-sonnet-5-5": "Claude Sonnet 5.5", "claude-haiku-5-5": "Claude Haiku 5.5", "gpt-6-sol": "GPT-6 Sol", "gpt-6-luna": "GPT-6 Luna", "gpt-5.6-luna": "GPT-5.6 Luna", "gemini-3.8-flash": "Gemini 3.8 Flash"}
 DEFAULT_MODEL = os.environ.get("AGENT_MODEL", "claude-opus-5-5")
 EFFORT = os.environ.get("AGENT_EFFORT", "low")
 CALL_TIMEOUT_S = float(os.environ.get("AGENT_CALL_TIMEOUT_S", "40"))
@@ -37,15 +36,16 @@ RETRY_PAUSE_S = float(os.environ.get("AGENT_RETRY_PAUSE_S", "3"))  # wait this l
 MAX_TOKENS = 8000
 MODEL_PROXY = os.environ.get("AGENT_BASE_URL", "http://127.0.0.1:8317")
 
-# Where each provider lives, which vault entry holds its key, and the model to switch to when a call fails.
+# Where each provider lives and which vault entry holds its key.
 PROVIDERS = {
-    "anthropic": {"name": "Anthropic", "base": MODEL_PROXY, "key_env": "AGENT_API_KEY", "key_hsec": "CLIPROXY_API_KEY",
-                  "fallback": os.environ.get("AGENT_FALLBACK_MODEL", "claude-sonnet-5-5")},
-    "openai": {"name": "OpenAI", "base": MODEL_PROXY + "/v1", "key_env": "AGENT_API_KEY", "key_hsec": "CLIPROXY_API_KEY",
-               "fallback": os.environ.get("AGENT_GPT_FALLBACK_MODEL", "gpt-6-luna")},
+    "anthropic": {"name": "Anthropic", "base": MODEL_PROXY, "key_env": "AGENT_API_KEY", "key_hsec": "CLIPROXY_API_KEY"},
+    "openai": {"name": "OpenAI", "base": MODEL_PROXY + "/v1", "key_env": "AGENT_API_KEY", "key_hsec": "CLIPROXY_API_KEY"},
     "google": {"name": "Google", "base": os.environ.get("AGENT_GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai"),
-               "key_env": "AGENT_GEMINI_API_KEY", "key_hsec": "JUNCTION_GEMINI_API_KEY", "fallback": None},
+               "key_env": "AGENT_GEMINI_API_KEY", "key_hsec": "JUNCTION_GEMINI_API_KEY"},
 }
+# The model a run switches to when its own stops answering. Only a frontier model stands in for a frontier model:
+# Claude and GPT have one each, so they have none inside their provider; the two Gemini models cover each other.
+FALLBACK = {"gemini-4-hydrogen": "gemini-4-carbon", "gemini-4-carbon": "gemini-4-hydrogen"}
 _keys: dict[str, str] = {}
 
 
@@ -55,14 +55,12 @@ def provider_of(model: str) -> str:
 
 
 def stand_in(model: str) -> str | None:
-    """A model at another provider (or on another allowance) that can take a request when this one's provider does not answer."""
-    if model.startswith("gemma"):
-        return "gemini-3.8-flash"
-    return "gpt-6-sol" if provider_of(model) == "google" else "gemini-3.8-flash"
+    """A frontier model at another provider that can take a request when this one's provider does not answer."""
+    return "gpt-6.1-sol" if provider_of(model) == "google" and not model.startswith("gemma") else "gemini-4-hydrogen"
 
 
 def label_of(model: str) -> str:
-    return next((m["label"] for m in MODELS if m["id"] == model), model)
+    return next((m["label"] for m in MODELS if m["id"] == model), PAST.get(model, model))
 
 
 def _key(provider: str) -> str:
@@ -98,7 +96,7 @@ class Chat:
     def __init__(self, model: str, system: str, tools: list[dict], note=None):
         self.provider = provider_of(model)
         self.model, self.system, self.tools = model, system, tools  # tools: [{name, description, schema}]
-        fb = PROVIDERS[self.provider]["fallback"]
+        fb = FALLBACK.get(model)
         self.models = list(dict.fromkeys(m for m in (model, fb) if m))  # first is the one in use; a failing model is dropped for the rest of the run
         self.note = note or (lambda title, text: None)
         self.patient = True  # a test run waits out a rate limit; a person watching the console gets a clear answer in seconds instead

@@ -13,7 +13,7 @@ import time
 
 os.environ.setdefault("AIMO_DATA", "/tmp/aimo-rush-test")
 
-from agent.floor import mandate  # noqa: E402
+from agent.floor import RUSH_PRODUCT, mandate, rush_cast  # noqa: E402
 from gateway.allocation import CARE_MIN_PCT, split  # noqa: E402
 from gateway.service import Gateway, GatewayError  # noqa: E402
 from gateway.signing import verify_detached  # noqa: E402
@@ -31,6 +31,13 @@ def ok(cond, what):
 
 # ------------------------------------------------------------------ 1. the split, as arithmetic
 print("\n1. The split (400 random cases, seed 2026)")
+rush12 = rush_cast(models=3, count=12, prefix="live-rush-")
+ok(len(rush12) == 12 and len({a["slug"] for a in rush12}) == 12 and all(a["slug"].startswith("live-rush-") for a in rush12),
+   "a visitor rush has 12 accounts of its own, separate from the recorded rush")
+ok(sum(a["kind"] == "model" for a in rush12) == 3 and {a["model"] for a in rush12 if a["kind"] == "model"} == {"claude-opus-5-5", "gpt-6.1-sol", "gemini-4-hydrogen"},
+   "the visitor rush has three real model agents beside scripted bots: one frontier model from each provider")
+ok(sum(a["ask"] for a in rush12) > 698 and sum(a["usual"] for a in rush12) > 698,
+   f"the visitor cast asks for less stock than it asks for in total ({sum(a['ask'] for a in rush12):g} L asked, 698 L stock)")
 rng = random.Random(2026)
 never_over = fair = minimum = same = whole = capped = True
 for case in range(400):

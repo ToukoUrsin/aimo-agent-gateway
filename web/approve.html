@@ -3,15 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Approval needed</title>
+<title>Approval request · Aimo Agent Gateway</title>
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/static/inter.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/static/app.css">
 <style>
 main{max-width:560px;margin:0 auto;padding:var(--s5) var(--s4) 140px;display:flex;flex-direction:column;gap:var(--s4)}
-.from{font-size:var(--t2);color:var(--muted);display:flex;align-items:center;gap:8px}
-.from i{width:8px;height:8px;border-radius:50%;background:var(--esc);display:inline-block;flex:none}
-h1{font-size:var(--t7);line-height:1.2;margin-top:6px;letter-spacing:-.02em}
+h1{font-size:var(--t7);line-height:1.2;letter-spacing:-.02em;text-wrap:balance}
+.from{font-size:var(--t3);color:var(--muted);margin:6px 0 0}
 .amount{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s3);padding:var(--s4) 0 0}
 .amount .big{font-size:40px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
 .amount .sub{color:var(--muted);font-size:var(--t2);text-align:right}
@@ -44,22 +43,31 @@ details.card[open]>summary{margin-bottom:var(--s2)}
 .more-lines>summary{cursor:pointer;color:var(--muted);font-size:var(--t2);padding:10px 0;border-bottom:1px solid var(--line)}
 .more-lines>summary:hover{color:var(--ink)}
 .more-lines .lhead{display:none}
-.und{margin:6px 0 2px}
-.und>summary{cursor:pointer;font-size:var(--t3);color:var(--esc);font-weight:500}
-.und ul{margin:6px 0 0}
-.und li{font-size:var(--t3);padding:4px 0 4px 18px}
-.und li::before{top:11px;width:5px;height:5px;opacity:.6}
-.und li span{color:var(--esc);font-weight:500}
-.und p{margin:8px 0 0;font-size:var(--t3);line-height:1.5}
+.und{margin:10px 0 2px}
+.und .uh{display:flex;justify-content:space-between;gap:var(--s3);align-items:baseline;font-size:var(--t3);font-weight:600;color:var(--esc)}
+.und .uh span{font-weight:500;font-variant-numeric:tabular-nums}
+.tick{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid color-mix(in srgb,var(--esc) 22%,transparent);cursor:pointer;font-size:var(--t3);line-height:1.4}
+.tick:first-of-type{margin-top:8px}
+.tick input{width:22px;height:22px;flex:none;margin:1px 0 0;accent-color:var(--ink)}
+.tick b{font-weight:600}
+.tick small{display:block;color:var(--ink-2);font-size:var(--t2)}
+.und p{margin:10px 0 0;font-size:var(--t2);line-height:1.5;color:var(--ink-2)}
 .pk{font-size:var(--t2);margin:var(--s3) 0 0;line-height:1.5;color:var(--muted)}
 .pk b{color:var(--ink);font-weight:600}
 .bar .hint.bad{color:var(--deny)}
+.net{position:sticky;top:0;z-index:20;background:var(--soft);color:var(--ink-2);font-size:var(--t2);text-align:center;padding:6px var(--s4);border-bottom:1px solid var(--line)}
+.state .sig{font-size:var(--t2);color:var(--muted);line-height:1.5;margin:var(--s3) 0 0}
+.state .sig b{color:var(--ink);font-weight:600}
+.try{margin-top:var(--s4);text-align:left}
+.try pre{margin:var(--s3) 0 0;padding:var(--s3);background:var(--soft);border-radius:var(--r-m,8px);font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word;text-align:left}
+.try p{font-size:var(--t2);margin:var(--s2) 0 0;text-align:left}
 </style>
 </head>
 <body>
 <div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
 <header id="site"></header>
-<main id="main" aria-live="polite"><div class="load" aria-label="Loading"><span class="skel block" style="width:40%"></span><span class="skel block" style="height:28px;width:85%"></span><span class="skel block" style="height:90px;margin-top:16px"></span><span class="skel block" style="height:140px"></span></div></main>
+<div class="net" id="net" role="status" hidden>Could not reach the gateway. Trying again.</div>
+<main id="main" aria-live="polite"><div><h1>Approval request</h1><p class="from"><span class="wait"><span class="spin"></span>Reading the request from the gateway</span></p></div></main>
 <div class="bar" id="bar" hidden>
   <div class="in">
     <button class="btn danger" id="no" type="button">Reject</button>
@@ -71,55 +79,128 @@ details.card[open]>summary{margin-bottom:var(--s2)}
 <script src="/static/passkey.js"></script>
 <script>
 const cid = location.pathname.split("/").pop(), k = new URLSearchParams(location.search).get("k");
-let timer = null, PKS = null;  // PKS: how this account approves (by link, or on an enrolled device)
+let timer = null, C = null, drawn = "", busy = false;
+let PKS = null;     // how this account approves: POST /api/approve/{id}/device
+let MODE = "";      // what Approve does in this browser, see how()
+let KIND = null;    // the kind of key this browser would make: "passkey", "browser_key" or null
+let tried = null;   // the gateway's answer to "the same link without the device"
+const ticks = new Set();          // the lines with no allergen declaration the approver has ticked, by product id
+const LAST = { who: "", note: "" };
 const HINT = "Your decision is signed and kept with the order.";
-// The lines an allergen rule could not check, in full: approving clears exactly these, so they are all named.
-function undeclared(r) {
-  const u = r.undeclared || [];
-  if (!u.length) return "";
-  const what = [...new Set(u.flatMap(x => (x.what || "").split(", ").filter(Boolean)))];
-  return `<details class="und"${u.length <= 6 ? " open" : ""}><summary>${u.length === 1 ? "The line you would clear" : `All ${u.length} lines you would clear`}</summary>
-    <ul>${u.map(x => `<li>${esc(x.title)}${x.named_what ? ` <span>its name points at ${esc(x.named_what)}</span>` : ""}</li>`).join("")}</ul>
-    <p>Approving clears ${u.length === 1 ? "this line" : "these lines"} for ${esc(what.join(", ") || "the excluded allergens")} on this account, under your name. The agent does not ask about ${u.length === 1 ? "it" : "them"} again; a product it has not asked about still comes to you.</p></details>`;
+const big = (kind, icon) => `<div class="big-mark ${kind}">${icon}</div>`;
+const names = ds => andList((ds || []).map(d => `${d.name} (${d.how})`));
+const andList = a => a.length <= 1 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
+const howWord = kind => kind === "browser_key" ? PK.HOW.browser_key : PK.HOW.passkey;
+
+// The lines the allergen rule could not check, one per product. Approving clears exactly the ones ticked, and all must be.
+function toClear(c) {
+  const out = new Map();
+  for (const r of c.wholesale.policy.rules) for (const u of r.undeclared || []) {
+    const e = out.get(u.id) || { id: u.id, title: u.title, codes: [], what: u.what };
+    e.codes = [...new Set([...e.codes, ...u.codes])].sort();
+    out.set(u.id, e);
+  }
+  return [...out.values()];
 }
+function tickList(c) {
+  const u = toClear(c);
+  if (!u.length) return "";
+  return `<div class="und"><div class="uh">Confirm each line on its own<span id="tickn"></span></div>
+    ${u.map(x => `<label class="tick"><input type="checkbox" data-id="${esc(x.id)}"${ticks.has(x.id) ? " checked" : ""}><span><b>${esc(x.title)}</b><small>No allergen declaration from the manufacturer. Tick to clear it for ${esc(x.what)}.</small></span></label>`).join("")}
+    <p>Each tick clears that one product for the named allergens on this account, under your name, and your signature lists exactly the lines you ticked. The agent does not ask about a cleared product again; a product nobody ticked still comes to you. If you are not sure about one line, reject.</p></div>`;
+}
+// What Approve does here, said before it is pressed.
 function signoff() {
-  const p = PKS || {};
-  if (p.approvals === "passkey") return `<p class="pk"><b>Signed on an approver's device.</b> Approve asks this device for its fingerprint, face or screen lock. The signature is made inside the device and covers this exact order, your name and your note. The link alone cannot approve for this account.</p>`;
-  if (p.can_enrol && PK.supported()) return `<p class="pk">No approver device is enrolled for this account yet, so this link approves and the gateway's own key signs the record. <a href="/enrol?next=${encodeURIComponent(location.pathname + location.search)}">Make this device the approver</a>: after that only an enrolled device can approve.</p>`;
-  return `<p class="pk">No approver device is enrolled for this account yet, so this link approves and the gateway's own key signs the record. Once the account enrols a phone or laptop, only that device can approve.</p>`;
+  const p = PKS || {}, acct = esc(p.account_name || "this account"), devs = p.devices || [];
+  if (MODE === "first") return KIND === "passkey"
+    ? `<p class="pk"><b>Signed on this device.</b> No approver device is enrolled for ${acct} yet. Approve makes this device the approver and signs with a passkey: it asks for your fingerprint, face or screen lock. From then on this link alone cannot approve for this account.</p>`
+    : `<p class="pk"><b>Signed in this browser.</b> No approver device is enrolled for ${acct} yet. This browser has no fingerprint, face or screen lock to ask, so Approve makes a signing key here, keeps it in this browser and signs with it. The record will say: a key held in this browser, no fingerprint. From then on this link alone cannot approve for this account.</p>`;
+  if (MODE === "sign_key") { const d = devs.find(x => (p.mine || []).includes(x.id)) || {}; return `<p class="pk"><b>Signed in this browser.</b> This browser is an approver for ${acct}: ${esc(d.name || "this browser")}, a key held in this browser, no fingerprint (key ${esc(d.thumbprint || "")}). Approve signs this exact order, your name, your note and each line you tick. The link alone cannot approve for this account.</p>`; }
+  if (MODE === "sign_passkey") return `<p class="pk"><b>Signed on an approver's device.</b> Approve asks this device for its fingerprint, face or screen lock (a passkey). The signature is made inside the device and covers this exact order, your name, your note and each line you tick. The link alone cannot approve for this account.</p>`;
+  if (MODE === "add") return `<p class="pk"><b>This browser is not an approver yet.</b> Approvals for ${acct} are signed on ${esc(names(devs))}. This is the account's own session, so Approve adds this ${KIND === "passkey" ? "device as an approver with a passkey" : "browser as an approver with a key held in this browser, no fingerprint"}, and signs here.</p>`;
+  if (MODE === "other") return `<p class="pk"><b>This is not one of the account's approver devices.</b> Approvals for ${acct} are signed on ${esc(names(devs))}. Open this link there. This link alone cannot approve; it can still reject.</p>`;
+  if (MODE === "link") return p.can_enrol
+    ? `<p class="pk"><b>This browser cannot sign.</b> It can neither make a passkey nor keep a signing key, and an approval for ${acct} needs a signature from the approver's own device. Open this link in another browser to approve. This one can still reject.</p>`
+    : `<p class="pk">${p.account_kind && p.account_kind !== "sandbox" && p.account_kind !== "stage" ? "This account is a simulated customer whose approver is a script, so no device can be enrolled for it." : "No approver device is enrolled for this account."} This link approves and the gateway's own key signs the record.</p>`;
+  return "";
+}
+// After the decision: who signed, with what, what it cleared, and the same link tried without the device.
+function signed(c) {
+  const ap = c.wholesale.approval || {}, d = ap.device, n = (ap.clears || []).length;
+  let h = d ? `<p class="sig"><b>Signed by ${esc(ap.by)} on ${esc(d.device)}</b> with ${d.method === "browser_key" ? "a key held in that browser, no fingerprint" : "a passkey" + (d.user_verified ? ", after its fingerprint, face or screen lock" : "")} (key ${esc(d.thumbprint)}). The gateway checked the signature against this exact order before it recorded the approval.</p>`
+    : `<p class="sig">This account is a simulated customer: a script stands in for its approver, so the link approved and the gateway's own key signed the record.</p>`;
+  if (ap.asked_by) h += `<p class="sig">Asked by ${esc(ap.asked_by)}. Approved by ${esc(ap.by)}.</p>`;
+  if (n) h += `<p class="sig">${ap.clears_confirmed === "each line ticked by the approver" ? "Cleared, each line ticked" : "Cleared, all at once"}: ${esc(PK.clearsText(ap.clears))}.</p>`;
+  if (d) h += `<div class="try"><button class="btn small" id="try" type="button">Try the same link without the device</button>${tried ? tryHtml() : `<p class="muted">Sends this page's approval link to the gateway again, with no device signature, and shows the answer.</p>`}</div>`;
+  return h;
+}
+function tryHtml() {
+  const t = tried, refused = t.code === "device_required";
+  return `<pre>POST /api/approve/${esc(cid)}\n{"k": "this link's key", "approve": true}     no device signature\n\n${esc(t.status)}\n${esc(JSON.stringify(t.body, null, 1))}</pre>
+    <p>${refused ? "<b>Refused.</b> The link that opened this page is no longer enough: for this account an approval needs a signature from an enrolled device." : t.status ? "The gateway answered " + esc(t.status) + "." : "The gateway did not answer. Try again."}</p>`;
+}
+async function tryLink() {
+  const b = $("#try"); if (b) { b.disabled = true; b.innerHTML = '<span class="spin"></span>Asking the gateway'; }
+  try {
+    const r = await fetch(`/api/approve/${cid}`, { method: "POST", headers: { "content-type": "application/json", accept: "application/json" }, body: JSON.stringify({ k, approve: true, approver: "Someone holding the link", note: "" }) });
+    const body = await r.json().catch(() => ({}));
+    const m = (body.messages || []).find(x => x.type === "error") || {};
+    tried = { status: r.status, body: r.status < 300 ? { status: body.status } : body, code: m.code };
+  } catch (e) { tried = { status: 0, body: {}, code: "" }; }
+  if (C) view(C);
 }
 let YES = "Approve";
-const big = (kind, icon) => `<div class="big-mark ${kind}">${icon}</div>`;
 
 function view(c) {
   const w = c.wholesale, rules = w.policy.rules;
   const esc_ = rules.filter(r => r.outcome === "escalate"), ok = rules.filter(r => r.outcome === "pass");
   const total = c.totals.find(t => t.type === "total").amount, sub = c.totals.find(t => t.type === "subtotal").amount;
   const am = w.amends, goods = c.line_items.length > 0, open = c.status === "requires_escalation";
-  let h = `<div><div class="from">${open ? "<i></i>" : ""}${esc(c.buyer.name || "Your company")} · purchasing agent</div><h1>${open ? (am ? "Your agent needs your OK to change order " + esc(am.order_label) : "Your agent needs your OK for this order") : am ? "Change to order " + esc(am.order_label) : "Order request"}</h1>${am && am.title ? `<p style="margin:6px 0 0;color:var(--muted)">${esc(am.title)}</p>` : ""}
-    ${open && (!am || goods) ? `<div class="amount"><span class="big">${eur(total)}</span><span class="sub">incl. VAT<br>${eur(sub)} ex VAT</span></div>` : ""}</div>`;
+  const so = !goods && (w.proposal || {}).standing;  // a standing-order change from Valio Aimo's selling agent: no goods, binds every week
+  if (open && $("#who")) { LAST.who = $("#who").value; LAST.note = $("#note").value; }
+  let h = `<div><h1>${so ? (open ? "A change to the standing order needs your OK" : c.status === "completed" ? "Standing order changed" : "Standing-order change") : open ? (am ? "A change to order " + esc(am.order_label) + " needs your OK" : "An order needs your OK") : am ? "Change to order " + esc(am.order_label) : "Order request"}</h1><p class="from">Asked by the purchasing agent of ${esc(c.buyer.name || "the buyer")}</p>${am && am.title ? `<p style="margin:6px 0 0;color:var(--muted)">${esc(am.title)}</p>` : ""}${(w.proposal || {}).standing ? ((x) => `<p style="margin:6px 0 0;color:var(--muted)">${goods ? "It also changes the standing order: " : ""}${esc(x.title)} from ${esc(x.from)} to ${esc(x.to)} units, every week from ${esc(x.starts)}.${goods ? "" : " Nothing is ordered now."}</p>`)(w.proposal.standing) : ""}
+    ${open && !so && (!am || goods) ? `<div class="amount"><span class="big">${eur(total)}</span><span class="sub">incl. VAT<br>${eur(sub)} ex VAT</span></div>` : ""}</div>`;
   if (open) {
-    h += `<div class="why"><b>Why it is asking you</b><ul>${esc_.map(r => `<li>${esc(r.detail)}${undeclared(r)}</li>`).join("")}</ul></div>`;
+    h += `<div class="why"><b>Why it needs a person</b><ul>${esc_.map(r => `<li>${esc(r.detail)}</li>`).join("")}</ul>${tickList(c)}</div>`;
   } else if (c.status === "ready_for_complete" && w.approval) {
-    h += `<div class="card state">${big("ok", ICON.check)}<h2>Approved</h2><p class="muted">${am && !goods ? "Your agent is making the change now." : "Your agent is placing the order now."}</p>${w.approval.device ? `<p class="muted" style="font-size:var(--t2)">Signed on ${esc(w.approval.device.device)}, key ${esc(w.approval.device.thumbprint)}.</p>` : ""}</div>`;
+    // The agent places the order, not this page. If it has not come back for it yet, say that instead of "now".
+    const act = (am || so) && !goods;
+    h += `<div class="card state">${big("ok", ICON.check)}<h2>Approved</h2><p class="muted">${late(c) ? `${act ? "Nothing is changed yet" : "Not ordered yet"}: the agent has not come back for it. ${act ? "It makes the change" : "It places the order"} when it does${w.hold ? `, and price and stock are held until ${esc(clock(w.hold.price_and_stock_held_until))}` : ""}.` : act ? "The agent is making the change now." : "The agent is placing the order now."}</p>${signed(c)}</div>`;
   } else if (c.status === "completed") {
-    h += `<div class="card state">${big("ok", ICON.check)}<h2>${am ? (goods ? "Replacement order " + esc(c.order.label) + " placed" : "Order " + esc(am.order_label) + " changed") : "Order " + esc(c.order.label) + " placed"}</h2><p><a class="btn" href="${esc(siteUrl(c.order.url || c.order.permalink_url))}" style="margin-top:8px">Confirmation and evidence</a></p></div>`;
+    h += `<div class="card state">${big("ok", ICON.check)}<h2>${so ? "Standing order changed" : am ? (goods ? "Replacement order " + esc(c.order.label) + " placed" : "Order " + esc(am.order_label) + " changed") : "Order " + esc(c.order.label) + " placed"}</h2><p><a class="btn" href="${esc(siteUrl(c.order.url || c.order.permalink_url))}" style="margin-top:8px">Confirmation and evidence</a></p>${w.approval && w.approval.decision === "approved" ? signed(c) : ""}</div>`;
   } else if (c.status === "canceled") {
-    h += `<div class="card state">${big("bad", ICON.cross)}<h2>${w.approval && w.approval.decision === "rejected" ? "Rejected" : "Cancelled"}</h2><p class="muted">${am ? "Nothing was changed." : "Nothing was ordered. The held stock was released."}</p></div>`;
+    h += `<div class="card state">${big("bad", ICON.cross)}<h2>${w.approval && w.approval.decision === "rejected" ? "Rejected" : "Cancelled"}</h2><p class="muted">${am || so ? "Nothing was changed." : "Nothing was ordered. The held stock was released."}</p></div>`;
   } else {
-    h += `<div class="card state">${big("idle", ICON.close)}<h2>This request is no longer open</h2><p class="muted">The offer expired or changed. Your agent will ask again if it still needs you.</p></div>`;
+    h += `<div class="card state">${big("idle", ICON.close)}<h2>This request is no longer open</h2><p class="muted">The offer expired or changed. The agent will ask again if it still needs a person.</p></div>`;
   }
   const decided = c.status === "canceled" ? (am ? "What was asked for" : "What was asked for, not ordered") : c.status === "completed" ? (am ? "The replacement" : "The order") : am ? "The replacement" : "The order";
-  if (!am || goods) h += `<div class="card"><h3>${decided}<span class="muted">${c.line_items.length} ${c.line_items.length === 1 ? "line" : "lines"}</span></h3>${linesShort(c.line_items)}${totalsBlock(c.totals)}
+  if (!so && (!am || goods)) h += `<div class="card"><h3>${decided}<span class="muted">${c.line_items.length} ${c.line_items.length === 1 ? "line" : "lines"}</span></h3>${linesShort(c.line_items)}${totalsBlock(c.totals)}
     ${c.status === "canceled" ? "" : `<dl class="kv" style="margin-top:var(--s4)"><dt>Delivery</dt><dd>${esc(day(w.delivery_date))}</dd><dt>To</dt><dd>${esc(w.ship_to || "")}</dd><dt>Supplier</dt><dd>Valio Aimo, on your existing invoice terms</dd>
     ${w.hold && open ? `<dt>Held until</dt><dd>${esc(clock(w.hold.price_and_stock_held_until))}: price and stock are reserved for you</dd>` : ""}</dl>`}</div>`;
-  if (w.intent || w.agent_rationale) h += `<div class="card"><h3>What was asked, and the agent's reason</h3>${w.intent ? `<div class="q-label">Request</div><blockquote>“${esc(w.intent)}”</blockquote>` : ""}${w.agent_rationale ? `<div class="q-label" style="margin-top:var(--s4)">The agent says</div><blockquote>${esc(w.agent_rationale)}</blockquote>` : ""}</div>`;
+  if (w.intent || w.agent_rationale || c._asked_by) h += `<div class="card"><h3>What was asked, and the agent's reason</h3>${c._asked_by ? `<div class="q-label">Asked by</div><blockquote>${esc(c._asked_by)}</blockquote>` : ""}${w.intent ? `<div class="q-label"${c._asked_by ? ' style="margin-top:var(--s4)"' : ""}>Request</div><blockquote>“${esc(w.intent)}”</blockquote>` : ""}${w.agent_rationale ? `<div class="q-label" style="margin-top:var(--s4)">The agent says</div><blockquote>${esc(w.agent_rationale)}</blockquote>` : ""}</div>`;
   if (ok.length && open) h += `<details class="card"><summary>${ok.length} checks passed automatically</summary>${rulesTable(ok)}</details>`;
-  if (open) h += `<div class="card"><h3>Your sign-off</h3><div class="fields"><label>Name<input type="text" id="who" value="F&amp;B manager" autocomplete="name" style="margin-top:6px"></label><label>Note (optional)<input type="text" id="note" placeholder="e.g. OK for this week only" style="margin-top:6px"></label></div>
-    ${signoff()}</div>`;
+  if (open) h += `<div class="card"><h3>Your sign-off</h3><div class="fields"><label>Your name<input type="text" id="who" value="${esc(LAST.who)}" autocomplete="name" placeholder="e.g. Maija Korhonen, F&amp;B manager" style="margin-top:6px"></label><label>Note (optional)<input type="text" id="note" value="${esc(LAST.note)}" placeholder="e.g. OK for this week only" style="margin-top:6px"></label></div>
+    <p class="pk" style="margin-top:var(--s3)">The record keeps who asked and who approved as two names.</p>${signoff()}</div>`;
   $("#main").innerHTML = h;
   $("#bar").hidden = !open;
-  if (open) $("#yes").textContent = YES = am && !goods ? "Approve the change" : "Approve " + eur(total);
+  if (open) { YES = (am || so) && !goods ? "Approve the change" : "Approve " + eur(total); if (!busy) $("#yes").textContent = YES; }
+  for (const box of document.querySelectorAll(".tick input")) box.onchange = () => { box.checked ? ticks.add(box.dataset.id) : ticks.delete(box.dataset.id); gate(); };
+  if ($("#try")) $("#try").onclick = tryLink;
+  if (open) gate();
+}
+// Approved more than 20 seconds ago and still not ordered: the agent was not waiting when the yes came.
+const late = c => c.status === "ready_for_complete" && Date.now() - Date.parse((c.wholesale.approval || {}).at || "") > 20000;
+const noSign = () => MODE === "other" || (MODE === "link" && PKS && PKS.link_ok === false);  // nothing here can sign, and the link alone does not approve
+const canYes = () => !!C && !noSign() && toClear(C).every(x => ticks.has(x.id));
+// Approve works only when every line with no allergen declaration is ticked, and only where this browser can sign.
+function gate() {
+  if (!C || busy) return;
+  const need = toClear(C), left = need.filter(x => !ticks.has(x.id)).length;
+  if ($("#tickn")) $("#tickn").textContent = `${need.length - left} of ${need.length} confirmed`;
+  $("#yes").disabled = !canYes();
+  const h = $("#bar .hint");
+  if (!h.classList.contains("bad")) h.textContent = MODE === "other" ? "This is not an approver device for this account. It can still reject." : noSign() ? "This browser cannot sign an approval. It can still reject."
+    : left ? `Tick ${left === need.length ? (left === 1 ? "the line" : "each of the " + left + " lines") : "the remaining " + left} with no allergen declaration to approve. Rejecting needs no ticks.` : HINT;
 }
 
 // Long orders: show the first lines (and every substitute) and fold the rest, so the decision stays near the top.
@@ -131,50 +212,98 @@ function linesShort(items) {
   const rest = items.filter((l, i) => !keep[i]);
   return linesTable(items.filter((l, i) => keep[i])) + `<details class="more-lines"><summary>Show the other ${rest.length} lines</summary>${linesTable(rest)}</details>`;
 }
+// A failed poll never touches the page: it shows a small notice and the next poll tries again.
 async function load() {
   let c;
   try { c = await api(`/api/approve/${cid}?k=${encodeURIComponent(k || "")}`); }
-  catch (e) { $("#main").innerHTML = `<div class="card state">${big("idle", ICON.close)}<h2>Could not reach the gateway</h2><p class="muted">Check your connection. This page tries again on its own.</p></div>`; return null; }
-  if (!c.id) { $("#main").innerHTML = `<div class="card state">${big("bad", ICON.cross)}<h2>This link is not valid</h2><p class="muted">${esc((c.messages || [{}])[0].content || "")}</p></div>`; $("#bar").hidden = true; clearInterval(timer); return null; }
-  return c;
+  catch (e) { $("#net").hidden = false; return null; }
+  if (c && c.id) { $("#net").hidden = true; return c; }
+  const m = ((c || {}).messages || [{}])[0] || {};
+  if (m.code === "forbidden" || m.code === "not_found") {
+    $("#net").hidden = true;
+    $("#main").innerHTML = `<div class="card state">${big("bad", ICON.cross)}<h2>This link is not valid</h2><p class="muted">${m.code === "not_found" ? "The gateway has no approval request under this link. Ask for the link again from whoever sent it." : esc(m.content || "")}</p></div>`; $("#bar").hidden = true; clearInterval(timer);
+  } else $("#net").hidden = false;  // busy or briefly unavailable: keep what is on screen
+  return null;
+}
+// How this account approves, and what this browser can sign with.
+async function how() {
+  const p = await api(`/api/approve/${cid}/device`, { k, approve: true }).catch(() => null);
+  if (!p || !p.approvals) return false;
+  KIND = await PK.kindHere();
+  if (p.approvals === "device") {
+    const held = await PK.holds(p);
+    if (held === "browser_key") { const mine = (await PK.keys()).map(x => x.id); p.mine = (p.keys || []).filter(id => mine.includes(id)); }
+    MODE = held === "browser_key" ? "sign_key" : held === "passkey" ? "sign_passkey" : p.can_enrol && KIND ? "add" : "other";
+  } else MODE = p.can_enrol && KIND ? "first" : "link";
+  PKS = p;
+  return true;
 }
 async function refresh(force) {
   const c = await load();
   if (!c) return;
-  if (!PKS && c.status === "requires_escalation") PKS = await api(`/api/approve/${cid}/device`, { k, approve: true }).catch(() => null);
-  // Do not redraw the form while someone is typing in it.
-  if (force || c.status !== "requires_escalation" || !$("#who")) view(c);
+  C = c;
+  const open = c.status === "requires_escalation";
+  let fresh = false;
+  if (!PKS && open) fresh = await how();
+  // Redraw only when something changed, and never while someone is filling in the form.
+  const sig = [c.status, (c.wholesale.approval || {}).at || "", (c.order || {}).id || "", late(c)].join("|");
+  if (force || fresh || sig !== drawn) { drawn = sig; view(c); }
   if (c.status === "completed" || c.status === "canceled") clearInterval(timer);
 }
-function said(text) { const h = $("#bar .hint"); h.textContent = text || HINT; h.classList.toggle("bad", !!text); }
+function said(text) { const h = $("#bar .hint"); h.classList.toggle("bad", !!text); if (text) h.textContent = text; else { h.textContent = HINT; gate(); } }
 async function decide(approve) {
-  const body = { k, approve, approver: $("#who").value, note: $("#note").value };
-  const back = text => { $("#yes").disabled = $("#no").disabled = false; $("#no").textContent = "Reject"; $("#yes").textContent = text ? "Try again" : YES; said(text); };
-  $("#yes").disabled = $("#no").disabled = true; said("");
+  if (busy || !C) return;
+  const who = $("#who") ? $("#who").value : LAST.who, note = $("#note") ? $("#note").value : LAST.note;
+  const clears = toClear(C).filter(x => ticks.has(x.id)).map(x => ({ id: x.id, codes: x.codes }));
+  if (approve && !who.trim()) { said("Type your name first: the record carries the name of the person who approves."); if ($("#who")) $("#who").focus(); return; }
+  const body = { k, approve, approver: who.trim(), note, ...(approve ? { clears } : {}) };
+  const back = text => { busy = false; $("#no").disabled = false; $("#yes").disabled = !canYes(); $("#no").textContent = "Reject"; $("#yes").textContent = text && approve ? "Try again" : YES; said(text); };
+  busy = true; $("#yes").disabled = $("#no").disabled = true; said("");
+  // Never fall back to the bare link because a question to the gateway was lost: first learn how this account approves.
+  if (approve && !PKS && !(await how())) return back("The gateway did not answer. Nothing was decided.");
   const b = approve ? $("#yes") : $("#no");
-  b.innerHTML = '<span class="spin"></span>' + (approve ? "Signing" : "Rejecting");
+  const say = t => { b.innerHTML = '<span class="spin"></span>' + t; };
+  say(approve ? "Signing" : "Rejecting");
   let r;
   try {
-    // An account with an enrolled device: that device signs this decision. Saying no needs no device.
-    if (approve && PKS && PKS.approvals === "passkey") {
-      b.innerHTML = '<span class="spin"></span>Waiting for this device';
+    if (approve && (MODE === "first" || MODE === "add")) {
+      // No device signs for this account here yet: this one becomes an approver, then signs. One press.
+      say(KIND === "passkey" ? "Waiting for this device" : "Making a key in this browser");
+      try { await PK.enrol({ cid, k }); }
+      catch (e) {
+        if (e && e.name === "NotAllowedError") return back("Nothing was approved: the device prompt was closed or timed out.");
+        if (e && e.name === "InvalidStateError") { await how(); if (MODE !== "sign_passkey") return back("This device is already enrolled, but could not be used here."); }
+        else return back((e && e.message) || "This device could not be made the approver. Nothing was approved.");
+      }
+      if (!(await how()) || (MODE !== "sign_key" && MODE !== "sign_passkey")) { view(C); return back("This device was enrolled but cannot sign yet. Press Approve again."); }
+      view(C);
+    }
+    if (approve && (MODE === "sign_key" || MODE === "sign_passkey")) {
+      say(MODE === "sign_passkey" ? "Waiting for this device" : "Signing in this browser");
       const pre = await api(`/api/approve/${cid}/device`, body);
       if (!pre.challenge) return back((pre.messages || [{}])[0].content || "The approval could not be prepared.");
       try { body.device = await PK.sign(pre); }
-      catch (e) { return back(e && e.name === "NotAllowedError" ? "Nothing was approved: the device prompt was closed, or this is not one of the account's approver devices." : "This device could not sign the approval."); }
+      catch (e) { return back(e && e.name === "NotAllowedError" ? "Nothing was approved: the device prompt was closed, or this is not one of the account's approver devices. Press Approve again to retry." : e && e.name === "NotEnrolledError" ? "Nothing was approved: this is not one of the account's approver devices." : "This device could not sign the approval. Nothing was approved."); }
     }
     r = await api(`/api/approve/${cid}`, body);
-  } catch (e) { return back("The gateway did not answer. Nothing was decided."); }
+  } catch (e) {
+    // No answer came back. The decision may still have been recorded: read the request again before saying it was not.
+    const now = await load();
+    if (now && now.status !== "requires_escalation") { busy = false; $("#no").textContent = "Reject"; $("#yes").textContent = YES; said(""); return refresh(true); }
+    return back(now ? "The gateway did not answer, and it has recorded no decision. Press again." : "The gateway is not answering, so this page cannot tell yet whether your decision was recorded. It shows the answer as soon as it can.");
+  }
   const err = !r.id && (r.messages || []).find(m => m.type === "error");
-  if (err && err.code === "device_required" && !body.device) { PKS = await api(`/api/approve/${cid}/device`, { k, approve: true }).catch(() => PKS); back(); return decide(true); }
+  // Someone enrolled a device for this account while this page was open: find out what this browser can do, and say so.
+  if (err && err.code === "device_required" && !body.device) { await how(); view(C); return back(MODE === "other" ? "Nothing was approved: this account now approves on an enrolled device, and this is not one of them." : "This account now approves on an enrolled device. Press Approve again to sign here."); }
+  if (err && err.code === "offer_changed") { PKS = null; await refresh(true); return back(err.content); }  // the rules were run again at the yes: show the current offer
   if (err) return back(err.content);
-  back();
+  busy = false; $("#no").textContent = "Reject"; $("#yes").textContent = YES;
   refresh(true);
 }
 $("#yes").onclick = () => decide(true);
 $("#no").onclick = () => decide(false);
 refresh(true);
-timer = setInterval(() => refresh(false).catch(() => {}), 1500);
+timer = setInterval(() => { if (!busy) refresh(false).catch(() => {}); }, 1500);
 </script>
 </body>
 </html>

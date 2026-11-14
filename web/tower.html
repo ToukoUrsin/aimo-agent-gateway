@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Valio Aimo control tower</title>
+<title>Control tower · Aimo Agent Gateway</title>
 <link rel="stylesheet" href="/static/app.css">
 <style>
 main.tw{max-width:1440px;margin:0 auto;padding:0 var(--s5) var(--s8);display:flex;flex-direction:column;gap:var(--s4)}
@@ -201,7 +201,7 @@ main.tw{max-width:1440px;margin:0 auto;padding:0 var(--s5) var(--s8);display:fle
   </div>
   <div class="alarm" id="alarm" hidden>Valio Aimo has paused agent ordering on every account.</div>
   <div class="ops">
-    <div class="state" id="floor"><span class="skel" style="width:30ch"></span></div>
+    <div class="state" id="floor"><span class="wait"><span class="spin"></span>Asking whether agents are running</span></div>
     <div class="grp" id="opctl">
       <span class="grp" id="floorctl" hidden>
         <select id="mins" aria-label="Length of the floor run"><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option></select>
@@ -210,8 +210,8 @@ main.tw{max-width:1440px;margin:0 auto;padding:0 var(--s5) var(--s8);display:fle
         <button class="btn small" id="stop">Stop</button>
         <button class="btn small" id="reset">Reset floor</button>
       </span>
-      <label id="rmodl" hidden title="12 of the 60 agents are real models: 4 each from three providers. The rest are scripted bots."><input type="checkbox" id="rmod" checked> 12 model agents</label>
-      <button class="btn small primary" id="rstart" hidden>Start a live Monday rush</button>
+      <label id="rmodl" hidden title="12 of the 60 recorded agents are real models: 4 each from three providers. The rest are scripted bots."><input type="checkbox" id="rmod" checked> 12 model agents</label>
+      <button class="btn small primary" id="rstart" hidden>Start a live visitor rush</button>
       <button class="btn small" id="rstop" hidden>Stop the rush</button>
       <button class="btn small danger" id="pause">Pause all agent ordering</button>
       <span class="lock" id="viewer" hidden><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3.5" y="7" width="9" height="6.5" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>Valio Aimo's operator only</span>
@@ -220,7 +220,7 @@ main.tw{max-width:1440px;margin:0 auto;padding:0 var(--s5) var(--s8);display:fle
   </div>
   <section class="card rush" id="rush" aria-labelledby="rush-h">
     <div class="rh"><h2 id="rush-h">The Monday rush</h2><span class="mode" id="rmode"></span></div>
-    <p class="rsay" id="rsay"><span class="skel" style="width:60ch"></span></p>
+    <p class="rsay" id="rsay"><span class="wait"><span class="spin"></span>Reading the recorded Monday rush</span></p>
     <div id="rbody" hidden>
       <div class="prog" aria-hidden="true"><i id="rprog"></i></div>
       <div class="rnum" id="rnum"></div>
@@ -234,13 +234,13 @@ main.tw{max-width:1440px;margin:0 auto;padding:0 var(--s5) var(--s8);display:fle
     </div>
     <div class="empty" id="rempty" hidden></div>
   </section>
-  <section class="card today share"><h2>Today</h2><p class="say" id="tiles"><span class="skel" style="width:50ch"></span></p><div class="bar" id="bar"></div><div class="legend" id="legend"></div></section>
+  <section class="card today share"><h2>Today</h2><p class="say" id="tiles"><span class="wait"><span class="spin"></span>Reading today's orders, approvals and refusals</span></p><div class="bar" id="bar"></div><div class="legend" id="legend"></div></section>
   <section class="card slim" id="seller" hidden></section>
   <div class="grid">
     <section class="card a-acc"><h2><span>Accounts and their agents</span><span class="muted" id="sand"></span></h2>
-      <p class="limits">Two different limits apply to every order. <b>Valio Aimo's cap per agent order</b> is set here, per account (rule W3). <b>The buyer's own limit</b> is in the mandate the buyer signs for its agent (rule B1). Above either, a person decides.</p>
-      <div id="accounts"></div></section>
-    <section class="card a-feed"><h2>Latest, newest first</h2><div class="feed" id="feed"></div></section>
+      <p class="limits">Three limits apply to every order. <b>The buyer's own limit</b> is in the mandate the buyer signs for its agent (rule B1), and <b>Valio Aimo's cap per agent order</b> is set here, per account (rule W3): above either, a person at the kitchen decides. <b>Valio Aimo's ceiling per delivery day</b> (rule W5, €25,000 unless changed) is not the kitchen's to approve: above it the order is refused.</p>
+      <div id="accounts"><span class="wait"><span class="spin"></span>Reading the accounts</span></div></section>
+    <section class="card a-feed"><h2>Latest, newest first</h2><div class="feed" id="feed"><span class="wait"><span class="spin"></span>Waiting for the first events</span></div></section>
     <section class="card a-stock"><h2>Stock under pressure</h2><div id="stock"></div></section>
     <section class="card a-rules"><h2>What the rules stopped today</h2><div id="rules"></div></section>
   </div>
@@ -337,26 +337,30 @@ function ops(d) {
   $("#floor").innerHTML = f.running
     ? `<b>The floor is ${f.stopping ? "stopping" : "running"}.</b> ${esc(f.note || "")}${f.agents ? `, ${f.agents} agents` : ""}.`
     : ru.running ? `<b>The Monday rush is ${ru.stopping ? "stopping" : "running live"}.</b> ${esc(ru.note || "")}.`
+    : ru.cooldown_s ? `Nothing is running live. The last live visitor rush finished; a new one can start in <b>${Math.ceil(ru.cooldown_s)} s</b>.${replay}`
     : s ? `Nothing is running live.${replay} Last floor run: <b>${n0(s.orders)} orders</b>, ${n0(s.alone)} alone, ${n0(s.approved)} approved by a person, ${n0(s.refused + s.said_no)} stopped.`
     : `Nothing is running live.${replay}${f.note && /^Stopped:/.test(f.note) ? " " + esc(f.note) : ""}`;
-  // A visitor sees what Valio Aimo's operator can do, switched off, and why.
+  // A visitor can start one small rush. The recorded 60-agent controls remain operator-only.
   $("#floorctl").hidden = !OP;
-  $("#rmodl").hidden = !OP || !d.rush;
+  $("#rmodl").hidden = !OP || !d.rush || !!ru.live;
   $("#viewer").hidden = OP;
   const why = OP ? "" : "Only Valio Aimo's operator can do this";
   $("#start").disabled = !!f.running || !!ru.running;
   $("#reset").disabled = !!f.running || !!ru.running;
   $("#stop").disabled = !f.running || !!f.stopping;
-  $("#rstart").hidden = !d.rush || !!ru.running;
+  $("#rstart").hidden = !d.rush;
   $("#rstop").hidden = !OP || !ru.running;
-  $("#rstart").disabled = !OP || !!f.running || !!ru.running;
-  $("#rstart").classList.toggle("primary", OP);
+  const cooling = (ru.cooldown_s || 0) > 0;
+  $("#rstart").disabled = !!f.running || (!!ru.running && !ru.live) || (cooling && !ru.running);
+  $("#rstart").classList.toggle("primary", !cooling);
+  $("#rstart").textContent = ru.running && ru.live ? "Watch the live rush" : cooling ? `New live rush in ${Math.ceil(ru.cooldown_s)} s` : OP ? "Start the recorded 60-agent rush" : "Start a live visitor rush";
   $("#rstop").disabled = !ru.running || !!ru.stopping;
   const p = $("#pause");
   p.textContent = d.paused_all ? "Switch agent ordering back on" : "Pause all agent ordering";
   p.className = "btn small " + (d.paused_all ? "primary" : "danger");
   p.disabled = !OP;
-  for (const b of [$("#rstart"), p]) b.title = why;
+  $("#rstart").title = cooling ? "A short cool-down prevents runs being queued." : (ru.running && ru.live ? "Everyone watches this same live run." : why);
+  p.title = why;
 }
 
 function render(d) {
@@ -368,9 +372,11 @@ function render(d) {
 }
 
 async function tick(once) {
+  let ok = true;
   try { render(await api("/api/tower")); $("#clockw").classList.remove("lost"); }
-  catch (e) { $("#clock").textContent = "Lost contact with the gateway. Trying again."; $("#clockw").classList.add("lost"); }
+  catch (e) { ok = false; $("#clock").textContent = "Lost contact with the gateway. Trying again."; $("#clockw").classList.add("lost"); }
   if (!once) setTimeout(tick, 1500);
+  return ok;
 }
 
 // Every action says on the page what happened. A refusal names the reason; a busy server is retried.
@@ -392,7 +398,14 @@ async function act(path, body, done) {
     if (res.status === 403) say("Only Valio Aimo's operator can do this. Nothing was changed.", "bad");
     else if (err || !res.ok) say((err && err.content) || `The gateway said no (${res.status}). Nothing was changed.`, "bad");
     else say(done || "Done.", "ok");
-  } catch (e) { say("That did not reach the gateway. Nothing was changed; try again.", "bad"); }
+  } catch (e) {
+    // No answer came back, so the change may or may not have been made. Read the state again before saying anything about it.
+    say("No answer came back. Reading the gateway's state again", "wait");
+    const read = await tick(true);
+    say(read ? "No answer came back for that. The page now shows what the gateway has: look before you press again." : "The gateway is not answering. Whether that took effect shows here as soon as it does.", "bad");
+    busy = false;
+    return;
+  }
   busy = false;
   tick(true);
 }
@@ -402,7 +415,10 @@ document.addEventListener("click", e => {
   if (b.id === "start") act("/api/tower/floor/start", { minutes: +$("#mins").value, llm: $("#llm").checked ? 1 : 0 }, "The floor is starting.");
   else if (b.id === "stop") act("/api/tower/floor/stop", null, "The floor is stopping.");
   else if (b.id === "reset") act("/api/tower/floor/reset", null, "The floor was reset.");
-  else if (b.id === "rstart") act("/api/tower/rush/start", { models: $("#rmod").checked ? 12 : 0 }, "A live Monday rush is starting. The grid below switches to it in a moment.");
+  else if (b.id === "rstart") {
+    const live = !(D && D.operator);
+    act(live ? "/api/tower/rush/live/start" : "/api/tower/rush/start", live ? {} : { models: $("#rmod").checked ? 12 : 0 }, live ? "A small live rush is starting. The grid below switches to it in a moment." : "The recorded 60-agent rush is starting.");
+  }
   else if (b.id === "rstop") act("/api/tower/rush/stop", null, "The rush is stopping.");
   else if (b.id === "rplay") rushRestart();
   else if (b.classList.contains("cell")) { RU.sel = RU.sel === +b.dataset.i ? null : +b.dataset.i; RU.dirty = true; rushPaint(); }
@@ -460,6 +476,7 @@ function rushApply(e) {
   else if (e.s === "approved") { c.person = "approved"; c.by = e.by; say("human", `${c.name}: approved.`, `${e.by || "The approver"} (simulated) said yes.`); }
   else if (e.s === "rejected") { c.person = "rejected"; c.st = "rejected"; c.by = e.by; say("human", `${c.name}: a person said no.`, `${e.by || "The approver"} (simulated) turned the substitute down. The agent orders the share alone.`); }
   else if (e.s === "refused") { c.st = "refused"; c.refused = e.rules || []; c.over = !!e.p; c.why = e.why; say("deny", `${c.name}: refused by rule ${rules}.`, `${e.why}${e.p ? "" : " No person can override this."}`); }
+  else if (e.s === "late") { c.st = "error"; c.err = e.why || "The model agent was late."; say("deny", `${c.name}: model agent was late.`, c.err); }
   else if (e.s === "ordered" || e.s === "more") { c.st = "ordered"; c.orders++; c.got += e.l; if (e.s === "more") { c.extra += e.l; c.wait = 0; } if (e.sub) c.sub += e.sub; }
   else if (e.s === "error") c.err = e.why;
   c.pop = true;
@@ -505,13 +522,16 @@ function rushMode() {
 }
 
 function rushSum(r, m) {
-  const mix = m ? `Who the agents are: ${n0(m.scripted_standing_order_bots)} standing-order bots and ${n0(m.scripted_planner_bots)} planner bots (scripted), ${n0(m.model_agents)} model agents${(m.models || []).length ? " (" + m.models.map(x => `${x.agents} x ${esc(x.label || x.model)}`).join(", ") + ")" : ""}. The 60 accounts, their order history and their approvers are simulated; the order history is seeded.` : "";
+  const mix = m ? `Who the agents are: ${n0(m.scripted_standing_order_bots)} standing-order bots and ${n0(m.scripted_planner_bots)} planner bots (scripted), ${n0(m.model_agents)} model agents${(m.models || []).length ? " (" + m.models.map(x => `${x.agents} x ${esc(x.label || x.model)}`).join(", ") + ")" : ""}. The accounts, their order history and their approvers are simulated; the order history is seeded.` : "";
   if (!r || !r.outcomes) return mix;
   const o = r.outcomes, s = r.seconds, st = r.stock, p = r.people, ref = Object.entries(r.refused_by_rule || {}).map(([k, v]) => `${esc(k)} ${v}`).join(", ");
-  return `<b>Measured by this run.</b> ${r.answered} of ${r.agents_total} agents answered. First requests within ${s.first_requests_within} s, all answered within ${s.all_answered_within} s, last order ${s.first_request_to_last_order} s after the first request. `
-    + `${lit(st.litres_ordered)} of ${lit(st.litres_in_stock)} L ordered, ${st.over_allocated ? "<b>over-allocated</b>" : `never over-allocated (checked ${n0(st.times_checked)} times)`}. `
-    + `Got all ${o.got_all}, share only ${o.share_only}, share plus substitute ${o.share_plus_substitute}, needed a person ${o.needed_a_person} (${p.approved} approved, ${p.said_no} said no), refused by a rule ${o.refused}${ref ? ` (${ref})` : ""}${o.no_order ? `, no order ${o.no_order}` : ""}. `
-    + `${r.placed_alone} placed with nobody involved. ${n0(r.ledger.entries_written)} ledger entries, chain ${r.ledger.chain_intact ? "intact" : "broken"}. ${r.errors} errors.<br>${mix}`;
+  const people = (p.details || []).map(x => `${esc(x.name)} (${esc((x.rules || []).join(", "))}: ${esc(x.why)})`).join("; ");
+  const refused = (r.refused_details || []).map(x => `${esc(x.name)} (${esc((x.rules || []).join(", "))}: ${esc(x.why)})`).join("; ");
+  const ledger = r.ledger_url ? ` <a href="${esc(r.ledger_url)}" target="_blank" rel="noopener">Open this run's ledger entries</a>.` : "";
+  return `<b>${r.live ? "Live result." : "Measured by this run."}</b> ${r.answered} of ${r.agents_total} agents answered. First requests within ${s.first_requests_within} s, all answered within ${s.all_answered_within} s, last order ${s.first_request_to_last_order} s after the first request. `
+    + `${lit(st.litres_ordered)} L sold (ordered) of ${lit(st.litres_in_stock)} L in stock, ${st.over_allocated ? "<b>over-allocated</b>" : `never over-allocated (checked ${n0(st.times_checked)} times)`}. `
+    + `Promised twice: <b>${n0(st.promised_twice || 0)}</b>. Got all ${o.got_all}, share only ${o.share_only}, share plus substitute ${o.share_plus_substitute}, needed a person ${o.needed_a_person} (${p.approved} approved, ${p.said_no} said no)${people ? `: ${people}` : ""}. ${o.refused ? `Refused by a rule ${o.refused}${ref ? ` (${ref})` : ""}${refused ? `: ${refused}` : ""}.` : "Nobody was refused by a rule."}${o.no_order ? ` No order ${o.no_order}.` : ""} `
+    + `${r.placed_alone} placed with nobody involved. ${n0(r.ledger.entries_written)} ledger entries, chain ${r.ledger.chain_intact ? "intact" : "broken"}. ${r.errors} errors.${ledger}<br>${mix}`;
 }
 
 function rushTable() {
@@ -550,7 +570,7 @@ function rushShow() {
   const none = RU.mode === "none" || RU.mode === "error";
   $("#rbody").hidden = none;
   $("#rempty").hidden = !none;
-  if (RU.mode === "none") { $("#rsay").textContent = "No Monday rush has been recorded on this server yet."; $("#rempty").textContent = "When one runs, this shows one cell for each of the 60 kitchens' agents, the stock of the short milk draining to its allocation, and the split by contract share."; }
+  if (RU.mode === "none") { $("#rsay").textContent = "No Monday rush has been recorded on this server yet."; $("#rempty").textContent = "The recorded run shows 60 kitchens. Any visitor can also start a separate 12-agent live rush."; }
   if (RU.mode === "error") { $("#rsay").textContent = "The recorded Monday rush did not load."; $("#rempty").innerHTML = '<span class="error-state"><span class="spin"></span>Trying again in a few seconds.</span>'; }
   return !none;
 }
@@ -560,7 +580,7 @@ function rushSay(n, asked) {
   const r = RU.mode === "replay" ? RU.run : (RU.status.summary || null), st = r && r.stock, o = r && r.outcomes;
   if (st && o) {
     const sec = r.seconds && r.seconds.first_request_to_last_order;
-    return `<b>${n0(r.agents_total || n)}</b> kitchens' agents asked for <b>${lit(st.litres_asked || asked)}&nbsp;L</b> of the same lactose-free milk for Monday, at the same second. Valio Aimo had <b>${lit(st.litres_in_stock)}&nbsp;L</b>. `
+    return `<b>${n0(r.agents_total || n)}</b> kitchens' agents asked for <b>${lit(st.litres_asked || asked)}&nbsp;L</b> of the same lactose-free milk for Monday, at the same moment. Valio Aimo had <b>${lit(st.litres_in_stock)}&nbsp;L</b>. `
       + `${sec != null ? `In <b>${lit(sec)}&nbsp;s</b>` : "In the end"} ${st.over_allocated ? `<b class="r">it was over-allocated</b>` : `every litre was split by contract share and <b>never over-allocated</b>`}: `
       + `<b class="a">${n0(r.placed_alone)}</b> ordered with nobody involved, <b class="p">${n0(o.needed_a_person)}</b> needed a person, <b class="r">${n0(o.refused)}</b> had a request refused by a rule${r.refused_then_ordered_share ? ` (${n0(r.refused_then_ordered_share)} of them then ordered their share, so their cell ends green)` : ""}.`;
   }
@@ -643,7 +663,7 @@ function rushTick() {
     }
   } else if (RU.mode === "live") {
     if (RU.gunAt) { RU.T = (Date.now() - RU.gunAt) / 1000; RU.dirty = true; }
-    if (!RU.cells.length) { $("#rbody").hidden = true; $("#rempty").hidden = false; $("#rempty").innerHTML = `<span class="spin"></span> A live Monday rush is starting: ${esc(RU.status.note || "setting up the 60 accounts")}. The 60 cells appear here in a moment.`; return; }
+    if (!RU.cells.length) { $("#rbody").hidden = true; $("#rempty").hidden = false; $("#rempty").innerHTML = `<span class="spin" style="margin-right:8px"></span>A live Monday rush is starting: ${esc(RU.status.note || "setting up the 60 accounts")}. The 60 cells appear here in a moment.`; return; }
   }
   rushPaint();
 }

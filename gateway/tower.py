@@ -17,6 +17,7 @@ events for the screen and stores the measured result of each run (evals/rush/).
 import asyncio
 import hashlib
 import json
+import math
 import re
 import secrets
 import threading
@@ -240,7 +241,9 @@ def build(g, ctx, page) -> APIRouter:
     cache_lock = threading.Lock()
     source: dict[str, tuple] = {}  # product -> (seen at, stock at Valio Aimo or None when not tracked)
     fl = {"id": None, "seen": 0.0, "stop": False, "status": {}, "task": None}
-    rs = {"id": None, "seen": 0.0, "stop": False, "status": {}, "events": [], "cast": [], "task": None}  # the live rush
+    rs = {"id": None, "seen": 0.0, "stop": False, "status": {}, "events": [], "cast": [], "task": None,
+          "world": "rush", "live": False, "cool_until": 0.0, "ledger_refs": []}  # the live rush
+    LIVE_COUNT, LIVE_MODELS, LIVE_COOLDOWN = 12, 3, 8.0
     evals = ROOT / "evals"
 
     # ------------------------------------------------------------------ who
@@ -261,6 +264,9 @@ def build(g, ctx, page) -> APIRouter:
     def running() -> bool:
         return bool(fl["id"]) and not fl["status"].get("done") and time.time() - fl["seen"] < 25
 
+    def rush_world() -> str:
+        return rs.get("world") or "rush"
+
     # ---------------------------------------------------------------- stock
     def floor_day() -> str:
         try:
@@ -271,7 +277,7 @@ def build(g, ctx, page) -> APIRouter:
 
     def stock() -> list[dict]:
         rows = g.store.q("select product, sum(case when state='ordered' then qty else 0 end), sum(case when state='held' and expires>? then qty else 0 end) "
-                         "from holds where world=? group by product", (time.time(), "rush" if rush_running() else "floor"))
+                         "from holds where world=? group by product", (time.time(), rush_world() if rush_running() else "floor"))
         live = {p: (o or 0, h or 0) for p, o, h in rows if (o or 0) + (h or 0) > 0}
         if not live:
             return []
@@ -366,7 +372,9 @@ def build(g, ctx, page) -> APIRouter:
             "ledger": {"intact": fold.bad is None, "events": fold.count, "first_bad_seq": fold.bad},
             "accounts": rows, "feed": feed, "stock": stock(), "rules": rules, "aimo_calls": g.aimo.calls,
             "floor": {"running": running(), "stopping": running() and fl["stop"], **{k: st.get(k) for k in ("round", "rounds", "minutes", "note", "started", "llm", "agents", "summary") if k in st}},
-            "rush": {"running": rush_running(), "stopping": rush_running() and rs["stop"], "id": rs["id"], **{k: rs["status"].get(k) for k in ("note", "started", "mix", "summary") if k in rs["status"]}},
+            "rush": {"running": rush_running(), "stopping": rush_running() and rs["stop"], "id": rs["id"], "live": bool(rs.get("live")),
+                     "cooldown_s": max(0, round(rs.get("cool_until", 0) - time.time(), 1)),
+                     **{k: rs["status"].get(k) for k in ("note", "started", "mix", "summary") if k in rs["status"]}},
             "allocations": [{k: v for k, v in a.items() if k != "customers"} for a in g.allocation.view()],
         }
 
@@ -410,6 +418,14 @@ def build(g, ctx, page) -> APIRouter:
             if cap != prof.get("max_order_total"):
                 prof["max_order_total"] = cap
                 did.append(f"set the cap per agent order to {policy.eur(cap)}")
+        if "day_ceiling" in body:
+            try:
+                ceil = max(0, min(int(body["day_ceiling"]), 100_000_000))
+            except (TypeError, ValueError):
+                raise GatewayError(400, "bad_request", "day_ceiling is an amount in cents.")
+            if ceil != prof.get("day_ceiling"):
+                prof["day_ceiling"] = ceil
+                did.append(f"set the ceiling for agent orders per delivery day to {policy.eur(ceil)}")
         if did:
             g.store.put("profile:" + a["customer"], prof)
             g.store.log(None, "human:Valio Aimo account manager", "control", f"Valio Aimo {' and '.join(did)} for {a['name']}.", {"profile": prof}, acct=a["customer"])
@@ -569,16 +585,18 @@ def build(g, ctx, page) -> APIRouter:
     def rush_running() -> bool:
         return bool(rs["id"]) and not rs["status"].get("done") and time.time() - rs["seen"] < 25
 
-    def rush_customers() -> list[str]:
-        return [a["customer"] for a in kv_range("acct:") if a["kind"] == "rush"]
+    def rush_customers(world=None) -> list[str]:
+        world = world or rush_world()
+        return [a["customer"] for a in kv_range("acct:") if a["kind"] == "rush" and a.get("world") == world]
 
-    def rush_warm() -> dict:
+    def rush_warm(world=None) -> dict:
         """One question to Valio Aimo's price and stock API for the products a rush touches, and the answer shared with all
         60 accounts. The challenge's API ignores the customer number and limits how often it may be asked, so 60 accounts asking
         the same thing at the same second would only spend that allowance. The result of every run says this in plain words."""
         from agent.floor import DAY, RUSH_EXTRA, RUSH_PRODUCT
 
-        custs = rush_customers()
+        world = world or rush_world()
+        custs = rush_customers(world)
         if not custs:
             return {"customers": 0}
         cat = g.cat.get(RUSH_PRODUCT)["category"]
@@ -597,10 +615,11 @@ def build(g, ctx, page) -> APIRouter:
                         g.aimo.cache[(i, DAY, c)] = hit
         return {"customers": len(custs), "products": len(ids), "asked_valio_aimo": g.aimo.calls - calls}
 
-    def rush_seed(release_s, again_s) -> dict:
+    def rush_seed(release_s, again_s, world="rush", count=60, models=12) -> dict:
         from agent.floor import rush_cast
 
-        cast = rush_cast()
+        cast = rush_cast(models=models, count=count, prefix="live-rush-" if world == "live-rush" else "rush-",
+                         model_choices=None)
         for spec in cast:
             a = g.account(spec["slug"])
             if a and a["kind"] != "rush":
@@ -608,21 +627,21 @@ def build(g, ctx, page) -> APIRouter:
             if a:
                 g.reset(spec["slug"])
                 a = g.account(spec["slug"])
-                a.update(name=spec["name"], ship_to=spec["ship_to"], world="rush", segment=spec["segment"], history_seeded=True)
+                a.update(name=spec["name"], ship_to=spec["ship_to"], world=world, segment=spec["segment"], history_seeded=True)
                 g.store.put("acct:" + a["slug"], a)
             else:
-                a = g.create_account(spec["slug"], spec["name"], kind="rush", ship_to=spec["ship_to"], history=spec["history"], mandate=spec["mandate"], world="rush", segment=spec["segment"], history_seeded=True)
+                a = g.create_account(spec["slug"], spec["name"], kind="rush", ship_to=spec["ship_to"], history=spec["history"], mandate=spec["mandate"], world=world, segment=spec["segment"], history_seeded=True)
             c = a["customer"]
             g.store.put("history:" + c, json.loads(json.dumps(spec["history"])))
             g.store.put("mandate_config:" + c, json.loads(json.dumps(spec["mandate"])))
             g.store.put("profile:" + c, {**policy.default_profile(), **spec.get("profile", {})})
             g._register(a)
-        g.store.q("delete from holds where world='rush'")
-        g.allocation.clear("rush")
-        g.allocation.configure("rush", release_s, again_s)
-        g.store.log(None, "human:Valio Aimo account manager", "control", f"The Monday rush starts over: {len(cast)} simulated customer accounts with seeded order history, fresh stock.", {"accounts": len(cast)})
+        g.store.q("delete from holds where world=?", (world,))
+        g.allocation.clear(world)
+        g.allocation.configure(world, release_s, again_s)
+        g.store.log(None, "human:Valio Aimo account manager", "control", f"The {'live ' if world == 'live-rush' else ''}Monday rush starts over: {len(cast)} simulated customer accounts with seeded order history, fresh stock.", {"accounts": len(cast), "world": world})
         changed()
-        return {"accounts": len(cast)}
+        return {"accounts": len(cast), "world": world}
 
     @r.get("/api/tower/rush/check")
     def rush_check(request: Request):
@@ -633,17 +652,23 @@ def build(g, ctx, page) -> APIRouter:
 
     @r.post("/api/tower/rush/reset")
     def rush_reset(request: Request, body: dict = Body(default={})):
-        """Seed the 60 rush accounts again (orders, agents and stock cleared), and say when unclaimed shares are released."""
+        """Seed the recorded or small live rush accounts again, and say when unclaimed shares are released."""
         need_operator(request)
         if rush_running() and body.get("id") != rs["id"]:
             raise GatewayError(409, "busy", "The Monday rush is running. Stop it first.")
         if running():
             raise GatewayError(409, "busy", "The floor is running. Stop it first.")
         try:
-            release_s, again_s = max(5.0, min(float(body.get("release_s") or 40), 3600)), max(5.0, min(float(body.get("again_s") or 15), 3600))
+            world = str(body.get("world") or "rush")
+            if world not in ("rush", "live-rush"):
+                raise ValueError
+            floor = 2.0 if world == "live-rush" else 5.0
+            release_s, again_s = max(floor, min(float(body.get("release_s") or 40), 3600)), max(floor, min(float(body.get("again_s") or 15), 3600))
+            count = LIVE_COUNT if world == "live-rush" else max(1, min(int(body.get("count") or 60), 60))
+            models = LIVE_MODELS if world == "live-rush" else max(0, min(int(body.get("models") or 12), 12))
         except (TypeError, ValueError):
-            raise GatewayError(400, "bad_request", "release_s and again_s are seconds.")
-        return {**rush_seed(release_s, again_s), "warm": rush_warm()}
+            raise GatewayError(400, "bad_request", "release_s and again_s are seconds; world, count and models are valid rush settings.")
+        return {**rush_seed(release_s, again_s, world, count, models), "warm": rush_warm(world)}
 
     @r.post("/api/tower/rush/warm")
     def rush_warm_route(request: Request):
@@ -658,7 +683,8 @@ def build(g, ctx, page) -> APIRouter:
         if body.get("start"):
             if (rush_running() and rid != rs["id"]) or running():
                 return {"stop": True, "busy": True}
-            rs.update(id=rid, stop=False, status={}, events=[], cast=[])
+            rs.update(id=rid, stop=False, status={}, events=[], cast=[], world=str(body.get("world") or "rush"),
+                      live=bool(body.get("live")), ledger_refs=[])
         elif rid != rs["id"]:
             return {"stop": True, "busy": True}
         rs["seen"] = time.time()
@@ -667,18 +693,26 @@ def build(g, ctx, page) -> APIRouter:
         if isinstance(body.get("events"), list):
             rs["events"] += body["events"][:2000]
         rs["status"] = {**rs["status"], **{k: body[k] for k in ("note", "started", "mix", "summary", "done", "t0") if k in body}}
+        if isinstance(body.get("ledger_refs"), list):
+            rs["ledger_refs"] = [str(x) for x in body["ledger_refs"][:LIVE_COUNT]]
+        if body.get("done") and rs.get("live"):
+            rs["cool_until"] = time.time() + LIVE_COOLDOWN
+            rs["status"]["cooldown_s"] = LIVE_COOLDOWN
         changed()
         return {"stop": rs["stop"], "events": len(rs["events"])}
 
     @r.get("/api/tower/rush")
     def rush_view(since: int = 0):
-        """The live rush for the screen: who the 60 agents are, what each has seen so far, and the split of the short stock."""
-        al = g.allocation.view("rush")
+        """The live rush for the screen: who the agents are, what each has seen so far, and the split of the short stock."""
+        al = g.allocation.view(rush_world())
         return {"running": rush_running(), "stopping": rush_running() and rs["stop"], "id": rs["id"], "status": rs["status"], "cast": rs["cast"] if since <= 0 else None,
+                "live": bool(rs.get("live")), "cooldown_s": max(0, round(rs.get("cool_until", 0) - time.time(), 1)),
                 "events": rs["events"][max(0, since):], "n": len(rs["events"]), "allocation": al[0] if al else None, "now": time.time()}
 
     @r.post("/api/tower/rush/start")
     async def rush_start(request: Request, body: dict = Body(default={})):
+        if not looks_like_operator(request):
+            return await rush_live_start(request)
         need_operator(request)
         if rush_running() or running():
             raise GatewayError(409, "busy", "A run is already going. Wait for it to finish, or stop it.")
@@ -689,7 +723,7 @@ def build(g, ctx, page) -> APIRouter:
         except (TypeError, ValueError):
             raise GatewayError(400, "bad_request", "models is a number.")
         rid = engine.rush_id()
-        rs.update(id=rid, stop=False, seen=time.time(), status={"note": "Starting"}, events=[], cast=[])
+        rs.update(id=rid, stop=False, seen=time.time(), status={"note": "Starting"}, events=[], cast=[], world="rush", live=False, cool_until=0.0, ledger_refs=[])
 
         async def go():
             try:
@@ -700,6 +734,54 @@ def build(g, ctx, page) -> APIRouter:
         rs["task"] = asyncio.create_task(go())
         changed()
         return {"id": rid, "models": models}
+
+    @r.post("/api/tower/rush/live/start")
+    async def rush_live_start(request: Request):
+        """A visitor may start or join one small live rush. It has its own accounts and stock world."""
+        if running():
+            raise GatewayError(409, "busy", "The floor is running. The live rush will be available when it finishes.")
+        if rush_running():
+            if rs.get("live"):
+                return {"id": rs["id"], "joined": True, "agents": len(rs.get("cast") or []) or LIVE_COUNT}
+            raise GatewayError(409, "busy", "Valio Aimo's recorded rush is running. Wait for it to finish.")
+        wait = max(0.0, rs.get("cool_until", 0) - time.time())
+        if wait:
+            raise GatewayError(429, "cooldown", f"The last live rush finished. A new one can start in {math.ceil(wait)} seconds.", retry_after=math.ceil(wait))
+        from agent import floor as engine
+
+        rid = engine.rush_id()
+        rs.update(id=rid, stop=False, seen=time.time(), status={"note": "Setting up the 12-agent live rush", "live": True}, events=[], cast=[],
+                  world="live-rush", live=True, cool_until=0.0, ledger_refs=[])
+
+        async def go():
+            try:
+                out = await engine.rush(f"http://127.0.0.1:{PORT}", OPERATOR_KEY, models=LIVE_MODELS, run_id=rid, quiet=True,
+                                        release_s=3, again_s=2, world="live-rush", count=LIVE_COUNT, live=True)
+                rs["ledger_refs"] = out.get("ledger_refs") or []
+            except asyncio.CancelledError:
+                raise
+            except Exception as e:
+                rs["status"] = {**rs["status"], "done": True, "note": f"Stopped: {type(e).__name__}: {e}"[:200], "summary": {"live": True, "errors": 1}}
+                rs["cool_until"] = time.time() + LIVE_COOLDOWN
+            finally:
+                rs["seen"] = time.time()
+                changed()
+
+        rs["task"] = asyncio.create_task(go())
+        changed()
+        return {"id": rid, "joined": False, "agents": LIVE_COUNT, "model_agents": LIVE_MODELS}
+
+    @r.get("/api/tower/rush/live/ledger/{rid}")
+    def rush_live_ledger(rid: str):
+        """The synthetic live run's own ledger entries, linked from its result."""
+        if rid != rs.get("id") or not rs.get("live"):
+            raise GatewayError(404, "not_found", "That live rush is no longer available on this server.")
+        refs = set(rs.get("ledger_refs") or [])
+        rows = []
+        for ref in refs:
+            rows.extend(g.store.events(ref=ref, limit=5000))
+        rows.sort(key=lambda e: e["seq"])
+        return {"run": rid, "entries": rows, "count": len(rows), "chain": g.store.verify_chain()[0], "url": f"/api/tower/rush/live/ledger/{rid}"}
 
     @r.post("/api/tower/rush/stop")
     def rush_stop(request: Request):
@@ -717,11 +799,12 @@ def build(g, ctx, page) -> APIRouter:
             raise GatewayError(400, "bad_request", "Not a rush result.")
         (evals / "rush").mkdir(parents=True, exist_ok=True)
         text = json.dumps(body, ensure_ascii=False)
-        (evals / "rush" / f"{rid}.json").write_text(text, encoding="utf-8")
-        if body.get("complete"):  # a stopped or broken run is kept on file but never becomes the one the pages show
+        filename = f"{rid}{'-live' if body.get('live') else ''}.json"
+        (evals / "rush" / filename).write_text(text, encoding="utf-8")
+        if body.get("complete") and not body.get("live"):  # live runs never replace the recorded 60-agent replay
             (evals / "rush-latest.json").write_text(text, encoding="utf-8")
         latest["t"] = 0.0
-        return {"saved": f"evals/rush/{rid}.json", "latest": bool(body.get("complete"))}
+        return {"saved": f"evals/rush/{filename}", "latest": bool(body.get("complete") and not body.get("live"))}
 
     latest = {"t": 0.0, "v": None, "m": 0.0}
 

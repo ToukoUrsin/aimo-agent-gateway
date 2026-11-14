@@ -10,7 +10,7 @@ from .config import PUBLIC_URL, ROOT
 
 EXAMPLES = ["SALMON FILLET C-CUT DEBONED A10KG NORWAY", "SMOKED SHRIMP WHOLE 2KG", "RB 1KG ALMOND BLANCED 27/30", "Katjang Peanuts 1 kg", "FALLOT 5KG DIJON MUSTARD",
             "RAPSONA 5KG REAL MAYONNAISE 80%", "BIRKKALAN 800G ORGANIC SPELTFLOUR", "OH AIK GUAN 650ML SESAME OIL ROASTED", "RACLETTE A.5KG CHEESE", "DEK SOM BOON 2L LIGHT SOY SAUCE"]
-RERUN = "uv run -q python -m agent.evals --base http://127.0.0.1:8642 --models claude-opus-5-5,claude-haiku-5-5,gpt-6-sol,gemini-3.8-flash,gemma-4-31b-it --concurrency 3"
+RERUN = "uv run -q python -m agent.evals --base http://127.0.0.1:8642 --models claude-opus-5-5,gpt-6.1-sol,gemini-4-carbon,gemini-4-hydrogen,gemma-4-31b-it --concurrency 3"
 
 
 def build(g, ctx, page) -> APIRouter:
@@ -22,6 +22,20 @@ def build(g, ctx, page) -> APIRouter:
             return json.loads((evals / "latest.json").read_text(encoding="utf-8"))
         except (OSError, ValueError):
             return None
+
+    kept = {}  # run id -> {order id: line number} in evals/orders/<run>.jsonl: the signed orders of a test that ran on a second instance
+
+    def kept_orders(rid: str) -> dict:
+        if rid not in kept:
+            f = evals / "orders" / f"{rid}.jsonl"
+            kept[rid] = {}
+            if re.fullmatch(r"\d{8}T\d{6}Z", rid or "") and f.is_file():
+                with open(f, encoding="utf-8") as fh:
+                    for n, line in enumerate(fh):
+                        m = re.search(r'"order":\{.*?"id":"(ord_[0-9a-f]+)"', line[:4000])
+                        if m:
+                            kept[rid][m.group(1)] = n
+        return kept[rid]
 
     silent = {}
 
@@ -63,7 +77,25 @@ def build(g, ctx, page) -> APIRouter:
             return {"ready": False, "rerun": RERUN, **more()}
         # Order pages exist only on the instance the eval ran against. Say which orders this instance can show.
         ids = [o["id"] for x in s.get("results", []) for o in x.get("orders", [])]
-        return {**s, "ready": True, "this_url": PUBLIC_URL, "orders_here": [i for i in ids if g.store.order(i)], **more()}
+        here = [i for i in ids if g.store.order(i)]
+        return {**s, "ready": True, "this_url": PUBLIC_URL, "orders_here": here, "orders_kept": [i for i in ids if i not in here and i in kept_orders(s.get("id"))], **more()}
+
+    @r.get("/api/proof/orders/{oid}")
+    def proof_order(oid: str):
+        """One order of the last model test with its audit document, as the instance the test ran on signed it.
+        Check it without this server: uv run verify/verify_order.py <this address>."""
+        s = latest() or {}
+        n = kept_orders(s.get("id")).get(oid)
+        if n is None:
+            raise HTTPException(404, "No such test order.")
+        with open(evals / "orders" / f"{s['id']}.jsonl", encoding="utf-8") as fh:
+            for i, line in enumerate(fh):
+                if i == n:
+                    d = json.loads(line)
+                    return {"what": f"An order from model test {s['id']}. The test ran on a second instance of this gateway, with its own key, so that 190 agent runs would not get in visitors' way. "
+                                    "This is the order and its audit document exactly as that instance signed them.",
+                            "check": f"uv run verify/verify_order.py {PUBLIC_URL}/api/proof/orders/{oid}", **d}
+        raise HTTPException(404, "No such test order.")
 
     @r.get("/api/proof/runs.jsonl")
     def proof_runs(id: str = ""):

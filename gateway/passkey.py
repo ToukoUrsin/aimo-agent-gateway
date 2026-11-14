@@ -1,14 +1,21 @@
-"""A person's own device signs the approval (a WebAuthn passkey).
+"""A person's own device signs the approval.
 
-The key is made inside the phone or laptop and never leaves it.  The gateway keeps only the public half, so nobody
-else can produce that approval: not the agent, not Valio Aimo, not this server.  What the device signs is the decision
-itself (which checkout, its digest, approved or rejected, by whom, the note), so the signature cannot be moved to
-another order or flipped from reject to approve.
+Two kinds of key, and the record always says which one signed:
+
+* a passkey (WebAuthn): made inside the phone or laptop, used after its fingerprint, face or screen lock;
+* a browser key: where a browser has no such lock, it makes its own ES256 key with WebCrypto, marked non-extractable
+  and kept in that browser.  No fingerprint is involved, and the record says so.
+
+Either way the private half never reaches the gateway, which keeps only the public half, so nobody else can produce
+that approval: not the agent, not Valio Aimo, not this server.  What the device signs is the decision itself (which
+checkout, its digest, approved or rejected, by whom, the note, and each product and allergen it clears), so the
+signature cannot be moved to another order, flipped from reject to approve, or stretched to a line nobody ticked.
 
 Enrolling a device is the buyer's act: from the account's own session, or through an enrolment link the account made.
-The approval link alone cannot enrol one.  Once an account has an enrolled device, approving by link alone stops
-working for that account.  In production the buyer's company sign-in would gate enrolment; here the demo account's own
-browser session does.
+One more way exists for the very first device only: the approval link the gateway sent to the approver may make the
+device it is opened on the account's approver, while the account has none and that request is still open.  After that
+first device, an approval link alone neither approves nor enrols.  In production the buyer's company sign-in would
+gate enrolment; here the demo account's own browser session does.
 """
 import hashlib
 import hmac
@@ -20,6 +27,7 @@ from urllib.parse import urlparse
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, padding, rsa
+from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
 from fastapi import APIRouter, Body, Request
 
 from .config import OPERATOR_KEY, PUBLIC_URL
@@ -28,6 +36,9 @@ from .signing import b64d, b64u, jcs
 ALGS = {-7: "ES256", -257: "RS256"}
 ENROL_TTL = 15 * 60
 MAX_DEVICES = 5
+# What signed, in the words the pages and the record use.
+HOW = {"passkey": "a passkey", "browser_key": "a key held in the browser, no fingerprint"}
+FIRST_BY_LINK = ("sandbox", "stage")  # account kinds whose approval link may make the first approver device (not the simulated customers: a script approves for them)
 
 
 class PasskeyError(Exception):
@@ -42,11 +53,13 @@ def devices(store, slug: str) -> list[dict]:
 
 def public(d: dict) -> dict:
     """What a page may show about an enrolled device."""
-    return {"id": d["id"], "name": d["name"], "enrolled_at": d["enrolled_at"], "alg": d["alg"], "thumbprint": d["thumbprint"]}
+    kind = d.get("kind", "passkey")
+    return {"id": d["id"], "name": d["name"], "enrolled_at": d["enrolled_at"], "alg": d["alg"], "thumbprint": d["thumbprint"], "kind": kind, "how": HOW[kind]}
 
 
-def decision_of(cid: str, digest: str, approve: bool, by: str, note: str) -> dict:
-    return {"checkout": cid, "checkout_digest": digest, "decision": "approved" if approve else "rejected", "by": by, "note": note}
+def decision_of(cid: str, digest: str, approve: bool, by: str, note: str, clears: list | None = None) -> dict:
+    """What a device signs. clears: each product with no allergen declaration this approval clears, and for which allergens."""
+    return {"checkout": cid, "checkout_digest": digest, "decision": "approved" if approve else "rejected", "by": by, "note": note, "clears": (clears or []) if approve else []}
 
 
 def challenge_of(obj) -> str:
@@ -98,8 +111,12 @@ def _load_key(spki: bytes, alg: int):
     raise PasskeyError("bad_key", "This kind of device key is not supported.")
 
 
-def _verify(key, alg: int, sig: bytes, data: bytes) -> bool:
+def _verify(key, alg: int, sig: bytes, data: bytes, raw: bool = False) -> bool:
     try:
+        if raw:  # WebCrypto gives r||s; the verifier wants DER
+            if len(sig) != 64:
+                return False
+            sig = encode_dss_signature(int.from_bytes(sig[:32], "big"), int.from_bytes(sig[32:], "big"))
         if alg == -7:
             key.verify(sig, data, ec.ECDSA(hashes.SHA256()))
         else:
@@ -135,29 +152,44 @@ def enrol_begin(store, slug: str, account_name: str, request: Request) -> dict:
             "pubKeyCredParams": [{"type": "public-key", "alg": a} for a in ALGS], "exclude": [d["id"] for d in devices(store, slug)], "account": account_name}
 
 
-def enrol_finish(store, slug: str, customer, body: dict, request: Request) -> dict:
+VIA = {"account": "from the account's own session", "enrol_link": "through the account's enrolment link", "approval_link": "from the approval link, as the account's first device"}
+
+
+def enrol_finish(store, slug: str, customer, body: dict, request: Request, via: str = "account") -> dict:
     ch = str(body.get("challenge") or "")
     pend = store.get("passkey_challenge:" + ch)
     if not pend or pend.get("slug") != slug or pend.get("exp", 0) < time.time():
         raise PasskeyError("expired", "That took too long. Start again.")
     store.put("passkey_challenge:" + ch, None)
+    kind = "browser_key" if body.get("kind") == "browser_key" else "passkey"
     try:
-        cdj, ad, spki, alg, cred = b64d(body["clientDataJSON"]), b64d(body["authenticatorData"]), b64d(body["publicKey"]), int(body["alg"]), str(body["id"])
+        if kind == "browser_key":
+            # A key the browser made itself. It proves it holds the private half by signing this enrolment's challenge.
+            cdj, spki, sig, alg = b64d(body["clientDataJSON"]), b64d(body["publicKey"]), b64d(body["signature"]), -7
+            cred = "bk-" + hashlib.sha256(spki).hexdigest()[:32]
+        else:
+            cdj, ad, spki, alg, cred = b64d(body["clientDataJSON"]), b64d(body["authenticatorData"]), b64d(body["publicKey"]), int(body["alg"]), str(body["id"])
     except (KeyError, ValueError, TypeError):
         raise PasskeyError("bad_device_data", "The device's answer could not be read.")
-    origin = _client(cdj, "webauthn.create", ch, origins(request))
-    info = _auth_data(ad, origin)
-    _load_key(spki, alg)
+    if kind == "browser_key":
+        origin = _client(cdj, "aimo.key.create", ch, origins(request))
+        if not _verify(_load_key(spki, alg), alg, sig, cdj, raw=True):
+            raise PasskeyError("bad_signature", "The browser did not prove it holds this key.", 403)
+        info = {"rp_id": urlparse(origin).hostname or "", "user_verified": False}
+    else:
+        origin = _client(cdj, "webauthn.create", ch, origins(request))
+        info = _auth_data(ad, origin)
+        _load_key(spki, alg)
     devs = devices(store, slug)
     if any(d["id"] == cred for d in devs):
         raise PasskeyError("already", "This device is already enrolled.", 409)
     if len(devs) >= MAX_DEVICES:
         raise PasskeyError("too_many", f"An account can have {MAX_DEVICES} approver devices. Remove one first.", 409)
     dev = {"id": cred, "public_key": b64u(spki), "alg": alg, "rp_id": info["rp_id"], "name": (str(body.get("name") or "").strip() or "Approver's device")[:40],
-           "enrolled_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "thumbprint": hashlib.sha256(spki).hexdigest()[:16], "user_verified": info["user_verified"]}
+           "enrolled_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "thumbprint": hashlib.sha256(spki).hexdigest()[:16], "user_verified": info["user_verified"], "kind": kind, "enrolled_by": via}
     store.put("passkeys:" + slug, devs + [dev])
-    store.log(None, "human:approver", "approver_device_enrolled", f"An approver's device was enrolled for this account ({dev['name']}, key {dev['thumbprint']}). From now on an approval needs a signature from an enrolled device.",
-              {"device": public(dev), "public_key": dev["public_key"]}, acct=customer)
+    store.log(None, "human:approver", "approver_device_enrolled", f"An approver's device was enrolled for this account ({dev['name']}, {HOW[kind]}, key {dev['thumbprint']}), {VIA[via]}. From now on an approval needs a signature from an enrolled device.",
+              {"device": public(dev), "public_key": dev["public_key"], "enrolled_by": via}, acct=customer)
     return public(dev)
 
 
@@ -175,51 +207,97 @@ def remove(store, slug: str, customer, cred: str | None) -> int:
 def verify_decision(store, slug: str, dec: dict, dev: dict, request: Request) -> dict:
     """Check a device's signature over one decision. Returns the record kept with the approval, or raises."""
     try:
-        cred, ad, cdj, sig = str(dev["id"]), b64d(dev["authenticatorData"]), b64d(dev["clientDataJSON"]), b64d(dev["signature"])
+        cred, cdj, sig = str(dev["id"]), b64d(dev["clientDataJSON"]), b64d(dev["signature"])
     except (KeyError, ValueError, TypeError):
         raise PasskeyError("bad_device_data", "The device's answer could not be read.")
     known = next((d for d in devices(store, slug) if d["id"] == cred), None)
     if not known:
         raise PasskeyError("unknown_device", "This device is not enrolled as an approver for this account.", 403)
+    if known.get("kind") == "browser_key":
+        # The browser's own key signs a small statement that names this decision's digest and the site.
+        _client(cdj, "aimo.key.get", challenge_of(dec), origins(request))
+        if not _verify(_load_key(b64d(known["public_key"]), known["alg"]), known["alg"], sig, cdj, raw=True):
+            raise PasskeyError("bad_signature", "The device's signature does not match this decision.", 403)
+        return {"method": "browser_key", "how": HOW["browser_key"], "credential": cred, "device": known["name"], "alg": ALGS[known["alg"]], "public_key": known["public_key"], "thumbprint": known["thumbprint"],
+                "enrolled_at": known["enrolled_at"], "user_verified": False, "signed": dec, "client_data_json": b64u(cdj), "signature": b64u(sig)}
+    try:
+        ad = b64d(dev["authenticatorData"])
+    except (KeyError, ValueError, TypeError):
+        raise PasskeyError("bad_device_data", "The device's answer could not be read.")
     origin = _client(cdj, "webauthn.get", challenge_of(dec), origins(request))
     info = _auth_data(ad, origin)
     if not _verify(_load_key(b64d(known["public_key"]), known["alg"]), known["alg"], sig, ad + hashlib.sha256(cdj).digest()):
         raise PasskeyError("bad_signature", "The device's signature does not match this decision.", 403)
-    return {"method": "passkey", "credential": cred, "device": known["name"], "alg": ALGS[known["alg"]], "public_key": known["public_key"], "thumbprint": known["thumbprint"], "enrolled_at": known["enrolled_at"],
+    return {"method": "passkey", "how": HOW["passkey"], "credential": cred, "device": known["name"], "alg": ALGS[known["alg"]], "public_key": known["public_key"], "thumbprint": known["thumbprint"], "enrolled_at": known["enrolled_at"],
             "user_verified": info["user_verified"], "signed": dec, "authenticator_data": b64u(ad), "client_data_json": b64u(cdj), "signature": b64u(sig)}
 
 
-def check(g, cid: str, token: str | None, approve: bool, by: str, note: str, dev: dict | None, request: Request) -> dict | None:
-    """Called before a decision is recorded. None: this account approves by link. A record: the device signature to keep."""
+def check(g, cid: str, token: str | None, approve: bool, by: str, note: str, dev: dict | None, request: Request, clears: list | None = None) -> dict | None:
+    """Called before a decision is recorded. None: a rejection, or a simulated customer whose approver is a script. A record: the device signature to keep.
+
+    On a visitor's account and the stage account a yes always carries a signature from the approver's device, the first one included:
+    the approval page enrols the device it is opened on and signs there. The link alone can only say no.
+
+    clears: the lines with no allergen declaration the approver ticked. A device-signed approval must name exactly the
+    lines the allergen rule asked about, so a yes never covers a line nobody looked at."""
     from .service import GatewayError
     c = g._load(cid)
     if not secrets.compare_digest(token or "", c["_internal"]["approval_token"]):
         raise GatewayError(403, "forbidden", "This approval link is not valid.")
-    slug = (g.account_of(c["_internal"].get("customer")) or {}).get("slug")
-    if not slug or not devices(g.store, slug):
-        return None
+    a = g.account_of(c["_internal"].get("customer")) or {}
+    slug = a.get("slug")
+    enrolled = bool(slug) and bool(devices(g.store, slug))
+    if not slug or (not enrolled and a.get("kind") not in FIRST_BY_LINK):
+        return None  # a simulated customer: a script stands in for its approver, and the record says so
     if not dev:
         if not approve:
             return None  # anyone holding the link may say no
-        raise GatewayError(403, "device_required", "Approvals for this account are signed on an enrolled approver's device. Open this link on that device.")
+        raise GatewayError(403, "device_required", "Approvals for this account are signed on an enrolled approver's device. Open this link on that device." if enrolled else
+                           "An approval for this account is signed on the approver's own device. Open this link in a browser: the first device to approve becomes the account's approver device. The link alone cannot approve.")
     g.get_checkout(cid)  # the same refresh the decision itself does, so both see the same digest
     c = g._load(cid)
+    canon = g.check_clears(c, clears or []) if approve else []
     try:
-        return verify_decision(g.store, slug, decision_of(cid, c["_internal"]["digest"], approve, by, note), dev, request)
+        return verify_decision(g.store, slug, decision_of(cid, c["_internal"]["digest"], approve, by, note, canon), dev, request)
     except PasskeyError as e:
         raise GatewayError(e.status, e.code, e.message)
 
 
-def prepare(g, cid: str, approve: bool, by: str, note: str, request: Request) -> dict:
-    """What an approver's device is asked to sign for one decision, and which enrolled devices may sign it."""
+def prepare(g, cid: str, approve: bool, by: str, note: str, request: Request, clears: list | None = None) -> dict:
+    """What an approver's device is asked to sign for one decision, and which enrolled devices may sign it.
+
+    clears=None only asks how this account approves; a list is checked against the lines the allergen rule asked about."""
     g.get_checkout(cid)  # the same refresh the decision itself does, so both see the same digest
     c = g._load(cid)
     slug = (g.account_of(c["_internal"].get("customer")) or {}).get("slug") or ""
     devs = devices(g.store, slug)
-    dec = decision_of(cid, c["_internal"]["digest"], approve, by, note)
+    canon = g.check_clears(c, clears) if approve and clears is not None else []
+    dec = decision_of(cid, c["_internal"]["digest"], approve, by, note, canon)
     host = request.headers.get("host", "").split(":")[0]
-    return {"approvals": "passkey" if devs else "link", "decision": dec, "challenge": challenge_of(dec), "rp_id": host if host == "localhost" else urlparse(PUBLIC_URL).hostname,
-            "allow": [d["id"] for d in devs], "account": slug}
+    is_bk = lambda d: d.get("kind") == "browser_key"
+    kind = (g.account_of(c["_internal"].get("customer")) or {}).get("kind")
+    return {"approvals": "device" if devs else "link", "link_ok": not devs and kind not in FIRST_BY_LINK, "decision": dec, "challenge": challenge_of(dec), "rp_id": host if host == "localhost" else urlparse(PUBLIC_URL).hostname,
+            "allow": [d["id"] for d in devs if not is_bk(d)], "keys": [d["id"] for d in devs if is_bk(d)], "devices": [public(d) for d in devs], "to_clear": g.clears_of(c), "account": slug}
+
+
+def link_account(g, cid: str, k: str) -> str | None:
+    """The account whose first approver device this approval link may make: none enrolled yet, and the request still open."""
+    c = g.store.checkout(str(cid or ""))
+    if not c or not k or not secrets.compare_digest(str(k), c["_internal"]["approval_token"]) or c["status"] != "requires_escalation":
+        return None
+    a = g.account_of(c["_internal"].get("customer"))
+    if not a or a.get("kind") not in FIRST_BY_LINK or devices(g.store, a["slug"]):
+        return None
+    return a["slug"]
+
+
+def last_asked(g, customer) -> dict | None:
+    """The account's latest request a person was asked about: one still open, else the last one approved. For the 'try the link without the device' action."""
+    rows = g.store.checkouts(limit=40, customer=customer)
+    pick = next((c for c in rows if c["status"] == "requires_escalation"), None) or next((c for c in rows if ((c.get("wholesale") or {}).get("approval") or {}).get("decision") == "approved"), None)
+    if not pick:
+        return None
+    return {"checkout": pick["id"], "k": pick["_internal"]["approval_token"], "status": pick["status"], "url": f"/approve/{pick['id']}?k={pick['_internal']['approval_token']}"}
 
 
 def build(g, ctx, page, cookie: str) -> APIRouter:
@@ -243,6 +321,21 @@ def build(g, ctx, page, cookie: str) -> APIRouter:
         mine, op = peek(request)
         return ctx(request)["acct"]["slug"] if op else mine
 
+    def enrolling(request: Request, body: dict) -> tuple[str | None, str]:
+        """(the account a device is being enrolled for, what allows it). (None, "") when nothing allows it. Never makes a new account."""
+        t, cid, k = str(body.get("t") or ""), str(body.get("cid") or ""), str(body.get("k") or "")
+        if t:
+            return enrol_slug(t), "enrol_link"
+        if cid and k:  # from an approval page: the account is the one that request belongs to
+            c = g.store.checkout(cid)
+            a = g.account_of(c["_internal"].get("customer")) if c and secrets.compare_digest(k, c["_internal"]["approval_token"]) else None
+            if a and may_enrol(request, a["slug"]):
+                return a["slug"], "account"
+            if a and link_account(g, cid, k) == a["slug"]:
+                return a["slug"], "approval_link"
+            return None, ""
+        return slug_for(request), "account"
+
     def wrap(fn):
         try:
             return fn()
@@ -263,34 +356,33 @@ def build(g, ctx, page, cookie: str) -> APIRouter:
             return {"account": None, "devices": [], "approvals": "link", "can_enrol": False}
         a = g.account(slug)
         devs = devices(g.store, slug)
-        out = {"account": a["name"], "devices": [public(d) for d in devs], "approvals": "passkey" if devs else "link", "can_enrol": may_enrol(request, slug, t)}
+        out = {"account": a["name"], "devices": [public(d) for d in devs], "approvals": "device" if devs else "link", "can_enrol": may_enrol(request, slug, t)}
         if not t and out["can_enrol"]:
             out["enrol_url"] = f"{PUBLIC_URL}/enrol?t={enrol_token(slug)}"
             out["enrol_minutes"] = ENROL_TTL // 60
+            out["last_asked"] = last_asked(g, a["customer"])  # the account's own page may show the gateway refusing this link without the device
         return out
 
     @r.post("/api/passkey/enrol/begin", include_in_schema=False)
     def begin(request: Request, body: dict = Body(default={})):
-        t = str(body.get("t") or "")
-        slug = slug_for(request, t)
-        if not slug or not g.account(slug) or not may_enrol(request, slug, t):
+        slug, _ = enrolling(request, body)
+        if not slug or not g.account(slug):
             raise GatewayError(403, "forbidden", "Only the account itself can enrol an approver's device. Use the account's own page or its enrolment link.")
         return enrol_begin(g.store, slug, g.account(slug)["name"], request)
 
     @r.post("/api/passkey/enrol/finish", include_in_schema=False)
     def finish(request: Request, body: dict = Body(...)):
-        t = str(body.get("t") or "")
-        slug = slug_for(request, t)
-        if not slug or not g.account(slug) or not may_enrol(request, slug, t):
+        slug, via = enrolling(request, body)
+        if not slug or not g.account(slug):
             raise GatewayError(403, "forbidden", "Only the account itself can enrol an approver's device.")
-        return wrap(lambda: {"device": enrol_finish(g.store, slug, g.account(slug)["customer"], body, request), "approvals": "passkey"})
+        return wrap(lambda: {"device": enrol_finish(g.store, slug, g.account(slug)["customer"], body, request, via), "approvals": "device"})
 
     @r.post("/api/passkey/remove", include_in_schema=False)
     def remove_device(request: Request, body: dict = Body(default={})):
         slug = slug_for(request)
         if not slug:
             raise GatewayError(403, "forbidden", "Only the account itself can remove an approver's device.")
-        return {"removed": remove(g.store, slug, g.account(slug)["customer"], body.get("id")), "approvals": "passkey" if devices(g.store, slug) else "link"}
+        return {"removed": remove(g.store, slug, g.account(slug)["customer"], body.get("id")), "approvals": "device" if devices(g.store, slug) else "link"}
 
     @r.post("/api/approve/{cid}/device", include_in_schema=False)
     def approve_begin(cid: str, request: Request, body: dict = Body(...)):
@@ -298,8 +390,11 @@ def build(g, ctx, page, cookie: str) -> APIRouter:
         c = g._load(cid)
         if not secrets.compare_digest(str(body.get("k") or ""), c["_internal"]["approval_token"]):
             raise GatewayError(403, "forbidden", "This approval link is not valid.")
-        pre = prepare(g, cid, bool(body.get("approve")), str(body.get("approver") or "F&B manager")[:60], str(body.get("note") or "")[:300], request)
+        clears = body.get("clears") if isinstance(body.get("clears"), list) else None
+        pre = prepare(g, cid, bool(body.get("approve")), str(body.get("approver") or "").strip()[:60], str(body.get("note") or "")[:300], request, clears)
         slug = pre.pop("account")
-        return {**pre, "can_enrol": bool(slug) and may_enrol(request, slug)}
+        a = g.account(slug) if slug else None
+        first = bool(slug) and link_account(g, cid, str(body.get("k") or "")) == slug
+        return {**pre, "can_enrol": bool(slug) and (may_enrol(request, slug) or first), "account_name": (a or {}).get("name"), "account_kind": (a or {}).get("kind")}
 
     return r

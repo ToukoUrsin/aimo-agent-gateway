@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The same order by hand</title>
+<title>The same order by hand · Aimo Agent Gateway</title>
 <link rel="stylesheet" href="/static/app.css">
 <style>
 main{max-width:1240px;margin:0 auto;padding:0 var(--s5) var(--s8)}
@@ -126,7 +126,7 @@ main{max-width:1240px;margin:0 auto;padding:0 var(--s5) var(--s8)}
 
 <div class="cols" id="work">
   <div class="stack">
-    <div class="card"><h2>Shopping list <span class="muted" id="l-count"></span></h2><div class="task" id="task-head"></div><div id="list" style="margin-top:8px"></div>
+    <div class="card"><h2>Shopping list <span class="muted" id="l-count"></span></h2><div class="task" id="task-head"><span class="wait"><span class="spin"></span>Reading the shopping list from the gateway</span></div><div id="list" style="margin-top:8px"></div>
       <p class="hint">Tick an item when you have it. The ticks are only for you. Amounts are what the kitchen needs; you work out how many packs that is.</p></div>
   </div>
   <div class="stack">
@@ -182,7 +182,7 @@ async function loadTask() {
   $("#task-head").innerHTML = `<b>${esc(title)}</b>, ${n(task.guests)} guests, delivery ${esc(day(task.delivery_date))}. From ${esc(task.from)}.` +
     (task.notes.length ? `<div style="margin-top:6px">Notes on the menu. Keep to them:</div><div class="notes">${task.notes.map(x => `<span>${esc(x)}</span>`).join("")}</div>` : "");
   $("#l-count").textContent = task.list.length + " items";
-  $("#list").innerHTML = task.list.map((x, i) => `<label class="need" for="n${i}"><input type="checkbox" id="n${i}" name="have"><b>${esc(x.item.charAt(0).toUpperCase() + x.item.slice(1))}</b><span class="tnum">${n(x.amount)} ${esc(x.unit)}</span><small>${x.dishes.map(esc).join(", ")}</small></label>`).join("");
+  $("#list").innerHTML = task.list.map((x, i) => `<label class="need" for="n${i}"><input type="checkbox" id="n${i}" name="have"><b>${esc(x.item.charAt(0).toUpperCase() + x.item.slice(1))}</b><span class="tnum">${esc(x.amount)}</span><small>${x.dishes.map(esc).join(", ")}</small></label>`).join("");
   document.querySelectorAll(".need input").forEach(c => c.onchange = () => c.parentElement.classList.toggle("done", c.checked));
 }
 
@@ -250,7 +250,7 @@ $("#out").onclick = async () => {
   basket();
 };
 
-loadTask();
+(function tryTask() { loadTask().catch(() => { $("#task-head").innerHTML = waitHtml("The gateway is not answering with the shopping list. Asking again every few seconds."); setTimeout(tryTask, 4000); }); })();
 loadAgent();
 </script>
 </body>

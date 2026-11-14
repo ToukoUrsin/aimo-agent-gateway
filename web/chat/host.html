@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>In the chat · Aimo Agent Gateway</title>
+<meta name="description" content="What a restaurant buyer sees in Claude or ChatGPT when their assistant orders from Valio Aimo: the same tool answer as plain text, and as the card this connector draws in the conversation.">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+.starts{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s5)}
+.fine{font-size:var(--t2);line-height:1.55;color:var(--muted);max-width:78ch;margin:var(--s4) 0 0}
+.fine code,.say code,.callrow code,.add code{font-family:var(--mono);font-size:.9em}
+
+.cols{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:var(--s5)}
+.colhead{position:sticky;top:57px;z-index:5;background:var(--bg);padding:var(--s3) 0;border-bottom:1px solid var(--line);font-size:var(--t2);color:var(--muted)}
+.colhead b{display:block;color:var(--ink);font-weight:600;font-size:var(--t3)}
+
+.turn{padding:var(--s5) 0 var(--s6);border-bottom:1px solid var(--line)}
+.say{display:flex;gap:var(--s3);align-items:baseline;margin:0 0 var(--s3)}
+.say .who,.callrow .who{flex:none;width:76px;font-size:var(--t1);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.say p{margin:0;font-size:var(--t5);line-height:1.4;font-weight:500;letter-spacing:-.011em;max-width:60ch}
+.callrow{display:flex;gap:var(--s3);align-items:baseline;margin:0 0 var(--s4);font-size:var(--t2);color:var(--muted);min-width:0}
+.callrow .c{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.callrow b{color:var(--ink);font-weight:500;font-family:var(--mono);font-size:.92em}
+.script{margin:0 0 var(--s3) calc(76px + var(--s3));font-size:var(--t2);color:var(--muted);max-width:70ch}
+.script.ctx{margin-top:var(--s3);margin-bottom:0}
+.script.ctx b{font-weight:500;color:var(--ink-2)}
+
+.raw{min-width:0}
+.raw pre{margin:0;max-height:none;height:150px;font-size:11px;line-height:1.5;word-break:break-all;color:var(--muted);transition:height .18s var(--ease)}
+.raw summary{display:none}
+.rawcap{display:none}
+.frame{min-width:0}
+.frame iframe{display:block;width:100%;height:150px;border:0;background:transparent;color-scheme:normal;transition:height .18s var(--ease)}
+.frame.phone iframe{max-width:390px}
+
+.next{padding:var(--s5) 0 0}
+.next p{margin:0 0 var(--s3);font-size:var(--t2);color:var(--muted)}
+.err{margin:0 0 0 calc(76px + var(--s3));font-size:var(--t3);color:var(--deny)}
+
+.add{margin-top:var(--s8);display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:var(--s5);align-items:start}
+.add h2{font-size:var(--t7);line-height:1.2}
+.add p{margin:var(--s3) 0 0;color:var(--muted);max-width:52ch}
+.add ol{margin:0;padding:0;list-style:none;counter-reset:s}
+.add li{counter-increment:s;display:grid;grid-template-columns:28px 1fr;gap:var(--s2);padding:var(--s3) 0;border-top:1px solid var(--line);font-size:var(--t3)}
+.add li:first-child{border-top:0;padding-top:0}
+.add li::before{content:counter(s);font-variant-numeric:tabular-nums;color:var(--faint);font-weight:600}
+.url{display:flex;gap:var(--s2);align-items:center;margin-top:var(--s2);min-width:0}
+.url code{flex:1;min-width:0;padding:7px 10px;border:1px solid var(--line);border-radius:var(--r);background:var(--soft);font-size:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+@media (max-width:900px){
+  .cols{display:block}
+  .colhead{display:none}
+  .say .who,.callrow .who{width:auto}
+  .say{flex-direction:column;gap:2px}
+  .callrow{flex-direction:column;align-items:stretch;gap:2px}
+  .script,.err{margin-left:0}
+  .turn .cols{display:flex;flex-direction:column-reverse;gap:var(--s3)}
+  .raw summary{display:flex;justify-content:space-between;gap:var(--s3);cursor:pointer;font-size:var(--t2);color:var(--muted);padding:var(--s2) 0;list-style:none}
+  .raw summary::-webkit-details-marker{display:none}
+  .raw summary b{color:var(--ink);font-weight:500}
+  .raw pre{height:auto!important;max-height:300px}
+  .add{display:block}
+  .add ol{margin-top:var(--s5)}
+}
+</style>
+</head>
+<body>
+<div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
+<header id="site"></header>
+<main class="wrap">
+  <div class="page-head">
+    <h1>The order, drawn inside the chat</h1>
+    <p class="lead">A restaurant buyer asks Claude for 1,000 litres of lactose-free milk by Monday. This connector answers every step with a card in the conversation: the options, Valio Aimo's signed offer, the stop for a second person, and the order with its signatures checked on the spot.</p>
+    <p class="fine">Below, each tool answer is shown twice. Left: the text any connector returns, which is all a chat shows without cards. Right: the same answer drawn by the card this gateway serves over MCP (<code>ui://valio-aimo/card.html</code>, MCP Apps). This page is our own small chat host and has no model in it: it calls <code>/mcp</code> from your browser and the steps are scripted. In Claude the assistant picks them, and the card sits in the conversation.</p>
+  </div>
+
+  <div class="cols colhead" aria-hidden="true">
+    <div><b>Any connector</b>The text the tool returns. The assistant reads it; without cards, so do you.</div>
+    <div><b>This connector</b>The same answer as a card in the chat. Press its buttons: they are live.</div>
+  </div>
+  <section id="talk" aria-live="polite"></section>
+  <div class="next" id="next"></div>
+
+  <section class="add" id="add">
+    <div>
+      <h2>Put it in your own Claude</h2>
+      <p>The same endpoint is a custom connector. Claude draws these cards on the web, in the desktop app and on the phone; ChatGPT reads the same card. Signing in gives your assistant a mandate on a sandbox kitchen of your own, with limits you set on the consent page.</p>
+    </div>
+    <ol>
+      <li><div>In Claude: Customize, Connectors, Add custom connector. Name it and paste the address.<div class="url"><code id="mcpurl"></code><button class="btn small" id="copyurl" type="button">Copy</button></div></div></li>
+      <li><div>Press Connect. Our consent page opens: choose what the assistant may do alone, then allow.</div></li>
+      <li><div>Ask: “We need 1,000 litres of lactose-free milk by Monday. What are the options?”</div></li>
+      <li><div><a id="prefill" href="#" rel="noopener" target="_blank">Open Claude with the connector filled in</a> does step 1 for you. Other agents and the REST API: <a href="/demo#connect">Connect your own assistant</a>.</div></li>
+    </ol>
+  </section>
+  <footer class="foot"><span>Cards: MCP Apps (SEP-1865). One HTML file, no network access, signatures checked in the frame.</span><a href="/spec">How it works</a><a href="https://github.com/ToukoUrsin/aimo-agent-gateway/blob/main/web/chat/card.html" rel="noopener">The card's source</a></footer>
+</main>
+<script src="/static/lib.js"></script>
+<script>
+const UI = "ui://valio-aimo/card.html", PROTO = "2026-01-26";
+const DAY = "2026-11-16";  // the one delivery day the challenge's price and stock API answers for
+const talk = $("#talk"), nextEl = $("#next");
+let token = null, cardHtml = null, tools = {}, rid = 0, chain = Promise.resolve();
+const frames = [], last = {};   // last: what an assistant would remember from the conversation
+
+async function rpc(method, params, again = true) {
+  if (!token) token = (await api("/api/demo/mandate-token")).mandate;
+  const r = await fetch("/mcp", { method: "POST", headers: { "content-type": "application/json", accept: "application/json, text/event-stream", authorization: "Bearer " + token }, body: JSON.stringify({ jsonrpc: "2.0", id: ++rid, method, params: params || {} }) });
+  if (r.status === 401 && again) { token = null; return rpc(method, params, false); }
+  if (!r.ok) throw new Error(r.status === 429 ? "The gateway is busy. Try again in a moment." : "The gateway answered " + r.status + ".");
+  const j = await r.json();
+  if (j.error) throw new Error(j.error.message || "The MCP call failed.");
+  return j.result;
+}
+async function ready() {
+  if (cardHtml) return;
+  const [res, tl] = await Promise.all([rpc("resources/read", { uri: UI }), rpc("tools/list", {})]);
+  cardHtml = res.contents[0].text;
+  for (const t of tl.tools) tools[t.name] = t;
+}
+
+// ---- the transcript
+const add = html => { const d = document.createElement("div"); d.innerHTML = html.trim(); const el = d.firstElementChild; talk.appendChild(el); return el; };
+let turn = null;
+function you(text) {
+  turn = add(`<article class="turn"><div class="say"><span class="who">You</span><p>${esc(text)}</p></div></article>`);
+  turn.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function scripted(text, cls = "") { const p = document.createElement("p"); p.className = "script " + cls; p.innerHTML = text; (turn || talk).appendChild(p); return p; }
+function failed(e) { const p = document.createElement("p"); p.className = "err"; p.textContent = String(e && e.message || e); (turn || talk).appendChild(p); }
+
+async function callTool(name, args) {
+  await ready();
+  if (!turn) turn = add(`<article class="turn"></article>`);
+  const box = document.createElement("div");
+  const shown = JSON.stringify(args);
+  box.innerHTML = `<div class="callrow"><span class="who">Assistant</span><span class="c">calls <b>${esc(name)}</b> ${esc(shown.length > 150 ? shown.slice(0, 150) + "…" : shown)}</span></div>
+    <div class="cols"><details class="raw" open><summary><b>The same answer as text</b><span class="n"></span></summary><div class="box"><pre>${esc("…")}</pre></div></details>
+    <div class="frame"><iframe sandbox="allow-scripts" allow="clipboard-write" title="Card for ${esc(name)}"></iframe></div></div>`;
+  turn.appendChild(box);
+  if (matchMedia("(max-width:900px)").matches) $(".raw", box).open = false;
+  const f = { iframe: $("iframe", box), name, args, ready: false, result: null, box };
+  frames.push(f);
+  f.iframe.srcdoc = cardHtml;
+  let res;
+  try { res = await rpc("tools/call", { name, arguments: args }); }
+  catch (e) { res = { isError: true, content: [{ type: "text", text: JSON.stringify({ ucp: { status: "error" }, messages: [{ type: "error", content: String(e.message || e) }] }) }] }; }
+  f.result = res;
+  const text = ((res.content || []).find(c => c.type === "text") || {}).text || "";
+  $("pre", box).textContent = text;
+  $(".n", box).textContent = text.length.toLocaleString("en-US") + " characters";
+  if (f.ready) send(f, "ui/notifications/tool-result", res);
+  const d = res.structuredContent || (() => { try { return JSON.parse(text); } catch (e) { return {}; } })();
+  remember(name, d);
+  return d;
+}
+function remember(name, d) {
+  if (Array.isArray(d.options) && d.need) last.plan = d;
+  if (d.ap2 && d.id) last.checkout = d;
+  if (d.label && (d.wholesale || {}).evidence) last.order = d;
+  if (d.order && d.order.id && d.status === "completed") last.order = { id: d.order.id, label: d.order.label };
+}
+const send = (f, method, params) => f.iframe.contentWindow.postMessage({ jsonrpc: "2.0", method, params }, "*");
+
+// ---- what a chat host gives a card (MCP Apps): theme, the tool it belongs to, and a few things it may ask for
+function hostContext(f) {
+  const cs = getComputedStyle(document.documentElement), v = n => cs.getPropertyValue(n).trim();
+  const coarse = matchMedia("(pointer:coarse)").matches;
+  return { theme: matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light", displayMode: "inline", availableDisplayModes: ["inline"],
+    locale: navigator.language, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, platform: coarse && innerWidth < 700 ? "mobile" : "web",
+    deviceCapabilities: { touch: coarse, hover: matchMedia("(hover:hover)").matches }, containerDimensions: { width: f.iframe.clientWidth, maxHeight: 8000 },
+    toolInfo: { tool: tools[f.name] || { name: f.name } },
+    styles: { variables: { "--color-background-primary": v("--panel"), "--color-background-secondary": v("--soft"), "--color-background-tertiary": v("--hover"), "--color-text-primary": v("--ink"), "--color-text-secondary": v("--ink-2"),
+      "--color-text-tertiary": v("--muted"), "--color-border-primary": v("--line-2"), "--color-border-secondary": v("--line"), "--color-text-success": v("--pass"), "--color-text-warning": v("--esc"), "--color-text-danger": v("--deny") } } };
+}
+addEventListener("message", async ev => {
+  const f = frames.find(x => x.iframe.contentWindow === ev.source), m = ev.data;
+  if (!f || !m || m.jsonrpc !== "2.0" || !m.method) return;
+  const answer = body => { if (m.id !== undefined) ev.source.postMessage({ jsonrpc: "2.0", id: m.id, ...body }, "*"); };
+  const p = m.params || {};
+  try {
+    if (m.method === "ui/initialize") answer({ result: { protocolVersion: PROTO, hostInfo: { name: "aimo-demo-host", version: "1.0.0" },
+      hostCapabilities: { openLinks: {}, serverTools: {}, serverResources: {}, logging: {}, downloadFile: {}, updateModelContext: { text: {} }, message: { text: {} } }, hostContext: hostContext(f) } });
+    else if (m.method === "ui/notifications/initialized") { f.ready = true; send(f, "ui/notifications/tool-input", { arguments: f.args }); if (f.result) send(f, "ui/notifications/tool-result", f.result); }
+    else if (m.method === "ui/notifications/size-changed") { const h = Math.max(60, Math.ceil(p.height || 0)); f.iframe.style.height = h + "px"; $("pre", f.box).style.height = h + "px"; }
+    else if (m.method === "tools/call") answer({ result: await rpc("tools/call", { name: p.name, arguments: p.arguments || {} }) });
+    else if (m.method === "resources/read") answer({ result: await rpc("resources/read", p) });
+    else if (m.method === "ui/open-link") { if (!window.open(p.url, "_blank", "noopener")) scripted(`The browser blocked the new tab. <a href="${esc(p.url)}" target="_blank" rel="noopener">Open it here</a>.`); answer({ result: {} }); }
+    else if (m.method === "ui/message") { answer({ result: {} }); heard((p.content || []).map(c => c.text || "").join(" ").trim()); }
+    else if (m.method === "ui/update-model-context") { const t = (p.content || []).map(c => c.text || "").join(" ").trim(); if (t) scripted(`<b>The card told the assistant:</b> ${esc(t)}`, "ctx"); answer({ result: {} }); }
+    else if (m.method === "ui/download-file") {
+      for (const c of p.contents || []) { const r = c.resource || {}; const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([r.text || ""], { type: r.mimeType || "text/plain" })); a.download = String(r.uri || "file").split("/").pop(); document.body.appendChild(a); a.click(); a.remove(); }
+      answer({ result: {} });
+    }
+    else if (m.method === "ping") answer({ result: {} });
+    else answer({ error: { code: -32601, message: "Method not found" } });
+  } catch (e) { answer({ error: { code: -32000, message: String(e.message || e) } }); }
+});
+
+// ---- the script that stands in for the assistant on this page. In Claude the model reads the same words and picks the same tools.
+const run = fn => (chain = chain.then(fn).catch(failed).then(more));
+function heard(text) {
+  run(async () => {
+    you(text);
+    let m;
+    const lines = [...text.matchAll(/([\d,]+) × [^()]*?\(product (\w+)\)/g)].map(x => ({ item: { id: x[2] }, quantity: Number(x[1].replace(/,/g, "")) }));
+    if (/^Go with /.test(text) && lines.length) {
+      const c = await callTool("create_checkout", { line_items: lines, delivery_date: DAY, intent: last.intent || "", rationale: "The buyer chose this option in the chat." });
+      if (c.status === "ready_for_complete" && !(c.wholesale || {}).approval) {
+        scripted("Every rule passed, so the assistant places this under its mandate without asking anyone.");
+        await callTool("complete_checkout", { id: c.id });
+      }
+    }
+    else if (/Place the order/.test(text) && last.checkout) await callTool("complete_checkout", { id: last.checkout.id });
+    else if (/problem with order/.test(text)) await callTool("list_order_issues", {});
+    else if (/^Show me order/.test(text) && last.order) await callTool("get_order", { id: last.order.id });
+    else if ((m = text.match(/^(Accept|Decline) proposal (\S+)/))) await callTool("answer_proposal", { id: m[2], answer: m[1].toLowerCase(), ...(m[1] === "Decline" ? { reason: "Declined by the buyer in the chat." } : {}) });
+    else if ((m = text.match(/^Settle issue (\S+) with option (\S+)/))) await callTool("resolve_order_issue", { id: m[1], option: m[2] });
+    else if ((m = text.match(/^Order the usual: ([\d,.]+) (\S+) of (.+?) for the next/))) { last.intent = text; await callTool("plan_sourcing", { query: m[3], need_quantity: Number(m[1].replace(/,/g, "")), need_unit: m[2], delivery_date: DAY }); }
+    else if ((m = text.match(/^I mean (.+?)\.$/)) && last.need) { await callTool("plan_sourcing", { ...last.need, query: (/lactose-free/.test(last.need.query) ? "lactose-free " : "") + m[1] }); }
+    else scripted("No model reads this page, so nothing answers that here. In Claude the assistant does.");
+  });
+}
+const STARTS = [
+  ["milk", "1,000 L of lactose-free milk", "We need 1,000 litres of lactose-free milk by Monday.", ["plan_sourcing", { query: "lactose-free milk", need_quantity: 1000, need_unit: "L", delivery_date: DAY }]],
+  ["usual", "40 L of the usual", "Order 40 litres of our usual lactose-free milk for Monday.", ["plan_sourcing", { query: "lactose-free milk", need_quantity: 40, need_unit: "L", delivery_date: DAY }]],
+  ["cream", "A vague request", "We need 400 litres of lactose-free cream by Monday.", ["plan_sourcing", { query: "lactose-free cream", need_quantity: 400, need_unit: "L", delivery_date: DAY }]],
+  ["oat", "Search the catalog", "Which oat drinks can you deliver on Monday?", ["search_catalog", { query: "oat drink", delivery_date: DAY, limit: 6 }]],
+  ["props", "Valio Aimo's agent proposes", "Has Valio Aimo's agent proposed anything?", ["list_proposals", {}], () => api("/api/demo/seller", { model: false })],
+  ["issue", "A short pick on the last order", "Any problems with our orders?", ["list_order_issues", {}], async () => { const r = await call("/api/demo/issue", {}); if (r.status >= 400) throw new Error("There is no order on this sandbox yet. Place one first: the 40 L example needs nobody."); }],
+];
+function start(id) {
+  const s = STARTS.find(x => x[0] === id);
+  if (!s) return;
+  run(async () => {
+    if (s[4]) { turn = null; await s[4](); }
+    you(s[2]);
+    last.intent = s[2];
+    if (s[3][0] === "plan_sourcing") last.need = s[3][1];
+    await callTool(...s[3]);
+  });
+}
+function more() {
+  nextEl.innerHTML = `<p>Try another. Each one calls the live gateway on your own sandbox kitchen.</p><div class="starts">${STARTS.map(s => `<button class="btn" type="button" data-start="${s[0]}">${esc(s[1])}</button>`).join("")}<button class="btn ghost" type="button" data-start="reset">Start over</button></div>`;
+}
+nextEl.addEventListener("click", async e => {
+  const b = e.target.closest("[data-start]");
+  if (!b) return;
+  if (b.dataset.start !== "reset") return start(b.dataset.start);
+  b.disabled = true;
+  try { await api("/api/demo/reset", {}); } catch (err) { }
+  token = null; talk.innerHTML = ""; frames.length = 0; turn = null; for (const k of Object.keys(last)) delete last[k];
+  start("milk");
+});
+
+const url = location.origin + "/mcp";
+$("#mcpurl").textContent = url;
+$("#copyurl").onclick = async () => { try { await navigator.clipboard.writeText(url); $("#copyurl").textContent = "Copied"; setTimeout(() => $("#copyurl").textContent = "Copy", 1600); } catch (e) { } };
+$("#prefill").href = "https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=" + encodeURIComponent("Valio Aimo (prototype)") + "&connectorUrl=" + encodeURIComponent(url);
+more();
+start(new URLSearchParams(location.search).get("run") || "milk");
+</script>
+</body>
+</html>

@@ -42,7 +42,7 @@ ROUND_S = 20         # one round: every agent that is due takes one turn, at a r
 BASE_ROUNDS = 9      # baskets are sized for a 3 minute run; longer runs order smaller amounts more often
 PACE_S = 0.5         # least time between two calls to the gateway
 COOL_S = 20          # how long every agent waits when the gateway says it is busy
-LLM_MODEL = "claude-haiku-5-5"
+LLM_MODEL = "claude-opus-5-5"
 MAX_LLM = 1          # the model pool is shared: one model agent at a time, and none unless asked for
 NUTS = ["AN", "AP", "SA", "SC", "SH", "SM", "SP", "SR", "ST", "SW"]
 
@@ -749,7 +749,7 @@ def run_total(run) -> int:
 # (they answer after a few seconds, by a fixed rule), and the companies' own systems that sign the mandates.
 RUSH_PRODUCT = "463380"                       # Arla Cafe milk 1 L UHT lactose free: the mock API tracks its stock, and it is short
 RUSH_EXTRA = ["464056", "464320", "463047"]   # soy drink, oat drink, low-lactose milk: what the careless bots reach for
-RUSH_MODELS = ["claude-haiku-5-5", "gpt-6-luna", "gemini-3.8-flash"]  # small fast models, one from each provider in llm.py
+RUSH_MODELS = ["claude-opus-5-5", "gpt-6.1-sol", "gemini-4-hydrogen"]  # one frontier model from each provider in llm.py; people watch a rush, so the Gemini is the one a person waits for
 RUSH_RELEASE_S, RUSH_AGAIN_S = 30.0, 8.0      # unclaimed shares are released this long after the product goes on allocation, then this often
 RUSH_ROUNDS = 3                               # how many times an agent on the waiting list comes back
 RUSH_JITTER_S = 1.2                           # every agent's first request leaves within this long of the start
@@ -817,8 +817,8 @@ def rush_id() -> str:
     return "rush_" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
-def rush_cast(models=12) -> list[dict]:
-    """The 60 accounts and their one agent each. Fixed: the same every run, so runs can be compared. All names are invented."""
+def rush_cast(models=12, count=60, prefix="rush-", model_choices=None) -> list[dict]:
+    """Build the rush cast. The recorded run keeps its 60 fixed accounts; a live run takes a small, separate cast."""
     from . import llm
 
     assert len(PLACES) == 60 and len(set(PLACES)) == 60
@@ -834,23 +834,36 @@ def rush_cast(models=12) -> list[dict]:
             ask = u if role != "all" else max(1, round(u * 0.5) if care else math.floor(u * 0.25))
             exclude = ["AY", *NUTS] if role == "allergen_soy" else ["AW", *NUTS] if role == "allergen_oat" else NUTS if care else ()
             alone = role in ("sub", "person_cap", "person_valio_cap", "allergen_soy", "allergen_oat", "wrong_claim")
-            cast.append({"i": len(cast), "slug": "rush-" + re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-"), "name": name, "segment": seg, "care": care, "ship_to": f"{name}, goods in", "po": place[:3].upper(),
+            cast.append({"i": len(cast), "slug": prefix + re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-"), "name": name, "segment": seg, "care": care, "ship_to": f"{name}, goods in", "po": place[:3].upper(),
                          "approver": f"{approver}, {name}", "usual": u, "ask": ask, "role": role, "kind": "standing", "model": None,
                          "history": bought({RUSH_PRODUCT: u}),
                          "mandate": mandate(u * 120 if role == "person_cap" else 600000, 2500000, sub="any" if alone else "listed", sub_pct=25, exclude=exclude, approver=approver),
                          "profile": {"max_order_total": u * 120} if role == "person_valio_cap" else {"tier": "read"} if role == "read_only" else {}})
 
+    if count < len(cast):
+        # Keep the live run small but include a school and a hospital so the care-kitchen guarantee is visible.
+        care = [next((a for a in cast if a["segment"] == seg), None) for seg in ("school", "hospital")]
+        care = [a for a in care if a]
+        chosen = cast[:max(0, count - min(2, len(care)))] + care[:min(2, len(care))]
+        cast = sorted(chosen[:count], key=lambda a: a["i"])
+        # A visitor sees a real shortage: the small cast asks for more than the mock API's 698 L stock.
+        for a in cast:
+            a["usual"] *= 4
+            a["ask"] = a["usual"] if a["role"] != "all" else max(1, round(a["usual"] * (0.5 if a["care"] else 0.25)))
+            a["history"] = bought({RUSH_PRODUCT: a["usual"]})
+
     def pick(want, kind):
         got = []
         for role, n in want:
             free = [a for a in cast if a["role"] == role and a["kind"] == "standing"]
-            got += [free[round(k * len(free) / n)] for k in range(min(n, len(free)))]
+            got += [free[min(len(free) - 1, round(k * len(free) / n))] for k in range(min(n, len(free)))]
         for a in got:
             a["kind"] = kind
         return got
 
-    for k, a in enumerate(sorted(pick(MODEL_ROLES, "model"), key=lambda a: a["i"])[:max(0, models)]):
-        a["model"] = RUSH_MODELS[k % len(RUSH_MODELS)]
+    choices = model_choices or RUSH_MODELS
+    for k, a in enumerate(sorted(pick(MODEL_ROLES, "model"), key=lambda a: a["i"])[:max(0, min(models, len(cast)))]):
+        a["model"] = choices[k % len(choices)]
     for a in cast:
         if a["kind"] == "model" and not a["model"]:
             a["kind"] = "standing"
@@ -875,7 +888,7 @@ class RushAgent(Agent):
         self.run["trace"] = "rsh_" + secrets.token_hex(6)
         self.jitter = rush.rng.uniform(0, RUSH_JITTER_S)
         self.docs, self.seen, self.open_cids, self.calls, self.ready = {}, set(), set(), 0, asyncio.Event()
-        self.row = {"i": self.i, "name": spec["name"], "slug": spec["slug"], "segment": spec["segment"], "care": spec["care"], "kind": spec["kind"], "model": spec["model"], "does": ROLE_WORDS[self.role],
+        self.row = {"i": self.i, "name": spec["name"], "slug": spec["slug"], "trace": self.run["trace"], "segment": spec["segment"], "care": spec["care"], "kind": spec["kind"], "model": spec["model"], "does": ROLE_WORDS[self.role],
                     "usual": spec["usual"], "asked": spec["ask"], "share": None, "offered": None, "milk": 0.0, "substitute": None, "released_extra": 0.0, "person": None, "refused": None, "orders": [],
                     "first_request_at": None, "answered_at": None, "last_order_at": None, "requests": 0, "errors": []}
 
@@ -1248,13 +1261,14 @@ class RushAgent(Agent):
 
 
 class Rush:
-    def __init__(self, base, key, seed=None, models=12, run_id=None, quiet=False, release_s=RUSH_RELEASE_S, again_s=RUSH_AGAIN_S):
+    def __init__(self, base, key, seed=None, models=12, run_id=None, quiet=False, release_s=RUSH_RELEASE_S, again_s=RUSH_AGAIN_S,
+                 world="rush", count=60, live=False):
         self.base, self.op = base.rstrip("/"), {"x-operator-key": key or ""}
         self.http = httpx.AsyncClient(base_url=self.base, timeout=90, limits=httpx.Limits(max_connections=200, max_keepalive_connections=80))
         self.seed = seed if seed is not None else int(time.time()) % 100000
         self.rng = random.Random(self.seed)
         self.id, self.quiet, self.models = run_id or rush_id(), quiet, max(0, min(int(models), 12))
-        self.release_s, self.again_s = release_s, again_s
+        self.release_s, self.again_s, self.world, self.live = release_s, again_s, world, bool(live)
         self.started = datetime.now(TZ).isoformat(timespec="seconds")
         self.n, self.stop, self.note = Counter(), False, "Starting"
         self.seller_keys: dict[str, dict] = {}
@@ -1263,7 +1277,8 @@ class Rush:
         self.gun, self.t0 = asyncio.Event(), None
         self.model_gate = asyncio.Semaphore(6)
         self.samples, self.peak, self.over, self.last_stock, self.releases, self.alloc = 0, 0.0, 0, None, 0, None
-        self.cast = rush_cast(self.models)
+        self.cast = rush_cast(self.models, count=count, prefix="live-rush-" if self.live else "rush-",
+                              model_choices=None)
         self.round = 0
 
     def say(self, text):
@@ -1375,11 +1390,12 @@ class Rush:
     async def go(self) -> dict:
         beats = None
         try:
-            first = await self.operator("/api/tower/rush/beat", {"id": self.id, "start": True, "note": "Setting up", "started": self.started, "mix": self.mix()})
+            first = await self.operator("/api/tower/rush/beat", {"id": self.id, "start": True, "note": "Setting up", "started": self.started, "mix": self.mix(), "world": self.world, "live": self.live})
             if first.get("busy"):
                 raise FloorError("A run is already going on this server. Stop it first (the tower, or --stop).")
             before = await self.operator("/api/tower/rush/check", method="GET")
-            await self.operator("/api/tower/rush/reset", {"id": self.id, "release_s": self.release_s, "again_s": self.again_s})
+            await self.operator("/api/tower/rush/reset", {"id": self.id, "release_s": self.release_s, "again_s": self.again_s,
+                                                            "world": self.world, "count": len(self.cast), "models": self.models, "live": self.live})
             prof = (await self.http.get("/.well-known/ucp")).json()
             self.seller_keys.update({k["kid"]: k for k in prof["keys"]})
             for spec in self.cast:
@@ -1393,20 +1409,24 @@ class Rush:
                      "usual": a["usual"], "ask": a["ask"], "does": ROLE_WORDS[a["role"]]} for a in self.cast]
             await self.beat(cast=view, note="The model agents are reading their requests" if self.models else "Ready")
             beats = asyncio.create_task(self.heart())
-            self.say(f"Rush {self.id}: 60 accounts, {self.mix()['model_agents']} model agents, seed {self.seed}. Waiting for the model agents to read their requests.")
+            self.say(f"Rush {self.id}: {len(self.cast)} accounts, {self.mix()['model_agents']} model agents, seed {self.seed}. Waiting for the model agents to read their requests.")
             runs = [self.spawn(ag.go()) for ag in self.agents]
             ready = [asyncio.create_task(ag.ready.wait()) for ag in self.agents]
-            await asyncio.wait(ready, timeout=150)
+            await asyncio.wait(ready, timeout=10 if self.live else 150)
             late = [ag for ag, t in zip(self.agents, ready) if not t.done()]
             for t in ready:
                 t.cancel()
             await self.operator("/api/tower/rush/warm")
             self.note = "Running"
             self.t0 = time.monotonic()
+            for ag in late:
+                ag.row["late"] = True
+                ag.row["errors"].append("The model agent did not answer before the live run started.")
+                ag.ev("late", why="The model agent did not answer before the live run started.")
             self.event({"g": "gun", "agents": len(self.agents)})
             self.gun.set()
-            self.say("Go: 60 agents ask now.")
-            await asyncio.wait(runs, timeout=240)
+            self.say(f"Go: {len(self.agents)} agents ask now.")
+            await asyncio.wait(runs, timeout=35 if self.live else 240)
             for t in runs:
                 t.cancel()
             await asyncio.sleep(0.2)
@@ -1421,7 +1441,7 @@ class Rush:
             beats = None
             out = await self.result(before, late)
             await self.operator("/api/tower/rush/save", out)
-            await self.beat(done=True, note="Stopped" if self.stop else "Finished", summary={k: v for k, v in out.items() if k not in ("events", "agents", "split")})
+            await self.beat(done=True, note="Stopped" if self.stop else "Finished", ledger_refs=out.get("ledger_refs"), summary={k: v for k, v in out.items() if k not in ("events", "agents", "split", "ledger_refs")})
             beats = False
             return out
         except BaseException as e:
@@ -1463,27 +1483,29 @@ class Rush:
         errs = [f"{r['name']}: {e}" for r in rows for e in r["errors"]]
         people = [r for r in rows if r["person"]]
         out = {
-            "id": self.id, "complete": not self.stop and len(answers) == len(rows), "when": self.started, "seed": self.seed, "base": self.base,
+            "id": self.id, "live": self.live, "complete": not self.stop and len(answers) + sum(1 for r in rows if r.get("late")) == len(rows), "when": self.started, "seed": self.seed, "base": self.base,
             "product": {"id": RUSH_PRODUCT, "title": a.get("title"), "delivery_day": DAY, "unit": a.get("unit", "L")},
             "agents_total": len(rows), "answered": len(answers),
             "mix": {"scripted_standing_order_bots": sum(1 for r in rows if r["kind"] == "standing"), "scripted_planner_bots": sum(1 for r in rows if r["kind"] == "planner"),
                     "model_agents": sum(1 for r in rows if r["kind"] == "model"), "models": list(models.values()),
                     "notes": ["Every agent has its own key and a mandate signed for its account, and uses the public interface only: REST for the scripted bots, MCP for the model agents.",
-                              "The 60 accounts, their order history and their approvers are simulated. The order history is seeded.",
+                              f"The {len(rows)} accounts, their order history and their approvers are simulated. The order history is seeded.",
                               "Each model agent read its request and chose its first call before the start; that first call was sent at the start with everyone else's. Every later step is the model's own, in real time.",
-                              "The challenge's price and stock API ignores the customer number and limits how often it may be asked, so the gateway asked it once for the products involved and shared the answer with the 60 accounts.",
-                              *([f"{len(late)} model agent(s) were not ready after 150 s and started late."] if late else [])]},
+                              f"The challenge's price and stock API ignores the customer number and limits how often it may be asked, so the gateway asked it once for the products involved and shared the answer with the {len(rows)} accounts.",
+                              *([f"{len(late)} model agent(s) were not ready after {10 if self.live else 150} s and started late."] if late else [])]},
             "stock": {"litres_in_stock": a.get("stock") or 0, "litres_asked": sum(r["asked"] for r in rows), "litres_expected_from_seeded_history": a.get("expected"), "litres_ordered": a.get("ordered") or 0,
                       "litres_left": a.get("left") or 0, "litres_held_at_end": (a.get("held") or 0) + (a.get("other") or 0), "exactly_allocated": a.get("ordered") == a.get("stock"),
-                      "over_allocated": bool(self.over) or (a.get("ordered") or 0) > (a.get("stock") or 0), "most_promised_at_once": self.peak, "times_checked": self.samples,
+                      "over_allocated": bool(self.over) or (a.get("ordered") or 0) > (a.get("stock") or 0), "promised_twice": int(self.over), "most_promised_at_once": self.peak, "times_checked": self.samples,
                       "substitute_litres_ordered": sum((r["substitute"] or {}).get("litres", 0) for r in rows), "litres_from_released_shares": sum(r["released_extra"] for r in rows),
                       "allocation_started": a.get("mode"), "care_minimum_pct": a.get("care_min_pct")},
             "release": {"first_after_s": self.release_s, "then_every_s": self.again_s, "rounds": a.get("rounds"), "log": [{k: (len(v) if k == "to" else v) for k, v in x.items()} for x in a.get("releases") or []]},
             "outcomes": {k: sum(1 for r in rows if r["outcome"] == k) for k in ("got_all", "share_only", "share_plus_substitute", "needed_a_person", "refused", "no_order")},
             "placed_alone": sum(1 for r in rows if r["placed_alone"]), "orders": sum(len(r["orders"]) for r in rows),
             "people": {"asked": len(people), "approved": sum(1 for r in people if r["person"]["decision"] == "approved"), "said_no": sum(1 for r in people if r["person"]["decision"] == "rejected"),
-                       "by_rule": dict(cut(lambda r: (r["person"] or {}).get("rules", [])))},
+                       "by_rule": dict(cut(lambda r: (r["person"] or {}).get("rules", []))),
+                       "details": [{"name": r["name"], "rules": r["person"]["rules"], "why": r["person"]["why"]} for r in people]},
             "refused_by_rule": dict(cut(lambda r: (r["refused"] or {}).get("rules", []))),
+            "refused_details": [{"name": r["name"], "rules": r["refused"]["rules"], "why": r["refused"]["why"]} for r in rows if r["refused"]],
             "refused_then_ordered_share": sum(1 for r in rows if r["refused"] and r["orders"]),
             "hospital_allergen_refusals": sum(1 for r in rows if r["segment"] == "hospital" and r["refused"] and "A1" in r["refused"]["rules"]),
             "refusals_a_person_could_override": sum(1 for r in rows if r["refused"] and r["refused"]["can_a_person_override"]),
@@ -1495,8 +1517,10 @@ class Rush:
             "model_retries": self.n["model_retries"], "offers_left_open_and_cancelled": self.n["left_open"], "errors": len(errs), "error_list": errs[:20],
             "stage_account": {"before": before["stage"]["hash"], "after": after["stage"]["hash"], "untouched": before["stage"] == after["stage"]},
             "split": [{k: c.get(k) for k in ("name", "segment", "care", "usual", "floor", "share", "extra", "asked", "ordered")} for c in a.get("customers") or []],
-            "agents": rows, "events": self.events,
+            "agents": rows, "events": self.events, "ledger_refs": [r["trace"] for r in rows],
         }
+        if self.live:
+            out["ledger_url"] = f"/api/tower/rush/live/ledger/{self.id}"
         o, s, sec = out["outcomes"], out["stock"], out["seconds"]
         self.say("")
         self.say(f"{out['answered']} of {out['agents_total']} agents answered. {s['litres_asked']:g} L asked for, {s['litres_in_stock']:g} L in stock, {s['litres_ordered']:g} L ordered, {s['litres_left']:g} L left. "
@@ -1514,8 +1538,9 @@ class Rush:
         return out
 
 
-async def rush(base, key, seed=None, models=12, run_id=None, quiet=False, release_s=RUSH_RELEASE_S, again_s=RUSH_AGAIN_S) -> dict:
-    return await Rush(base, key, seed, models, run_id, quiet, release_s, again_s).go()
+async def rush(base, key, seed=None, models=12, run_id=None, quiet=False, release_s=RUSH_RELEASE_S, again_s=RUSH_AGAIN_S,
+               world="rush", count=60, live=False) -> dict:
+    return await Rush(base, key, seed, models, run_id, quiet, release_s, again_s, world, count, live).go()
 
 
 

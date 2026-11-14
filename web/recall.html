@@ -30,7 +30,7 @@ h1{font-size:var(--t8);line-height:1.15;margin-top:6px}
 <body>
 <div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
 <header id="site"></header>
-<main id="main" aria-live="polite"><div class="load" aria-label="Loading"><span class="skel block" style="width:30%"></span><span class="skel block" style="height:34px;width:70%"></span><span class="skel block" style="height:120px;margin-top:16px"></span><span class="skel block" style="height:180px"></span></div></main>
+<main id="main" aria-live="polite"><div><h1>Recall</h1><p class="muted" style="margin:var(--s2) 0 0"><span class="wait"><span class="spin"></span>Reading the recall and every order that got the lot</span></p></div></main>
 <script src="/static/lib.js"></script>
 <script>
 const rid = location.pathname.split("/").pop();
@@ -44,7 +44,7 @@ async function load() {
   const s = v.summary, p = v.product;
   let ok = null;
   if (v.notice && crypto.subtle) ok = await verifyDetached(without(v.notice, "proof"), v.notice.proof.jws, v.keys.seller);
-  let h = `<div><div class="eyebrow">Valio Aimo agent gateway · recall</div><h1>Recall of lot ${esc(v.lot)}</h1>
+  let h = `<div><h1>Recall of lot ${esc(v.lot)}</h1>
     <div class="pills">${v.blocked ? '<span class="pill deny">product blocked for new orders</span>' : '<span class="pill pass">closed, product can be ordered again</span>'}
       <span class="pill">raised ${esc(when(v.raised_at))}</span>${v.closed_at ? `<span class="pill">closed ${esc(when(v.closed_at))}</span>` : ""}</div></div>`;
 

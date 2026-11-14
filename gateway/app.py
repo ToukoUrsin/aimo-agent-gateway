@@ -14,6 +14,7 @@ from contextlib import asynccontextmanager
 
 import segno
 from fastapi import Body, FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -55,6 +56,15 @@ async def gateway_error(_, e: GatewayError):
     return JSONResponse(body, status_code=e.status, headers={"Retry-After": str(e.retry_after)} if e.retry_after is not None else None)
 
 
+@app.exception_handler(RequestValidationError)
+async def bad_body(_, e: RequestValidationError):
+    """A body that is not the JSON a route expects (a file upload, a list, broken JSON): 422 in the gateway's own error shape, never echoing the bytes back."""
+    where = [{"loc": [str(x) for x in err.get("loc", [])], "msg": str(err.get("msg", ""))} for err in e.errors()[:8]]
+    said = "; ".join(f"{'.'.join(w['loc'][1:]) or 'body'}: {w['msg']}" for w in where)
+    return JSONResponse({"ucp": {"status": "error"}, "detail": where,
+                         "messages": [{"type": "error", "code": "bad_request", "severity": "unrecoverable", "content": f"This route takes a JSON object. What was sent could not be read ({said})."}]}, status_code=422)
+
+
 @app.middleware("http")
 async def request_limiter(request: Request, call_next):
     if request.url.path.startswith(("/catalog/", "/sourcing/", "/checkout-sessions", "/mcp", "/orders/", "/ledger")):
@@ -68,6 +78,61 @@ async def request_limiter(request: Request, call_next):
             body = {"ucp": {"status": "error"}, "messages": [{"type": "error", "code": e.code, "severity": "unrecoverable", "content": e.message}], "retry_after": e.retry_after}
             return JSONResponse(body, status_code=e.status, headers={"Retry-After": str(e.retry_after)})
     return await call_next(request)
+
+
+class Once:
+    """A POST that carries an Idempotency-Key is done once. A browser whose connection dropped (a phone changing networks) sends the
+    same request again with the same key and gets the answer of the first attempt, also while that attempt is still running.
+    The work is cut loose from the connection, so it finishes whether or not anyone is still listening."""
+    KEEP_S = 600
+
+    def __init__(self, app):
+        self.app, self.seen = app, {}
+
+    async def __call__(self, scope, receive, send):
+        key = dict(scope["headers"]).get(b"idempotency-key") if scope["type"] == "http" and scope["method"] == "POST" else None
+        if not key or len(key) > 200:
+            return await self.app(scope, receive, send)
+        body = b""
+        while True:
+            m = await receive()
+            if m["type"] == "http.disconnect":
+                return
+            body += m.get("body", b"")
+            if not m.get("more_body"):
+                break
+        k = (scope["path"], key, dict(scope["headers"]).get(b"cookie", b""), dict(scope["headers"]).get(b"authorization", b""))
+        fut = self.seen.get(k)
+        if fut is None:
+            loop = asyncio.get_running_loop()
+            fut = self.seen[k] = loop.create_future()
+            loop.create_task(self._work(scope, body, fut))
+            loop.call_later(self.KEEP_S, self.seen.pop, k, None)
+        for m in await asyncio.shield(fut):
+            await send(m)
+
+    async def _work(self, scope, body, fut):
+        out, given = [], False
+
+        async def receive():
+            nonlocal given
+            if not given:
+                given = True
+                return {"type": "http.request", "body": body, "more_body": False}
+            await asyncio.Event().wait()  # this request never hangs up
+
+        async def send(m):
+            out.append(m)
+
+        try:
+            await self.app(scope, receive, send)
+        except Exception:
+            out = [{"type": "http.response.start", "status": 500, "headers": [(b"content-type", b"application/json")]},
+                   {"type": "http.response.body", "body": json.dumps({"messages": [{"type": "error", "code": "internal_error", "content": "The gateway failed on this request."}]}).encode()}]
+        fut.set_result(out)
+
+
+app.add_middleware(Once)
 
 
 def who(request: Request):
@@ -108,7 +173,7 @@ def catalog_lookup(request: Request, body: dict = Body(...)):
         ids = [ids]
     if not ids:
         raise GatewayError(400, "missing_ids", 'Send the product ids or GTINs to look up as a list in "ids", for example {"ids": ["460791"]}.')
-    return g.lookup([str(i) for i in ids], (body.get("wholesale") or {}).get("delivery_date"), p, tr)
+    return g.lookup([str(i) for i in ids], g._asked_day(body), p, tr)
 
 
 @app.post("/sourcing/plan", tags=["wholesale extension"], summary="Turn a need (quantity, date, requirements) into ranked, ready-to-order options")
@@ -117,11 +182,22 @@ def sourcing_plan(request: Request, body: dict = Body(...)):
     return g.plan(body, p, tr)
 
 
+@app.get("/sourcing/usual", tags=["wholesale extension"], summary="What this account usually orders: product, past orders and the amount it takes at a time")
+def sourcing_usual(request: Request, query: str = ""):
+    p, tr = who(request)
+    return g.usual(query[:120], p, tr)
+
+
 # ------------------------------------------------------------------ checkout
 @app.post("/checkout-sessions", tags=["checkout"], summary="Create a checkout: validated lines, guardrail decision, signed offer with held price and stock", status_code=201)
 def checkout_create(request: Request, body: dict = Body(...)):
     p, tr = who(request)
-    return g.create_checkout(body, p, tr)
+    c = g.create_checkout(body, p, tr)
+    # 201 when the checkout has at least one line that can be ordered. When no line could be accepted there is nothing to carry on with:
+    # the same document comes back as 422, with the reason for each line in "messages".
+    if c.get("status") == "incomplete" and not c.get("line_items") and any(m.get("type") == "error" for m in c.get("messages") or []):
+        return JSONResponse(c, status_code=422)
+    return c
 
 
 @app.get("/checkout-sessions/{cid}", tags=["checkout"], summary="Get a checkout")
@@ -205,8 +281,13 @@ def ledger(request: Request, format: str = "", limit: int = 200, since: int = 0,
 
 # ------------------------------------------------------------ human approval
 @app.get("/approve/{cid}", include_in_schema=False)
-def approve_page(cid: str):
-    return page("approve.html")
+def approve_page(cid: str, k: str = ""):
+    try:  # a wrong or missing key answers 403 (404 for no such offer); the page then says the link is not valid
+        g.approval_view(cid, k)
+        code = 200
+    except GatewayError as e:
+        code = e.status
+    return FileResponse(WEB / "approve.html", status_code=code, headers={"Cache-Control": "no-store"})
 
 
 @app.get("/api/approve/{cid}", include_in_schema=False)
@@ -216,9 +297,13 @@ def approve_view(cid: str, k: str = ""):
 
 @app.post("/api/approve/{cid}", include_in_schema=False)
 def approve_decide(cid: str, request: Request, body: dict = Body(...)):
-    approve, by, note = bool(body.get("approve")), str(body.get("approver") or "F&B manager")[:60], str(body.get("note") or "")[:300]
-    device = passkey.check(g, cid, body.get("k"), approve, by, note, body.get("device"), request)  # None: this account approves by link
-    return g.decide(cid, body.get("k"), approve, by, note, **({"device": device} if device else {}))
+    approve, by, note = bool(body.get("approve")), str(body.get("approver") or "").strip()[:60], str(body.get("note") or "")[:300]
+    g.approval_view(cid, str(body.get("k") or ""))  # a wrong key is refused before anything else is said
+    if approve and not by:  # the server never makes up who approved
+        raise GatewayError(400, "approver_required", "An approval carries the name of the person who gives it. Nothing was approved.")
+    clears = body.get("clears") if isinstance(body.get("clears"), list) else None  # the lines with no allergen declaration the approver ticked, one by one
+    device = passkey.check(g, cid, body.get("k"), approve, by, note, body.get("device"), request, clears)  # None: a rejection, or a simulated customer whose approver is a script
+    return g.decide(cid, body.get("k"), approve, by, note, **({"device": device} if device else {"clears": clears} if clears is not None else {}))
 
 
 # ------------------------------------------------------ who is looking (demo)
@@ -296,6 +381,12 @@ def spec_page():
     return page("spec.html")
 
 
+@app.get("/chat", include_in_schema=False)
+def chat_page():
+    """The cards a chat draws (MCP Apps), in a small host of our own next to the plain text every connector returns."""
+    return page("chat/host.html")
+
+
 @app.get("/favicon.ico", include_in_schema=False)
 def favicon():
     return FileResponse(WEB / "favicon.svg", media_type="image/svg+xml", headers={"Cache-Control": "public, max-age=86400"})
@@ -344,7 +435,7 @@ def chain_status():
 def _models():
     try:
         from agent.llm import MODELS  # the buyer's side; the gateway runs without it
-        return MODELS
+        return [m for m in MODELS if m.get("pick")]
     except Exception:
         return []
 
@@ -364,7 +455,7 @@ def console(request: Request, response: Response, since: int = 0):
     return {
         "public_url": PUBLIC_URL, "operator": c["op"], "account": {k: a[k] for k in ("slug", "name", "kind", "customer")},
         "buyer": a["name"], "agent": f"agent:{a['slug']}/purchasing-1", "customer": cust,
-        "profile": g.store.get("profile:" + cust), "mandate": g.store.get("mandate_config:" + cust),
+        "profile": {**policy.default_profile(), **(g.store.get("profile:" + cust) or {})}, "mandate": g.store.get("mandate_config:" + cust),
         "history": [{"id": k, "title": (g.cat.get(k) or {}).get("title", k), **v} for k, v in hist.items()],
         "checkouts": [_summary(x) for x in g.store.checkouts(12, cust)],
         "orders": [order_row(o) for o in g.store.orders(12, cust)],
@@ -402,8 +493,13 @@ def set_profile(request: Request, body: dict = Body(...)):
         g.store.put("global_pause", bool(body["global_pause"]))
     prof = g.store.get("profile:" + a["customer"])
     before = dict(prof)
-    for k in ("enabled", "tier", "max_order_total", "show_contract_prices", "show_exact_stock", "exact_stock", "exact_counts", "keyless_cap"):
+    for k in ("enabled", "tier", "max_order_total", "day_ceiling", "show_contract_prices", "show_exact_stock", "exact_stock", "exact_counts", "keyless_cap"):
         if k in body:
+            if k in ("max_order_total", "day_ceiling", "keyless_cap"):
+                try:
+                    body[k] = max(0, min(int(body[k]), 100_000_000))
+                except (TypeError, ValueError):
+                    raise GatewayError(400, "bad_request", f"{k} is an amount in cents.")
             prof[k] = body[k]
     g.store.put("profile:" + a["customer"], prof)
     changed = {k: prof[k] for k in prof if prof[k] != before.get(k)}
@@ -420,6 +516,16 @@ def set_agent(request: Request, body: dict = Body(...)):
     if not c["op"] and ag.get("slug") != c["acct"]["slug"]:
         raise GatewayError(404, "not_found", "No such agent.")
     return g.set_agent(body.get("id"), bool(body.get("suspended")))
+
+
+@app.post("/api/buyer/key", tags=["buyer"], summary="Register the buying company's own signing key (public half only)")
+def buyer_key(request: Request, response: Response, body: dict = Body(...)):
+    """The buyer's side. Send {"jwk": <P-256 public JWK>}. The answer names the issuer, audience and agent prefix to put in a mandate.
+    A mandate signed with that key is accepted like any other, and the gateway never holds the private half: verify/own_key.py does the whole round."""
+    c = ctx(request, response)
+    if c["acct"]["slug"] == STAGE and not c["op"]:
+        raise GatewayError(403, "forbidden", "The shared demo account's keys are not changed by visitors. Use your own sandbox.")
+    return g.register_buyer_key(c["acct"]["slug"], body.get("jwk"))
 
 
 @app.post("/api/demo/mandate", include_in_schema=False)
@@ -490,7 +596,7 @@ def _allow_run(c, kind):
 AGENT_NAMES = {"script": ("standing-order-bot", "Standing-order bot"), "rogue": ("unvetted-bot", "Unvetted bot")}
 
 
-def new_run(slug: str, kind: str, request_text: str, model: str | None = None, op: bool = False) -> dict:
+def new_run(slug: str, kind: str, request_text: str, model: str | None = None, op: bool = False, follows: str = "") -> dict:
     """Start one buyer-side agent for an account. The run carries the mandate its company signed for it."""
     from agent import runner  # the buyer's side; imported lazily so the gateway runs without it
 
@@ -500,6 +606,10 @@ def new_run(slug: str, kind: str, request_text: str, model: str | None = None, o
         aid += "-" + secrets.token_hex(2)  # every run is a new unknown bot, so one suspension does not hide the next run
     run = {"id": "run_" + secrets.token_hex(5), "created": time.time(), "agent": kind, "model": model, "acct": slug, "buyer_name": a["name"], "request": request_text[:600], "status": "running", "steps": [],
            "trace": "trc_" + secrets.token_hex(6), "_mandate": g.issue_mandate(slug, agent=f"agent:{slug}/{aid}", name=name), "_key": ("demo_buyer" if slug == STAGE else f"b_{slug}") + "_agent", "_op": op}
+    prev = RUNS.get(follows) if follows else None
+    if prev and prev["acct"] == slug and prev.get("final") and kind not in AGENT_NAMES:
+        # A reply in the same conversation: the agent gets what was said before. Limits and rules do not carry over or change.
+        run["thread"] = ((prev.get("thread") or []) + [{"request": prev["request"][:1500], "answer": prev["final"][:2500]}])[-4:]
     RUNS[run["id"]] = run
     for rid in sorted(RUNS, key=lambda k: RUNS[k]["created"])[:-400]:
         RUNS.pop(rid)
@@ -515,7 +625,7 @@ async def run_start(request: Request, response: Response, body: dict = Body(...)
     kind = str(body.get("agent") or "claude")
     _allow_run(c, kind)
     model = str(body.get("model") or "")
-    run = new_run(c["acct"]["slug"], kind, str(body.get("request") or "")[:2000], model if model in {m["id"] for m in _models()} else None, op=c["op"])
+    run = new_run(c["acct"]["slug"], kind, str(body.get("request") or "")[:2000], model if model in {m["id"] for m in _models()} else None, op=c["op"], follows=str(body.get("follows") or "")[:40])
     return {"id": run["id"], "trace": run["trace"]}
 
 

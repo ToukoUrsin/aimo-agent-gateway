@@ -15,6 +15,8 @@ from urllib.parse import parse_qs, urlparse
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, build_opener, HTTPBasicAuthHandler
 
+from agent.approver import KeyApprover
+
 BASE = os.environ.get("ATTACK_BASE", "http://127.0.0.1:8665").rstrip("/")
 if not BASE.startswith("http://127.0.0.1:8665"):
     raise SystemExit("refusing to test anything except http://127.0.0.1:8665")
@@ -160,10 +162,10 @@ def main():
     check("public sourcing does not issue an order", r.status_code == 200 and not j.get("options"))
     check("public sourcing explains mandate boundary", any("mandate" in str(x).lower() for x in j.get("not_offered", []) + j.get("messages", [])))
     r = call(a, "POST", "/checkout-sessions", json={"line_items": [{"item": {"id": "464201"}, "quantity": 1}], "wholesale": {"delivery_date": "2026-11-16"}}); j = obj(r)
-    check("anonymous checkout cannot be ready", r.status_code == 201 and j.get("status") == "incomplete" and "mandate_required" in codes(j))
+    check("anonymous checkout cannot be ready", r.status_code == 422 and j.get("status") == "incomplete" and "mandate_required" in codes(j))
     badh = {"Authorization": "Bearer definitely.not.a.jwt"}
     r = call(a, "POST", "/checkout-sessions", headers=badh, json={"line_items": [{"item": {"id": "464201"}, "quantity": 1}], "wholesale": {"delivery_date": "2026-11-16"}}); j = obj(r)
-    check("malformed mandate cannot order", r.status_code == 201 and j.get("status") == "incomplete" and bool(codes(j) & {"mandate_required", "mandate_invalid_signature", "mandate_scope_mismatch"}))
+    check("malformed mandate cannot order", r.status_code == 422 and j.get("status") == "incomplete" and bool(codes(j) & {"mandate_required", "mandate_invalid_signature", "mandate_scope_mismatch"}))
     r = call(a, "GET", "/issues")
     check("issues require a mandate", r.status_code == 401)
 
@@ -177,7 +179,7 @@ def main():
         ("bad signature tamper", mutate_jwt(atok, signature="AAAA")),
     ):
         r = call(a, "POST", "/checkout-sessions", headers={"Authorization": "Bearer " + tok}, json={"line_items": [{"item": {"id": "464201"}, "quantity": 1}], "wholesale": {"delivery_date": "2026-11-16"}})
-        check(name + " is rejected", r.status_code == 201 and obj(r).get("status") == "incomplete")
+        check(name + " is rejected", r.status_code == 422 and obj(r).get("status") == "incomplete")
 
     # Input validation and numeric edge cases.
     malformed = [
@@ -190,9 +192,9 @@ def main():
     ]
     for name, line, code in malformed:
         r = call(a, "POST", "/checkout-sessions", headers=ah, json={"line_items": [{"item": {"id": "464201"}, **line}], "wholesale": {"delivery_date": "2026-11-16"}}); j = obj(r)
-        check(name + " is rejected without 5xx", r.status_code == 201 and j.get("status") == "incomplete" and code in codes(j))
+        check(name + " is rejected without 5xx", r.status_code == 422 and j.get("status") == "incomplete" and code in codes(j))
     r = call(a, "POST", "/checkout-sessions", headers=ah, json={"line_items": [{"item": {"id": "464201"}, "quantity": 10_000_000}], "wholesale": {"delivery_date": "2026-11-16"}}); j = obj(r)
-    check("huge quantity hits mandate cap", r.status_code == 201 and "mandate_quantity_limit" in codes(j))
+    check("huge quantity hits mandate cap", r.status_code == 422 and "mandate_quantity_limit" in codes(j))
     for name, body in [
         ("null line", {"line_items": [None]}),
         ("null item", {"line_items": [{"item": None, "quantity": 1}]}),
@@ -203,7 +205,7 @@ def main():
         r = call(a, "POST", "/checkout-sessions", headers=ah, json=body)
         check(name + " returns a client error, not 500", getattr(r, "status_code", 0) in (400, 409, 422))
     r = call(a, "POST", "/checkout-sessions", headers=ah, json={"line_items": [{"item": {"id": "does-not-exist"}, "quantity": 1}], "wholesale": {"delivery_date": "2026-11-16"}}); j = obj(r)
-    check("unknown product is a structured error", r.status_code == 201 and j.get("status") == "incomplete" and "product_not_found" in codes(j))
+    check("unknown product is a structured error", r.status_code == 422 and j.get("status") == "incomplete" and "product_not_found" in codes(j))
     for name, body in [
         ("missing need", {"query": "milk"}),
         ("zero need", {"query": "milk", "need": {"quantity": 0, "unit": "L"}}),
@@ -296,15 +298,31 @@ def main():
     check("approval view wrong token rejected", call(a, "GET", f"/api/approve/{ecid}", params={"k": "wrong"}).status_code == 403)
     av = call(a, "GET", f"/api/approve/{ecid}", params={"k": k}); aj = obj(av)
     check("approval view with exact token works", av.status_code == 200 and aj.get("id") == ecid and "_internal" not in aj)
-    tam = call(a, "POST", f"/api/approve/{ecid}", json={"k": k + "x", "approve": True})
+    tam = call(a, "POST", f"/api/approve/{ecid}", json={"k": k + "x", "approve": True, "approver": "Mallory"})
     check("approval decision wrong token rejected", tam.status_code == 403)
     rej = call(a, "POST", f"/api/approve/{ecid}", json={"k": k, "approve": False, "approver": "Test approver", "note": "no"}); rj = obj(rej)
     check("approval rejection cancels checkout", rej.status_code == 200 and rj.get("status") == "canceled")
-    rerej = call(a, "POST", f"/api/approve/{ecid}", json={"k": k, "approve": True})
-    check("approval link cannot be replayed after rejection", rerej.status_code == 409)
+    rerej = call(a, "POST", f"/api/approve/{ecid}", json={"k": k, "approve": True, "approver": "Mallory"})
+    check("approval link cannot be replayed after rejection", rerej.status_code in (403, 409) and obj(call(a, "GET", f"/api/approve/{ecid}", params={"k": k})).get("status") == "canceled")
     r = call(a, "POST", "/checkout-sessions", headers=ah, json=esc_req); esc2 = obj(r); ecid2 = esc2.get("id", ""); k2 = parse_qs(urlparse(esc2.get("continue_url", "")).query).get("k", [""])[0]
-    appr = call(a, "POST", f"/api/approve/{ecid2}", json={"k": k2, "approve": True, "approver": "Test approver"}); apj = obj(appr)
-    check("approval changes state to ready", appr.status_code == 200 and apj.get("status") == "ready_for_complete" and apj.get("wholesale", {}).get("approval", {}).get("decision") == "approved")
+    # No approver device was ever enrolled for this account. The link with a name is still not an approval: a yes needs a device's signature.
+    bare = call(a, "POST", f"/api/approve/{ecid2}", json={"k": k2, "approve": True, "approver": "Someone holding the link"})
+    check("link alone cannot approve on a fresh account", bare.status_code == 403 and "device_required" in codes(obj(bare)) and obj(call(a, "GET", f"/api/approve/{ecid2}", params={"k": k2})).get("status") == "requires_escalation")
+    anon = call(a, "POST", f"/api/approve/{ecid2}", json={"k": k2, "approve": True})
+    check("approval without a name is refused", anon.status_code == 400 and "approver_required" in codes(obj(anon)))
+    approver = KeyApprover(obj(call(a, "GET", "/api/console")).get("public_url", BASE))
+    apj = approver.approve_sync(lambda path, body: obj(call(a, "POST", path, json=body)), ecid2, k2, "Test approver")
+    dev = apj.get("wholesale", {}).get("approval", {}).get("device") or {}
+    check("approval changes state to ready", apj.get("status") == "ready_for_complete" and apj.get("wholesale", {}).get("approval", {}).get("decision") == "approved")
+    check("the approval carries the device's signature over this decision", dev.get("method") == "browser_key" and dev.get("credential") == approver.id and dev.get("signed", {}).get("checkout") == ecid2 and dev.get("signed", {}).get("by") == "Test approver")
+    r = call(a, "POST", "/checkout-sessions", headers=ah, json=esc_req); esc3 = obj(r); ecid3 = esc3.get("id", ""); k3 = parse_qs(urlparse(esc3.get("continue_url", "")).query).get("k", [""])[0]
+    stolen = {"id": dev.get("credential"), "clientDataJSON": dev.get("client_data_json"), "signature": dev.get("signature")}
+    replay = call(a, "POST", f"/api/approve/{ecid3}", json={"k": k3, "approve": True, "approver": "Test approver", "device": stolen})
+    check("a device signature for one order does not approve another", replay.status_code in (400, 403) and obj(call(a, "GET", f"/api/approve/{ecid3}", params={"k": k3})).get("status") == "requires_escalation")
+    other = KeyApprover(approver.origin, "Another key")
+    forged = call(a, "POST", f"/api/approve/{ecid3}", json={"k": k3, "approve": True, "approver": "Test approver", "device": {"id": other.id, **other.signed("aimo.key.get", "x")}})
+    check("a key that was never enrolled cannot approve", forged.status_code == 403 and "unknown_device" in codes(obj(forged)))
+    call(a, "POST", f"/api/approve/{ecid3}", json={"k": k3, "approve": False, "approver": "Test approver", "note": "test over"})
     done = call(a, "POST", f"/checkout-sessions/{ecid2}/complete", headers=ah, json={}); donej = obj(done)
     check("approved keyless checkout completes", done.status_code == 200 and donej.get("status") == "completed" and donej.get("order", {}).get("id"))
     twice = call(a, "POST", f"/checkout-sessions/{ecid2}/complete", headers=ah, json={}); check("completing twice is idempotent", twice.status_code == 200 and obj(twice).get("status") == "completed" and obj(twice).get("order") == donej.get("order"))
@@ -328,7 +346,7 @@ def main():
     check("unknown issue is 404", call(a, "GET", "/issues/iss_missing", headers=ah).status_code == 404)
 
     # HTML and API output encoding, plus no internal state in human-facing pages.
-    page = call(a, "GET", f"/approve/{ecid2}")
+    page = call(a, "GET", f"/approve/{ecid2}", params={"k": k2})
     check("approval page does not embed attacker text", page.status_code == 200 and "onerror=alert" not in page.text and "<script>alert(1)</script>" not in page.text)
     order_page = call(a, "GET", f"/orders/{oid}", headers={"Accept": "text/html"})
     check("order page is a generic shell before authenticated fetch", order_page.status_code == 200 and "const oid = location.pathname" in order_page.text and "_internal" not in order_page.text)

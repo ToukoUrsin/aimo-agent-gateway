@@ -12,10 +12,26 @@ const clock = iso => iso ? new Date(iso).toLocaleTimeString("en-GB", { hour: "2-
 const siteUrl = u => { try { const x = new URL(u, location.href); return x.pathname + x.search + x.hash; } catch (e) { return u || ""; } };
 const when = iso => iso ? new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: TZ }) : "";
 
-async function api(path, body, method) {
-  const r = await fetch(path, { method: method || (body ? "POST" : "GET"), headers: { "content-type": "application/json", accept: "application/json" }, body: body ? JSON.stringify(body) : undefined });
-  return r.json();
+// One call to the gateway: { status, headers, body }. A connection that drops on the way (a phone changing networks, a tunnel
+// hiccup) is tried again by itself. A POST carries one key for all its attempts, and the gateway does the work once for that key:
+// a retry gets the first attempt's answer, also when the first attempt did reach the gateway and only the answer was lost.
+async function call(path, body, method) {
+  const m = method || (body ? "POST" : "GET");
+  const headers = { "content-type": "application/json", accept: "application/json" };
+  if (m === "POST") headers["idempotency-key"] = (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2));
+  const payload = body ? JSON.stringify(body) : undefined;
+  let last;
+  for (let i = 0; i < 5; i++) {
+    if (i) await new Promise(ok => setTimeout(ok, [0, 300, 800, 1500, 2500][i]));
+    try {
+      const r = await fetch(path, { method: m, headers, body: payload });
+      if ([502, 503, 504].includes(r.status) && !(r.headers.get("content-type") || "").includes("json")) { last = new Error("The gateway is not answering (" + r.status + ")."); continue; }
+      return { status: r.status, headers: r.headers, body: await r.json() };
+    } catch (e) { last = e; }
+  }
+  throw last;
 }
+const api = async (path, body, method) => (await call(path, body, method)).body;
 
 // ---- Drawn icons, one stroke weight. Use as innerHTML.
 const ICON = {
@@ -33,18 +49,26 @@ const ICON = {
 const markHtml = ok => `<span class="mark ${ok === null ? "wait" : ok ? "ok" : "bad"}">${ok === null ? '<span class="spin" style="width:10px;height:10px"></span>' : ok ? ICON.check : ICON.cross}</span>`;
 // Placeholder while data loads.
 const skel = (w = "5ch") => `<span class="skel" style="width:${w}"></span>`;
+// A wait in words: what the page is waiting for, never a bare grey bar.
+const waitHtml = text => `<span class="wait"><span class="spin"></span><span>${esc(text)}</span></span>`;
 
 // ---- The one header every page shares. A page puts <header id="site"></header> where it goes;
 // anything already inside it (a page's own buttons) moves to the right-hand side.
+// Six places, the buyer's own chat first, then the challenge's flow. Everything else is one click deeper: the More group and the footer.
 const SITE_NAV = [
-  ["/", "Home"],
-  ["/menu", "Order from a menu"],
-  ["/demo", "Try it"],
-  ["/tower", "Tower"],
-  ["/seller", "Valio Aimo's agent"],
+  ["/chat", "In the chat"],
+  ["/demo", "Order"],
+  ["/menu", "Menu to order"],
+  ["/seller", "Selling agent"],
+  ["/tower", "Control tower"],
   ["/proof", "Proof"],
-  ["/ledger", "Ledger"],
+];
+const SITE_MORE = [
   ["/spec", "How it works"],
+  ["/ledger", "Ledger"],
+  ["/byhand", "The same order by hand"],
+  ["/demo#connect", "Connect your own assistant"],
+  ["/docs", "REST API"],
 ];
 // Pages that may not exist yet are shown only when the server says they are live (GET /api/pages).
 const OPTIONAL = new Set(["/menu", "/seller", "/tower", "/ledger"]);
@@ -61,19 +85,35 @@ function livePages() {
 }
 function mountSite(el) {
   const path = location.pathname.replace(/\/+$/, "") || "/";
-  const cur = href => href === "/" ? path === "/" : path === href || path.startsWith(href + "/") || (href === "/menu" && path === "/byhand");  // /byhand belongs to the menu story
+  // An order, its approval and the by-hand comparison belong to the place they came from.
+  const cur = href => href === "/" ? path === "/" : path === href || path.startsWith(href + "/") || (href === "/menu" && path === "/byhand") || (href === "/demo" && /^\/(orders|approve)\//.test(path));
   // Until the server answers, show what this tab saw last time, or the pages that always exist.
   let live = { "/tower": true, "/ledger": true };
   try { live = (JSON.parse(sessionStorage.getItem("aimo-pages") || "null") || {}).live || live; } catch (e) { }
   const own = [...el.childNodes];
-  const links = () => SITE_NAV.filter(n => !OPTIONAL.has(n[0]) || live[n[0]]).map(([href, label]) => `<a href="${href}"${cur(href) ? ' aria-current="page"' : ""}>${esc(label)}</a>`).join("");
+  const on = n => !OPTIONAL.has(n[0]) || live[n[0]];
+  const link = ([href, label]) => `<a href="${href}"${cur(href) && !href.includes("#") ? ' aria-current="page"' : ""}>${esc(label)}</a>`;
+  const links = () => SITE_NAV.filter(on).map(link).join("");
+  const more = () => SITE_MORE.filter(on).map(link).join("");
+  const sheetHtml = () => `<div class="grp main">${links()}</div><div class="grp more">${link(["/", "Home"])}${more()}</div>`;
   el.classList.add("site");
-  el.innerHTML = `<div class="in"><a class="brand" href="/">${ICON.mark}<span>Aimo Agent Gateway</span></a><nav aria-label="Main">${links()}</nav><div class="acts"><button class="btn ghost small menu-btn" aria-expanded="false" aria-controls="site-sheet">${ICON.menu}<span>Menu</span></button></div></div><div class="sheet" id="site-sheet" hidden>${links()}</div>`;
+  el.innerHTML = `<div class="in"><a class="brand" href="/" aria-label="Aimo Agent Gateway, home">${ICON.mark}<span>Aimo Agent Gateway</span></a><nav aria-label="Main">${links()}</nav><div class="acts"><button class="btn ghost small menu-btn" type="button" aria-expanded="false" aria-controls="site-sheet"><span class="ic">${ICON.menu}</span><span class="lm">Menu</span><span class="ld">More</span></button></div></div><div class="sheet" id="site-sheet" hidden>${sheetHtml()}</div>`;
   const acts = $(".acts", el), btn = $(".menu-btn", el), sheet = $(".sheet", el);
   for (const n of own) acts.insertBefore(n, btn);
-  btn.onclick = () => { const open = sheet.hidden; sheet.hidden = !open; btn.setAttribute("aria-expanded", String(open)); btn.innerHTML = (open ? ICON.close : ICON.menu) + `<span>${open ? "Close" : "Menu"}</span>`; };
-  document.addEventListener("keydown", e => { if (e.key === "Escape" && !sheet.hidden) btn.click(); });
-  livePages().then(l => { if (JSON.stringify(l) === JSON.stringify(live)) return; live = l; $("nav", el).innerHTML = links(); sheet.innerHTML = links(); }).catch(() => { });
+  const set = open => { sheet.hidden = !open; btn.setAttribute("aria-expanded", String(open)); $(".ic", btn).innerHTML = open ? ICON.close : ICON.menu; $(".lm", btn).textContent = open ? "Close" : "Menu"; };
+  btn.onclick = () => set(sheet.hidden);
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !sheet.hidden) { set(false); btn.focus(); } });
+  document.addEventListener("click", e => { if (!sheet.hidden && !el.contains(e.target)) set(false); });
+  sheet.addEventListener("click", e => { if (e.target.closest("a")) set(false); });
+  // The footer every page shares: the same places, and the ones that left the top bar.
+  let foot = null;
+  if (!/^\/(approve|enrol|oauth|connect)(\/|$)/.test(path) && !document.getElementById("sitefoot")) {
+    foot = document.createElement("footer"); foot.id = "sitefoot"; foot.className = "sitefoot";
+    document.body.appendChild(foot);
+  }
+  const footHtml = () => `<div class="in"><div class="fb"><a class="brand" href="/">${ICON.mark}<span>Aimo Agent Gateway</span></a><p>Junction 2026, Valio Aimo's challenge "Trusted Trade Agents". A prototype on the challenge's data and mock price and availability API.</p><p><a href="https://github.com/ToukoUrsin/aimo-agent-gateway" rel="noopener">Source code (MIT)</a></p></div><nav aria-label="Pages"><b>Pages</b>${link(["/", "Home"])}${links()}</nav><nav aria-label="More"><b>More</b>${more()}</nav><nav aria-label="For agents and developers"><b>For agents</b><a href="/.well-known/ucp">/.well-known/ucp</a><a href="/openapi.json">/openapi.json</a><a href="/spec#standards">Open standards used</a><a href="/spec#rules">The rules</a></nav></div>`;
+  if (foot) foot.innerHTML = footHtml();
+  livePages().then(l => { if (JSON.stringify(l) === JSON.stringify(live)) return; live = l; $("nav", el).innerHTML = links(); sheet.innerHTML = sheetHtml(); if (foot) foot.innerHTML = footHtml(); }).catch(() => { });
 }
 (function boot() {
   if (!document.querySelector("link[rel~=icon]")) {
@@ -211,7 +251,7 @@ async function orderChecks(o, audit, profile, led, genesis) {
   out.push([c1, "Valio Aimo signed this confirmation", c1 ? `Every field below is covered by Valio Aimo's signature. Key ${seller.kid.slice(0, 16)}… published at /.well-known/ucp.` : "The document does not match Valio Aimo's signature. It was changed after signing."]);
 
   const m = await verifyJwt(ev.mandate, audit.keys.buyer);
-  out.push([!!m, "The buying company signed the agent's mandate", m ? `Mandate ${m.jti} from ${m.iss}: up to ${eur(m.mandate.budget.max_per_order)} per order without a person. Checked against the key the buyer registered at onboarding.` : "The mandate's signature does not match the buyer's registered key."]);
+  out.push([!!m, "The buying company signed the agent's mandate", m ? `Mandate ${m.jti} from ${m.iss}: up to ${eur(m.mandate.budget.max_per_order)} per order without a person. ` + ((ev.mandate_key || {}).held_by === "buyer" ? "Signed with a key the buyer registered itself; this server holds the public half only and could not have signed it." : "Checked against the key the buyer registered at onboarding, which this server keeps for demo accounts.") : "The mandate's signature does not match the buyer's registered key."]);
 
   // An agent with its own key signs its acceptance. An assistant that signed in instead has no key: Valio Aimo signs a receipt of what it accepted.
   const keyless = ev.agent_class === "keyless", rc = ev.keyless_receipt;

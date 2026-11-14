@@ -32,7 +32,7 @@ h1 b{font-weight:600}
 <div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
 <header id="site"></header>
 <main>
-<div id="body" aria-live="polite"><div class="load" aria-label="Loading"><span class="skel block" style="width:120px;height:40px"></span><span class="skel block" style="height:28px;width:90%"></span><span class="skel block" style="height:44px;margin-top:16px"></span><span class="skel block" style="height:44px"></span><span class="skel block" style="height:44px"></span></div></div>
+<div id="body" aria-live="polite"><h1>An assistant wants to order from Valio Aimo</h1><p class="sub"><span class="wait"><span class="spin"></span>Asking the gateway which assistant sent you here</span></p></div>
 </main>
 <script src="/static/lib.js"></script>
 <script>
@@ -46,11 +46,11 @@ async function load() {
   $("#body").innerHTML = `
     <div class="who" aria-hidden="true"><span class="tile">${esc((c.client || "?").trim().charAt(0).toUpperCase())}</span><span class="link"></span><span class="tile gw">${ICON.mark}</span></div>
     <h1><b>${esc(c.client)}</b> wants to order from Valio Aimo for ${esc(c.account.name)}</h1>
-    <p class="sub">Set what it may order on its own. Anything beyond that comes to you as an approval link.</p>
+    <p class="sub">Set what it may order on its own. Anything beyond that goes to the account's approver as a link, and they sign it on their own device.</p>
     <div class="fields">
       <label>On its own, per order, € ex VAT<input type="number" inputmode="decimal" id="order" min="0" max="${cap}" step="50" value="${Math.min(cap, c.mandate.budget.max_per_order / 100)}"></label>
       <label>On its own, per week, € ex VAT<input type="number" inputmode="decimal" id="week" min="0" max="100000" step="100" value="${Math.min(2000, c.mandate.budget.max_per_week / 100)}"></label>
-      <label>Products you have never bought<select id="newp"><option value="ask">Ask me first</option><option value="allow">Allowed</option></select></label>
+      <label>Products you have never bought<select id="newp"><option value="ask">Ask a person first</option><option value="allow">Allowed</option></select></label>
       <label>Substitutes when something is out<select id="sub"><option value="listed">Only Valio Aimo's listed substitutes</option><option value="none">Never</option></select></label>
     </div>
     <div class="acts"><button class="btn" id="no" type="button">Cancel</button><button class="btn primary" id="yes" type="button">Allow</button></div>

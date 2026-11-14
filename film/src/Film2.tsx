@@ -2,88 +2,129 @@ import React from 'react';
 import {AbsoluteFill, Audio, Img, Sequence, staticFile, useCurrentFrame} from 'remotion';
 import {Screen} from './components/Screen';
 import {Shot, View, fit} from './shots';
-import {C, MONO, SANS, FPS, clamp, soft} from './theme';
+import {MONO, SANS, FPS, soft} from './theme';
 import menuMeta from './data2/shot-menu.json';
-import sellerMeta from './data2/shot-seller.json';
 import towerMeta from './data2/shot-tower2.json';
 import proofMeta from './data2/shot-proof2.json';
 import homeMeta from './data2/shot-home2.json';
-import ledgerMeta from './data2/shot-ledger2.json';
-import orderMeta from './data/shot-order.json';
 import rogueMeta from './data/shot-rogue.json';
-import phoneMeta from './data/shot-phone.json';
+import passkeyFacts from './data2/facts-passkey.json';
+import orderDeviceFacts from './data2/facts-order-device.json';
+import proofFacts from './data2/facts-proof.json';
+import towerFacts from './data2/facts-tower.json';
+import menuFacts from './data2/facts-menu.json';
 import voJson from './data2/vo.json';
 
-const M = new Shot(menuMeta as any), SEL = new Shot(sellerMeta as any), TOW = new Shot(towerMeta as any), P = new Shot(proofMeta as any);
-const H = new Shot(homeMeta as any), L = new Shot(ledgerMeta as any), O = new Shot(orderMeta as any), R = new Shot(rogueMeta as any), PH = new Shot(phoneMeta as any);
-const menu = (menuMeta as any).facts?.latest ?? {};
-const rush = (towerMeta as any).facts?.rush ?? {};
-const proof = (proofMeta as any).facts?.proof ?? {};
-const anchor = false; // /api/anchor.latest was empty at capture time; no public-chain claim is shown.
+const M = new Shot(menuMeta as any);
+const TOW = new Shot(towerMeta as any);
+const P = new Shot(proofMeta as any);
+const H = new Shot(homeMeta as any);
+const R = new Shot(rogueMeta as any);
+const PK = new Shot((passkeyFacts as any).meta);
+const OD = new Shot((orderDeviceFacts as any).meta);
+const menu = (menuFacts as any).latest ?? {};
+const rush = (towerFacts as any).rush ?? {};
+const proof = (proofFacts as any).proof ?? {};
+const U = proof.undeclared ?? {};
 const v = voJson as any;
 const linesArr: any[] = Object.values(v.lines ?? {});
-const starts: Record<string, number> = {h1: .2, h2: 5.1, n1: 10.4, n2: 14.1, r1: 21.5, s1: 28.5, u1: 37.1, u2: 44.4, t1: 52.8, t2: 59.7, t3: 64.1, p1: 68, a1: 81, a2: 86.4, y1: 96, y2: 103, c1: 108};
+const starts: Record<string, number> = {
+	h1: .20, h2: 5.00, n2: 10.20, d1: 18.00, d2: 24.00, r1: 32.00,
+	pk1: 39.00, u1: 49.00, u2: 57.00, t1: 66.00, t2: 70.50,
+	p1: 76.00, p2: 85.00, a1: 90.00, y1: 97.00, c1: 107.00,
+};
 const duration = 3420;
 const aspect = 16 / 9;
-const full = {x: 45, y: 135, w: 1830, h: 900};
+const full = {x: 80, y: 130, w: 1760, h: 990};
 const frameAt = (s: Shot, t: number) => Math.max(0, Math.min(s.m.dur - .05, t));
-const boxView = (s: Shot, key: string, t: number, w?: number): View => fit(s.boxOr(key, t), aspect, s.m.css, {pad: 18, w});
-const fullView = (s: Shot, top = 0): View => [0, top, s.m.css[0]];
+const panel = (s: Shot, key: string, t: number, w = 1250, anchor: 'top' | 'center' | 'bottom' = 'center'): View => fit(s.boxOr(key, t), aspect, s.m.css, {pad: 18, w, anchor});
+// The home capture begins on the hero, then records a scroll into the ways-in
+// list. Keep the hero shot on the actual first frame and use its stable box;
+// the tracked box after the scroll describes the same element off-screen.
+const homeHeroView: View = fit([104, 87, 1072, 595], aspect, H.m.css, {pad: 18, w: 1450, anchor: 'top'});
 
 const Chapter: React.FC<{k: string; title: string; sub?: string}> = ({k, title, sub}) => {
-	const f = useCurrentFrame(); const a = soft(f, 2, 12);
-	return <div style={{position: 'absolute', left: 72, top: 42, zIndex: 4, opacity: a, fontFamily: SANS, color: '#12201D'}}>
-		<div style={{display: 'flex', gap: 14, alignItems: 'center'}}><span style={{fontFamily: MONO, color: '#0B7A62', letterSpacing: 1.5, fontSize: 16}}>{k}</span><b style={{fontSize: 38, letterSpacing: -1}}>{title}</b></div>
+	const f = useCurrentFrame();
+	return <div style={{position: 'absolute', left: 74, top: 38, zIndex: 6, opacity: soft(f, 2, 12), fontFamily: SANS, color: '#10201C'}}>
+		<div style={{display: 'flex', gap: 14, alignItems: 'center'}}><span style={{fontFamily: MONO, color: '#0A7B61', letterSpacing: 1.5, fontSize: 16}}>{k}</span><b style={{fontSize: 38, letterSpacing: -1}}>{title}</b></div>
 		{sub ? <div style={{fontSize: 20, marginTop: 6, color: '#52625D'}}>{sub}</div> : null}
 	</div>;
 };
 const Caption: React.FC = () => {
-	const f = useCurrentFrame(); const sec = f / FPS;
+	const sec = useCurrentFrame() / FPS;
 	for (const l of linesArr) {
 		const st = starts[l.id]; if (st == null || sec < st || sec > st + l.dur) continue;
 		let cur: any[] = [];
-		for (const w of l.words) { cur.push(w); if (/[.?!]$/.test(w.w) || cur.map(x => x.w).join(' ').length > 48) { const a = cur[0].s, b = cur.at(-1).e; if (sec - st >= a && sec - st <= b) return <div style={{position: 'absolute', zIndex: 8, left: 100, right: 100, bottom: 42, textAlign: 'center'}}><span style={{fontFamily: SANS, fontSize: 34, fontWeight: 650, color: '#fff', background: 'rgba(11,28,24,.9)', borderRadius: 10, padding: '8px 20px'}}>{cur.map(x => x.w).join(' ')}</span></div>; cur = []; } }
-		if (cur.length) { const a = cur[0].s, b = cur.at(-1).e; if (sec - st >= a && sec - st <= b) return <div style={{position: 'absolute', zIndex: 8, left: 100, right: 100, bottom: 42, textAlign: 'center'}}><span style={{fontFamily: SANS, fontSize: 34, fontWeight: 650, color: '#fff', background: 'rgba(11,28,24,.9)', borderRadius: 10, padding: '8px 20px'}}>{cur.map(x => x.w).join(' ')}</span></div>; }
+		for (const w of l.words) {
+			cur.push(w);
+			if (/[.?!]$/.test(w.w) || cur.map(x => x.w).join(' ').length > 48) {
+				const a = cur[0].s, b = cur.at(-1).e;
+				if (sec - st >= a && sec - st <= b) return <CaptionText text={cur.map(x => x.w).join(' ')} />;
+				cur = [];
+			}
+		}
+		if (cur.length) { const a = cur[0].s, b = cur.at(-1).e; if (sec - st >= a && sec - st <= b) return <CaptionText text={cur.map(x => x.w).join(' ')} />; }
 	}
 	return null;
 };
-const Stat: React.FC<{x: number; y: number; value: React.ReactNode; label: string; color?: string}> = ({x, y, value, label, color = '#12201D'}) => <div style={{position: 'absolute', left: x, top: y, zIndex: 4, fontFamily: SANS, color}}><div style={{fontSize: 76, fontWeight: 800, letterSpacing: -3, lineHeight: 1}}>{value}</div><div style={{fontSize: 20, fontWeight: 650, marginTop: 8}}>{label}</div></div>;
-const Tag: React.FC<{children: React.ReactNode; x: number; y: number; color?: string}> = ({children, x, y, color = '#0B7A62'}) => <div style={{position: 'absolute', left: x, top: y, zIndex: 5, fontFamily: MONO, fontSize: 17, color, background: '#E5F3EE', border: `1px solid ${color}55`, borderRadius: 8, padding: '7px 12px'}}>{children}</div>;
+const CaptionText: React.FC<{text: string}> = ({text}) => <div style={{position: 'absolute', zIndex: 20, left: 90, right: 90, bottom: 36, textAlign: 'center'}}><span style={{fontFamily: SANS, fontSize: 34, lineHeight: 1.15, fontWeight: 650, color: '#fff', background: 'rgba(11,28,24,.92)', borderRadius: 10, padding: '8px 20px'}}>{text}</span></div>;
+const Tag: React.FC<{children: React.ReactNode; x: number; y: number; color?: string; w?: number}> = ({children, x, y, color = '#0B7A62', w}) => <div style={{position: 'absolute', left: x, top: y, zIndex: 10, width: w, fontFamily: MONO, fontSize: 18, lineHeight: 1.25, color, background: '#E5F3EE', border: `1px solid ${color}66`, borderRadius: 9, padding: '8px 13px'}}>{children}</div>;
+const Big: React.FC<{x: number; y: number; value: React.ReactNode; label: string; color?: string}> = ({x, y, value, label, color = '#10201C'}) => <div style={{position: 'absolute', left: x, top: y, zIndex: 10, fontFamily: SANS, color}}><div style={{fontSize: 72, fontWeight: 850, letterSpacing: -3, lineHeight: .95}}>{value}</div><div style={{fontSize: 20, fontWeight: 700, marginTop: 8}}>{label}</div></div>;
+const ZeroCard: React.FC<{x: number; y: number; title: string; sub: string}> = ({x, y, title, sub}) => <div style={{position: 'absolute', left: x, top: y, zIndex: 10, width: 360, padding: '16px 18px', borderRadius: 12, background: 'rgba(255,255,255,.96)', border: '1px solid #C8D9D3', boxShadow: '0 10px 25px #1232  ', fontFamily: SANS, color: '#10201C'}}><div style={{fontSize: 64, lineHeight: .9, fontWeight: 850, color: '#087A5E'}}>0</div><div style={{fontSize: 20, fontWeight: 750, marginTop: 9}}>{title}</div><div style={{fontSize: 16, color: '#52625D', marginTop: 5}}>{sub}</div></div>;
 
 export const Film2: React.FC<{audio?: boolean; captions?: boolean}> = ({audio = true, captions = true}) => {
-	const f = useCurrentFrame(); const sec = f / FPS;
+	const sec = useCurrentFrame() / FPS;
 	let content: React.ReactNode;
 	if (sec < 10) {
-		const t = frameAt(M, Math.min(M.m.dur - .2, sec < 3 ? .2 : .2 + (sec - 3) * 1.4));
-		const view = sec < 3 ? boxView(M, 'photo', t, 800) : boxView(M, 'main', t, 990);
-		content = <><Chapter k="01 · MENU → ORDER" title="A photo becomes a checked order" sub="The kitchen starts with the menu it already has."/><Screen shot={M} t={t} view={view} {...full} cursor={false}/><Tag x={84} y={1000} color="#0B7A62">{menu.guests ?? 180} guests · {menu.line_count ?? 41} checked lines</Tag></>;
-	} else if (sec < 21.5) {
-		const t = frameAt(M, Math.min(M.m.dur - .2, 2 + (sec - 10) * .65));
-		content = <><Chapter k="02 · THE STAKE" title="The gateway does the work" sub="One machine reads the photo. Code checks every line."/><Screen shot={M} t={t} view={boxView(M, 'stats', t, 1080)} {...full} cursor={false}/><Stat x={1300} y={250} value={`${menu.line_count ?? 41}`} label="order lines"/><Stat x={1300} y={500} value={`€${((menu.subtotal ?? 0) / 100).toFixed(2)}`} label="ex VAT · today"/><Tag x={1300} y={760} color="#8A6414">By hand: about 30 minutes · estimate</Tag></>;
-	} else if (sec < 37) {
-		const t = frameAt(M, Math.min(M.m.dur - .2, 4 + (sec - 21.5) * .5));
-		const ts = frameAt(SEL, 1.2);
-		content = <><Chapter k="03 · RECIPE LOGIC" title="A shortage follows the recipe" sub="Cooking cream can replace a sauce base. It cannot replace a whipped topping."/><Screen shot={M} t={t} view={boxView(M, 'sub', t, 980)} {...full} cursor={false}/>{sec > 28 ? <Screen shot={SEL} t={ts} view={boxView(SEL, 'prop', ts, 900)} x={1040} y={220} w={820} h={650} cursor={false}/>: null}{sec > 31 ? <Screen shot={PH} t={Math.min(PH.m.dur - .2, 1)} view={boxView(PH, 'main', 1, 360)} x={1420} y={390} w={380} h={520} cursor={false}/>: null}<Tag x={100} y={900} color="#087A5E">SAUCE · cooking cream</Tag><Tag x={500} y={900} color="#9A5D16">TOPPING · real cream kept</Tag></>;
-	} else if (sec < 50) {
-		const t = frameAt(TOW, Math.min(TOW.m.dur - .2, .5 + (sec - 37) * 1.2));
-		const r = rush.stock ?? {};
-		content = <><Chapter k="04 · MONDAY RUSH" title="Sixty kitchens. One shortage." sub="The gateway allocates by contract share, while each agent sees only its own answer."/><Screen shot={TOW} t={t} view={fullView(TOW, 90)} {...full} speed={4} cursor={false}/><Stat x={85} y={760} value={`${rush.agents_total ?? 60}`} label="agents"/><Stat x={420} y={760} value={`${r.litres_in_stock ?? 698} L`} label="at Valio Aimo"/><Stat x={760} y={760} value={`${rush.outcomes?.needed_a_person ?? 9}`} label="needed a person"/><Tag x={1260} y={870} color="#0B7A62">{rush.seconds?.first_request_to_last_order ?? 42.1}s · {rush.orders ?? 71} orders · 0 over-allocation</Tag></>;
-	} else if (sec < 65) {
-		const t = frameAt(O, .3 + (sec - 50) * .33);
-		content = <><Chapter k="05 · TRUST" title="Change one cent. Watch it fail." sub="Six signatures are checked in the browser, against the order that was signed."/><Screen shot={O} t={t} view={boxView(O, 'evidence', t, 1020)} {...full} cursor={false}/><Tag x={1250} y={280} color="#0B7A62">6 browser checks</Tag>{sec > 58 ? <Tag x={1250} y={360} color="#B33B36">tampered price → check failed</Tag> : null}{sec > 61 ? <Screen shot={L} t={.2} view={fullView(L, 140)} x={1140} y={580} w={700} h={390} cursor={false}/>: null}</>;
-	} else if (sec < 80) {
-		const t = frameAt(P, Math.min(P.m.dur - .2, .4 + (sec - 65) * .45)); const T = proof.totals ?? {};
-		content = <><Chapter k="06 · PROOF" title="We broke it first" sub={`${T.models ?? 5} models · ${T.providers ?? 3} providers · the score comes from signed records.`}/><Screen shot={P} t={t} view={boxView(P, sec < 72 ? 'big' : 'models', t, 1100)} {...full} cursor={false}/><Stat x={1300} y={250} value={`${T.orders_breaking_a_rule ?? 0}`} label="orders broke a rule" color="#087A5E"/><Tag x={1300} y={500} color="#B33B36">Earlier run · 4 unsafe orders</Tag><Tag x={1300} y={590} color="#087A5E">Re-run · 0 unsafe orders</Tag><Tag x={1300} y={700} color="#0B7A62">{T.runs ?? 130} runs · {T.orders ?? 99} orders</Tag></>;
-	} else if (sec < 96) {
-		const t = frameAt(R, Math.min(R.m.dur - .2, .5 + (sec - 80) * .25));
-		content = <><Chapter k="07 · CONTROL" title="An unvetted bot gets one chance" sub="Self-signed mandate: refused. The gateway suspends it without a person."/><Screen shot={R} t={t} view={boxView(R, 'steps', t, 980)} {...full} cursor={false}/><Tag x={1220} y={300} color="#B33B36">self-signed mandate · refused</Tag><Tag x={1220} y={400} color="#B33B36">suspended automatically</Tag><Tag x={1220} y={560} color="#0B7A62">agent sees its own answer, never stock count</Tag></>;
-	} else if (sec < 108) {
-		const t = frameAt(H, Math.min(H.m.dur - .2, .8 + (sec - 96) * .25));
-		content = <><Chapter k="08 · CONNECT" title="Bring your own assistant" sub="Paste one address into Claude, ChatGPT, or any MCP client."/><Screen shot={H} t={t} view={boxView(H, 'doors', t, 1080)} {...full} cursor={false}/><Tag x={1270} y={320} color="#0B7A62">Claude</Tag><Tag x={1270} y={405} color="#0B7A62">ChatGPT</Tag><Tag x={1270} y={490} color="#0B7A62">MCP · UCP · AP2 · OAuth · Peppol</Tag></>;
+		const t = frameAt(M, sec < 3.2 ? .4 : .8 + (sec - 3.2) * 1.15);
+		content = sec < 3.2
+			? <><Chapter k="01 · MENU → ORDER" title="A photo becomes a checked order" sub="Saturday's wedding. The kitchen starts with the menu it already has."/><Screen shot={M} t={t} view={panel(M, 'photo', t, 900)} x={150} y={160} w={1620} h={912} cursor={false}/><Tag x={150} y={870}>180 guests · wedding dinner</Tag></>
+			: <><Chapter k="01 · MENU → ORDER" title="A photo becomes a checked order" sub="The model reads it. Code checks every line."/><Screen shot={M} t={t} view={panel(M, 'main', t, 1250)} x={80} y={140} w={1760} h={990} cursor={false}/><Big x={1260} y={245} value={menu.line_count ?? 41} label="checked lines"/><Tag x={1260} y={430}>{(menuReadPlan(menu) || 8.9).toFixed(1)}s read + plan</Tag></>;
+	} else if (sec < 18) {
+		const t = frameAt(H, .05);
+		content = <><Chapter k="02 · THE STAKE" title="Aimo owns the door" sub="The gateway is the interface between a kitchen's agent and Valio Aimo."/><Screen shot={H} t={t} view={homeHeroView} {...full} cursor={false}/><Tag x={124} y={820} w={720}>AI agents are starting to order. Whoever defines the door owns the customer.</Tag></>;
+	} else if (sec < 24) {
+		const t = frameAt(P, .5);
+		content = <><Chapter k="03 · THE MISS" title="Silence is not a pass" sub="Four tests. The first one is the data itself."/><Screen shot={P} t={t} view={panel(P, 'matrix', t, 1200, 'top')} {...full} cursor={false}/><Big x={130} y={790} value={`${(U.undeclared ?? 4233).toLocaleString()} / ${(U.food_products ?? 13546).toLocaleString()}`} label="food products with no allergen declaration" color="#A04A19"/><Big x={1300} y={790} value={`${U.pct ?? 31.2}%`} label="of the catalogue" color="#A04A19"/></>;
+	} else if (sec < 32) {
+		const t = frameAt(P, .5);
+		content = <><Chapter k="03 · THE MISS" title="A salmon can say nothing" sub="So the gateway asks a person once, and remembers who cleared it."/><Screen shot={P} t={t} view={panel(P, 'matrix', t, 1180, 'top')} {...full} cursor={false}/><Tag x={120} y={810} color="#A04A19" w={500}>SALMON FILLET · allergens not declared</Tag><Tag x={670} y={810} color="#A04A19" w={500}>ALMONDS · allergens not declared</Tag><Tag x={1220} y={810} color="#A04A19" w={500}>DIJON MUSTARD · allergens not declared</Tag></>;
+	} else if (sec < 39) {
+		const t = frameAt(M, 5.7 + (sec - 32) * .65);
+		content = <><Chapter k="04 · RECIPE LOGIC" title="A shortage follows the recipe" sub="Cooking cream works in the sauce. It cannot replace a whipped topping."/><Screen shot={M} t={t} view={panel(M, 'sub', t, 1200)} {...full} cursor={false}/><Tag x={160} y={850}>SAUCE · cooking cream</Tag><Tag x={800} y={850} color="#9A5D16">TOPPING · real cream kept</Tag></>;
+	} else if (sec < 49) {
+		const t = frameAt(PK, sec < 43 ? 1.1 : 2.5);
+		const v0 = sec < 43 ? panel(PK, 'main', t, 390, 'top') : panel(PK, 'pk', t, 360, 'center');
+		content = <><Chapter k="05 · THE APPROVER" title="The person signs on their own device" sub="The agent can ask. It cannot make this signature."/><Screen shot={PK} t={t} view={v0} x={520} y={158} w={880} h={495} cursor={false}/>{sec < 43 ? <Tag x={1500} y={330}>TAP APPROVE</Tag> : <Tag x={1480} y={330}>SIGNED ON THIS DEVICE</Tag>}<Tag x={530} y={730} color="#6D5B16" w={850}>Fingerprint, face, or screen lock. The key never leaves the device.</Tag></>;
+	} else if (sec < 57) {
+		const t = frameAt(TOW, .5 + (sec - 49) * 1.1);
+		content = <><Chapter k="06 · MONDAY RUSH" title="Sixty kitchens. One shortage." sub="Aimo sees the floor. Each agent sees only its own answer."/><Screen shot={TOW} t={t} view={panel(TOW, 'cells', t, 1440)} {...full} speed={4} cursor={false}/><Big x={150} y={825} value={rush.agents_total ?? 60} label="agents at once"/><Big x={610} y={825} value={`${rush.stock?.litres_in_stock ?? 698} L`} label="in stock"/><Tag x={1250} y={850}>4× replay · allocation in code</Tag></>;
+	} else if (sec < 66) {
+		const t = frameAt(TOW, 6 + (sec - 57) * .7);
+		content = <><Chapter k="06 · MONDAY RUSH" title="Every litre is allocated once" sub="Contract share first. Substitutes only when the recipe allows them."/><Screen shot={TOW} t={t} view={panel(TOW, 'cells', t, 1440)} {...full} speed={4} cursor={false}/><Big x={150} y={825} value="42s" label="first request to last order"/><Big x={720} y={825} value="9 / 60" label="needed a person"/><Tag x={1390} y={850}>0 over-allocation</Tag></>;
+	} else if (sec < 70.5) {
+		const t = frameAt(OD, 2.6 + (sec - 66) * .8);
+		content = <><Chapter k="07 · TRUST" title="Change one cent. Watch it fail." sub="The order page fetches the signed record and verifies it in your browser."/><Screen shot={OD} t={t} view={panel(OD, 'checks', t, 1200)} {...full} cursor={false}/><Tag x={1390} y={245}>7 browser checks</Tag><Tag x={1390} y={360} color="#B33B36">price − €0.01 → failed</Tag></>;
+	} else if (sec < 76) {
+		const t = frameAt(OD, 4.8 + (sec - 70.5) * .35);
+		content = <><Chapter k="07 · TRUST" title="The signature binds the order" sub="Restore the price and every check passes again."/><Screen shot={OD} t={t} view={panel(OD, 'checks', t, 1200)} {...full} cursor={false}/><Tag x={1390} y={245}>7 / 7 pass</Tag><Tag x={1390} y={360} color="#087A5E">the device signature is checked too</Tag></>;
+	} else if (sec < 85) {
+		const t = frameAt(P, 4.8);
+		content = <><Chapter k="08 · WE BROKE IT FIRST" title="The models found our bug" sub="The score is computed from signed records, not graded by a model."/><Screen shot={P} t={t} view={panel(P, 'models', t, 1200)} {...full} cursor={false}/><Tag x={145} y={820} color="#B33B36" w={530}>FIRST RUN · 4 unsafe orders</Tag><Tag x={760} y={820} color="#087A5E" w={530}>AFTER THE FIX · 0 unsafe orders</Tag></>;
+	} else if (sec < 90) {
+		const t = frameAt(P, .5);
+		content = <><Chapter k="08 · WE BROKE IT FIRST" title="Four tests. Every one is zero." sub="130 runs across five models. The browser can open every record."/><Screen shot={P} t={t} view={panel(P, 'matrix', t, 1200, 'top')} {...full} cursor={false}/><ZeroCard x={90} y={790} title="orders broke a rule" sub="99 orders · 5 models · 130 runs"/><ZeroCard x={515} y={790} title="menu checks failed" sub="4,124 checks · 60 menus"/><ZeroCard x={940} y={790} title="litres promised twice" sub="1,472 L wanted · 698 L in stock"/><ZeroCard x={1365} y={790} title="suite checks failed" sub="331 checks · 8 suites"/></>;
+	} else if (sec < 97) {
+		const t = frameAt(R, .8 + (sec - 90) * .35);
+		content = <><Chapter k="09 · CONTROL" title="An unvetted bot gets one chance" sub="Self-signed mandate: refused. The gateway suspends it without a person."/><Screen shot={R} t={t} view={panel(R, 'steps', t, 1250)} {...full} cursor={false}/><Tag x={1400} y={280} color="#B33B36">refused</Tag><Tag x={1400} y={410} color="#B33B36">suspended automatically</Tag></>;
+	} else if (sec < 107) {
+		const t = frameAt(H, 2.8);
+		content = <><Chapter k="10 · CONNECT" title="Bring your own assistant" sub="One address. The same rules."/><Screen shot={H} t={t} view={panel(H, 'hero', t, 1450, 'top')} {...full} cursor={false}/><Tag x={155} y={790} color="#0B7A62" w={970}>https://trusted-trade-agents.fly.dev/mcp</Tag><Tag x={1160} y={790} w={610}>Claude · ChatGPT · MCP · UCP · AP2 · OAuth · Peppol</Tag></>;
 	} else {
-		content = <><Screen shot={H} t={Math.min(H.m.dur - .2, 1.5)} view={boxView(H, 'hero', 1.5, 1250)} {...full} cursor={false}/><div style={{position: 'absolute', left: 110, top: 220, zIndex: 5, fontFamily: SANS, color: '#12201D'}}><div style={{fontSize: 62, fontWeight: 800, letterSpacing: -2}}>Valio Aimo</div><div style={{fontSize: 38, marginTop: 14}}>Readable by any agent. Owned by Valio.</div><div style={{fontFamily: MONO, color: '#0B7A62', fontSize: 24, marginTop: 30}}>trusted-trade-agents.fly.dev</div></div></>;
+		content = <div style={{position: 'absolute', inset: 0, background: '#10201C', color: '#F4FAF7', fontFamily: SANS}}><div style={{position: 'absolute', left: 150, top: 220}}><div style={{fontSize: 82, fontWeight: 850, letterSpacing: -3}}>Valio Aimo</div><div style={{fontSize: 46, marginTop: 18, color: '#BDE8D9'}}>Readable by any agent. Owned by Valio.</div><div style={{fontFamily: MONO, color: '#69D6B0', fontSize: 28, marginTop: 36}}>trusted-trade-agents.fly.dev</div></div><div style={{position: 'absolute', right: 150, bottom: 150, fontFamily: MONO, fontSize: 20, color: '#8FBCAF'}}>Aimo Agent Gateway · Junction 2026</div></div>;
 	}
-	return <AbsoluteFill style={{background: '#EEF3F0'}}>{content}<Caption/>{audio ? linesArr.map((l) => <Sequence key={l.id} from={Math.round(starts[l.id] * FPS)} durationInFrames={Math.ceil(l.dur * FPS) + 4}><Audio src={staticFile(l.file)} /></Sequence>) : null}{audio && v.music ? <Audio src={staticFile(v.music)} volume={(f) => .22 * (f < 40 ? 1 : .85)} /> : null}</AbsoluteFill>;
+	return <AbsoluteFill style={{background: '#EEF3F0'}}>{content}{captions ? <Caption/> : null}{audio ? linesArr.map((l) => <Sequence key={l.id} from={Math.round(starts[l.id] * FPS)} durationInFrames={Math.ceil(l.dur * FPS) + 6}><Audio src={staticFile(l.file)} /></Sequence>) : null}{audio && v.music ? <Audio src={staticFile(v.music)} volume={(f) => .20 * (f < 45 ? 1 : .85)} /> : null}</AbsoluteFill>;
 };
 
+const menuReadPlan = (m: any) => Number(((m.phases?.read || 0) + (m.phases?.plan || 0)).toFixed(1));
 export const FILM2_DUR = duration;

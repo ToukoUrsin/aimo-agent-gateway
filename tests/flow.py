@@ -52,12 +52,20 @@ cat = g.cat
 silent_line = lambda pid: {**unknown_line, **{k: cat.get(pid)[k] for k in ("id", "title", "category", "claims", "contains", "may_contain", "free_from")}, "units": 1}
 salmon, napkin = silent_line("461814"), silent_line(next(d["id"] for d in cat.docs if str(d["category"]).startswith("63") and not d["contains"]))
 a1 = lambda lines, **kw: [x for x in policy.evaluate(lines, 100, p, policy.default_profile(), {}, 0, {"exclude_allergens": ["AF"]}, **kw) if x["id"] == "A1"]
-r = a1([salmon])
+mustard = silent_line(next(d["id"] for d in cat.docs if d["title"] == "FALLOT 5KG DIJON MUSTARD"))
+r = a1([mustard])
 print('undeclared', [(x['outcome'], x['detail']) for x in r])
 assert [x["outcome"] for x in r] == ["escalate"] and "no allergen declaration" in r[0]["detail"] and r[0]["undeclared"][0]["codes"] == ["AF"]
 assert [x["outcome"] for x in a1([napkin])] == ["pass"], "things that are not food are not asked about"
-r = a1([salmon], cleared={"461814": {"AF": {"by": "Maija", "at": "2026-11-14T08:00:00Z"}}})
+r = a1([mustard], cleared={mustard["id"]: {"AF": {"by": "Maija", "at": "2026-11-14T08:00:00Z"}}})
 assert [x["outcome"] for x in r] == ["pass"] and "cleared for this exclusion by Maija on 2026-11-14" in r[0]["detail"], r
+# A blank on a product whose own name says what is excluded is refused, and an earlier clearance does not change that.
+r = a1([salmon])
+print('named', [(x['outcome'], x['detail']) for x in r])
+assert [x["outcome"] for x in r] == ["deny"] and "its own name points at fish" in r[0]["detail"], r
+assert [x["outcome"] for x in a1([salmon], cleared={"461814": {"AF": {"by": "Maija", "at": "2026-11-14T08:00:00Z"}}})] == ["deny"]
+assert sorted(x["outcome"] for x in a1([salmon, mustard])) == ["deny", "escalate"]
+assert not g.cat.matches(cat.get("461814"), {"exclude_allergens": ["AF"]}) and g.cat.matches(cat.get("461814"), {"exclude_allergens": ["AN"]}), "a search that excludes fish does not offer the salmon"
 many_lines = [{**unknown_line, "id": str(i), "title": f"Product {i}", "units": 1} for i in range(41)]
 many_history = {str(i): {"typical_units": 10} for i in range(5)}
 nr = policy.evaluate(many_lines, 100, p, policy.default_profile(), many_history, 0, {})

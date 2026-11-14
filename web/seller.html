@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Valio Aimo's agent</title>
+<title>Selling agent · Aimo Agent Gateway</title>
 <link rel="stylesheet" href="/static/app.css">
 <style>
 main{padding-bottom:var(--s8)}
 .page-head{padding-bottom:0}
 .page-head+.sec{margin-top:var(--s6)}
-.eyebrow{font-size:var(--t3);font-weight:500;color:var(--muted);margin:0 0 var(--s2)}
+.how{margin-top:var(--s2)}
+.how p{max-width:68ch;margin:var(--s2) 0 0;font-size:var(--t3);line-height:1.55;color:var(--ink-2)}
 h1.owner{font-size:clamp(24px,2.6vw,32px);line-height:1.22;font-weight:600;letter-spacing:-.022em;max-width:30ch;margin:0}
 .page-head .lead{max-width:68ch;font-size:var(--t4)}
 
@@ -107,6 +108,10 @@ h1.owner{font-size:clamp(24px,2.6vw,32px);line-height:1.22;font-weight:600;lette
 .cust td:first-child{white-space:normal;font-weight:500}
 .scrollx{overflow-x:auto}
 .sw{display:inline-flex;align-items:center;gap:6px;font-size:var(--t3)}
+.skip{margin-top:var(--s5);font-size:var(--t3);line-height:1.5;color:var(--ink-2)}
+.skip p{margin:0 0 4px;font-weight:600;color:var(--muted);font-size:var(--t2)}
+.skip ul{margin:0;padding-left:18px}
+.skip li{margin:2px 0}
 
 @media (max-width:1100px){.prop .body{grid-template-columns:minmax(0,1fr) 300px}}
 @media (max-width:760px){
@@ -142,17 +147,18 @@ h1.owner{font-size:clamp(24px,2.6vw,32px);line-height:1.22;font-weight:600;lette
 <header id="site"></header>
 <main class="wrap">
   <div class="page-head">
-    <p class="eyebrow">Valio Aimo's agent</p>
     <h1 class="owner">Whatever agent a kitchen buys with, the customer relationship stays with Valio Aimo.</h1>
-    <p class="lead">This is Valio Aimo's own agent, speaking in its name and signing with its key. It proposes; the kitchen's agent and the kitchen's people decide. Every proposal is a signed offer, judged by the same rules as any order under the buyer's mandate before it leaves. Code picks the products, quantities and prices. A model only chooses which proposals matter today and writes the sentence.</p>
+    <p class="lead">This is Valio Aimo's own agent, speaking in its name and signing with its key. It proposes; the kitchen's agent and the kitchen's people decide.</p>
+    <details class="how"><summary>How it is kept in line</summary><p>Every proposal is a signed offer, judged by the same rules as any order under the buyer's mandate before it leaves. Code picks the products, quantities and prices. A model only chooses which proposals matter today and writes the sentence. Short-dated stock is never offered as extra the kitchen would not use before the date, and a change to a standing order always goes to a person at the kitchen unless the buyer's mandate says otherwise.</p></details>
     <div class="tiles" id="tiles" aria-live="polite"></div>
     <p class="also" id="also"></p>
     <div class="bar" id="bar"></div>
     <div class="run" id="run" aria-live="polite"></div>
     <div class="run" id="agentrun" aria-live="polite"></div>
   </div>
+  <div class="skip" id="skip" hidden></div>
   <h2 class="sec">Proposals</h2>
-  <div class="list" id="list"><div class="empty">Loading…</div></div>
+  <div class="list" id="list"><div class="empty"><span class="wait"><span class="spin"></span>Reading the selling agent's proposals</span></div></div>
   <h2 class="sec" id="cust-h" hidden>Per customer</h2>
   <div class="card scrollx" id="cust" hidden></div>
 </main>
@@ -162,7 +168,7 @@ const KIND = { drift: "Standing order drift", short_dated: "Short-dated stock", 
 const OUT = {
   open: ["Open: waiting for the kitchen's agent", ""], pending: ["Accepted, being finished", "escalate"], accepted: ["Accepted", "pass"], declined: ["Declined by the kitchen's agent", "line"],
   rejected_by_person: ["A person at the kitchen said no", "deny"], refused: ["Stopped by a rule before it left", "deny"], expired: ["Expired at the cut-off", "line"],
-  withdrawn: ["Withdrawn: proposals switched off", "line"], overtaken: ["Overtaken: the kitchen ordered itself", "line"],
+  withdrawn: ["Withdrawn: proposals switched off", "line"], overtaken: ["Overtaken by the kitchen's own order", "line"], replaced: ["Withdrawn: part of it is already on order", "line"],
 };
 const DEC = { agent_may_accept: ["The kitchen's agent may accept it alone", "pass"], needs_human_approval: ["Accepting it needs a person", "escalate"], not_allowed: ["Stopped before it left", "deny"] };
 let S = { op: false, acct: "", runId: null, busy: false };
@@ -209,10 +215,17 @@ function basis(p) {
     return `${chart(b)}<p class="note2">${up ? `Rising ${esc(b.weeks_rising || 3)} weeks running; the last 3 weeks average ${esc(b.average_last_3_weeks)}. Corrected to ${esc(b.corrected_units)}${b.add_for_delivery ? `, adding ${esc(b.add_for_delivery)} to ${esc(b.delivery)}` : ""}.`
       : `Falling ${esc(b.weeks_falling || 3)} weeks running; the last 3 weeks average ${esc(b.average_last_3_weeks)}. Corrected to ${esc(b.corrected_units)}.${b.saved_units_per_week != null ? ` Saves ${esc(b.saved_units_per_week)} units a week (${esc(b.weekly_saving_ex_vat)} ex VAT).` : ""}`}${now}</p>${seedNote(b.seeded)}`;
   }
-  if (p.kind === "short_dated") return `<dl class="facts">${fact("Lot", `${esc(b.lot)}, ${esc(b.units_in_lot)} left, best before <b>${esc(b.best_before)}</b>`)}${fact("The kitchen uses", `about ${esc(b.usual_per_week)} a week of ${esc(b.usual_of)}`)}${fact("Used by then", `${esc(b.used_by_then)} in ${esc(b.days_to_use)} days`)}${fact("Price", `${esc(b.off_pct)}% off${b.unit_price_now ? `: ${esc(b.unit_price_now)} instead of ${esc(b.unit_price_usual)}` : ""}`)}</dl>${seedNote(b.seeded)}`;
-  if (p.kind === "cutoff") return `<dl class="facts">${fact("Usually orders by", esc(b.usual_order_by))}${fact("Ordered so far", `nothing for ${esc(b.delivery)}`)}${fact("Cut-off", `${esc(when(b.cutoff))}, <b>${esc(b.hours_to_cutoff)} hours away</b>`)}${b.not_in_full ? fact("Not in full", esc(b.not_in_full.join(", "))) : ""}</dl>${seedNote(b.seeded)}`;
+  if (p.kind === "short_dated") {
+    const swap = b.how === "swap";
+    const room = b.already_coming == null ? "" : fact("Already coming", `${esc(b.already_coming)} by then, from the standing order and placed orders${b.room_for_extra != null ? `, so room for <b>${esc(b.room_for_extra)}</b> more` : ""}`);
+    const how = swap ? fact("Offered", `<b>in place of ${esc(b.offered_units)} of the ${esc(b.standing_delivery)}</b> on the standing delivery: ${esc(b.regular_after_swap)} come as usual, nothing extra, ${esc(b.saving_ex_vat)} less`)
+      : b.how === "extra" ? fact("Offered", `${esc(b.offered_units)} extra, all used before the date`) : "";
+    return `<dl class="facts">${fact("Lot", `${esc(b.lot)}, ${esc(b.units_in_lot)} left, best before <b>${esc(b.best_before)}</b>`)}${fact("The kitchen uses", `about ${esc(b.usual_per_week)} a week of ${esc(b.usual_of)}`)}${fact("Used by then", `${esc(b.used_by_then)} in ${esc(b.days_to_use)} days`)}${room}${how}${fact("Price", `${esc(b.off_pct)}% off${b.unit_price_now ? `: ${esc(b.unit_price_now)} instead of ${esc(b.unit_price_usual)}` : ""}`)}</dl>
+      <p class="note2">Rule: short-dated stock is offered only for what the kitchen uses before the date and is not already coming, or in place of part of its next standing delivery.</p>${seedNote(b.seeded)}`;
+  }
+  if (p.kind === "cutoff") return `<dl class="facts">${fact("Usually orders by", esc(b.usual_order_by))}${fact("Ordered so far", `nothing for ${esc(b.delivery)}`)}${fact("Cut-off", `${esc(when(b.cutoff))}, <b>${esc(b.hours_to_cutoff)} hours away</b>`)}${b.not_in_full ? fact("Not in full", esc(b.not_in_full.join(", "))) : ""}${b.already_on_order ? fact("Less", esc(b.already_on_order.join("; "))) : ""}</dl>${seedNote(b.seeded)}`;
   if (p.kind === "shortage") return `<dl class="facts">${fact("Usual", `${esc(b.standing_units)} ${esc(b.product)}`)}${fact("Can be delivered", `${esc(b.can_be_delivered)} on ${esc(b.delivery)}, <b>${esc(b.short_by)} short</b>`)}${fact("Replacement", `${esc(b.replacement)}${b.listed_by_valio_aimo ? " (on Valio Aimo's substitute list)" : " (not on Valio Aimo's substitute list)"}`)}${fact("Price", b.price_difference_pct == null ? "difference unknown" : `${b.price_difference_pct > 0 ? "+" : ""}${esc(b.price_difference_pct)}% per unit of content`)}</dl>${b.how_chosen ? `<p class="note2">${esc(b.how_chosen)}</p>` : ""}`;
-  if (p.kind === "fill") return `<dl class="facts">${fact("Standing order", `${esc(b.standing_units)}: ${esc(b.full)}`)}${fact("Adding", `${esc(b.add)} makes ${esc(b.fills_to)}`)}</dl>${b.price_break ? `<p class="note2">${esc(b.price_break)}</p>` : ""}${seedNote(b.seeded)}`;
+  if (p.kind === "fill") return `<dl class="facts">${fact("Standing order", `${esc(b.standing_units)}: ${esc(b.full)}`)}${b.average_last_3_weeks != null ? fact("The kitchen uses", `about <b>${esc(b.average_last_3_weeks)}</b> a week (last 3 weeks)`) : ""}${fact("Adding", `${esc(b.add)} for ${esc(b.delivery)} makes ${esc(b.fills_to)}`)}</dl><p class="note2">${b.price_break ? esc(b.price_break) : "No quantity price break in the data, so the unit price stays the same. Offered only because the kitchen already uses the full amount."}</p>${seedNote(b.seeded)}`;
   return "";
 }
 
@@ -227,11 +240,16 @@ function ruleBlock(p) {
   return `<div class="dec"><span class="pill ${d[1]}">${esc(d[0])}</span></div><div class="rl">${rows}</div>`;
 }
 
+const so = p => (p.effect || {}).standing;
+const waiting = p => p.status === "pending" && p.checkout && p.checkout.status === "requires_escalation";
 function outcome(p) {
-  const out = [];
-  if (p.status === "open") out.push(`<div>Sent to the kitchen's agent. Nothing is ordered until it answers.</div>`);
-  if (p.order) out.push(`<div>Order <a href="${esc(p.order.url)}">${esc(p.order.label)}</a>, ${eur(p.order.subtotal)} ex VAT. ${p.order.approved_by ? "Approved by " + esc(p.order.approved_by) + " through the approval link." : "The agent accepted it alone, inside its mandate."}</div>`);
-  if (p.status === "pending" && p.checkout) out.push(`<div>Checkout <span class="mono">${esc(p.checkout.id)}</span>: ${p.checkout.status === "requires_escalation" ? "waiting for a person at the kitchen to approve." : esc(nice(p.checkout.status))}</div>`);
+  const out = [], s = so(p);
+  const who = p.order && p.order.approved_by ? "Approved by " + esc(p.order.approved_by) + " through the approval link." : "The agent accepted it alone, inside its mandate.";
+  if (p.status === "open") out.push(`<div>Sent to the kitchen's agent. Nothing is ordered${s ? " or changed" : ""} until it answers.${s && p.decision === "needs_human_approval" ? " A standing-order change binds every week, so if the agent accepts, it goes to a person at the kitchen through the approval link." : ""}</div>`);
+  if (p.order && p.order.change) out.push(`<div>Standing order of ${esc(s ? s.title || "" : "")} changed from ${esc(s ? s.from : "")} to <b>${esc(s ? s.to : "")}</b> a week. No goods ordered. ${who} <a href="${esc(p.order.url)}">Signed change</a></div>`);
+  else if (p.order) out.push(`<div>Order <a href="${esc(p.order.url)}">${esc(p.order.label)}</a>, ${eur(p.order.subtotal)} ex VAT. ${who}${s ? ` Standing order of ${esc(s.title || "")} is now <b>${esc(s.to)}</b> a week (was ${esc(s.from)}).` : ""}</div>`);
+  if (waiting(p)) out.push(`<div><b>Waiting for a person at the kitchen.</b> The kitchen's agent accepted it, but ${s ? "a standing-order change binds every week, so " : ""}a person at the kitchen${p.checkout.approver ? ` (${esc(p.checkout.approver)})` : ""} must approve it through the approval link first. Nothing ${s ? "changes" : "is ordered"} until then.${p.checkout.approve_url ? ` <a href="${esc(p.checkout.approve_url)}" target="_blank" rel="noopener">Open the approval link</a>` : ""}</div>`);
+  else if (p.status === "pending" && p.checkout) out.push(`<div>Checkout <span class="mono">${esc(p.checkout.id)}</span>: ${esc(nice(p.checkout.status))}. The kitchen's agent is finishing it.</div>`);
   if (p.answer && p.answer.reason) out.push(`<div class="q"><span class="muted">The kitchen's agent:</span> “${esc(p.answer.reason)}”</div>`);
   if (p.answer && p.answer.person_note) out.push(`<div class="q">${esc(p.answer.person)}: “${esc(p.answer.person_note)}”</div>`);
   if (p.closed) out.push(`<div class="muted">${esc(p.closed.why)}</div>`);
@@ -241,7 +259,7 @@ function outcome(p) {
 
 function card(p) {
   const stopped = p.status === "refused";
-  const [st, cls] = OUT[p.status] || [nice(p.status), ""];
+  const [st, cls] = waiting(p) ? ["Waiting for a person at the kitchen", "escalate"] : OUT[p.status] || [nice(p.status), ""];
   const lines = (p.lines || []).map(l => `<div class="row"><span><span class="u">${esc(l.units)} ×</span>${esc(l.title)}${l.substitutes_for ? ` <span class="sf">for ${esc(l.substitutes_for)}</span>` : ""}</span><span class="tnum">${l.list_price && l.list_price > l.price ? `<s>${eur(l.list_price)}</s>` : ""}${eur(l.price)}</span></div>`).join("");
   const reason = stopped ? `<p class="reason">${esc(p.refused.detail)}</p>`
     : `<p class="reason">${esc(p.reason && p.reason.text)}</p><div class="by">Sentence written by ${esc(p.reason && p.reason.by === "template" ? "a template (no usable model answer)" : p.reason && p.reason.by)}.</div>`;
@@ -290,53 +308,101 @@ function bar(r) {
   const accts = S.op ? `<select id="acct" aria-label="Customer">${(r.standing || []).map(s => `<option value="${esc(s.account)}">${esc(s.buyer)}</option>`).join("")}</select>` : "";
   $("#bar").innerHTML = `${accts}<button class="btn primary" id="go">Make proposals now</button><button class="btn" id="ask">Let the kitchen's agent answer</button>
     <span class="note">${S.op ? "Runs on its own every half hour for the stage and floor customers." : "Your own sandbox kitchen. Its standing order and usage are seeded."}</span>`;
-  if ($("#acct")) $("#acct").onchange = load;
+  if ($("#acct")) $("#acct").onchange = () => { lastList = ""; S.ids = null; runSay(""); agentSay(""); skipped([]); load(); };
   $("#go").onclick = makeNow;
-  $("#ask").onclick = async () => {
-    $("#ask").disabled = true;
-    agentSay("Starting the kitchen's agent…");
-    const body = { agent: "claude", request: "Valio Aimo's agent has sent us proposals. Go through them: take what the kitchen needs, decline what it does not, and say why." };
-    const r2 = await fetch("/api/demo/run" + (S.op ? "?acct=" + encodeURIComponent($("#acct").value) : ""), { method: "POST", headers: { "content-type": "application/json", accept: "application/json" }, body: JSON.stringify(body) }).then(x => x.json()).catch(() => ({}));
-    if (r2.id) { S.runId = r2.id; poll(); } else { agentSay(esc((r2.messages || []).map(m => m.content).join(" ") || "Could not start the agent. Nothing was sent."), "bad"); $("#ask").disabled = false; }
-  };
+  $("#ask").onclick = askAgent;
   return true;
 }
 
-// Say what really happened. The answer can be lost on the way back even when proposals were made,
-// so a failed call is checked against the count before it is called a failure.
+// Every message says what really happened. A press carries one key: sent again after a dropped connection, the gateway
+// answers with the first result instead of doing it twice. When no answer comes back at all, the page reads the list
+// again and says what it finds there.
 const runSay = (text, kind) => { $("#run").className = "run" + (kind ? " " + kind : ""); $("#run").innerHTML = text; };
 const agentSay = (text, kind) => { $("#agentrun").className = "run" + (kind ? " " + kind : ""); $("#agentrun").innerHTML = text; };
-const plural = (n, one, many) => `${n}\u00a0${n === 1 ? one : many}`;
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+const newKey = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
+const acctQ = () => S.op && $("#acct") ? $("#acct").value : "";
+async function post(path, body, key) {
+  // One retry with the same key if the connection drops; the gateway never does the thing twice for one key.
+  for (let i = 0; i < 2; i++) {
+    try {
+      const x = await fetch(path, { method: "POST", headers: { "content-type": "application/json", accept: "application/json", "idempotency-key": key }, body: JSON.stringify({ ...body, key }) });
+      const j = await x.json().catch(() => null);
+      if (j) return { ok: x.ok, status: x.status, body: j };
+      if (x.status < 500) return { ok: false, status: x.status, body: {} };
+    } catch (e) { /* dropped: try once more */ }
+    await new Promise(r => setTimeout(r, 1500));
+  }
+  return null;
+}
+function skipped(notes) {
+  const el = $("#skip"), n = notes || [];
+  el.hidden = !n.length;
+  el.innerHTML = n.length ? `<p>Considered and not proposed</p><ul>${n.map(t => `<li>${esc(t)}</li>`).join("")}</ul>` : "";
+}
 function madeText(rep) {
   const made = rep.made || [], ref = rep.refused || [], alone = made.filter(p => p.authority === "agent_may_accept").length;
   const bits = [];
+  if (rep.repeat) bits.push("This press had already been answered; here is that answer.");
   if (made.length) bits.push(`Made ${plural(made.length, "proposal", "proposals")}${made.length === 1 ? (alone ? ", which the kitchen's agent may accept alone" : ", which needs a person at the kitchen") : alone === made.length ? ", all of which the kitchen's agent may accept alone" : !alone ? ", all of which need a person at the kitchen" : `: ${alone} the kitchen's agent may accept alone, ${made.length - alone} ${made.length - alone === 1 ? "needs" : "need"} a person at the kitchen`}. ${made.length === 1 ? "It is" : "They are"} at the top of the list below.`);
   if (ref.length) bits.push(`${plural(ref.length, "proposal was", "proposals were")} stopped by a rule before leaving.`);
   if (!made.length && !ref.length) {
     const sk = rep.skipped || [], dup = sk.filter(s => s.why === "already proposed").length, other = sk.filter(s => s.why !== "already proposed");
-    bits.push((rep.notes || []).map(esc).join(" ") || "Nothing new to propose right now.");
+    bits.push("Nothing new to propose right now.");
     if (dup) bits.push(`${plural(dup, "idea is", "ideas are")} already in the list below.`);
     for (const s of other) bits.push(`Left out “${esc(s.title)}”: ${esc(s.why)}`);
-    if (!sk.length && !(rep.notes || []).length) bits.push(S.n ? "Today's proposals are already in the list below." : "Nothing in this customer's orders and stock calls for one today.");
   }
+  if ((rep.notes || []).length) bits.push(`${plural(rep.notes.length, "idea was", "ideas were")} considered and not proposed; the reasons are listed below.`);
   if (made.length && rep.ranked_by) bits.push(`Chosen and worded by ${esc(rep.ranked_by)}.`);
   return bits.join(" ");
 }
+let watch = null;  // after a press with no answer: keep looking for what it made
 async function makeNow() {
-  const go = $("#go"), before = S.made;
+  const go = $("#go");
+  if (go.disabled) return;
+  const before = S.ids ? new Set(S.ids) : null, key = newKey();
   go.disabled = true; go.innerHTML = '<span class="spin"></span>Making proposals';
   runSay("Valio Aimo's agent is reading the kitchen's history and judging each proposal against the rules. This takes a few seconds.");
-  let rep = null, problem = "";
-  try {
-    const x = await fetch("/api/demo/seller", { method: "POST", headers: { "content-type": "application/json", accept: "application/json" }, body: JSON.stringify(S.op ? { acct: $("#acct").value } : {}) });
-    rep = await x.json().catch(() => null);
-    if (!x.ok || !rep || !Array.isArray(rep.made)) problem = (rep && rep.messages || []).map(m => m.content).join(" ") || `The gateway answered ${x.status}.`;
-  } catch (e) { problem = "The connection dropped before the answer came back."; }
+  const res = await post("/api/demo/seller", S.op ? { acct: acctQ() } : {}, key);
   go.disabled = false; go.textContent = "Make proposals now";
-  await load();
-  if (!problem) return runSay(madeText(rep), "ok");
-  if (before != null && S.made > before) return runSay(`Made ${plural(S.made - before, "proposal", "proposals")}. ${S.made - before === 1 ? "It is" : "They are"} in the list below. (The answer was lost on the way back, so the details are only in the list.)`, "ok");
-  runSay(`${esc(problem)} Nothing new was made. Try again.`, "bad");
+  const okLoad = await load();
+  const rep = res && res.body;
+  if (rep && Array.isArray(rep.made)) { skipped(rep.notes); return runSay(madeText(rep), "ok"); }
+  if (res && rep && rep.messages) return runSay(`Not made: ${esc(rep.messages.map(m => m.content).join(" "))}`, "bad");
+  // No answer at all. Say what the list shows, and keep watching for a minute in case the run is still going.
+  if (!okLoad || !before) return runSay("The connection dropped and the page could not read the list again yet. It keeps trying; pressing again never makes anything twice.", "bad");
+  const fresh = S.ids.filter(id => !before.has(id));
+  if (fresh.length) return runSay(`The answer was lost on the way back, but the list shows ${plural(fresh.length, "new proposal", "new proposals")} from this press at the top.`, "ok");
+  runSay("The connection dropped before the answer came back, and nothing new is in the list yet. If the run was still going, its proposals appear here within a minute. Pressing again never makes anything twice.", "bad");
+  const until = Date.now() + 60000;
+  clearInterval(watch);
+  watch = setInterval(async () => {
+    if (Date.now() > until) return clearInterval(watch);
+    if (!(await load())) return;
+    const n = S.ids.filter(id => !before.has(id)).length;
+    if (n) { clearInterval(watch); runSay(`${plural(n, "new proposal", "new proposals")} from that press ${n === 1 ? "is" : "are"} now at the top of the list.`, "ok"); }
+  }, 5000);
+}
+
+async function askAgent() {
+  const b = $("#ask");
+  if (b.disabled) return;
+  if (S.open === 0) return agentSay("There are no open proposals for the kitchen's agent to answer. Press Make proposals now first.");
+  const key = newKey();
+  b.disabled = true;
+  agentSay("Starting the kitchen's agent…");
+  const res = await post("/api/seller/answer-now", S.op ? { acct: acctQ() } : {}, key);
+  const r = res && res.body;
+  if (r && r.id) { S.runId = r.id; if (r.already_running) agentSay("<b>Kitchen's agent:</b> already working on these proposals; following that run."); return poll(); }
+  if (r && r.messages) { b.disabled = false; return agentSay(esc(r.messages.map(m => m.content).join(" ")) + (res.ok ? "" : " Nothing was started."), res.ok ? "" : "bad"); }
+  // No answer: ask the gateway whether this press started a run.
+  agentSay("The connection dropped. Checking whether the kitchen's agent started…");
+  let chk = null;
+  for (let i = 0; i < 3 && !chk; i++) { try { chk = await api("/api/seller/answer-now?key=" + encodeURIComponent(key)); } catch (e) { await new Promise(r2 => setTimeout(r2, 2000)); } }
+  if (chk && chk.id) { S.runId = chk.id; return poll(); }
+  b.disabled = false;
+  if (chk) return agentSay("The kitchen's agent did not start, so nothing was sent. Press again.", "bad");
+  agentSay("The connection dropped and the page could not check whether the kitchen's agent started. The list below shows anything it does.", "bad");
 }
 
 async function poll() {
@@ -345,7 +411,8 @@ async function poll() {
   try { r = await api("/api/demo/run/" + S.runId); if (!r.status) throw 0; }
   catch (e) { agentSay("<b>Kitchen's agent:</b> lost touch with the gateway. Checking again in a few seconds."); return setTimeout(poll, 4000); }
   const ap = r.approval_url ? ` <a href="${esc(r.approval_url)}" target="_blank" rel="noopener">Open the approval link</a>` : "";
-  agentSay(`<b>Kitchen's agent:</b> ${esc(nice(r.status))}.${ap}${r.final ? `<div class="final">${esc(r.final)}</div>` : ""}`);
+  const what = { running: "working", waiting_approval: "waiting for a person at the kitchen to approve", done: "finished", failed: "stopped with an error" }[r.status] || nice(r.status);
+  agentSay(`<b>Kitchen's agent:</b> ${esc(what)}.${ap}${r.final ? `<div class="final">${esc(r.final)}</div>` : ""}`, r.status === "failed" ? "bad" : "");
   if (r.status === "running" || r.status === "waiting_approval") setTimeout(poll, 2500); else { $("#ask").disabled = false; load(); }
 }
 
@@ -354,16 +421,21 @@ async function load() {
   try {
     const qs = S.op && $("#acct") ? "?acct=" + encodeURIComponent($("#acct").value) : "";
     const [sm, r] = await Promise.all([api("/api/seller/summary"), api("/api/seller/proposals" + qs)]);
+    if (!r.proposals) throw 0;
     S.op = r.operator; S.n = r.proposals.length;
+    S.ids = r.proposals.map(p => p.id); S.open = r.proposals.filter(p => p.status === "open").length;
+    const mine = (r.last_runs || []).find(x => x.account === (qs ? acctQ() : r.account) && x.notes);
+    if (mine && $("#skip").hidden) skipped(mine.notes);
     tiles(sm.total);
     customers(sm);
     if (bar(r) && S.op && !qs) return load();  // the account picker exists only now: show just its customer
     const html = r.proposals.length ? r.proposals.map(card).join("") : '<div class="empty">No proposals yet. Press Make proposals now.</div>';
-    if (html === lastList) return;  // the list refreshes every few seconds: keep open rule lists open
+    if (html === lastList) return true;  // the list refreshes every few seconds: keep open rule lists open
     const open = new Set([...document.querySelectorAll("#list details[open]")].map(d => d.dataset.k));
     $("#list").innerHTML = lastList = html;
     for (const d of document.querySelectorAll("#list details[data-k]")) if (open.has(d.dataset.k)) d.open = true;
-  } catch (e) { $("#list").innerHTML = '<div class="empty">Could not load. Retrying.</div>'; lastList = ""; }
+    return true;
+  } catch (e) { if (!lastList) $("#list").innerHTML = '<div class="empty"><span class="wait"><span class="spin"></span>The gateway is not answering with the proposals. Asking again every few seconds.</span></div>'; return false; }
 }
 load();
 setInterval(() => { if (!document.hidden) load(); }, 6000);

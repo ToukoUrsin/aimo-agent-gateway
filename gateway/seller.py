@@ -10,11 +10,14 @@ matter today and writes one sentence on each; if it does not answer within a few
 template writes the sentence. Proposals are made ahead, on a quiet timer or on demand, never inside a checkout.
 
 Kinds:
-* drift        standing order has crept away from what the kitchen uses (usage history is seeded)
-* short_dated  a marked-down lot near its best-before date, only to kitchens whose usual volume uses it in time (lots are seeded)
+* drift        standing order has crept away from what the kitchen uses (usage history is seeded). A standing order binds every
+               week, so the buyer's mandate sends the change to a person (rule V7, knob proposals.standing_changes, default ask).
+* short_dated  a marked-down lot near its best-before date. Never extra volume the kitchen will not use by that date: code works out
+               the use until the date, takes off what the standing order and open orders already bring, and offers only what is
+               left, or a swap for part of the next standing delivery (same units, lower price, nothing extra). Lots are seeded.
 * cutoff       the kitchen usually orders by a set time and has not; its usual basket as a ready offer
 * shortage     a product it orders every week will run short; the replacement, before its agent hits the refusal
-* fill         a line just under a full case or pallet (the price data has no quantity breaks, so nothing is cheaper per unit)
+* fill         a line just under a full case or pallet, only when the kitchen already uses the full amount (no price breaks in the data)
 
 Recipe cards in gateway/menu.py now add a role check to shortage replacements. When no card names the
 standing product, Valio Aimo's listed substitutes remain the fallback.
@@ -46,7 +49,7 @@ SCHEMA = [
 SELLER = "agent:valio-aimo/seller"
 SELLER_NAME = "Valio Aimo's agent"
 KINDS = {"drift": "Standing order drift", "short_dated": "Short-dated stock", "cutoff": "Before the cut-off", "shortage": "Shortage ahead", "fill": "Fill the case"}
-MODEL = os.environ.get("SELLER_MODEL", "claude-haiku-5-5")
+MODEL = os.environ.get("SELLER_MODEL", "claude-opus-5-5")
 MODEL_WAIT_S = float(os.environ.get("SELLER_MODEL_WAIT_S", "15"))  # proposals are made in the background, so this never delays a checkout
 EVERY_S = int(os.environ.get("SELLER_EVERY_S", "1800"))  # quiet background run over the stage and floor accounts; 0 = off
 AUTHORITY = {"auto": "agent_may_accept", "escalate": "needs_human_approval", "deny": "not_allowed"}
@@ -54,6 +57,7 @@ OPEN, PENDING = "open", "pending"
 SEED_NOTE = "Seeded: the challenge data has no standing orders or usage, so these weekly figures are made up for the demo."
 LOT_NOTE = "Seeded: the challenge data has no lots or best-before dates, so this lot is made up for the demo."
 NO_BREAK = "The price data has no quantity break, so adding this amount does not lower the unit price."
+AGENT_REQUEST = "Valio Aimo's agent has sent us proposals. Go through them: take what the kitchen needs, decline what it does not, and say why."
 NEXT = ("Answer each open proposal with answer_proposal (id, answer accept or decline, reason). Accept only what serves the kitchen; decline the rest with a short reason. "
         "authority.decision says whether the buyer's mandate lets you accept alone (agent_may_accept) or whether accepting sends it to a person (needs_human_approval). "
         "Accepting returns a checkout: finish it like any other with complete_checkout (or wait for the person first).")
@@ -71,7 +75,7 @@ STAGE_STANDING = {
         {"id": "463380", "units": 300, "used": [312, 306, 300, 294, 268, 260, 252, 244], "req": {"claims": ["FREE_FROM:LACTOSE"]},
          "hand_cuts": [12, 8, 6, 5], "credited_units": [8, 6], "wasted_units": [4, 3]},
         {"id": "464237", "units": 120, "used": [118, 121, 119, 122, 117, 120, 121, 119], "req": {"claims": ["FREE_FROM:LACTOSE"]}},
-        {"id": "473609", "units": 96, "used": [94, 97, 95, 96, 98, 95, 97, 96]},
+        {"id": "473609", "units": 96, "used": [94, 97, 95, 96, 98, 99, 101, 100]},  # uses a full 10 cases now: the fill proposal
         {"id": "469512", "units": 60, "used": [59, 61, 60, 58, 62, 60, 59, 61]},
         {"id": "465425", "units": 36, "used": [35, 36, 37, 35, 36, 34, 36, 37]},
     ],
@@ -225,8 +229,9 @@ class Seller:
         hist = self.g.store.get("history:" + a["customer"], {})
         top = sorted(((k, v) for k, v in hist.items() if self.g.cat.get(k)), key=lambda kv: -kv[1].get("orders", 0))[:4]
         rnd = random.Random(zlib.crc32(a["customer"].encode()))
-        drift = zlib.crc32(a["slug"].encode()) % 3 != 0
+        drift = a.get("kind") == "sandbox" or zlib.crc32(a["slug"].encode()) % 3 != 0  # every visitor sandbox shows a standing-order change; floor kitchens vary
         lines = []
+        biggest = max(top, key=lambda kv: kv[1].get("typical_units", 0))[0] if top else None
         for n, (pid, h) in enumerate(top):
             units = max(1, round(h.get("typical_units", 10)))
             used = [round(units * (1 + rnd.uniform(-0.03, 0.03))) for _ in range(8)]
@@ -237,8 +242,8 @@ class Seller:
             # One floor kitchen has the opposite, equally honest pattern: the standing
             # order stayed put while staff repeatedly cut it before cut-off and credited
             # back the surplus. This makes the lowering proposal visible on the floor.
-            if a["slug"] == "sumusaari-spa-hotel" and n == 1:
-                used = [units + 8, units + 3, units - 2, units - 7, units - 12, units - 17, units - 22, units - 27]
+            if a["slug"] == "sumusaari-spa-hotel" and pid == biggest:  # its biggest line, falling in proportion (never below zero)
+                used = [round(units * f) for f in (1.10, 1.06, 1.02, 0.98, 0.90, 0.84, 0.78, 0.72)]
                 evidence = {"hand_cuts": [8, 7, 6, 5], "credited_units": [6, 5], "wasted_units": [3, 2]}
             lines.append({"id": pid, "units": units, "used": used, **evidence})
         wd = rnd.choice([3, 4])
@@ -258,6 +263,27 @@ class Seller:
                 continue
             for l in o["line_items"]:
                 out[l["item"]["id"]] = out.get(l["item"]["id"], 0) + l["wholesale"]["units"]
+        return out
+
+    def _on_orders(self, customer, pids, first, last) -> float:
+        """Units of these products on every placed order (usual or from a proposal) delivered from `first` to `last`."""
+        n = 0.0
+        for o in self.g.store.orders(400, customer):
+            if first <= o["wholesale"]["delivery_date"] <= last:
+                n += sum(l["wholesale"]["units"] for l in o["line_items"] if l["item"]["id"] in pids)
+        return n
+
+    def _in_standing(self, a, day) -> dict:
+        """Units of the standing delivery for `day` already ordered through accepted proposals: a raise's top-up (the new standing
+        quantity includes it) and a short-dated swap (it stands in for part of the delivery). A fill comes on top, so it is not here."""
+        out = {}
+        for p in self._rows(a["customer"], ["accepted"]):
+            eff = p.get("effect") or {}
+            if p["day"] != day or not self._current(p, a) or not (eff.get("swap") or (eff.get("standing") and p.get("lines"))):
+                continue
+            for x in p["lines"]:
+                pid = x["item"]["id"]
+                out[pid] = out.get(pid, 0) + x["quantity"] / 10 ** self.g.cat.get(pid)["scale"]
         return out
 
     def lots(self, world) -> dict:
@@ -307,11 +333,12 @@ class Seller:
                     facts = {"product": l["title"], "standing_units": l["units"], "used_per_week": u, "weeks": st["weeks"], "used_last_week": u[-1],
                              "average_last_3_weeks": round(avg3), "weeks_rising": 3, "corrected_units": corrected, "add_for_delivery": add, "delivery": nice, "seeded": SEED_NOTE}
                     out.append({"kind": "drift", "products": [l["id"]], "day": day, "lines": [item(l["id"], add)], "reqs": reqs, "extra_units": add, "facts": facts,
-                                "effect": {"standing": {"product": l["id"], "from": l["units"], "to": corrected}},
+                                "effect": {"standing": {"product": l["id"], "title": l["title"], "from": l["units"], "to": corrected, "starts": nice}},
                                 "title": f"Raise the standing order of {l['title']} from {l['units']} to {corrected}",
                                 "template": f"Your kitchen used {u[-1]} of {l['title']} last week against a standing order of {l['units']}, and usage has risen three weeks running. Raise it to {corrected} and add {add} to {nice}."})
                 elif falling and avg3 < l["units"] * 0.92:
-                    corrected = max(case, int(math.floor(min(u[-1], avg3 + slope) / case) * case))
+                    # Round up to whole cases: the new standing order still covers what the kitchen uses now, never less.
+                    corrected = max(case, int(math.ceil(min(u[-1], avg3 + slope) / case) * case))
                     saved = l["units"] - corrected
                     if saved <= 0:
                         continue
@@ -323,38 +350,72 @@ class Seller:
                     # Lowering is a standing-order amendment, so it carries no goods
                     # line and cannot accidentally order the reduced quantity today.
                     out.append({"kind": "drift", "products": [l["id"]], "day": day, "lines": [], "reqs": reqs, "extra_units": 0, "facts": facts,
-                                "effect": {"standing": {"product": l["id"], "from": l["units"], "to": corrected}},
+                                "effect": {"standing": {"product": l["id"], "title": l["title"], "from": l["units"], "to": corrected, "starts": nice}},
                                 "title": f"Lower the standing order of {l['title']} from {l['units']} to {corrected}",
                                 "template": f"Your kitchen used {u[-1]} of {l['title']} last week against a standing order of {l['units']}; usage has fallen three weeks running. Lower it to {corrected}, saving {saved} units a week ({policy.eur(price * saved)} ex VAT)."})
 
         if kind in (None, "short_dated"):
-            per_week = {}
-            for l in st["lines"]:
-                d = g.cat.get(l["id"])
-                per_week[("p", l["id"])] = per_week.get(("p", l["id"]), 0) + sum(l["used"][-3:]) / 3
-                per_week[("c", d["category"])] = per_week.get(("c", d["category"]), 0) + sum(l["used"][-3:]) / 3
+            # A short-dated lot never adds volume the kitchen will not use before the date. Use until the date, minus what the
+            # standing delivery and placed orders already bring, is the room for extra. With no room, the lot can still stand in
+            # for part of the next standing delivery of the same product: same units, lower price, nothing extra.
+            usual_done = self._ordered(a["customer"], day, from_proposals=False)  # the usual order for that day is already placed
+            if any(p["kind"] == "cutoff" and p["day"] == day and p["status"] == PENDING and self._current(p, a) for p in self._rows(a["customer"], [PENDING])):
+                usual_done = {**{l["id"]: l["units"] for l in st["lines"]}, **usual_done}  # the usual basket is accepted and waiting for a person: treat it as placed
+            in_std = self._in_standing(a, day)
+            sd_coming = {}  # short-dated units of each product already accepted for that delivery: they are used first
+            for q in self._rows(a["customer"], ["accepted"]):
+                if q["kind"] == "short_dated" and q["day"] == day and self._current(q, a):
+                    for x in q["lines"]:
+                        sd_coming[x["item"]["id"]] = sd_coming.get(x["item"]["id"], 0) + x["quantity"] / 10 ** g.cat.get(x["item"]["id"])["scale"]
             for lot in lots.values():
                 d, f = g.cat.get(lot["product"]), live.get(lot["product"]) or {}
                 if not d or lot["left"] <= 0 or not f.get("orderable") or "price" not in f:
                     continue
                 bb = (datetime.strptime(day, "%Y-%m-%d") + timedelta(days=lot["days"])).strftime("%Y-%m-%d")
-                usual = per_week.get(("p", d["id"])) or per_week.get(("c", d["category"]))
-                if not usual:
-                    continue  # this kitchen buys nothing like it: it would not use the lot in time
-                basis = "this product" if per_week.get(("p", d["id"])) else "products in the same category"
-                days = lot["days"] + 1
-                use = usual / 7 * days
-                case, _ = _case(d)
-                take = min(lot["left"], math.floor(use / case) * case)
-                if take < case:
+                same = [l for l in st["lines"] if l["id"] == d["id"]]
+                group = same or [l for l in st["lines"] if (g.cat.get(l["id"]) or {}).get("category") == d["category"]]
+                if not group:
+                    notes.append(f"No short-dated offer of {d['title']}: this kitchen does not buy it or anything like it.")
                     continue
+                basis = "this product" if same else "similar products"
+                days = lot["days"] + 1  # the delivery day up to and including the best-before day
+                usual = sum(sum(l["used"][-3:]) / 3 for l in group)
+                use = math.floor(usual / 7 * days)
+                standing_left = sum(l["units"] - in_std.get(l["id"], 0) for l in group if l["id"] not in usual_done)
+                covered = _num(self._on_orders(a["customer"], {l["id"] for l in group}, day, bb) + standing_left)
+                left = use - covered
+                case, _ = _case(d)
                 md = round(f["price"] * (100 - lot["off_pct"]) / 100)
+                why_not = (f"No short-dated offer of {d['title']} (best before {self._nice(bb)}): the kitchen uses about {use} units of {basis} by then "
+                           f"and its standing order and placed orders already bring {covered}, so more would expire")
+                sd_room = use - sd_coming.get(d["id"], 0)  # short-dated units the kitchen can still use before the date
+                if left >= case and min(left, sd_room) >= case:
+                    how, take = "extra", min(lot["left"], math.floor(min(left, sd_room) / case) * case)
+                elif same and d["id"] not in usual_done and min(sd_room, standing_left) >= case:
+                    how, take = "swap", min(lot["left"], math.floor(min(sd_room, standing_left) / case) * case)
+                elif sd_coming.get(d["id"]):
+                    notes.append(f"No more short-dated {d['title']}: {_num(sd_coming[d['id']])} of the {use} the kitchen uses by {self._nice(bb)} already come from a short-dated lot.")
+                    continue
+                else:
+                    notes.append(why_not + (f"; the usual order for {nice} is already placed, so it cannot stand in for part of it either." if same and d["id"] in usual_done else "."))
+                    continue
                 facts = {"product": d["title"], "lot": lot["id"], "best_before": self._nice(bb), "units_in_lot": lot["left"], "usual_per_week": round(usual), "usual_of": basis,
-                         "days_to_use": days, "used_by_then": round(use), "offered_units": _num(take), "off_pct": lot["off_pct"], "unit_price_now": policy.eur(md), "unit_price_usual": policy.eur(f["price"]), "seeded": LOT_NOTE}
-                out.append({"kind": "short_dated", "products": [d["id"]], "day": day, "lines": [item(d["id"], take)], "reqs": reqs, "extra_units": take, "facts": facts,
-                            "md": {d["id"]: md}, "effect": {"lot": lot["id"], "units": take},
-                            "title": f"{_num(take)} {d['title']}, best before {self._nice(bb)}, {lot['off_pct']}% off",
-                            "template": f"A lot of {d['title']} is best before {self._nice(bb)}. Your kitchen uses about {round(use)} of {basis} in {days} days, so {_num(take)} at {lot['off_pct']}% off are used in time."})
+                         "days_to_use": days, "used_by_then": use, "already_coming": covered, "room_for_extra": max(0, _num(left)), "offered_units": _num(take), "how": how,
+                         "off_pct": lot["off_pct"], "unit_price_now": policy.eur(md), "unit_price_usual": policy.eur(f["price"]), "saving_ex_vat": policy.eur(round(take * (f["price"] - md))), "seeded": LOT_NOTE}
+                if how == "extra":
+                    out.append({"kind": "short_dated", "products": [d["id"]], "day": day, "lines": [item(d["id"], take)], "reqs": reqs, "extra_units": take, "facts": facts,
+                                "md": {d["id"]: md}, "effect": {"lot": lot["id"], "units": take},
+                                "title": f"{_num(take)} {d['title']}, best before {self._nice(bb)}, {lot['off_pct']}% off",
+                                "template": f"A lot of {d['title']} is best before {self._nice(bb)}. Your kitchen uses about {use} units of {basis} by then and {covered} are already coming, "
+                                            f"so {_num(take)} more at {lot['off_pct']}% off are used in time."})
+                    continue
+                std = _num(standing_left)
+                facts.update(standing_delivery=std, regular_after_swap=_num(standing_left - take))
+                out.append({"kind": "short_dated", "products": [d["id"]], "day": day, "lines": [item(d["id"], take)], "reqs": reqs, "extra_units": 0, "facts": facts,
+                            "md": {d["id"]: md}, "effect": {"lot": lot["id"], "units": take, "swap": {"product": d["id"], "day": day, "units": take}},
+                            "title": f"{_num(take)} of the {std} {d['title']} for {nice} from a short-dated lot, {lot['off_pct']}% off",
+                            "template": f"A lot of {d['title']} is best before {self._nice(bb)}. Your kitchen uses about {use} by then and your standing order already brings {std} on {nice}, "
+                                        f"so extra would expire. Instead {_num(take)} of those {std} come from this lot at {lot['off_pct']}% off: the same {std} units, nothing extra, {facts['saving_ex_vat']} less."})
 
         if kind in (None, "cutoff"):
             cut = min([parse_ts(live[i].get("cutoff")) for i in ids if live.get(i, {}).get("orderable") and live[i].get("cutoff")], default=None)
@@ -363,7 +424,8 @@ class Seller:
             usual = (datetime.strptime(day, "%Y-%m-%d").replace(tzinfo=TZ) - timedelta(days=(st["weekday"] - wd) % 7 or 7)).replace(hour=h, minute=m)
             mine = self._ordered(a["customer"], day, from_proposals=False)
             if cut and usual <= now < cut and not mine:
-                lines, short = [], []
+                lines, short, swapped = [], [], []
+                in_std = self._in_standing(a, day)
                 for l in st["lines"]:
                     # This seeded pantry line is intentionally history-only: its live
                     # availability is often exhausted by the shared mock API, so it
@@ -374,18 +436,23 @@ class Seller:
                     if not f.get("orderable"):
                         short.append(l["title"])
                         continue
-                    units = min(l["units"], math.floor(f["available"])) if f.get("stock_known") else l["units"]
-                    if units < l["units"]:
+                    want = int(l["units"] - in_std.get(l["id"], 0))  # part of it is already on order: a raise's top-up, or a short-dated lot standing in
+                    if want < l["units"]:
+                        swapped.append(f"{_num(l['units'] - want)} of the {l['units']} {l['title']} are already on order from Valio Aimo's proposals")
+                    if want <= 0:
+                        continue
+                    units = min(want, math.floor(f["available"])) if f.get("stock_known") else want
+                    if units < want:
                         short.append(l["title"])
                     if units > 0:
                         lines.append(item(l["id"], units))
                 hours = max(1, round((cut - now).total_seconds() / 3600))
                 day_name = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][wd]
                 facts = {"usual_order_by": f"{day_name} {hhmm}", "past_order_times": st["order_times"], "ordered_for_delivery": False, "cutoff": cut.isoformat(timespec="minutes"),
-                         "hours_to_cutoff": hours, "delivery": nice, "lines": len(lines), **({"not_in_full": short} if short else {}), "seeded": SEED_NOTE}
+                         "hours_to_cutoff": hours, "delivery": nice, "lines": len(lines), **({"not_in_full": short} if short else {}), **({"already_on_order": swapped} if swapped else {}), "seeded": SEED_NOTE}
                 out.append({"kind": "cutoff", "products": sorted(l["item"]["id"] for l in lines), "day": day, "lines": lines, "reqs": reqs, "extra_units": 0, "facts": facts,
-                            "title": f"Your usual basket for {nice}, ready to order",
-                            "template": f"You usually order by {day_name} {hhmm} and have not. The cut-off is in {hours} hours. Here is your usual basket as a ready signed offer."})
+                            "title": f"Your standing order for {nice} is not placed yet",
+                            "template": f"Your standing order for {nice} is not placed yet, and nothing arrives until it is. You usually order by {day_name} {hhmm}. The cut-off is in {hours} hours. Here are its lines as a ready signed offer."})
 
         if kind in (None, "shortage"):
             for l in st["lines"]:
@@ -434,16 +501,22 @@ class Seller:
                 add = int(to - l["units"])
                 if f.get("stock_known") and f["available"] < to:
                     continue
+                avg3 = sum(l["used"][-3:]) / 3
+                if avg3 < to:  # the kitchen does not use the full amount: the extra units would only sit in its store room
+                    notes.append(f"No fill for {l['title']}: {add} more would make full {what}s, but the kitchen uses about {round(avg3)} a week, so they would not be used.")
+                    continue
                 size = pallet if what == "pallet" else case
                 before = int(l["units"] // size)
                 after = int(to // size)
                 facts = {"product": l["title"], "standing_units": l["units"], f"{what}_size": _num(size),
                          "full": f"{before} full {what}{'' if before == 1 else 's'} of {_num(size)} units", "full_before": f"{before} full {what}{'' if before == 1 else 's'}",
                          "full_after": f"{after} full {what}{'' if after == 1 else 's'}", "add": add,
-                         "fills_to": f"{_num(to)} units ({after} full {what}{'' if after == 1 else 's'})", "fills_to_units": _num(to), "price_break": None, "delivery": nice}
+                         "fills_to": f"{_num(to)} units ({after} full {what}{'' if after == 1 else 's'})", "fills_to_units": _num(to), "price_break": None, "delivery": nice,
+                         "used_per_week": l["used"], "weeks": st["weeks"], "average_last_3_weeks": round(avg3), "seeded": SEED_NOTE}
                 out.append({"kind": "fill", "products": [l["id"]], "day": day, "lines": [item(l["id"], add)], "reqs": reqs, "extra_units": add, "facts": facts,
                             "title": f"Add {add} {l['title']} to make {after} full {what}s ({_num(to)} units)",
-                            "template": f"Your {l['units']} {l['title']} are {before} full {what}s. {add} more make {_num(to)} units, {after} full {what}s. {NO_BREAK}"})
+                            "template": f"Your kitchen used about {round(avg3)} {l['title']} a week for the last 3 weeks against a standing order of {l['units']}. "
+                                        f"{add} more for {nice} make {_num(to)} units, {after} full {what}s. {NO_BREAK}"})
         for c in out:
             c["key"] = c["kind"] + ":" + ",".join(sorted(c["products"]))
         return out, notes
@@ -454,8 +527,12 @@ class Seller:
 
     # ------------------------------------------------------------------- rules
     def _ctx(self, a, c, stage, made_today=0, declined=None) -> dict:
+        so = dict((c.get("effect") or {}).get("standing") or {})
+        if so:  # a standing-order change: rule V7 sends it to a person unless the mandate says otherwise
+            so.setdefault("title", (c.get("facts") or {}).get("product"))
+            so.setdefault("starts", self._nice(c["day"]))
         return {"stage": stage, "kind": c["kind"], "title": c["title"], "extra_ex_vat": c.get("extra_ex_vat", 0), "extra_week_alone": self._extra_alone(a["customer"]),
-                "made_today": made_today, **({"declined_before": declined} if declined else {})}
+                "made_today": made_today, **({"declined_before": declined} if declined else {}), **({"standing": so} if so else {})}
 
     def _extra_alone(self, customer) -> int:
         t = time.time() - policy.WEEK
@@ -473,6 +550,7 @@ class Seller:
             plines, items, errors = g._lines(c["lines"], c["day"], p, exclude_ref=ref)
         finally:
             g.store.q("delete from kv where k=?", ("seller_md:" + ref,))
+            g.store.settle(ref, "released")  # judging is not an offer: give back the moment's hold an allocated product takes while lines are checked
         if errors:
             return None, items, [e["content"] for e in errors]
         subtotal = sum(l["amount"] for l in plines)
@@ -529,11 +607,12 @@ class Seller:
             # the full candidate set and the normal V2 accounting.
             if kind is None and a.get("kind") == "sandbox" and not rows:
                 chosen = []
-                for wanted in ("drift", "short_dated", "fill"):
-                    chosen += [c for c in cands if c["kind"] == wanted][:1]
+                for wanted in ("drift", "short_dated", "fill", "shortage", "cutoff"):
+                    if len(chosen) < 3:
+                        chosen += [c for c in cands if c["kind"] == wanted][:1]
                 cands = chosen
             today = self._now().strftime("%Y-%m-%d")
-            made_today = sum(1 for p in rows if p["status"] != "refused" and p["made_at"][:10] == today)
+            made_today = sum(1 for p in rows if p["status"] not in ("refused", "replaced") and p["made_at"][:10] == today)  # Valio Aimo's own replacement does not count twice
             live_keys = {p["key"] + "@" + p["day"] for p in rows if p["status"] in (OPEN, PENDING, "accepted")}
             declined = {p["key"]: p for p in rows if p["status"] in ("declined", "rejected_by_person")}
             refused_today = {p["key"] + "@" + p.get("refused_rule", "") for p in rows if p["status"] == "refused" and p["made_at"][:10] == today}
@@ -733,6 +812,8 @@ class Seller:
                 new = ("withdrawn", "Valio Aimo switched proposals off for this customer.")
             elif p["kind"] == "cutoff" and self._ordered(p["customer"], p["day"], from_proposals=False):
                 new = ("overtaken", "The kitchen has ordered for that day itself.")
+            elif (p.get("effect") or {}).get("swap") and p["effect"]["swap"]["product"] in self._ordered(p["customer"], p["day"], from_proposals=False):
+                new = ("overtaken", "The kitchen has placed its usual order for that day, so this lot would now be extra stock. Withdrawn.")
             if new:
                 with self.lock:
                     p = self._get(p["id"])
@@ -835,29 +916,9 @@ class Seller:
                             {"proposal": p["id"], "kind": p["kind"], "answer": "decline", "reason": reason}, acct=p["customer"])
                 return g._prove({"ucp": g._env(), "proposal": self.view(p), "messages": [{"type": "info", "content": "Declined. Valio Aimo's agent will not make this proposal again."}]})
             a = g.account_of(p["customer"])
-            # A lowering drift proposal is a signed, zero-goods standing-order
-            # amendment. It still passed V1-V6 when made under the buyer's mandate,
-            # but there is no checkout or order to create for goods that are being
-            # removed. Apply the amendment only after the buyer's agent accepts it.
-            if p["kind"] == "drift" and not p.get("lines") and (p.get("effect") or {}).get("standing"):
-                decision = policy.decision(p.get("rules") or [])
-                if decision != "auto":
-                    raise self._err(409, "approval_required", "This standing-order amendment needs a person under the buyer's mandate.")
-                eff = p["effect"]["standing"]
-                st = self.standing(a)
-                for line in st["lines"]:
-                    if line["id"] == eff["product"]:
-                        line["units"] = eff["to"]
-                st["changes"].append({"product": eff["product"], "from": eff["from"], "to": eff["to"], "at": self._iso(), "proposal": p["id"], "order": None})
-                g.store.put("seller:standing:" + a["customer"], st)
-                who = g._who(principal)
-                p.update(status="accepted", alone=True, answered_ts=time.time(), answer={"answer": "accept", "reason": reason, "at": self._iso(), "agent": who},
-                         order={"id": None, "label": "standing-order amendment", "url": None, "subtotal": 0, "approved_by": None})
-                self._save(p)
-                g.store.log(trace or p["id"], who, "proposal_settled", f"Accepted Valio Aimo's standing-order amendment {p['id']}: {p['facts'].get('product')} changes from {eff['from']} to {eff['to']}.",
-                            {"proposal": p["id"], "kind": p["kind"], "standing": eff, "accepted_by": who}, acct=p["customer"])
-                return g._prove({"ucp": g._env(), "status": "completed", "proposal": self.view(p), "standing": eff,
-                                 "messages": [{"type": "info", "code": "standing_adjusted", "content": f"Standing order for {p['facts'].get('product')} is now {eff['to']} units."}]})
+            # A standing-order change (up or down) binds every week. Accepting it makes a checkout like any other, so rule V7
+            # sends it to the kitchen's approver through the same approval link. A lowering carries no goods: completing it
+            # writes a signed standing-order change instead of an order (change_standing).
             cid = "chk_" + secrets.token_hex(6)
             if p.get("md"):
                 g.store.put("seller_md:" + cid, p["md"])
@@ -867,7 +928,13 @@ class Seller:
                       "intent": f"Accepted Valio Aimo's proposal {p['id']}: {p['title']}.", "rationale": reason or None, "proposal": ctx}
             c = g._assemble(cid, inputs, principal, trace)
             if p["kind"] == "short_dated":
-                c["messages"].append({"type": "info", "code": "short_dated", "content": f"Short-dated lot {p['facts']['lot']}, best before {p['facts']['best_before']}, at {p['facts']['off_pct']}% off."})
+                f = p["facts"]
+                c["messages"].append({"type": "info", "code": "short_dated", "content": f"Short-dated lot {f['lot']}, best before {f['best_before']}, at {f['off_pct']}% off."
+                                      + (f" It stands in for {f['offered_units']} of the {f['standing_delivery']} on the standing delivery for {self._nice(p['day'])}: order {f['regular_after_swap']} as usual, not {f['standing_delivery']}." if f.get("how") == "swap" else "")})
+            so = (p.get("effect") or {}).get("standing")
+            if so:
+                c["messages"].append({"type": "info", "code": "standing_change", "content": f"Completing this changes the standing order of {p['facts'].get('product')} from {so['from']} to {so['to']} units, every week."
+                                      + ("" if p.get("lines") else " It carries no goods: nothing is ordered.")})
             c["messages"].append({"type": "info", "code": "proposal", "content": f"This checkout accepts Valio Aimo's proposal {p['id']}." if c["status"] != "incomplete"
                                   else "This proposal cannot be ordered as it stands now. It stays open; list_proposals shows its state."})
             g._sign_checkout(c)
@@ -880,6 +947,52 @@ class Seller:
                 g.store.log(trace or p["id"], who, "proposal_answer", f"Accepted Valio Aimo's proposal {p['id']} ({p['title']}). " + ("Inside the mandate: the agent may finish it alone." if dec == "auto" else "Outside what the agent may accept alone: sent to a person.")
                             + (f" Reason: {reason}" if reason else ""), {"proposal": p["id"], "kind": p["kind"], "answer": "accept", "checkout": cid, "decision": dec, "proposal_rules": let}, cid=cid, acct=p["customer"])
             return g.public(c)
+
+    def _apply(self, a, p, ap, order_label=None) -> str:
+        """Apply an accepted proposal's effect: the new standing quantity, the lot sold, the swap. Returns a sentence for the ledger."""
+        g, eff, out = self.g, p.get("effect") or {}, ""
+        if eff.get("standing") and a:
+            so = eff["standing"]
+            st = self.standing(a)
+            for l in st["lines"]:
+                if l["id"] == so["product"]:
+                    l["units"] = so["to"]
+            st["changes"].append({"product": so["product"], "from": so["from"], "to": so["to"], "at": self._iso(), "proposal": p["id"], "order": order_label,
+                                  "approved_by": ap["by"] if ap else None})
+            g.store.put("seller:standing:" + a["customer"], st)
+            out += f" Standing order of {p['facts'].get('product')} is now {so['to']} a week (was {so['from']})."
+        if eff.get("swap") and a:
+            st = self.standing(a)
+            st.setdefault("swaps", []).append({**eff["swap"], "lot": eff.get("lot"), "proposal": p["id"]})
+            g.store.put("seller:standing:" + a["customer"], st)
+            f = p["facts"]
+            out += f" {f['offered_units']} of the {f['standing_delivery']} {f['product']} on the standing delivery for {self._nice(p['day'])} now come from the short-dated lot; {f['regular_after_swap']} come as usual."
+        if a and (eff.get("swap") or (eff.get("standing") and p.get("lines"))):
+            out += self._replace_baskets(a, p)
+        if eff.get("lot") and a:
+            key = "seller:lots:" + a.get("world", "main")
+            lots = g.store.get(key) or {}
+            if eff["lot"] in lots:
+                lots[eff["lot"]]["left"] = max(0, lots[eff["lot"]]["left"] - eff["units"])
+                g.store.put(key, lots)
+        return out
+
+    def _replace_baskets(self, a, by) -> str:
+        """An accepted raise or swap changes what the usual basket for that day should hold. An earlier basket offer for that day
+        is withdrawn (its checkout cancelled if it was waiting for a person), so the next run offers the right one."""
+        n = 0
+        for q in self._rows(a["customer"], [OPEN, PENDING]):
+            if q["kind"] != "cutoff" or q["day"] != by["day"] or not self._current(q, a):
+                continue
+            if q["status"] == PENDING and q.get("checkout_id"):
+                c = self.g.store.checkout(q["checkout_id"])
+                if c and c["status"] not in ("completed", "canceled"):
+                    self.g.cancel_checkout(q["checkout_id"])
+            q.update(status="replaced", checkout_id=None, closed={"why": f"Part of this basket is now on order through proposal {by['id']} ({by['title']}), so Valio Aimo's agent withdrew it. Its next offer for that day leaves out what is already on order.", "at": self._iso()})
+            self._save(q)
+            self.g.store.log(q["id"], "gateway", "proposal_closed", f"Withdrew Valio Aimo's proposal {q['id']} ({q['title']}): {q['closed']['why']}", {"proposal": q["id"], "replaced_because": by["id"]}, acct=q["customer"])
+            n += 1
+        return f" The usual-basket offer for {self._nice(by['day'])} was withdrawn so it does not order these twice." if n else ""
 
     def settled(self, c, o, principal=None):
         """Called when an order made from a proposal is placed: mark it accepted and apply its effect (the new standing quantity, the lot sold)."""
@@ -894,31 +1007,49 @@ class Seller:
             p.update(status="accepted", alone=not ap, answered_ts=time.time(), checkout_id=c["id"],
                      order={"id": o["id"], "label": o["label"], "url": order_url(o["id"]), "subtotal": sub, "approved_by": ap["by"] if ap else None})
             p["extra_ex_vat"] = ctx.get("extra_ex_vat", p.get("extra_ex_vat", 0))
-            eff = p.get("effect") or {}
-            a = g.account_of(p["customer"])
-            if eff.get("standing") and a:
-                key = "seller:standing:" + a["customer"]
-                st = self.standing(a)
-                for l in st["lines"]:
-                    if l["id"] == eff["standing"]["product"]:
-                        l["units"] = eff["standing"]["to"]
-                st["changes"].append({"product": eff["standing"]["product"], "from": eff["standing"]["from"], "to": eff["standing"]["to"], "at": self._iso(), "proposal": p["id"], "order": o["label"]})
-                g.store.put(key, st)
-            if eff.get("lot") and a:
-                key = "seller:lots:" + a.get("world", "main")
-                lots = g.store.get(key) or {}
-                if eff["lot"] in lots:
-                    lots[eff["lot"]]["left"] = max(0, lots[eff["lot"]]["left"] - eff["units"])
-                    g.store.put(key, lots)
+            change = self._apply(g.account_of(p["customer"]), p, ap, o["label"])
             self._save(p)
-            let = [f"[{r['id']} {r['outcome']}] {r['detail']}" for r in w["policy"]["rules"] if r["id"] in ("V5", "V6")]
+            let = [f"[{r['id']} {r['outcome']}] {r['detail']}" for r in w["policy"]["rules"] if r["id"] in ("V5", "V6", "V7")]
             how = f"approved by {ap['by']} through the approval link" if ap else "inside the mandate, so the agent accepted it alone: " + " ".join(let)
-            change = f" Standing order of {p['facts'].get('product')} is now {eff['standing']['to']} (was {eff['standing']['from']})." if eff.get("standing") else ""
             g.store.log(c["_internal"].get("trace") or p["id"], "gateway", "proposal_settled",
                         f"Valio Aimo's proposal {p['id']} became order {o['label']} ({policy.eur(sub)} ex VAT). Proposed by {SELLER_NAME} on {KINDS[p['kind']].lower()}; accepted by {w['agent']}, {how}.{change}",
-                        {"proposal": p["id"], "kind": p["kind"], "proposed_by": SELLER, "basis": ctx.get("basis"), "let_through_by": [r["id"] for r in w["policy"]["rules"] if r["id"] in ("V5", "V6") and r["outcome"] == "pass"] if not ap else ["approval"],
-                         "accepted_by": w["agent"], "approved_by": ap["by"] if ap else None, "order_id": o["id"], "subtotal": sub, "extra_ex_vat": p["extra_ex_vat"]}, cid=c["id"], acct=p["customer"])
+                        {"proposal": p["id"], "kind": p["kind"], "proposed_by": SELLER, "basis": ctx.get("basis"), "let_through_by": [r["id"] for r in w["policy"]["rules"] if r["id"] in ("V5", "V6", "V7") and r["outcome"] == "pass"] if not ap else ["approval"],
+                         "accepted_by": w["agent"], "approved_by": ap["by"] if ap else None, "order_id": o["id"], "subtotal": sub, "extra_ex_vat": p["extra_ex_vat"],
+                         **({"standing": p["effect"]["standing"]} if (p.get("effect") or {}).get("standing") else {})}, cid=c["id"], acct=p["customer"])
             c["messages"].append({"type": "info", "code": "proposal_accepted", "content": f"Proposal {p['id']} is accepted: order {o['label']}." + change})
+
+    def change_standing(self, c, principal, proof) -> dict:
+        """Called by the gateway when the agent completes a checkout that only changes a standing order (no goods): write a signed
+        standing-order change instead of an order. Who decided, and who approved, are in the document and on the ledger."""
+        g, w = self.g, c["wholesale"]
+        ctx, ap = w["proposal"], w.get("approval")
+        with self.lock:
+            p = self._get(ctx["id"])
+            a = g.account_of(p["customer"])
+            so = p["effect"]["standing"]
+            doc = g._prove({
+                "type": "standing_order_change", "id": "soc_" + secrets.token_hex(6), "at": self._iso(), "customer": p["customer"], "buyer": p["buyer"],
+                "product": {"id": so["product"], "title": p["facts"].get("product")}, "from_units": so["from"], "to_units": so["to"], "every_week_from": so.get("starts") or self._nice(p["day"]),
+                "proposal": {"id": p["id"], "made_by": SELLER, "offer_digest": ctx.get("offer_digest"), "basis": ctx.get("basis")},
+                "decided_by": {"agent": w["agent"], "mandate_id": w["mandate_id"], "alone": not ap, "person": ap["by"] if ap else None, "rationale": w.get("agent_rationale")},
+                "evidence": {"checkout_id": c["id"], "offer_digest": c["_internal"]["digest"], "offer_signature": c["ap2"]["merchant_authorization"], "agent_acceptance": proof,
+                             "agent_class": "key" if proof else "keyless", "keyless_receipt": c["_internal"].get("keyless_receipt"), "approval": ap, "policy": w["policy"]},
+            })
+            g.store.put("seller:change:" + doc["id"], doc)
+            url = f"{PUBLIC_URL}/standing-changes/{doc['id']}"
+            p.update(status="accepted", alone=not ap, answered_ts=time.time(), checkout_id=c["id"],
+                     order={"id": None, "change": doc["id"], "label": "standing-order change " + doc["id"], "url": url, "subtotal": 0, "approved_by": ap["by"] if ap else None})
+            change = self._apply(a, p, ap, None)
+            self._save(p)
+            v7 = next((r for r in w["policy"]["rules"] if r["id"] == "V7"), None)
+            how = f"approved by {ap['by']} through the approval link" if ap else "inside the mandate, so the agent accepted it alone" + (f": [V7 pass] {v7['detail']}" if v7 else "")
+            g.store.log(c["_internal"].get("trace") or p["id"], "gateway", "proposal_settled",
+                        f"Valio Aimo's proposal {p['id']} became standing-order change {doc['id']}: {p['facts'].get('product')} from {so['from']} to {so['to']} a week. "
+                        f"Proposed by {SELLER_NAME}; accepted by {w['agent']}, {how}. No goods were ordered. Signed by Valio Aimo.",
+                        {"proposal": p["id"], "kind": p["kind"], "proposed_by": SELLER, "change": doc["id"], "standing": so, "accepted_by": w["agent"], "approved_by": ap["by"] if ap else None,
+                         "let_through_by": ["approval"] if ap else ["V7"]}, cid=c["id"], acct=p["customer"])
+            c["messages"].append({"type": "info", "code": "proposal_accepted", "content": f"Proposal {p['id']} is accepted: standing-order change {doc['id']}." + change})
+            return {"id": doc["id"], "label": "standing-order change " + doc["id"], "permalink_url": url}
 
     # ---------------------------------------------------------------- summary
     def summary(self, customers=None) -> dict:
@@ -973,7 +1104,7 @@ class Seller:
         return {"owner": "Whatever agent a kitchen buys with, the customer relationship stays with Valio Aimo: this is Valio Aimo's own agent, speaking in its name and signing with its key. It proposes; the kitchen's agent and people decide.",
                 "total": tot, "customers": sorted(per.values(), key=lambda s: (s["kind"] != "stage", s["buyer"])), "at": self._iso()}
 
-    def rows_for(self, customers=None, limit=120) -> list[dict]:
+    def rows_for(self, customers=None, limit=120, links=False) -> list[dict]:
         out = []
         for p in self._rows(None, None, 2000):
             if customers is not None and p["customer"] not in customers:
@@ -982,12 +1113,12 @@ class Seller:
                 continue
             if p["status"] in (OPEN, PENDING):
                 p = self._sync(p)
-            out.append(self._row(p))
+            out.append(self._row(p, links))
             if len(out) >= limit:
                 break
         return out
 
-    def _row(self, p) -> dict:
+    def _row(self, p, links=False) -> dict:
         """For the page: one proposal, made or stopped, with its reason, basis, rules and outcome."""
         st = self.g.store.get("seller:standing:" + p["customer"]) or {}
         r = {"id": p["id"], "kind": p["kind"], "kind_title": KINDS[p["kind"]], "status": p["status"], "made_at": p["made_at"], "buyer": p["buyer"], "account": p["slug"], "delivery_date": p["day"],
@@ -1005,9 +1136,13 @@ class Seller:
             r["closed"] = p.get("closed")
             r["alone"] = p.get("alone")
             r["signed"] = bool(p["doc"].get("proof"))
+            r["effect"] = p.get("effect")
             if p["status"] == PENDING:
                 c = self.g.store.checkout(p["checkout_id"]) or {}
                 r["checkout"] = {"id": p["checkout_id"], "status": c.get("status")}
+                if links and c.get("status") == "requires_escalation":  # the demo viewer is the kitchen too: the same approval link its agent was given
+                    r["checkout"]["approve_url"] = f"/approve/{p['checkout_id']}?k={c['_internal']['approval_token']}"
+                    r["checkout"]["approver"] = ((self.g.store.get("mandate_config:" + p["customer"]) or {}).get("approver") or {}).get("name") or "the kitchen's approver"
         if p["kind"] == "drift" and st:
             r["standing_now"] = next((l["units"] for l in st.get("lines", []) if l["id"] == (p.get("effect") or {}).get("standing", {}).get("product")), None)
         return r
@@ -1075,7 +1210,7 @@ def build(g, ctx, page) -> APIRouter:
         cust = scope(c, view)
         if c["op"] and acct and g.account(acct):
             cust = [g.account(acct)["customer"]]
-        out = {"proposals": s.rows_for(cust), "operator": c["op"], "account": c["acct"]["slug"], "buyer": c["acct"]["name"]}
+        out = {"proposals": s.rows_for(cust, links=c["op"] or view != "valio"), "operator": c["op"], "account": c["acct"]["slug"], "buyer": c["acct"]["name"]}
         mine = [c["acct"]] if not c["op"] else [x for x in g.accounts() if x["kind"] in ("stage", "floor")]
         out["standing"] = [{"account": x["slug"], "buyer": x["name"], **{k: v for k, v in (g.store.get("seller:standing:" + x["customer"]) or {}).items() if k in ("weeks", "lines", "changes", "seeded", "why")}}
                            for x in mine if g.store.get("seller:standing:" + x["customer"])]
@@ -1098,9 +1233,14 @@ def build(g, ctx, page) -> APIRouter:
             s.sync_all(a)
         return {"account": a["slug"], "proposals": on}
 
+    def _key(request: Request, body: dict) -> str:
+        """The page sends one key per press; a retry or a second press with the same key never does the thing twice."""
+        return str(request.headers.get("idempotency-key") or body.get("key") or "")[:80]
+
     @r.post("/api/demo/seller", include_in_schema=False)
     def run_now(request: Request, response: Response, body: dict = Body(default={})):
-        """Make proposals now. kind: one of drift, short_dated, cutoff, shortage, fill (empty = all). acct: operator only."""
+        """Make proposals now. kind: one of drift, short_dated, cutoff, shortage, fill (empty = all). acct: operator only.
+        With an idempotency key, a repeat of the same press returns the first answer instead of running again."""
         c = ctx(request, response)
         a = g.account(str(body.get("acct"))) if c["op"] and body.get("acct") else c["acct"]
         if not a:
@@ -1108,8 +1248,55 @@ def build(g, ctx, page) -> APIRouter:
         kind = body.get("kind") or None
         if kind and kind not in KINDS:
             raise s._err(400, "bad_request", "kind is one of " + ", ".join(KINDS) + ".")
-        rep = s.run(a, kind, use_model=body.get("model", True) is not False, why="asked on the demo page" if not c["op"] else "Valio Aimo ran it now")
-        return {**rep, "request": "Valio Aimo's agent has sent us proposals. Go through them: take what the kitchen needs, decline what it does not, and say why."}
+        key = _key(request, body)
+        ik = f"seller:idem:{a['slug']}:{key}"
+        with s.lock:  # a retry that arrives while the first press is still running waits here, then gets its answer
+            if key and g.store.get(ik):
+                return {**g.store.get(ik), "repeat": True}
+            rep = s.run(a, kind, use_model=body.get("model", True) is not False, why="asked on the demo page" if not c["op"] else "Valio Aimo ran it now")
+            out = {**rep, "request": AGENT_REQUEST}
+            if key:
+                g.store.put(ik, out)
+        return out
+
+    @r.post("/api/seller/answer-now", include_in_schema=False)
+    async def answer_now(request: Request, response: Response, body: dict = Body(default={})):
+        """Start the kitchen's agent on the open proposals. One run per press (idempotency key), and never a second run while one is going."""
+        from . import app as A  # the demo runs live in the app; imported here because the app imports this module
+        c = ctx(request, response)
+        a = g.account(str(body.get("acct"))) if c["op"] and body.get("acct") else c["acct"]
+        if not a:
+            raise s._err(404, "not_found", "No such account.")
+        key = _key(request, body)
+        ik = "seller:agentrun:" + key
+        if key and g.store.get(ik) in A.RUNS:
+            return {"id": g.store.get(ik), "repeat": True}
+        live = [x for x in A.RUNS.values() if x["acct"] == a["slug"] and x["status"] in ("running", "waiting_approval")]
+        if live:
+            return {"id": max(live, key=lambda x: x["created"])["id"], "already_running": True}
+        s.sync_all(a)
+        if not [p for p in s._rows(a["customer"], [OPEN]) if s._current(p, a)]:
+            return {"id": None, "messages": [{"type": "info", "code": "nothing_open", "content": "There are no open proposals for the kitchen's agent to answer."}]}
+        if not c["op"]:
+            A._allow_run(c, "claude")  # the demo's usual limits: one run at a time, a daily allowance
+        run = A.new_run(a["slug"], "claude", AGENT_REQUEST, op=c["op"])
+        if key:
+            g.store.put(ik, run["id"])
+        return {"id": run["id"], "trace": run["trace"]}
+
+    @r.get("/api/seller/answer-now", include_in_schema=False)
+    def answer_now_check(request: Request, response: Response, key: str = ""):
+        """After a dropped connection: did that press start the kitchen's agent?"""
+        ctx(request, response)
+        rid = g.store.get("seller:agentrun:" + key[:80]) if key else None
+        return {"id": rid, "started": bool(rid)}
+
+    @r.get("/standing-changes/{cid}", tags=["proposals"], summary="A signed standing-order change made from a proposal by Valio Aimo's agent: who decided and who approved")
+    def standing_change(cid: str):
+        doc = g.store.get("seller:change:" + cid)
+        if not doc:
+            raise s._err(404, "not_found", "No such standing-order change.")
+        return doc
 
     @r.get("/seller", include_in_schema=False)
     def seller_page():

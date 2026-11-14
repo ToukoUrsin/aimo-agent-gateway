@@ -3,92 +3,87 @@
   "name": "proof2",
   "dir": "shots/proof2",
   "scheme": "light",
-  "capturedAt": "2026-11-14T05:07:29.381Z",
+  "capturedAt": "2026-11-14T06:36:06.606Z",
   "css": [
    1280,
    1400
   ],
   "scale": 1,
-  "dur": 8.201,
+  "dur": 9.007,
   "frames": [
-   0.036,
-   3.92
+   0.038,
+   4.766
   ],
   "events": [
    {
-    "t": 3.875,
+    "t": 3.88,
     "name": "scroll"
    }
   ],
   "boxT": [
-   0.021,
-   0.138,
-   0.253,
-   0.366,
-   0.479,
-   0.593,
-   0.714,
-   0.837,
-   0.95,
-   1.064,
-   1.178,
-   1.293,
-   1.406,
-   1.52,
-   1.633,
-   1.746,
-   1.858,
-   1.971,
-   2.084,
-   2.197,
-   2.323,
-   2.436,
-   2.555,
-   2.712,
-   2.862,
-   2.99,
-   3.103,
-   3.216,
-   3.33,
-   3.445,
-   3.558,
-   3.685,
-   3.798,
-   3.911,
-   4.024,
-   4.137,
-   4.25,
-   4.364,
-   4.476,
-   4.589,
-   4.703,
-   4.816,
-   4.932,
-   5.046,
-   5.158,
-   5.27,
-   5.384,
-   5.498,
-   5.614,
-   5.726,
-   5.842,
-   5.956,
-   6.069,
-   6.183,
-   6.295,
-   6.409,
-   6.529,
-   6.645,
-   6.76,
-   6.877,
-   6.99,
-   7.103,
-   7.217,
-   7.33,
-   7.448,
-   7.58,
-   7.972,
-   8.085
+   0.019,
+   0.134,
+   0.273,
+   0.386,
+   0.499,
+   0.615,
+   0.747,
+   0.867,
+   0.98,
+   1.094,
+   1.209,
+   1.324,
+   1.442,
+   1.58,
+   1.695,
+   1.808,
+   1.921,
+   2.034,
+   2.149,
+   2.263,
+   2.386,
+   2.499,
+   2.616,
+   2.729,
+   2.845,
+   2.958,
+   3.071,
+   3.196,
+   3.31,
+   3.491,
+   3.604,
+   3.718,
+   3.831,
+   3.944,
+   4.06,
+   4.381,
+   4.5,
+   4.653,
+   4.812,
+   4.928,
+   5.048,
+   5.179,
+   5.292,
+   5.406,
+   5.522,
+   5.635,
+   5.748,
+   5.863,
+   5.978,
+   6.095,
+   6.208,
+   6.322,
+   6.435,
+   6.56,
+   6.677,
+   6.813,
+   7.018,
+   7.131,
+   7.245,
+   7.359,
+   7.473,
+   7.605,
+   8.059
   ],
   "boxes": {
    "lead": [
@@ -292,211 +287,181 @@
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
+     -3839,
      683,
      51
     ],
     [
      104,
-     -3105,
-     683,
-     51
-    ],
-    [
-     104,
-     -3105,
-     683,
-     51
-    ],
-    [
-     104,
-     -3105,
-     683,
-     51
-    ],
-    [
-     104,
-     -3105,
-     683,
-     51
-    ],
-    [
-     104,
-     -3105,
-     683,
-     51
-    ],
-    [
-     104,
-     -3105,
+     -3839,
      683,
      51
     ]
@@ -504,819 +469,759 @@
    "big": [
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     3257,
-     1072,
-     127
+     4012,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ],
     [
      104,
-     -31,
-     1072,
-     127
-    ],
-    [
-     104,
-     -31,
-     1072,
-     127
-    ],
-    [
-     104,
-     -31,
-     1072,
-     127
-    ],
-    [
-     104,
-     -31,
-     1072,
-     127
-    ],
-    [
-     104,
-     -31,
-     1072,
-     127
-    ],
-    [
-     104,
-     -31,
-     1072,
-     127
+     -10,
+     699,
+     106
     ]
    ],
    "meta": [
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     2568,
+     3867,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
+     -155,
      656,
      60
     ],
     [
      104,
-     -720,
-     656,
-     60
-    ],
-    [
-     104,
-     -720,
-     656,
-     60
-    ],
-    [
-     104,
-     -720,
-     656,
-     60
-    ],
-    [
-     104,
-     -720,
-     656,
-     60
-    ],
-    [
-     104,
-     -720,
-     656,
-     60
-    ],
-    [
-     104,
-     -720,
+     -155,
      656,
      60
     ]
@@ -1324,229 +1229,199 @@
    "models": [
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
+     4202,
      1072,
      354
     ],
     [
      104,
-     3468,
-     1072,
-     354
-    ],
-    [
-     104,
-     180,
-     1072,
-     354
-    ],
-    [
-     104,
-     180,
-     1072,
-     354
-    ],
-    [
-     104,
-     180,
-     1072,
-     354
-    ],
-    [
-     104,
-     180,
-     1072,
-     354
-    ],
-    [
-     104,
-     180,
+     4202,
      1072,
      354
     ],
@@ -1734,409 +1609,379 @@
    "matrix": [
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     294,
+     1594,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
+     -2428,
      1072,
      2262
     ],
     [
      104,
-     -2994,
-     1072,
-     2262
-    ],
-    [
-     104,
-     -2994,
-     1072,
-     2262
-    ],
-    [
-     104,
-     -2994,
-     1072,
-     2262
-    ],
-    [
-     104,
-     -2994,
-     1072,
-     2262
-    ],
-    [
-     104,
-     -2994,
-     1072,
-     2262
-    ],
-    [
-     104,
-     -2994,
+     -2428,
      1072,
      2262
     ]
@@ -11262,7 +11107,375 @@
      "ord_74e0f89422c3",
      "ord_365302f62f68",
      "ord_24b34fbbc282"
-    ]
+    ],
+    "tests": {
+     "at": "2026-11-14T06:16:49Z",
+     "suites": [
+      {
+       "id": "flow",
+       "title": "One order end to end",
+       "what": "Offer, signature, approval, order, and the refusals on the way: wrong product, missed cut-off, a price that moved.",
+       "passed": 6,
+       "failed": 0,
+       "exit": 0,
+       "seconds": 8.7,
+       "command": "uv run -q python -m tests.flow",
+       "at": "2026-11-14T06:14:53Z"
+      },
+      {
+       "id": "controls",
+       "title": "What an agent can see and do",
+       "what": "No stock counts, no other customers' data, rate limits, the per-reader ledger.",
+       "passed": 11,
+       "failed": 0,
+       "exit": 0,
+       "seconds": 7.7,
+       "command": "uv run -q python -m tests.controls",
+       "at": "2026-11-14T06:15:01Z"
+      },
+      {
+       "id": "after",
+       "title": "After the order",
+       "what": "Short pick, delay and batch recall: what the agent may settle alone and what goes to a person.",
+       "passed": 58,
+       "failed": 0,
+       "exit": 0,
+       "seconds": 10,
+       "command": "uv run -q python -m tests.after",
+       "at": "2026-11-14T06:15:11Z"
+      },
+      {
+       "id": "menu",
+       "title": "Menu to order",
+       "what": "Recipe quantities, pack sizes, dietary rules per dish, a shortage solved by what the ingredient does, a photo that is not a menu.",
+       "passed": 53,
+       "failed": 0,
+       "exit": 0,
+       "seconds": 22.9,
+       "command": "uv run -q python -m tests.menu",
+       "at": "2026-11-14T06:15:34Z"
+      },
+      {
+       "id": "seller",
+       "title": "Valio Aimo's own agent",
+       "what": "Proposals are checked against the buyer's limits before they leave; a declined one is never made again.",
+       "passed": 33,
+       "failed": 0,
+       "exit": 0,
+       "seconds": 10.1,
+       "command": "uv run -q python -m tests.seller",
+       "at": "2026-11-14T06:15:44Z"
+      },
+      {
+       "id": "rush",
+       "title": "Fair split under shortage",
+       "what": "Many agents, one short product: split by contract share, care kitchens first, never promised twice.",
+       "passed": 35,
+       "failed": 0,
+       "exit": 0,
+       "seconds": 14.5,
+       "command": "uv run -q python -m tests.rush",
+       "at": "2026-11-14T06:15:58Z"
+      },
+      {
+       "id": "attack",
+       "title": "Attacks from outside",
+       "what": "Forged tokens, replayed offers, other accounts' orders, oversized input, spoofed addresses, against a fresh server.",
+       "passed": 100,
+       "failed": 0,
+       "exit": 0,
+       "seconds": 5.3,
+       "command": "uv run -q python -m tests.attack",
+       "at": "2026-11-14T06:16:11Z"
+      },
+      {
+       "id": "passkey",
+       "title": "Approval signed on a person's device",
+       "what": "Enrol a device, sign a decision with it, verify it in the browser, and the ways around it that must fail. Uses a software passkey in a test browser.",
+       "passed": 35,
+       "failed": 0,
+       "exit": 0,
+       "seconds": 29.6,
+       "command": "node tests/passkey.mjs",
+       "at": "2026-11-14T06:16:49Z"
+      }
+     ],
+     "checks": 331,
+     "passed": 331,
+     "failed": 0,
+     "rerun": "uv run -q python -m agent.evidence"
+    },
+    "menu_test": {
+     "id": "20261114T061657Z",
+     "at": "2026-11-14T06:17:56Z",
+     "seconds": 59,
+     "seed": 2026,
+     "menus": 60,
+     "orders": 60,
+     "lines": 1334,
+     "eur": 61849,
+     "asked": 0,
+     "nothing": 0,
+     "refused": 0,
+     "errors": 0,
+     "must_ask": {
+      "menus": 6,
+      "asked": 6,
+      "ordered": 0,
+      "what": [
+       "10,000 guests",
+       "a note for more people than there are guests",
+       "a note that is not a dietary rule",
+       "a dish with no recipe",
+       "a note about an ingredient the menu does not have",
+       "5,000 portions of one dish for 180 guests"
+      ]
+     },
+     "with_diet": 52,
+     "diets": {
+      "egg-free": 4,
+      "gluten-free": 16,
+      "lactose-free": 16,
+      "milk-free": 8,
+      "nut-free": 16,
+      "vegan": 4,
+      "vegetarian": 8
+     },
+     "held_dishes": 4,
+     "held_portions": 1659,
+     "portions": 85860,
+     "left_for_person": 58,
+     "approved_by_person": 60,
+     "cleared_lines": 216,
+     "median_plan_s": 0.87,
+     "checks": [
+      {
+       "id": "allergen",
+       "title": "No excluded allergen on any order",
+       "unit": "order lines",
+       "what": "Every line of every order with an order-wide exclusion (a nut-free kitchen), against the manufacturer's contains and may-contain data.",
+       "passed": 335,
+       "failed": 0,
+       "examples": []
+      },
+      {
+       "id": "diet",
+       "title": "Dietary portions get a product that fits",
+       "unit": "dietary lines",
+       "what": "Each line that serves lactose-free, gluten-free, milk-free, egg-free, vegan or vegetarian portions, against the manufacturer's data and claims.",
+       "passed": 956,
+       "failed": 0,
+       "examples": []
+      },
+      {
+       "id": "quantity",
+       "title": "Enough is ordered, and at most one pack too much",
+       "unit": "ingredients",
+       "what": "Portions times the recipe card's amount plus its waste allowance, worked out again here, against pack size times packs ordered.",
+       "passed": 1182,
+       "failed": 0,
+       "examples": []
+      },
+      {
+       "id": "coverage",
+       "title": "Nothing is dropped silently",
+       "unit": "dish ingredients",
+       "what": "Every ingredient of every dish is on an order line or named under not ordered. A refused dish is named once and none of it is ordered.",
+       "passed": 1512,
+       "failed": 0,
+       "examples": []
+      },
+      {
+       "id": "signed",
+       "title": "The order is the plan, and every signature verifies",
+       "unit": "orders",
+       "what": "Lines and quantities on the signed order equal the plan. Valio Aimo's, the buyer's, the agent's and the approver's signatures are checked.",
+       "passed": 60,
+       "failed": 0,
+       "examples": []
+      },
+      {
+       "id": "silence",
+       "title": "No allergen pass without data",
+       "unit": "orders",
+       "what": "Where a product has no allergen declaration and something is excluded, the signed record shows a person cleared it. It never says the line passed.",
+       "passed": 35,
+       "failed": 0,
+       "examples": []
+      },
+      {
+       "id": "substitute",
+       "title": "A substitute is marked as one",
+       "unit": "substitute lines",
+       "what": "A product that differs from what the recipe names is marked on the signed order with what it replaces.",
+       "passed": 44,
+       "failed": 0,
+       "examples": []
+      }
+     ],
+     "checked": 4124,
+     "failed": 0,
+     "file": "evals/menu-runs/20261114T061657Z.jsonl",
+     "rerun": "AIMO_DATA=/tmp/aimo-menu-eval uv run -q python -m agent.menu_evals",
+     "photos": {
+      "reads_each": 10,
+      "samples": [
+       {
+        "id": "wedding",
+        "title": "Wedding dinner",
+        "printed_guests": 180,
+        "reads": 10,
+        "failed_calls": 0,
+        "refused": 0,
+        "guests_right": 10,
+        "same_dishes": 10,
+        "same_notes": 10,
+        "no_question": 10,
+        "dishes": 8,
+        "differences": [],
+        "median_s": 7.5
+       },
+       {
+        "id": "school",
+        "title": "School lunch week",
+        "printed_guests": 420,
+        "reads": 10,
+        "failed_calls": 0,
+        "refused": 0,
+        "guests_right": 10,
+        "same_dishes": 10,
+        "same_notes": 10,
+        "no_question": 10,
+        "dishes": 9,
+        "differences": [],
+        "median_s": 8.1
+       },
+       {
+        "id": "hotel",
+        "title": "Hotel breakfast",
+        "printed_guests": 240,
+        "reads": 10,
+        "failed_calls": 0,
+        "refused": 0,
+        "guests_right": 10,
+        "same_dishes": 10,
+        "same_notes": 10,
+        "no_question": 10,
+        "dishes": 14,
+        "differences": [],
+        "median_s": 11.2
+       },
+       {
+        "id": "notmenu",
+        "title": "Not a menu",
+        "reads": 10,
+        "refused": 10
+       }
+      ]
+     }
+    },
+    "rush": {
+     "id": "rush_20261114T020853Z",
+     "complete": true,
+     "when": "2026-11-14T04:08:53+02:00",
+     "seed": 41,
+     "base": "http://127.0.0.1:8642",
+     "agents_total": 60,
+     "answered": 60,
+     "stock": {
+      "litres_in_stock": 698,
+      "litres_asked": 1472,
+      "litres_expected_from_seeded_history": 1608,
+      "litres_ordered": 698,
+      "litres_left": 0,
+      "litres_held_at_end": 0,
+      "exactly_allocated": true,
+      "over_allocated": false,
+      "most_promised_at_once": 698,
+      "times_checked": 78,
+      "substitute_litres_ordered": 455,
+      "litres_from_released_shares": 28,
+      "allocation_started": "auto",
+      "care_minimum_pct": 60
+     },
+     "outcomes": {
+      "got_all": 8,
+      "share_only": 18,
+      "share_plus_substitute": 20,
+      "needed_a_person": 9,
+      "refused": 5,
+      "no_order": 0
+     },
+     "placed_alone": 51,
+     "orders": 71,
+     "refused_then_ordered_share": 4,
+     "hospital_allergen_refusals": 2,
+     "refusals_a_person_could_override": 0,
+     "valio_aimo_api_calls": 6,
+     "gateway_requests": 289,
+     "rate_limited": 0,
+     "model_retries": 0,
+     "offers_left_open_and_cancelled": 0,
+     "errors": 0
+    },
+    "undeclared": {
+     "food_products": 13546,
+     "undeclared": 4233,
+     "pct": 31.2,
+     "name_points_at_an_allergen": 290,
+     "examples": [
+      {
+       "id": "461814",
+       "title": "SALMON FILLET C-CUT DEBONED A10KG NORWAY",
+       "points_at": "fish"
+      },
+      {
+       "id": "462125",
+       "title": "SMOKED SHRIMP WHOLE 2KG",
+       "points_at": "crustaceans"
+      },
+      {
+       "id": "465397",
+       "title": "RB 1KG ALMOND BLANCED 27/30",
+       "points_at": "tree nuts"
+      },
+      {
+       "id": "464534",
+       "title": "Katjang Peanuts 1 kg",
+       "points_at": "peanuts"
+      },
+      {
+       "id": "475929",
+       "title": "FALLOT 5KG DIJON MUSTARD",
+       "points_at": "mustard"
+      },
+      {
+       "id": "464305",
+       "title": "RAPSONA 5KG REAL MAYONNAISE 80%",
+       "points_at": "eggs"
+      },
+      {
+       "id": "460597",
+       "title": "BIRKKALAN 800G ORGANIC SPELTFLOUR",
+       "points_at": "cereals containing gluten"
+      },
+      {
+       "id": "464374",
+       "title": "OH AIK GUAN 650ML SESAME OIL ROASTED",
+       "points_at": "sesame"
+      },
+      {
+       "id": "475871",
+       "title": "RACLETTE A.5KG CHEESE",
+       "points_at": "milk"
+      },
+      {
+       "id": "469909",
+       "title": "DEK SOM BOON 2L LIGHT SOY SAUCE",
+       "points_at": "soybeans"
+      }
+     ]
+    }
    }
   }
  },
@@ -20385,6 +20598,374 @@
    "ord_74e0f89422c3",
    "ord_365302f62f68",
    "ord_24b34fbbc282"
-  ]
+  ],
+  "tests": {
+   "at": "2026-11-14T06:16:49Z",
+   "suites": [
+    {
+     "id": "flow",
+     "title": "One order end to end",
+     "what": "Offer, signature, approval, order, and the refusals on the way: wrong product, missed cut-off, a price that moved.",
+     "passed": 6,
+     "failed": 0,
+     "exit": 0,
+     "seconds": 8.7,
+     "command": "uv run -q python -m tests.flow",
+     "at": "2026-11-14T06:14:53Z"
+    },
+    {
+     "id": "controls",
+     "title": "What an agent can see and do",
+     "what": "No stock counts, no other customers' data, rate limits, the per-reader ledger.",
+     "passed": 11,
+     "failed": 0,
+     "exit": 0,
+     "seconds": 7.7,
+     "command": "uv run -q python -m tests.controls",
+     "at": "2026-11-14T06:15:01Z"
+    },
+    {
+     "id": "after",
+     "title": "After the order",
+     "what": "Short pick, delay and batch recall: what the agent may settle alone and what goes to a person.",
+     "passed": 58,
+     "failed": 0,
+     "exit": 0,
+     "seconds": 10,
+     "command": "uv run -q python -m tests.after",
+     "at": "2026-11-14T06:15:11Z"
+    },
+    {
+     "id": "menu",
+     "title": "Menu to order",
+     "what": "Recipe quantities, pack sizes, dietary rules per dish, a shortage solved by what the ingredient does, a photo that is not a menu.",
+     "passed": 53,
+     "failed": 0,
+     "exit": 0,
+     "seconds": 22.9,
+     "command": "uv run -q python -m tests.menu",
+     "at": "2026-11-14T06:15:34Z"
+    },
+    {
+     "id": "seller",
+     "title": "Valio Aimo's own agent",
+     "what": "Proposals are checked against the buyer's limits before they leave; a declined one is never made again.",
+     "passed": 33,
+     "failed": 0,
+     "exit": 0,
+     "seconds": 10.1,
+     "command": "uv run -q python -m tests.seller",
+     "at": "2026-11-14T06:15:44Z"
+    },
+    {
+     "id": "rush",
+     "title": "Fair split under shortage",
+     "what": "Many agents, one short product: split by contract share, care kitchens first, never promised twice.",
+     "passed": 35,
+     "failed": 0,
+     "exit": 0,
+     "seconds": 14.5,
+     "command": "uv run -q python -m tests.rush",
+     "at": "2026-11-14T06:15:58Z"
+    },
+    {
+     "id": "attack",
+     "title": "Attacks from outside",
+     "what": "Forged tokens, replayed offers, other accounts' orders, oversized input, spoofed addresses, against a fresh server.",
+     "passed": 100,
+     "failed": 0,
+     "exit": 0,
+     "seconds": 5.3,
+     "command": "uv run -q python -m tests.attack",
+     "at": "2026-11-14T06:16:11Z"
+    },
+    {
+     "id": "passkey",
+     "title": "Approval signed on a person's device",
+     "what": "Enrol a device, sign a decision with it, verify it in the browser, and the ways around it that must fail. Uses a software passkey in a test browser.",
+     "passed": 35,
+     "failed": 0,
+     "exit": 0,
+     "seconds": 29.6,
+     "command": "node tests/passkey.mjs",
+     "at": "2026-11-14T06:16:49Z"
+    }
+   ],
+   "checks": 331,
+   "passed": 331,
+   "failed": 0,
+   "rerun": "uv run -q python -m agent.evidence"
+  },
+  "menu_test": {
+   "id": "20261114T061657Z",
+   "at": "2026-11-14T06:17:56Z",
+   "seconds": 59,
+   "seed": 2026,
+   "menus": 60,
+   "orders": 60,
+   "lines": 1334,
+   "eur": 61849,
+   "asked": 0,
+   "nothing": 0,
+   "refused": 0,
+   "errors": 0,
+   "must_ask": {
+    "menus": 6,
+    "asked": 6,
+    "ordered": 0,
+    "what": [
+     "10,000 guests",
+     "a note for more people than there are guests",
+     "a note that is not a dietary rule",
+     "a dish with no recipe",
+     "a note about an ingredient the menu does not have",
+     "5,000 portions of one dish for 180 guests"
+    ]
+   },
+   "with_diet": 52,
+   "diets": {
+    "egg-free": 4,
+    "gluten-free": 16,
+    "lactose-free": 16,
+    "milk-free": 8,
+    "nut-free": 16,
+    "vegan": 4,
+    "vegetarian": 8
+   },
+   "held_dishes": 4,
+   "held_portions": 1659,
+   "portions": 85860,
+   "left_for_person": 58,
+   "approved_by_person": 60,
+   "cleared_lines": 216,
+   "median_plan_s": 0.87,
+   "checks": [
+    {
+     "id": "allergen",
+     "title": "No excluded allergen on any order",
+     "unit": "order lines",
+     "what": "Every line of every order with an order-wide exclusion (a nut-free kitchen), against the manufacturer's contains and may-contain data.",
+     "passed": 335,
+     "failed": 0,
+     "examples": []
+    },
+    {
+     "id": "diet",
+     "title": "Dietary portions get a product that fits",
+     "unit": "dietary lines",
+     "what": "Each line that serves lactose-free, gluten-free, milk-free, egg-free, vegan or vegetarian portions, against the manufacturer's data and claims.",
+     "passed": 956,
+     "failed": 0,
+     "examples": []
+    },
+    {
+     "id": "quantity",
+     "title": "Enough is ordered, and at most one pack too much",
+     "unit": "ingredients",
+     "what": "Portions times the recipe card's amount plus its waste allowance, worked out again here, against pack size times packs ordered.",
+     "passed": 1182,
+     "failed": 0,
+     "examples": []
+    },
+    {
+     "id": "coverage",
+     "title": "Nothing is dropped silently",
+     "unit": "dish ingredients",
+     "what": "Every ingredient of every dish is on an order line or named under not ordered. A refused dish is named once and none of it is ordered.",
+     "passed": 1512,
+     "failed": 0,
+     "examples": []
+    },
+    {
+     "id": "signed",
+     "title": "The order is the plan, and every signature verifies",
+     "unit": "orders",
+     "what": "Lines and quantities on the signed order equal the plan. Valio Aimo's, the buyer's, the agent's and the approver's signatures are checked.",
+     "passed": 60,
+     "failed": 0,
+     "examples": []
+    },
+    {
+     "id": "silence",
+     "title": "No allergen pass without data",
+     "unit": "orders",
+     "what": "Where a product has no allergen declaration and something is excluded, the signed record shows a person cleared it. It never says the line passed.",
+     "passed": 35,
+     "failed": 0,
+     "examples": []
+    },
+    {
+     "id": "substitute",
+     "title": "A substitute is marked as one",
+     "unit": "substitute lines",
+     "what": "A product that differs from what the recipe names is marked on the signed order with what it replaces.",
+     "passed": 44,
+     "failed": 0,
+     "examples": []
+    }
+   ],
+   "checked": 4124,
+   "failed": 0,
+   "file": "evals/menu-runs/20261114T061657Z.jsonl",
+   "rerun": "AIMO_DATA=/tmp/aimo-menu-eval uv run -q python -m agent.menu_evals",
+   "photos": {
+    "reads_each": 10,
+    "samples": [
+     {
+      "id": "wedding",
+      "title": "Wedding dinner",
+      "printed_guests": 180,
+      "reads": 10,
+      "failed_calls": 0,
+      "refused": 0,
+      "guests_right": 10,
+      "same_dishes": 10,
+      "same_notes": 10,
+      "no_question": 10,
+      "dishes": 8,
+      "differences": [],
+      "median_s": 7.5
+     },
+     {
+      "id": "school",
+      "title": "School lunch week",
+      "printed_guests": 420,
+      "reads": 10,
+      "failed_calls": 0,
+      "refused": 0,
+      "guests_right": 10,
+      "same_dishes": 10,
+      "same_notes": 10,
+      "no_question": 10,
+      "dishes": 9,
+      "differences": [],
+      "median_s": 8.1
+     },
+     {
+      "id": "hotel",
+      "title": "Hotel breakfast",
+      "printed_guests": 240,
+      "reads": 10,
+      "failed_calls": 0,
+      "refused": 0,
+      "guests_right": 10,
+      "same_dishes": 10,
+      "same_notes": 10,
+      "no_question": 10,
+      "dishes": 14,
+      "differences": [],
+      "median_s": 11.2
+     },
+     {
+      "id": "notmenu",
+      "title": "Not a menu",
+      "reads": 10,
+      "refused": 10
+     }
+    ]
+   }
+  },
+  "rush": {
+   "id": "rush_20261114T020853Z",
+   "complete": true,
+   "when": "2026-11-14T04:08:53+02:00",
+   "seed": 41,
+   "base": "http://127.0.0.1:8642",
+   "agents_total": 60,
+   "answered": 60,
+   "stock": {
+    "litres_in_stock": 698,
+    "litres_asked": 1472,
+    "litres_expected_from_seeded_history": 1608,
+    "litres_ordered": 698,
+    "litres_left": 0,
+    "litres_held_at_end": 0,
+    "exactly_allocated": true,
+    "over_allocated": false,
+    "most_promised_at_once": 698,
+    "times_checked": 78,
+    "substitute_litres_ordered": 455,
+    "litres_from_released_shares": 28,
+    "allocation_started": "auto",
+    "care_minimum_pct": 60
+   },
+   "outcomes": {
+    "got_all": 8,
+    "share_only": 18,
+    "share_plus_substitute": 20,
+    "needed_a_person": 9,
+    "refused": 5,
+    "no_order": 0
+   },
+   "placed_alone": 51,
+   "orders": 71,
+   "refused_then_ordered_share": 4,
+   "hospital_allergen_refusals": 2,
+   "refusals_a_person_could_override": 0,
+   "valio_aimo_api_calls": 6,
+   "gateway_requests": 289,
+   "rate_limited": 0,
+   "model_retries": 0,
+   "offers_left_open_and_cancelled": 0,
+   "errors": 0
+  },
+  "undeclared": {
+   "food_products": 13546,
+   "undeclared": 4233,
+   "pct": 31.2,
+   "name_points_at_an_allergen": 290,
+   "examples": [
+    {
+     "id": "461814",
+     "title": "SALMON FILLET C-CUT DEBONED A10KG NORWAY",
+     "points_at": "fish"
+    },
+    {
+     "id": "462125",
+     "title": "SMOKED SHRIMP WHOLE 2KG",
+     "points_at": "crustaceans"
+    },
+    {
+     "id": "465397",
+     "title": "RB 1KG ALMOND BLANCED 27/30",
+     "points_at": "tree nuts"
+    },
+    {
+     "id": "464534",
+     "title": "Katjang Peanuts 1 kg",
+     "points_at": "peanuts"
+    },
+    {
+     "id": "475929",
+     "title": "FALLOT 5KG DIJON MUSTARD",
+     "points_at": "mustard"
+    },
+    {
+     "id": "464305",
+     "title": "RAPSONA 5KG REAL MAYONNAISE 80%",
+     "points_at": "eggs"
+    },
+    {
+     "id": "460597",
+     "title": "BIRKKALAN 800G ORGANIC SPELTFLOUR",
+     "points_at": "cereals containing gluten"
+    },
+    {
+     "id": "464374",
+     "title": "OH AIK GUAN 650ML SESAME OIL ROASTED",
+     "points_at": "sesame"
+    },
+    {
+     "id": "475871",
+     "title": "RACLETTE A.5KG CHEESE",
+     "points_at": "milk"
+    },
+    {
+     "id": "469909",
+     "title": "DEK SOM BOON 2L LIGHT SOY SAUCE",
+     "points_at": "soybeans"
+    }
+   ]
+  }
  }
 }

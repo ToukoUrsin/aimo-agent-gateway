@@ -1,0 +1,8 @@
+{
+  "https://trusted-trade-agents.fly.dev": {
+    "seller": {"kty": "EC", "crv": "P-256", "x": "5n3vP5J01SXQ1rs9einbO3yaz3w3LsqljhA-UHR9qR8", "y": "Lljbnq2D80hbXm03vE86WHIonyeCgVRvMJ-0uBMT3n8", "kid": "CCyQmVzEXNduSTNCZg9uYMQSkaFml9TuOejQv8fhko0", "alg": "ES256", "use": "sig"}
+  },
+  "model test 20261114T081651Z (the second instance the test ran on)": {
+    "seller": {"kty": "EC", "crv": "P-256", "x": "1Z2Pbsuup2SdC4BK12UQInb3401lKOnw9BBGNuwNHDo", "y": "rYFd54e7OGdeOY_UdWDLJX0wyhPMc-88LZI-TK0AB_U", "kid": "KGOi537PcFdmC0G-KW-tiGrjMPKULM8QlXtA_sXggGw", "alg": "ES256", "use": "sig"}
+  }
+}

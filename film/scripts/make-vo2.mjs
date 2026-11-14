@@ -58,23 +58,26 @@ const sellLine = {
 }[SELL?.kind || 'cutoff'];
 
 // [id, text]. The film places each line (src/v2/timeline.ts).
+const U = PROOF.undeclared || {};
+const ex = U.examples || [];
+const exampleNames = ['salmon fillet', 'shelled almonds', 'Dijon mustard'];
+const menuReadPlan = Number(((MENU.phases?.read || 0) + (MENU.phases?.plan || 0)).toFixed(1));
 const LINES = [
 	['h1', `Saturday's wedding. ${cap(words(MENU.guests))} guests. The chef takes a photo of the menu.`],
-	['h2', `${cap(words(secs))} seconds later it is a checked order. ${cap(words(MENU.line_count))} lines, one tap from a person.`],
-	['n1', bh.basis === 'measured' ? `By hand, the same order took ${words(bh.minutes)} minutes. We timed it.` : `By hand, the same order is about ${words(Math.round(bh.minutes / 5) * 5)} minutes. That is our estimate.`],
+	['h2', `${cap(words(menuReadPlan))} seconds later, it is a checked order. ${cap(words(MENU.line_count))} lines, one tap from a person.`],
 	['n2', `Valio Aimo's challenge says why this matters. AI agents are starting to order, and whoever defines the door owns the customer.`],
+	['d1', `${cap(words(Math.round(U.pct || 31)))} percent of food products have no allergen declaration. ${words(U.name_points_at_an_allergen)} even name one.`],
+	['d2', `A ${exampleNames[0]}, ${exampleNames[1]}, or ${exampleNames[2]} can say nothing about allergens. This gateway sends that line to a person once.`],
 	['r1', `Now the whipping cream runs short. The sauce gets cooking cream, because it is only heated. The whipped topping keeps the real cream.`],
-	['s1', `Valio Aimo's own agent speaks up too. ${sellLine} A signed proposal, and one thumb approves it.`],
-	['u1', `Monday morning. ${cap(words(RUSH.agents_total))} kitchens' agents ask for the same lactose-free milk at the same second. ${half < 0.5 ? 'There is less than half of it.' : 'There is not enough.'}`],
-	['u2', `The gateway splits it by contract share. ${cap(words(RUSH.seconds.first_request_to_last_order))} seconds. ${cap(words(person))} of ${words(RUSH.agents_total)} needed a person. ${RUSH.stock.over_allocated ? '' : 'Not one litre was promised twice.'}`],
-	['t1', `A hospital kitchen's bot reaches for a ${soy ? 'soy' : 'substitute'} drink. The kitchen excludes ${soy ? 'soy' : 'it'}. Refused, and no person can override that.`],
-	['t2', `Change one cent in a signed order, and the check fails, right in the browser.`],
-	['t3', ANCHOR?.latest ? `Every step sits on a ledger your browser can verify, with its head on a public chain.` : `Every step sits on a ledger that your own browser can verify.`],
-	['p1', caught && now === 0 ? `We tried to break it first. ${cap(words(PROOF.totals.models))} models, ${words(PROOF.totals.runs)} test runs. They caught a bug in our own allergen rule. ${cap(words(caught))} orders got through. We fixed it. Now: zero.` : `We tried to break it first. ${cap(words(PROOF.totals.models))} models, ${words(PROOF.totals.runs)} test runs. Orders that broke a rule: ${words(now)}.`],
+	['pk1', `A person approves on their own device: fingerprint, face, or screen lock. The key never leaves it, and the order page checks it as a seventh signature.`],
+	['u1', `Monday morning. ${cap(words(RUSH.agents_total))} kitchens' agents ask for the same lactose-free milk at the same second. There are ${words(RUSH.stock.litres_in_stock)} litres in stock.`],
+	['u2', `The gateway splits it by contract share. ${cap(words(RUSH.seconds.first_request_to_last_order))} seconds. ${cap(words(person))} of ${words(RUSH.agents_total)} needed a person. Not one litre was promised twice.`],
+	['t1', `Change one cent in a signed order, and the check fails, right in the browser.`],
+	['t2', `Seven checks pass again when the price is restored. The rules run in code.`],
+	['p1', `We broke it first. ${cap(words(PROOF.totals.models))} models, ${words(PROOF.totals.runs)} runs caught a bug in our allergen rule. ${cap(words(caught))} orders got through. We fixed it. Now zero.`],
+	['p2', `Four tests. Every one is zero.`],
 	['a1', `An unvetted bot signs its own mandate. Refused, and the gateway suspends it on its own.`],
-	['a2', `An agent only ever hears its own answer. Never the stock count.`],
-	['y1', `Any agent can come through. Paste one address into Claude or ChatGPT, and it orders under the same rules.`],
-	['y2', `Open standards, not one platform's black box.`],
+	['y1', `Any agent can come through. Paste one address into Claude or ChatGPT, and it orders under the same rules. Open standards, not one platform's black box.`],
 	['c1', `Valio Aimo. Readable by any agent. Owned by Valio.`],
 ];
 
