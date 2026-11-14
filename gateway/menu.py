@@ -30,7 +30,7 @@ import httpx
 from fastapi import APIRouter, Body, Request, Response
 
 from .catalog import ALLERGENS, UNITS, allergen_hits, allergens_unchecked, declares_allergens, fold, named_hits, widen_allergens
-from .config import STAGE, TZ, WEB, order_url
+from .config import DATA as DATA_DIR, STAGE, TZ, WEB, order_url
 from . import passkey
 from .service import REASONS, GatewayError, iso, nice_day
 
@@ -375,21 +375,41 @@ def _int(x):
         return None
 
 
-def _recipe(raw) -> list[dict]:
+def _pantry_name(item: str) -> str:
+    """An ingredient written in another number under the kitchen's own name for it: "potatoes" is potato, so it gets the kitchen's usual product."""
+    w = item.split()
+    alt = " ".join(w[:-1] + [_sing(w[-1])]) if w else item
+    return item if item in PANTRY or alt not in PANTRY else alt
+
+
+PIECES = {"pcs", "pc", "kpl", "piece", "pieces", "each", "st"}
+PIECE_G = {"egg": 55, "eggs in shell": 55}  # a recipe counts eggs, the shelf weighs them: a medium egg is about 55 g
+
+
+def _recipe(raw, per: int = 1, left: list | None = None) -> list[dict]:
+    """Ingredients with amounts in g or ml per portion. per: the amounts as given are for that many portions, and code divides.
+    left: collects, as written, each ingredient that has no weight or volume and so cannot be ordered from the recipe."""
     out = []
     for i in (raw if isinstance(raw, list) else [])[:14]:
         if not isinstance(i, dict):
             continue
         item, unit = str(i.get("item") or "").strip().lower()[:48], str(i.get("unit") or "").strip().lower()
+        fi, name = str(i.get("fi") or "").strip().lower()[:48], _pantry_name(item)
         try:
             amount = float(i.get("amount"))
         except (TypeError, ValueError):
-            continue
+            amount = math.nan
+        if unit in PIECES and name in PIECE_G:
+            amount, unit = amount * PIECE_G[name], "g"
         mult = {"g": 1, "ml": 1, "kg": 1000, "l": 1000, "dl": 100, "cl": 10}.get(unit)
-        if not item or mult is None or not math.isfinite(amount) or re.fullmatch(r"(?:(?:cold|hot|warm|boiling|tap|ice) )?water|vesi|ice(?: cubes)?", item):  # water comes from the tap
+        water = re.fullmatch(r"(?:(?:cold|hot|warm|boiling|tap|ice) )?water|vesi|ice(?: cubes)?", item)  # water comes from the tap
+        if not item or mult is None or not math.isfinite(amount) or water:
+            if left is not None and item and not water:
+                left.append(fi or item)
             continue
-        fi = str(i.get("fi") or "").strip().lower()[:48]
-        out.append({"item": item, "role": str(i.get("role") or "ingredient").strip().lower()[:32], "amount": round(amount * mult, 2), "unit": "ml" if unit in ("ml", "l", "dl", "cl") else "g", **({"fi": fi} if fi else {})})
+        # divided amounts are cut, not rounded up: 1 kg for 60 portions must come back as 1 kg, never as a gram over a pack
+        out.append({"item": name, "role": str(i.get("role") or "ingredient").strip().lower()[:32], "amount": round(amount * mult, 2) if per == 1 else math.floor(amount * mult / per * 10000) / 10000,
+                    "unit": "ml" if unit in ("ml", "l", "dl", "cl") else "g", **({"fi": fi} if fi else {})})
     return out
 
 
@@ -441,14 +461,20 @@ def normalize(raw: dict, source: str) -> dict:
         # A card stands for the dish only when it has what the dish is named for: "nutty green salad" is not the green salad card.
         if card and card not in (_exact_card(name), _exact_card(written)) and missing_named(name, written, CARDS[card]["ingredients"]):
             card = None
-        recipe = [] if card else _recipe(x.get("recipe"))
+        # The kitchen's own recipe (recipe_portions: how many portions its amounts make): it stands in place of the card, with the amounts as written and nothing added for waste.
+        per = _int(x.get("recipe_portions")) or (1 if x.get("own") is True else None)
+        left = []
+        own = [{**r, "waste_pct": 0} for r in _recipe(x.get("recipe"), per, left)] if source == "agent" and per and 1 <= per <= MAX_GUESTS else []
+        if own:
+            card = None
+        recipe = own or ([] if card else _recipe(x.get("recipe")))
         notes = x.get("notes") if isinstance(x.get("notes"), list) else [x["notes"]] if x.get("notes") else []
         skip = [str(n).strip()[:140] for n in (x.get("skip") if isinstance(x.get("skip"), list) else []) if str(n).strip()][:6]
         dishes.append({"name": name, "as_written": written, "card": card, "portions": _int(x.get("portions")), "days": _int(x.get("days")) or 1,
                        "notes": [str(n).strip()[:80] for n in notes if str(n).strip() and not _heading(n)][:6], "food": x.get("food") is not False, "recipe": recipe,
                        "source": "card" if card else (x.get("source") if x.get("source") in ("agent", "model") else source) if recipe else None,
                        # only: this dish is for the guests of one note and nobody else. skip: the guests of these notes get another dish instead of this one.
-                       **({"only": str(x["only"]).strip()[:140]} if x.get("only") else {}), **({"skip": skip} if skip else {})})
+                       **({"own": True} if own else {}), **({"left_out": left[:8]} if own and left else {}), **({"only": str(x["only"]).strip()[:140]} if x.get("only") else {}), **({"skip": skip} if skip else {})})
     notes = raw.get("notes") if isinstance(raw.get("notes"), list) else [raw["notes"]] if raw.get("notes") else []
     day = str(raw.get("date") or raw.get("event_date") or "")[:10]
     try:
@@ -462,9 +488,26 @@ def normalize(raw: dict, source: str) -> dict:
             "dishes": dishes, "notes": [str(n).strip()[:140] for n in notes if str(n).strip() and not _heading(n)][:12]}
 
 
-def read_photo(image: str) -> tuple[dict | None, dict, list[dict]]:
+_reads_lock = threading.Lock()
+
+
+def _reads() -> dict:
+    try:
+        return json.loads((DATA_DIR / "photo_reads.json").read_text())
+    except (OSError, ValueError):
+        return {}
+
+
+def read_photo(image: str, reuse: bool = False) -> tuple[dict | None, dict, list[dict]]:
     """(reading or None, verdict, model calls). The model looks at the photo twice at the same time, with two different questions: one short look that only
     says whether there is anything to cook from, and the read itself. The photo is refused only when neither look finds a dish: one doubt never turns a real menu away."""
+    # reuse: the same photo on the same day is read once, so a second look at the same lunch list cannot give another cart. The verdict says when a reading
+    # is reused, and the caller says it to the person. The timed menu page never reuses one: its seconds are of a real read.
+    key = hashlib.sha256(image.encode()).hexdigest() + ":" + datetime.now(TZ).strftime("%Y-%m-%d")
+    with _reads_lock:
+        hit = _reads().get(key) if reuse else None
+    if hit:
+        return hit["reading"], {**hit["verdict"], "reused": True}, []
     content = lambda text: [{"type": "text", "text": text}, {"type": "image_url", "image_url": {"url": image}}]
     prompt = READ_PROMPT.format(today=datetime.now(TZ).strftime("%A %d %B %Y"), cards=_cards_text(), pantry=", ".join(PANTRY))
 
@@ -488,7 +531,16 @@ def read_photo(image: str) -> tuple[dict | None, dict, list[dict]]:
         what = str((read if read.get("menu") is False else guard or read).get("what") or "").strip()[:80]
         return None, {"menu": False, "what": what}, calls
     calls += complete(rd)
-    return rd, {"menu": True, "what": str(read.get("what") or "").strip()[:80], "doubt": guard_no}, calls
+    verdict = {"menu": True, "what": str(read.get("what") or "").strip()[:80], "doubt": guard_no}
+    if all(d["card"] or d["recipe"] or not d["food"] for d in rd["dishes"]):  # a reading the model could not finish is not kept
+        with _reads_lock:
+            kept = {k: v for k, v in _reads().items() if k.endswith(key[-10:])}  # today's only
+            kept.setdefault(key, {"reading": rd, "verdict": verdict})  # the first reading of the day stands
+            try:
+                (DATA_DIR / "photo_reads.json").write_text(json.dumps(dict(list(kept.items())[-200:]), ensure_ascii=False))
+            except OSError:
+                pass
+    return json.loads(json.dumps(rd)), verdict, calls
 
 
 def fill_recipes(reading: dict, redo: dict | None = None) -> list[dict]:
@@ -531,9 +583,12 @@ def complete(reading: dict, only_new: bool = False) -> list[dict]:
 
 
 def flags(rd: dict) -> list[dict]:
-    """Dishes whose recipe does not have what the dish is named for. Never silent: shown on the dish and in the plan."""
+    """Dishes whose recipe does not have what the dish is named for, and ingredients of a kitchen's own recipe that could not be ordered as written. Never silent: shown on the dish and in the plan."""
     out = []
     for i, d in enumerate(rd["dishes"]):
+        if d.get("left_out"):
+            out.append({"kind": "left_out", "dish_i": i, "dish": d["name"], "ingredients": d["left_out"], "codes": [],
+                        "text": f"The recipe for “{d['name']}” gives no weight or volume for {', '.join(d['left_out'])}, so that is not on this order. Add it with an amount, or order it on its own."})
         if d["card"] or not d["food"] or not d["recipe"]:
             continue
         miss = missing_named(d["name"], d["as_written"], d["recipe"])
@@ -749,6 +804,7 @@ STAPLE = re.compile(r"\b(?:salt|sugar|flour|starch|yeast|oil|vinegar|bouillon|st
                     r"soy sauce|worcestershire|tabasco|breadcrumbs|cocoa powder|gelatine?|peppercorns?|allspice|cinnamon|cardamom|nutmeg|cloves?|cumin|turmeric|paprika|curry powder|bay lea(?:f|ves)|oregano|"
                     r"marjoram|chill?i (?:powder|flakes)|garlic powder|onion powder|ground \w+|dried \w+|spices?|seasoning|sauce base)\b|(?<!bell )(?<!sweet )(?<!red )(?<!green )(?<!yellow )\bpepper\b|^thyme$")
 STAPLE_SHARE = 1 / 3  # of the smallest pack
+RANGE_NOTE = "Every product and price here is Valio Aimo's answer for your account. Nothing comes from outside Valio Aimo."
 FAR = 1.5             # a pack is far bigger than the need when it holds this many times the need
 _NEUTRAL = set("fresh organic luomu class kpl pkt ltk pss bag box sack fin finland suomi hollanti espanja italia ranska saksa puola kiina netherlands holland spain italy france germany poland china tuore pakaste frozen approx".split())
 # Words that make a product another thing than the ingredient in its name: lime curd is not lime, red wine vinegar is not red wine.
@@ -757,7 +813,11 @@ _FORMS = set("soup casserole pudding sauce syrup topping bar sorbet curd juice s
              "bread baguette wrap tortilla lasagne pasta risotto stew porridge mousse butter milk lemonade soda jelly compote filling glaze coated breaded marinated pickled dried ice yoghurt yogurt pepper stick "
              "roll pesto hummus dip salsa chutney relish schnitzel mochi leaf leave concentrate base kissel improver water kombucha beer cider wine granola muesli cereal chocolate cheese cheddar cream sausage meatball strudel".split())
 # What a Finnish kitchen calls it and what the wholesaler sells it as.
-SOLD_AS = {"karelian pasty": ("rice pastry", "riisipiirakka"), "karelian pie": ("rice pastry", "riisipiirakka"), "karjalanpiirakka": ("rice pastry", "riisipiirakka")}
+SOLD_AS = {"karelian pasty": ("rice pastry", "riisipiirakka"), "karelian pie": ("rice pastry", "riisipiirakka"), "karjalanpiirakka": ("rice pastry", "riisipiirakka"),
+           # In a Finnish kitchen paprika is the vegetable, and the wholesaler lists it as capsicum. The spice is "paprika powder".
+           **{k: ("capsicum", "paprika") for k in ("paprika", "bell pepper", "sweet pepper", "capsicum")},
+           **{f"{c} bell pepper": (f"capsicum {c}", f"paprika {f}") for c, f in (("red", "punainen"), ("green", "vihrea"), ("yellow", "keltainen"))}}
+SNACK_CATS = ("21990", "21993", "21120")  # crisps, snacks and salted biscuits
 _SPECIES = set("lamb pork beef veal chicken broiler turkey duck goose reindeer elk moose venison horse salmon trout tuna cod herring pike perch shrimp prawn crab ham bacon".split())
 # The same in Finnish, where the form is the end of a compound word ("mustikkajogurtti"): the part of the word, and the English words that ask for it.
 _FI_FORMS = {"jogurt": ("yoghurt", "yogurt"), "rahka": ("quark",), "viili": ("viili",), "keitto": ("soup",), "kastike": ("sauce",), "mehu": ("juice",), "hillo": ("jam",), "juoma": ("drink",), "kiisseli": ("kissel",),
@@ -793,6 +853,8 @@ def find(g, item: str, fi: str | None = None, diet: tuple = ()) -> list[str]:
         return _found[key]
     words, fi = fold(item).split(), fold(fi or "")
     sold = SOLD_AS.get(" ".join(_sing(w) for w in words)) or SOLD_AS.get(fi) or SOLD_AS.get(fi.rstrip("t")) or ()
+    if sold and sold[0].startswith("capsicum") and re.search(r"jauhe|mauste|savu|rouhe", fi):
+        sold = ()  # the Finnish name says it is the spice
     want, want_fi = _toks(item) | _toks(sold[0] if sold else ""), _toks(fi) | _toks(sold[1] if sold else "")
     fi_one = " ".join(w[:-1] if len(w) > 5 and w.endswith("t") else w for w in fi.split())  # Finnish plural: "lasagnelevyt" is sold as "lasagnelevy"
     queries = list(dict.fromkeys([item, " ".join(_sing(w) for w in words), fi or item, fi_one or item, *sold]))
@@ -821,6 +883,11 @@ def find(g, item: str, fi: str | None = None, diet: tuple = ()) -> list[str]:
                 rows.append((-round(share, 3), shelf, qi, rank, d, bool((_toks(d["title"]) & _SPECIES) - want)))
         if any(not r[5] for r in rows):
             rows = [r for r in rows if not r[5]]  # "lamb roast beef" is not beef
+        plain = [r for r in rows if str(r[4]["category"] or "")[:5] not in SNACK_CATS]
+        if plain and not want & _FORMS:
+            rows = plain  # crisps with the taste of the ingredient are not the ingredient
+        if sold and sold[0].startswith("capsicum") and any(r[1] == 0 for r in rows):
+            rows = [r for r in rows if r[1] == 0]  # the vegetable, never the spice of the same name
         if MEAT_WORDS.search(fold(item)) and any(str(r[4]["category"] or "")[:3] in MEAT_CATS for r in rows):
             rows = [r for r in rows if str(r[4]["category"] or "")[:3] in MEAT_CATS]
         rows.sort(key=lambda r: r[:4])
@@ -883,6 +950,8 @@ class Planner:
         d, f = self.g.cat.get(pid), self.live.get(pid) or {}
         if not d:
             return "it is not in the catalogue"
+        if isinstance(sib, dict):
+            sib = sib.get(str(d["category"] or "")[:3], frozenset())
         if not f.get("orderable") and not (f.get("reason") == "out_of_stock" and f.get("stock_known")):
             return "it cannot be ordered for this day: " + REASONS.get(f.get("reason"), str(f.get("reason")))
         key = _key(unit)
@@ -942,6 +1011,23 @@ class Planner:
         f = self.live[pid]
         return (f.get("comparison_unit") or "", f.get("comparison_price") or f.get("price") or 0)
 
+    def tradeoff(self, pid, usual) -> str:
+        """What the kitchen gives and gets with this replacement, in one sentence: price per litre or kilo, fat, brand. From Valio Aimo's price data and the manufacturer's figures."""
+        d, ud, bits = self.g.cat.get(pid), self.g.cat.get(usual), []
+        if not d or not ud or usual not in self.live or not self.live[usual].get("price"):
+            return ""
+        (u1, p1), (u2, p2) = self.per(pid), self.per(usual)
+        if u1 and u1 == u2 and p1 and p2 and abs(p1 - p2) >= 1:
+            bits.append(f"€{abs(p1 - p2) / 100:,.2f} {'less' if p1 < p2 else 'more'} per {u1.lower()}")
+        elif u1 and u1 == u2 and p1 and p2:
+            bits.append(f"the same price per {u1.lower()}")
+        f1, f2 = FAT.get(pid), FAT.get(usual)
+        if f1 is not None and f2 is not None and abs(f1 - f2) >= 1:
+            bits.append(f"{f1:g}% fat where the usual one has {f2:g}%")
+        if d.get("brand") and ud.get("brand") and d["brand"] != ud["brand"]:
+            bits.append(f"another brand ({d['brand']})")
+        return ("The trade-off: " + ", ".join(bits) + ".") if bits else ""
+
     def alternatives(self, dm, usual, order_ex) -> list[str]:
         """What may stand in for `usual` in this role, best first. Never a product that fails the role, drops lactose-free or adds an allergen."""
         rule, ud = self.rule_for(dm["role"], usual), self.g.cat.get(usual)
@@ -987,9 +1073,16 @@ class Planner:
             else:
                 diets = tuple(sorted({w for o in dms if o["item"] == dm["item"] for w in o["cons"]["why"] if w in DIET_QUERY}))  # one pool per ingredient, so one product can serve every group of portions
                 dm["pool"], dm["known"], dm["swapped"], dm["wide"] = find(g, dm["item"], dm.get("fi"), diets), False, False, []
-            # What the other products for this ingredient contain; for a search, only those on the first product's shelf (a blueberry doughnut says nothing about blueberries).
+            # What the other products for this ingredient contain; for a search, only those on the product's own shelf (a blueberry doughnut says nothing about blueberries).
             shelf = str((g.cat.get(dm["pool"][0]) or {}).get("category") or "")[:3] if dm["pool"] and not dm["known"] else None
-            dm["sib"] = frozenset(a for pid in dm["pool"] if g.cat.get(pid) and (shelf is None or str(g.cat.get(pid)["category"] or "")[:3] == shelf) for a in g.cat.get(pid)["contains"])
+            if shelf is None:
+                dm["sib"] = frozenset(a for pid in dm["pool"] if g.cat.get(pid) for a in g.cat.get(pid)["contains"])
+            else:  # per shelf: paprika crisps with milk in them say nothing about a fresh capsicum
+                by = {}
+                for pid in dm["pool"]:
+                    if g.cat.get(pid):
+                        by.setdefault(str(g.cat.get(pid)["category"] or "")[:3], set()).update(g.cat.get(pid)["contains"])
+                dm["sib"] = {k: frozenset(v) for k, v in by.items()}
         ids = list(dict.fromkeys([pid for dm in dms for pid in dm["pool"] + dm["wide"]] + [pid for dm in dms if dm["role"] in ROLES for pid, fam in FAMILY.items() if fam == ROLES[dm["role"]]["family"]]))
         self.live = g._live(ids, day, self.p) if ids else {}
         late = [self.live[dm["pool"][0]].get("earliest_date") for dm in dms if dm["pool"] and self.live[dm["pool"][0]].get("reason") == "later_date_only"]
@@ -1268,7 +1361,9 @@ class Planner:
             expected = PANTRY.get(conceptual, {}).get("prefer", [None])[0] if conceptual else None
             semantic_sub = bool(conceptual and expected and pid != expected and not _ingredient_matches(conceptual, d))
             sub_for = usual or (expected if semantic_sub else None)
-            sub_reason = (f"The recipe names {conceptual}; {d['title']} is used as a substitute because the named product did not pass the dietary checks." if semantic_sub else None)
+            # Said only when the named product really was refused by a dietary rule; when it is merely short, the shortage sentence above is the reason.
+            refused = semantic_sub and all(expected not in p[0]["cands"] for p in parts)
+            sub_reason = (f"The recipe names {conceptual}; {d['title']} is used as a substitute because the named product did not pass the dietary checks." if refused else None)
             ex = sorted(set().union(*[p[0]["cons"]["ex"] for p in parts]))
             lf = any(p[0]["cons"]["lf"] for p in parts) and bool({"AM", "ML"} & set(d["contains"]))
             asked = sorted(order_ex | set(ex))
@@ -1290,11 +1385,13 @@ class Planner:
             much = not short and got >= FAR * need_amt and got - need_amt >= 1
             sized = next((p[0]["sized"] for p in parts if p[0].get("sized") and p[0]["sized"] != pid), None)
             shared = any(p[0].get("shared") for p in parts) and len({tuple(p[0]["cons"]["why"]) for p in parts}) > 1
-            pack_text = (f"Needs {qty(need_amt, unit)} with the waste allowance. One {label} holds {qty(c, unit)}" + (f", sold in steps of {s:g}" if s != 1 else "") + f": {units:,.10g} {many(label, units)} = {qty(got, unit)}."
+            pack_text = (f"Needs {qty(need_amt, unit)} {'with the waste allowance' if any(p[0].get('waste') for p in parts) else 'as the recipe gives it'}. One {label} holds {qty(c, unit)}" + (f", sold in steps of {s:g}" if s != 1 else "") + f": {units:,.10g} {many(label, units)} = {qty(got, unit)}."
                          + (f" {qty(got - need_amt, unit)} is left over" + ("; nothing smaller is sold for this ingredient." if got <= least + 1e-6 else ".") if much else "")
                          + (f" The kitchen's usual pack ({g.cat.get(sized)['title']}, {qty(self.pack(sized, unit), unit)}) is far more than this menu needs, so this smaller one is ordered." if sized else "")
                          + (" One product is ordered for the portions with a dietary rule and for the rest, because one pack leaves less over than two." if shared else "")
                          + (f" The recipe gives {qty(sum(p[0]['ready'] for p in parts if p[0].get('ready')), 'ml')} ready to use; the need is counted as concentrate ({next(p[0]['yield'] for p in parts if p[0].get('yield'))})." if any(p[0].get("yield") for p in parts) else ""))
+            lp = f.get("list_price")
+            own_price = (f"{'Your contract price' if f.get('contract_price') else 'Your price'}: €{f['price'] / 100:,.2f} per {label}" + (f", list price €{lp / 100:,.2f}" if lp and lp > f["price"] else ""))
             lines.append({
                 "product": {"id": pid, "title": d["title"], "brand": d.get("brand")}, "units": units, "unit": label, "quantity": round(units * 10 ** d["scale"]),
                 "for": [{"dish": p[0]["dish"], "item": p[0]["item"], "role": p[0]["role"], "portions": p[0]["portions"], "per_portion": f"{p[0]['amount']:g} {p[0]['unit']}", "waste_pct": p[0]["waste"],
@@ -1306,10 +1403,12 @@ class Planner:
                     "pack": {"ok": True, "text": pack_text},
                     "allergens": {"ok": True, "text": a_text, **({"ask": silent} if silent else {})},
                     "stock": {"ok": True, "text": (f"Only {num(self.cap(pid))} {many(label, self.cap(pid))} can be supplied, less than this menu needs." + (f" The {first[0]} gets them first." if first else "") + " The rest is covered on another line or listed under not ordered." if short else "Enough in stock for this order." if f.get("stock_known") else "Delivered to order; no stock limit for this day.")},
-                    "price": {"ok": True, "text": f"€{f['price'] / 100:,.2f} per {label}" + (f" (€{f['comparison_price'] / 100:,.2f} per {f['comparison_unit'].lower()})" if f.get("comparison_price") and f.get("comparison_unit") else "") + f", €{amount / 100:,.2f} ex VAT."},
+                    "price": {"ok": True, "unit_price": f["price"], "list_price": f.get("list_price"), "contract": bool(f.get("contract_price")),
+                              "text": own_price + (f" (€{f['comparison_price'] / 100:,.2f} per {f['comparison_unit'].lower()})" if f.get("comparison_price") and f.get("comparison_unit") else "") + f". This line: €{amount / 100:,.2f} ex VAT."},
                 },
                 "amount": amount, "partial": bool(short),
-                **({"substitutes_for": {"id": sub_for, "title": g.cat.get(sub_for)["title"]}, "reason": " ".join(dict.fromkeys([w[0] for w in why] + [w[1] for w in why] + ([sub_reason] if sub_reason else [])))} if sub_for else {}),
+                **({"substitutes_for": {"id": sub_for, "title": g.cat.get(sub_for)["title"]}, "reason": " ".join(dict.fromkeys([w[0] for w in why] + [w[1] for w in why] + ([sub_reason] if sub_reason else []))),
+                    "from_range": f"From Valio Aimo's range for your account. {own_price}.", **({"tradeoff": self.tradeoff(pid, sub_for)} if self.tradeoff(pid, sub_for) else {})} if sub_for else {}),
                 **({"requirements": req} if req else {}),
                 **({"passed_over": over} if over else {}),
                 "source": "search" if not all(p[0]["known"] for p in parts) else "pantry",
@@ -1346,20 +1445,22 @@ class Planner:
                       "text": f"The menu gives a budget of €{b['amount']:,.2f}" + (f" per guest, €{limit / 100:,.2f} for {rd['guests']:,} guests" if b["per"] == "guest" else "")
                               + f". This order is €{subtotal / 100:,.2f} ex VAT, " + (f"€{gap / 100:,.2f} under the budget." if subtotal <= limit else f"€{gap / 100:,.2f} over the budget.")
                               + (" What is held, not ordered or taken from the pantry is not in that sum." if left_out else "")}
-        n_model = sum(1 for d in rd["dishes"] if d["source"] in ("model", "agent"))
+        n_model, n_own = sum(1 for d in rd["dishes"] if d["source"] in ("model", "agent") and not d.get("own")), sum(1 for d in rd["dishes"] if d.get("own"))
         subs = [l for l in lines if l.get("substitutes_for")]
         intent = (f"{rd['title'] or 'Menu'}: {rd['guests']:,} guests" + (f", {rd['date_text'] or rd['date']}" if rd.get("date") or rd.get("date_text") else "") + ". Dishes: " + ", ".join(d["name"] for d in rd["dishes"])
                   + (". Notes: " + "; ".join(rd["notes"]) if rd["notes"] else "") + ".")[:900]
-        rationale = (f"Bill of materials worked out in code from {len(rd['dishes']) - n_model} of the kitchen's recipe cards" + (f" and {n_model} proposed recipe(s) that a person should check" if n_model else "")
+        rationale = (f"Bill of materials worked out in code from {len(rd['dishes']) - n_model - n_own} of the kitchen's recipe cards" + (f", {n_own} recipe(s) the kitchen gave with its own amounts" if n_own else "")
+                     + (f" and {n_model} proposed recipe(s) that a person should check" if n_model else "")
                      + ": portions x amount per portion + waste allowance, rounded up to pack size. Every line passed pack, allergen, stock and price checks."
                      + (f" {len(subs)} line(s) replace a short product by what the ingredient does in the dish." if subs else "") + (f" {len(opened)} item(s) are left for a person and not ordered." if opened else "")
                      + (f" {len(pantry)} kitchen staple(s) needed in small amounts are left to the kitchen's own pantry." if pantry else ""))
         flag_of = {x["dish_i"]: x["text"] for x in fl}
         return {
             "status": "ready" if lines else "nothing_to_order", "delivery_date": day, "delivery_note": day_note,
+            "range_note": RANGE_NOTE,
             "requirements": {"exclude_allergens": sorted(order_ex)},
             "diet": [{"note": r["note"], "rule": r["text"], "kind": r["kind"], "scope": r["scope"], "count": r["count"], "dish": r.get("dish"), "severe": r["severe"]} for r in rules],
-            "dishes": [{"name": d["name"], "portions": total_of[i], "held": held.get(i, 0), "recipe": "the kitchen's card" if d["card"] else "the model's recipe, check it" if d["source"] == "model" else "the agent's recipe, check it",
+            "dishes": [{"name": d["name"], "portions": total_of[i], "held": held.get(i, 0), "recipe": "the kitchen's card" if d["card"] else "the kitchen's own recipe, amounts as written" if d.get("own") else "the model's recipe, check it" if d["source"] == "model" else "the agent's recipe, check it",
                         "card": CARDS[d["card"]]["name"] if d["card"] else None, "ingredients": len(CARDS[d["card"]]["ingredients"] if d["card"] else d["recipe"]),
                         **({"flag": flag_of[i]} if i in flag_of else {}), **({"only": d["only"]} if d.get("only") else {})} for i, d in enumerate(rd["dishes"])],
             "lines": lines, "not_ordered": opened, "pantry": pantry, "flags": fl, "warnings": warnings, "budget": budget,
@@ -1413,9 +1514,10 @@ def plan_menu_order(g, req: dict, principal, trace=None) -> dict:
     calls = []
     if req.get("image"):
         _spend("agent:" + principal["customer"], 20)
-        rd, verdict, calls = read_photo(_image(req["image"]))
+        rd, verdict, calls = read_photo(_image(req["image"]), reuse=True)
         if rd is None:
             return g._prove({"ucp": g._env(), "status": "not_a_menu", "message": NOT_MENU.format(what=verdict["what"] or "something else"), "usage": cost(calls)})
+        reused = bool(verdict.get("reused"))
     else:
         rd = normalize({"title": req.get("title"), "date": req.get("event_date") or req.get("date"), "guests": req.get("guests"), "dishes": req.get("dishes") or [],
                         "budget": req.get("budget"), "order_staples": req.get("order_staples"),
@@ -1425,6 +1527,8 @@ def plan_menu_order(g, req: dict, principal, trace=None) -> dict:
             calls = complete(rd, only_new=True)
     plan = build_plan(g, rd, principal)
     plan["usage"] = cost(calls)
+    if req.get("image") and reused:
+        plan["photo_read"] = "reused"  # this photo was read earlier today and that reading is used again; no model looked at it this time
     plan["next"] = ("Pass checkout to create_checkout unchanged (line_items, delivery_date, exclude_allergens, intent, rationale). Tell the buyer what is under not_ordered (each held dish asks one question), pantry (staples left to the kitchen's own shelf; send order_staples true to order them), flags, warnings and budget." if plan["status"] == "ready"
                     else "Ask the buyer the questions, fix the request and call plan_menu_order again. Do not order anything from this answer." if plan["status"] == "needs_answers" else "Nothing can be ordered from this menu.")
     g._logp(principal, trace, "menu_plan", (f"Planned a menu order: {len(rd['dishes'])} dishes for {rd['guests']:,} guests, {plan['totals']['lines']} lines, {len(plan['not_ordered'])} not ordered." if plan["status"] == "ready"
@@ -1798,8 +1902,16 @@ def build(g, ctx, page) -> APIRouter:
             for f in l["for"]:
                 amounts[f["item"]] = amounts.get(f["item"], 0) + l["pack"]["need"] * f["share"]
                 need[f["item"]]["unit"] = l["pack"]["unit"]
-        items = [{"item": k, "amount": qty(amounts[k], v["unit"]), "need": round(amounts[k], 1), "unit": v["unit"], "dishes": sorted(v["dishes"])} for k, v in need.items()]
-        return {"from": src, "title": rd["title"] or "Menu", "guests": rd["guests"], "delivery_date": pl["delivery_date"], "notes": rd["notes"] + [f"{d['name']}: {', '.join(d['notes'])}" for d in rd["dishes"] if d["notes"]],
+        from .shopchat import DISH_FI, ITEM_FI  # the shop's Finnish words for dishes and ingredients; imported here because shopchat loads after this module
+        item_fi = {x.get("item"): x["fi"] for d in rd["dishes"] for x in d.get("recipe") or [] if isinstance(x, dict) and x.get("fi")}
+        written = {d["name"]: d.get("as_written") for d in rd["dishes"]}
+        dish_fi = lambda n: DISH_FI.get(n) or written.get(n) or n
+        items = [{"item": k, "fi": item_fi.get(k) or ITEM_FI.get(k), "amount": qty(amounts[k], v["unit"]), "need": round(amounts[k], 1), "unit": v["unit"], "dishes": sorted(v["dishes"]), "dishes_fi": [dish_fi(n) for n in sorted(v["dishes"])]}
+                 for k, v in need.items()]
+        title = rd["title"] or "Menu"
+        return {"from": src, "from_fi": BYHAND_FROM_FI.get(src) or ("näytekuva" if src.startswith("sample photo") else None), "title": title, "title_fi": BYHAND_TITLE_FI.get(title.strip().lower()), "guests": rd["guests"],
+                "delivery_date": pl["delivery_date"], "notes": rd["notes"] + [f"{d['name']}: {', '.join(d['notes'])}" for d in rd["dishes"] if d["notes"]],
+                "notes_fi": rd["notes"] + [f"{dish_fi(d['name'])}: {', '.join(d['notes'])}" for d in rd["dishes"] if d["notes"]],
                 "exclude_allergens": pl["requirements"]["exclude_allergens"], "list": items, "agent_lines": pl["totals"]["lines"]}
 
     @r.get("/api/byhand/task", include_in_schema=False)
@@ -1810,7 +1922,8 @@ def build(g, ctx, page) -> APIRouter:
     def byhand_search(q: str = ""):
         """The bare webshop: catalogue rows only. No live price or stock call per search, to be gentle on Valio Aimo's API; prices come at checkout."""
         docs, _, _ = g.cat.search(q[:80], {}, limit=24) if q.strip() else ([], None, None)
-        row = lambda d: {"id": d["id"], "title": d["title"], "brand": d.get("brand"), "unit": UNITS.get(d["unit"], (0, d["unit"]))[1], "step": d["increment"] / 10 ** d["scale"],
+        row = lambda d: {"id": d["id"], "title": d["title"], "title_fi": (d.get("names") or {}).get("fi"), "brand": d.get("brand"), "unit": UNITS.get(d["unit"], (0, d["unit"]))[1], "step": d["increment"] / 10 ** d["scale"],
+                         "al": list(d["contains"]), "may": list(d["may_contain"]), "cl": [x for x in d["claims"] if x in ("FREE_FROM:LACTOSE", "FREE_FROM:GLUTEN", "DIET:VEGAN")],
                          "pack": " / ".join(f"{v:g} {k}" for k, v in d["content"].items()) or "pack size not in the data",
                          "contains": [ALLERGENS.get(x, x) for x in d["contains"]], "may_contain": [ALLERGENS.get(x, x) for x in d["may_contain"]],
                          "claims": [x.split(":")[1].replace("_", " ").lower() + ("-free" if x.startswith("FREE_FROM") else "") for x in d["claims"] if x in ("FREE_FROM:LACTOSE", "FREE_FROM:GLUTEN", "DIET:VEGAN")]}
@@ -1842,12 +1955,13 @@ def build(g, ctx, page) -> APIRouter:
             ok = bool(f.get("orderable")) and not (f.get("stock_known") and units > f["available"])
             amount = round(f["price"] * units) if f.get("price") else 0
             total += amount if ok else 0
-            rows.append({"id": pid, "title": d["title"], "units": units, "amount": amount, "orderable": ok, "why": None if ok else REASONS.get(f.get("reason"), "not enough stock") if not f.get("orderable") else "not enough stock",
+            rows.append({"id": pid, "title": d["title"], "title_fi": (d.get("names") or {}).get("fi"), "units": units, "amount": amount, "orderable": ok, "why": None if ok else REASONS.get(f.get("reason"), "not enough stock") if not f.get("orderable") else "not enough stock",
+                         "why_code": None if ok else (f.get("reason") or "stock") if not f.get("orderable") else "stock", "hits": sorted(str(h) for h in hits),
                          "breaks": f"contains or may contain {_names(hits)}, which this menu rules out" if hits else None})
         secs = round(now - a["t0"], 1)
         finished = len(basket) >= math.ceil(0.8 * len(task["list"]))
         res = {"seconds": secs, "minutes": round(secs / 60, 1), "lines": len(basket), "list_lines": len(task["list"]), "finished": finished, "subtotal": total, "rows": rows,
-               "breaks": sum(1 for x in rows if x["breaks"]), "cannot_order": sum(1 for x in rows if not x["orderable"]), "agent_lines": task["agent_lines"],
+               "breaks": sum(1 for x in rows if x["breaks"]), "cannot_order": sum(1 for x in rows if not x["orderable"]), "agent_lines": task["agent_lines"], "needed": math.ceil(0.8 * len(task["list"])),
                "counts": "This attempt counts in the measured time." if finished else f"This attempt is not counted: the basket has {len(basket)} of {len(task['list'])} items on the list (at least {math.ceil(0.8 * len(task['list']))} are needed)."}
         a.update({"seconds": secs, "result": res})
         g.store.put("byhand:" + a["id"], a)
@@ -1859,6 +1973,8 @@ def build(g, ctx, page) -> APIRouter:
 
 
 # The wedding sample, typed. Used by /byhand before anyone has ordered from a menu, and by tests.
+BYHAND_FROM_FI = {"the wedding sample menu": "häiden näytemenu", "the last menu you ordered here": "viimeisin täällä tilaamasi menu"}
+BYHAND_TITLE_FI = {"wedding dinner": "Hääillallinen", "menu": "Menu"}
 WEDDING = {"title": "Wedding dinner", "date": "2026-11-21", "date_text": "Sat 21 Nov", "guests": 180, "notes": ["Nut-free kitchen", "Table 6 lactose-free"],
            "dishes": [{"name": "Creamy salmon soup", "card": "salmon_soup", "notes": ["L"]}, {"name": "Green salad", "card": "green_salad"},
                       {"name": "Chicken breast with thyme cream sauce", "card": "chicken_thyme_cream", "notes": ["L", "G"]}, {"name": "Roasted potatoes and carrots", "card": "roast_potatoes"},

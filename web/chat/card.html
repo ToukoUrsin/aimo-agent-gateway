@@ -56,7 +56,7 @@ button{font:inherit;color:inherit}
 .btn:active:not(:disabled){transform:translateY(1px)}
 .lnk{appearance:none;background:none;border:0;padding:0;color:var(--tx2);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:2.5px;cursor:pointer;font-size:inherit}
 .btn:focus-visible,.lnk:focus-visible,summary:focus-visible{outline:2px solid var(--tx);outline-offset:2px;border-radius:6px}
-@media (pointer:coarse){.btn{height:42px;padding:0 16px;font-size:14px}}
+@media (pointer:coarse){.btn{height:44px;padding:0 16px;font-size:14px}details>summary{min-height:44px;display:flex;align-items:center}.chk summary{align-items:center}.lnk{min-height:44px}}
 .acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .ic{width:16px;height:16px;flex:none;display:inline-grid;place-items:center;vertical-align:-3px}
 .ic svg{width:16px;height:16px;display:block}
@@ -143,7 +143,7 @@ details[open]>summary .car{transform:rotate(45deg)}
 @keyframes pu{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
 .done{display:flex;gap:9px;align-items:flex-start;font-size:13.5px}
 .done b{font-weight:600}
-@media (max-width:359px){.hand{flex-direction:column}.qr{width:128px;height:128px}}
+@media (max-width:420px){.hand{flex-direction:column}.qr{width:132px;height:132px}}
 
 /* payment, peppol, signature line */
 .meter{margin-top:9px}
@@ -159,6 +159,16 @@ pre.raw{max-height:340px;overflow:auto}
 .ft{border-top:1px solid var(--line);padding:9px 16px 10px;font-size:11.5px;color:var(--tx3);background:var(--bg2)}
 .ft summary{display:flex;justify-content:space-between;gap:10px;align-items:center}
 .ft .note{margin-top:0}
+.ft .checks>summary{cursor:pointer}
+.chkb{margin-top:8px;color:var(--tx2);font-size:12.5px}
+.chkb>*+*{margin-top:10px}
+.chkb .sig{padding:8px 0;border-top:0}
+.chkb .sec{padding:10px 0;border-top:1px solid var(--line)}
+.whyp p{font-size:14px;color:var(--tx)}
+.whyp p+p{margin-top:5px}
+.rw.us .acts{display:flex}
+.rw.us .btn{height:32px;font-size:12.5px;padding:0 12px}
+@media (pointer:coarse){.rw.us .btn{height:44px}}
 .toast{position:sticky;bottom:0;margin:0 16px 10px;padding:7px 10px;border-radius:8px;background:var(--tx);color:var(--bg);font-size:12.5px;text-align:center}
 .sk{height:10px;border-radius:5px;background:var(--bg3);margin:9px 0;animation:sh 1.3s ease-in-out infinite}
 .sk.w6{width:62%}.sk.w4{width:41%}
@@ -168,7 +178,42 @@ pre.raw{max-height:340px;overflow:auto}
 .prod .f b{font-weight:600;color:var(--tx)}
 .prod .claims{margin-top:7px}
 h2{font-size:14.5px;font-weight:600;line-height:1.3;margin-top:3px}
+/* a product's picture, or a plain tile where no public picture exists */
+.th{flex:none;width:40px;height:40px;border-radius:8px;background:#fff;border:1px solid var(--line);overflow:hidden;display:grid;place-items:center;color:var(--tx3)}
+.th img{width:100%;height:100%;object-fit:contain;display:block}
+.th.none{background:var(--bg2)}
+.th.none svg{width:18px;height:18px;display:block}
+.th.lg{width:52px;height:52px}
+.wp{display:flex;gap:11px;align-items:flex-start;min-width:0}
+.wp>.bd{flex:1;min-width:0}
+.wp .o-line{margin-top:0}
+.rw.pi{align-items:center}
+.rw.pi>span:nth-child(2){flex:1;min-width:0}
+.li.pi{grid-template-columns:auto 1fr auto}
+.li.pi .th{grid-row:1/span 2}
+.li.pi .f{grid-column:2/-1}
+/* an answer with nothing in it: one line, not a card */
+.one{display:flex;align-items:center;gap:8px;padding:8px 13px;border:1px solid var(--line);border-radius:10px;font-size:12.5px;color:var(--tx2);background:var(--bg)}
+.one i{width:6px;height:6px;border-radius:2px;background:var(--tx3);flex:none}
+.start{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.start .btn{height:30px;font-size:12.5px;font-weight:500;padding:0 10px}
+@media (pointer:coarse){.start .btn{height:44px;font-size:13px}}
+@media (max-width:480px){.ft summary{flex-direction:column;align-items:flex-start;gap:3px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* a fold whose summary says one thing closed and another open */
+.sw-o{display:none}
+details[open]>summary .sw-c{display:none}
+details[open]>summary .sw-o{display:inline}
+.more-lines{margin-top:9px;padding-top:2px}
+.more-lines>summary{font-size:12.5px;font-weight:600;color:var(--tx2)}
+.more-lines .li:first-of-type{border-top:1px solid var(--line);padding-top:9px}
+.rank{font-size:12.5px;color:var(--tx2);margin-top:3px}
+.rank b{font-weight:600;color:var(--tx)}
+.sec.fold{margin-top:0;color:var(--tx)}
+.sec.fold>summary{font-size:12.5px;font-weight:600;color:var(--tx2)}
+.sec.fold[open]>summary{margin-bottom:8px}
+.sum{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.sum .big{font-size:17px;font-weight:600;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -177,30 +222,398 @@ h2{font-size:14.5px;font-weight:600;line-height:1.3;margin-top:3px}
 (() => {
 "use strict";
 const app = document.getElementById("app");
-const S = { host: null, ctx: {}, input: null, res: null, d: null, x: {}, tool: "", open: {}, tamper: false, xml: false, live: {}, toast: "", checks: null, sig: {} };
+const S = { host: null, ctx: {}, input: null, res: null, d: null, x: {}, tool: "", open: {}, tamper: false, xml: false, live: {}, toast: "", checks: null, sig: {}, lang: "en" };
+
+// ------------------------------------------------------------------ language: the host's locale picks it (fi-* = Finnish, anything else = English as before)
+const fi = () => S.lang === "fi";
+const L = (en, f) => fi() ? f : en;
+const phone = () => S.ctx.platform === "mobile";
 
 // ------------------------------------------------------------------ words and numbers
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const nf = (n, lo = 0, hi = 2) => Number(n).toLocaleString("en-US", { minimumFractionDigits: lo, maximumFractionDigits: Math.max(lo, hi) });
-const eur = c => (c < 0 ? "−" : "") + "€" + nf(Math.abs(c) / 100, 2);
+const nf = (n, lo = 0, hi = 2) => Number(n).toLocaleString(fi() ? "fi-FI" : "en-US", { minimumFractionDigits: lo, maximumFractionDigits: Math.max(lo, hi) });
+const eur = c => (c < 0 ? "−" : "") + (fi() ? nf(Math.abs(c) / 100, 2) + " €" : "€" + nf(Math.abs(c) / 100, 2));
 const TZ = "Europe/Helsinki";
 const fixIso = s => String(s).replace(/([+-]\d\d)(\d\d)$/, "$1:$2");
-const day = s => { try { const d = new Date(String(s).length === 10 ? s + "T12:00:00Z" : fixIso(s)); return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: String(s).length === 10 ? "UTC" : TZ }).replace(/,/g, ""); } catch (e) { return String(s); } };
-const dayTime = s => { try { return new Date(fixIso(s)).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: TZ }).replace(/,/g, ""); } catch (e) { return String(s); } };
-const clock = s => { try { return new Date(fixIso(s)).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: TZ }); } catch (e) { return String(s); } };
-const left = s => { const ms = new Date(fixIso(s)) - Date.now(); if (!(ms > 0)) return "passed"; const m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60); return d ? `${d} d ${h} h left` : h ? `${h} h ${m % 60} min left` : `${Math.max(1, m)} min left`; };
+const day = s => { try { const d = new Date(String(s).length === 10 ? s + "T12:00:00Z" : fixIso(s)), tz = String(s).length === 10 ? "UTC" : TZ; if (isNaN(d)) return String(s); return fi() ? d.toLocaleDateString("fi-FI", { weekday: "short", day: "numeric", month: "numeric", timeZone: tz }) : d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: tz }).replace(/,/g, ""); } catch (e) { return String(s); } };
+const dayTime = s => { try { const d = new Date(fixIso(s)); if (isNaN(d)) return String(s); return fi() ? d.toLocaleString("fi-FI", { weekday: "short", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit", timeZone: TZ }) : d.toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: TZ }).replace(/,/g, ""); } catch (e) { return String(s); } };
+const clock = s => { try { const d = new Date(fixIso(s)); if (isNaN(d)) return String(s); return d.toLocaleTimeString(fi() ? "fi-FI" : "en-GB", { hour: "2-digit", minute: "2-digit", timeZone: TZ }); } catch (e) { return String(s); } };
+const left = s => { const ms = new Date(fixIso(s)) - Date.now(); if (!(ms > 0)) return L("passed", "ohi"); const m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60); return fi() ? (d ? `${d} pv ${h} h aikaa` : h ? `${h} h ${m % 60} min aikaa` : `${Math.max(1, m)} min aikaa`) : d ? `${d} d ${h} h left` : h ? `${h} h ${m % 60} min left` : `${Math.max(1, m)} min left`; };
 const until = s => `<span data-left="${esc(s)}">${left(s)}</span>`;
-const country = c => { try { return new Intl.DisplayNames(["en"], { type: "region" }).of(c) || c; } catch (e) { return c; } };
+const country = c => { try { return new Intl.DisplayNames([fi() ? "fi" : "en"], { type: "region" }).of(c) || c; } catch (e) { return c; } };
 const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
 const LABELS = { GOODS_FROM_FINLAND_BLUE_SWAN: "Hyvää Suomesta", EU_ORGANIC_FARMING: "EU organic", KEY_FLAG: "Avainlippu", NORDIC_SWAN: "Nordic Swan" };
-const claim = c => { const [k, v] = String(c).split(":"); if (v === undefined) return LABELS[c] || cap(String(c).toLowerCase().replace(/_/g, " ")); const w = v.toLowerCase().replace(/_/g, " "); return k === "FREE_FROM" ? cap(w) + " free" : k === "DIET" ? cap(w) : cap(w); };
+const claimEn = c => { const [k, v] = String(c).split(":"); if (v === undefined) return LABELS[c] || cap(String(c).toLowerCase().replace(/_/g, " ")); const w = v.toLowerCase().replace(/_/g, " "); return k === "FREE_FROM" ? cap(w) + " free" : cap(w); };
+const CLAIM_FI = { "FREE_FROM:LACTOSE": "laktoositon", "FREE_FROM:GLUTEN": "gluteeniton", "DIET:FREE_FROM_GLUTEN": "gluteeniton", "FREE_FROM:MILK": "maidoton", "FREE_FROM:EGGS": "kananmunaton", "FREE_FROM:SOY": "soijaton", "FREE_FROM:NUTS": "pähkinätön",
+  "FREE_FROM:WHEAT": "vehnätön", "DIET:VEGAN": "vegaaninen", "DIET:VEGETARIAN": "kasvis", "LOW:FAT": "vähärasvainen", "LOW:LACTOSE": "vähälaktoosinen", "LOW:SODIUM_SALT": "vähäsuolainen", "LOW:SUGARS": "vähäsokerinen", "NO_ADDED:SUGARS": "ei lisättyä sokeria",
+  "NO_ADDED:SALT": "ei lisättyä suolaa", "FREE_FROM:ADDITIVES": "ei lisäaineita", "FREE_FROM:PRESERVATIVES": "ei säilöntäaineita", "FREE_FROM:SWEETENERS": "ei makeutusaineita", "FREE_FROM:COLOURING_AGENTS": "ei väriaineita", "HIGH:PROTEIN": "runsasproteiininen",
+  "HIGH:FIBRE": "runsaskuituinen", "SOURCE_OF:PROTEIN": "proteiinin lähde", "SOURCE_OF:FIBRE": "kuidun lähde", GOODS_FROM_FINLAND_BLUE_SWAN: "Hyvää Suomesta", EU_ORGANIC_FARMING: "EU-luomu", KEY_FLAG: "Avainlippu", NORDIC_SWAN: "Joutsenmerkki" };
+const claim = c => fi() && CLAIM_FI[c] ? cap(CLAIM_FI[c]) : claimEn(c);
 // The gateway words its notes for the assistant: claim codes and tool names. A person reads the same sentence without them.
-const plain = t => esc(String(t).replace(/'?\b([A-Z]+(?:_[A-Z]+)*:[A-Z]+(?:_[A-Z]+)*)\b'?/g, (_, c) => "“" + claim(c).toLowerCase() + "”").replace(/\s*\((?:see|use|call) [a-z_]+\)/g, ""));
-const names = a => (a || []).map(x => x.name || x.code).join(", ");
+// Codes left in a sentence are only in sentences that stayed English, so they are named in English.
+const plain = t => esc(String(t).replace(/'?\b([A-Z]+(?:_[A-Z]+)*:[A-Z]+(?:_[A-Z]+)*)\b'?/g, (_, c) => "“" + claimEn(c).toLowerCase() + "”").replace(/\s*\((?:see|use|call) [a-z_]+\)/g, ""));
+const ALG_FI = { AM: "maito", AE: "kananmuna", AF: "kala", AC: "äyriäiset", UM: "nilviäiset", AP: "maapähkinä", AN: "pähkinät", AY: "soija", AS: "seesami", BM: "sinappi", BC: "selleri", NL: "lupiini", AU: "sulfiitit", AW: "gluteenia sisältävät viljat",
+  UW: "vehnä", GB: "ohra", GO: "kaura", NR: "ruis", GS: "speltti", GK: "kamut", ML: "laktoosi", SA: "manteli", SC: "cashewpähkinä", SH: "hasselpähkinä", SM: "makadamiapähkinä", SP: "pekaanipähkinä", SR: "parapähkinä", ST: "pistaasipähkinä", SW: "saksanpähkinä" };
+const ALG_EN = { milk: "AM", eggs: "AE", fish: "AF", crustaceans: "AC", molluscs: "UM", peanuts: "AP", "tree nuts": "AN", soybeans: "AY", sesame: "AS", mustard: "BM", celery: "BC", lupin: "NL", sulphites: "AU", "cereals containing gluten": "AW", wheat: "UW", barley: "GB", oats: "GO", rye: "NR", spelt: "GS", kamut: "GK", lactose: "ML" };
+const algName = x => fi() ? ALG_FI[x.code] || ALG_FI[ALG_EN[String(x.name || "").toLowerCase()]] || x.name || x.code : x.name || x.code;
+const names = a => (a || []).map(algName).join(", ");
 const total = (ts, type) => ((ts || []).find(t => t.type === type) || {}).amount;
-const OPT = { usual_product: "Your usual", as_requested: "As requested", lowest_price: "Lowest price", split_with_substitute: "Split with a substitute", partial_only: "What is in stock", most_reliable: "Most reliable", finnish_origin: "Finnish origin", combined: "Combined" };
-const AUTH = { agent_may_order: ["ok", "The assistant may order this alone"], needs_human_approval: ["warn", "Needs a person"], not_allowed: ["bad", "Not allowed"], invalid: ["bad", "Cannot be ordered like this"],
-  agent_may_accept: ["ok", "The assistant may accept this alone"], agent_may_resolve: ["ok", "The assistant may settle this alone"], needs_person: ["warn", "Needs a person"], needs_valid_mandate: ["bad", "Needs a valid mandate"] };
+const OPT = { usual_product: ["Your usual", "Tavallinen tuotteesi"], as_requested: ["As requested", "Pyytämäsi tuote"], lowest_price: ["Lowest price", "Edullisin"], bigger_pack: ["Bigger pack, less in total", "Isompi pakkaus, halvempi yhteensä"], split_with_substitute: ["Split with a substitute", "Osa korvaavalla"], partial_only: ["What is in stock", "Mitä varastossa on"],
+  most_reliable: ["Most reliable", "Varmin toimitus"], finnish_origin: ["Finnish origin", "Suomalainen"], combined: ["Combined", "Yhdistelmä"] };
+// Valio Aimo's shop says "Korvaava tuote:"; the rank is one word after it.
+const TIER = { best: ["Best replacement", "Korvaava tuote: paras", "Valio Aimo names it as the substitute, or this kitchen already orders it.", "Valio Aimo nimeää sen korvaavaksi, tai keittiösi tilaa sitä jo."],
+  better: ["Better replacement", "Korvaava tuote: parempi", "This account has a contract price for it, or it is the same brand, or within 10% of the price.", "Sinulla on sille sopimushinta, se on samaa merkkiä tai hinta on enintään 10 % eri."],
+  good: ["Good replacement", "Korvaava tuote: hyvä", "The same kind of product at the list price.", "Samaa tuotelajia, listahintaan."] };
+const RANK_FI = { best: "paras", better: "parempi", good: "hyvä" };
+const optName = o => o.substitute && TIER[o.substitute.tier] ? L(TIER[o.substitute.tier][0], TIER[o.substitute.tier][1]) : OPT[o.label] ? L(OPT[o.label][0], OPT[o.label][1]) : cap(String(o.label).replace(/_/g, " "));
+const AUTH = { agent_may_order: ["ok", "The assistant may order this alone", "Tilausapuri voi tilata tämän itse"], needs_human_approval: ["warn", "Needs a person", "Tarvitsee hyväksyjän"], not_allowed: ["bad", "Not allowed", "Ei sallittu"], invalid: ["bad", "Cannot be ordered like this", "Ei tilattavissa näin"],
+  agent_may_accept: ["ok", "The assistant may accept this alone", "Voit hyväksyä tämän itse, toista hyväksyjää ei tarvita"], agent_may_resolve: ["ok", "The assistant may settle this alone", "Voit hoitaa tämän itse, toista hyväksyjää ei tarvita"], needs_person: ["warn", "Needs a person", "Tarvitsee hyväksyjän"], needs_valid_mandate: ["bad", "Needs a valid mandate", "Tarvitsee voimassa olevan tilausluvan"] };
+// Units as a Finnish shop writes them
+const UNIT_FI = { L: "l", l: "l", pcs: "kpl", pc: "kpl", piece: "kpl", pieces: "kpl", kg: "kg", g: "g", ml: "ml", bag: "pss", bags: "pss", box: "ltk", boxes: "ltk", bottle: "plo", bottles: "plo", can: "tlk", cans: "tlk", pack: "pkt", packs: "pkt",
+  case: "ltk", cases: "ltk", tray: "rasia", trays: "rasiaa", bucket: "ämp", buckets: "ämp", jar: "prk", jars: "prk", carton: "tlk", cartons: "tlk", sack: "säkki", sacks: "säkkiä", unit: "kpl", units: "kpl" };
+const uu = u => fi() ? UNIT_FI[u] || u : u;
+const PER_FI = { l: "litralta", L: "litralta", kg: "kilolta", piece: "kappaleelta", pcs: "kappaleelta", pc: "kappaleelta", kpl: "kappaleelta" };
+const PER_EN = { l: "per litre", L: "per litre", kg: "per kilo", piece: "per piece", pcs: "per piece", pc: "per piece" };
+
+// ------------------------------------------------------------------ the gateway's English sentences, in Finnish
+// Each pattern matches one whole English sentence and gives its Finnish form, or null when a part has no Finnish form yet: then the sentence stays whole in English.
+const KIND_FI = { milk: "maito", "lactose-free milk": "laktoositon maito", cream: "kerma", "cooking cream": "ruokakerma", "whipping cream": "vispikerma", "plant based whipping cream": "kasvipohjainen vispikerma", "creme fraiche": "ranskankerma", "sour cream": "hapankerma",
+  smetana: "smetana", "coffee cream": "kahvikerma", "coffee milk": "kahvimaito", "barista oat drink": "barista-kaurajuoma", "oat drink": "kaurajuoma", "milk powder": "maitojauhe", "chocolate milk": "kaakaojuoma", "sour milk": "piimä", buttermilk: "kirnupiimä",
+  "condensed milk": "kondensoitu maito", butter: "voi", yoghurt: "jogurtti", yogurt: "jogurtti", quark: "rahka", cheese: "juusto", eggs: "kananmunat", egg: "kananmuna", juice: "mehu", "orange juice": "appelsiinimehu", "milk drink": "maitojuoma", "plant based drink": "kasvijuoma",
+  "soy drink": "soijajuoma", "oat cream": "kaurakerma", "cooking oat cream": "kaurakerma ruoanlaittoon", margarine: "margariini", "rapeseed oil": "rypsiöljy", potato: "peruna", potatoes: "perunat", flour: "jauho", "wheat flour": "vehnäjauho", sugar: "sokeri", salt: "suola", rice: "riisi", coffee: "kahvi", tea: "tee" };
+const ING_FI = { allspice: "maustepippuri", apple: "omena", bacon: "pekoni", "baking powder": "leivinjauhe", banana: "banaani", "bay leaf": "laakerinlehti", "black pepper": "mustapippuri", "brown sauce base": "ruskea kastikepohja", butter: "voi", carrot: "porkkana",
+  "cheese slices": "juustoviipaleet", "chicken bouillon": "kanaliemi", "chicken breast": "broilerinrinta", coffee: "kahvi", "coffee milk": "kahvimaito", "cooking cream": "ruokakerma", "crisp bread": "näkkileipä", croissant: "croissant", cucumber: "kurkku", "curry powder": "curry",
+  dill: "tilli", egg: "kananmuna", "eggs in shell": "kananmunat", "fish bouillon": "kalaliemi", "fish fingers": "kalapuikot", frankfurters: "nakit", garlic: "valkosipuli", "grated cheese": "juustoraaste", ham: "kinkku", honey: "hunaja", ketchup: "ketsuppi", leek: "purjo",
+  lemon: "sitruuna", lettuce: "salaatti", "lingonberry jam": "puolukkahillo", macaroni: "makaroni", margarine: "margariini", meatballs: "lihapullat", milk: "maito", "minced beef": "naudan jauheliha", muesli: "mysli", mushroom: "sieni", mustard: "sinappi",
+  "oat flakes": "kaurahiutaleet", onion: "sipuli", "orange juice": "appelsiinimehu", "pancake flour mix": "pannukakkujauho", parmesan: "parmesaani", "pea soup concentrate": "hernekeittotiiviste", potato: "peruna", "potato flour": "perunajauho", "rapeseed oil": "rypsiöljy",
+  rice: "riisi", "risotto rice": "risottoriisi", "rye bread": "ruisleipä", "salmon fillet": "lohifilee", salt: "suola", strawberry: "mansikka", "strawberry jam": "mansikkahillo", sugar: "sokeri", "sugar cubes": "palasokeri", tea: "tee", thyme: "timjami", tomato: "tomaatti",
+  "vanilla sugar": "vaniljasokeri", "vegetable bouillon": "kasvisliemi", "wheat flour": "vehnäjauho", "whipping cream": "vispikerma", "white pepper": "valkopippuri", "white wine vinegar": "valkoviinietikka", yoghurt: "jogurtti", cream: "kerma" };
+const DISH_FI = { "creamy salmon soup": "Kermainen lohikeitto", "green salad with vinaigrette": "Vihersalaatti ja vinegretti", "green salad": "Vihersalaatti", "chicken breast with thyme cream sauce": "Broilerinrinta ja timjamikermakastike", "roasted potatoes and carrots": "Uuniperunat ja -porkkanat",
+  "mushroom risotto": "Sienirisotto", "strawberry cream cake": "Mansikkakermakakku", "coffee and tea": "Kahvi ja tee", "rye bread and butter": "Ruisleipä ja voi", "macaroni casserole": "Makaronilaatikko", "chicken sauce and rice": "Broilerikastike ja riisi",
+  "meatballs, mashed potatoes and brown sauce": "Lihapullat, perunamuusi ja ruskea kastike", "meatballs with mashed potatoes": "Lihapullat ja perunamuusi", "pea soup": "Hernekeitto", "oven pancake with strawberry jam": "Pannukakku ja mansikkahillo",
+  "fish fingers and boiled potatoes": "Kalapuikot ja keitetyt perunat", "grated carrot": "Porkkanaraaste", "crisp bread and spread": "Näkkileipä ja levite", "milk to drink": "Maito ruokajuomaksi", "scrambled eggs": "Munakokkeli", "fried bacon": "Paistettu pekoni",
+  "breakfast sausages": "Aamiaismakkarat", "oat porridge": "Kaurapuuro", "boiled eggs": "Keitetyt kananmunat", croissants: "Croissantit", "cheese, ham and vegetables": "Juusto, kinkku ja vihannekset", "yoghurt, muesli and jam": "Jogurtti, mysli ja hillo",
+  "fresh fruit": "Tuoreet hedelmät", "orange juice": "Appelsiinimehu", "blueberry pie": "Mustikkapiirakka" };
+// A dish name is the kitchen's own: a recipe card's English name is said in Finnish, any other name stays as written.
+const dish = n => fi() ? DISH_FI[String(n).toLowerCase()] || n : n;
+const ing = n => fi() ? ING_FI[String(n).toLowerCase()] || n : n;
+const ROLE_FI = { main: "pääraaka-aine", body: "runko", vegetable: "kasvis", "whipped topping": "kermavaahto", "sauce base": "kastikepohja", "soup base": "keittopohja", "frying fat": "paistorasva", "roasting fat": "paahtorasva", spread: "levite", drink: "juoma", "coffee milk": "kahvimaito" };
+const NEEDS_FI = { "whipped topping": "Kermavaahtoon tarvitaan kermaa, joka vaahtoutuu, eli vähintään 30 % rasvaa", "sauce base": "Kastikkeeseen tarvitaan kuumennusta kestävää kermaa; sitä vain kuumennetaan, ei vaahdoteta",
+  "soup base": "Keittoon tarvitaan kuumennusta kestävää kermaa; sitä vain kuumennetaan, ei vaahdoteta", "frying fat": "Paistamiseen tarvitaan rasvaa, jossa on vähintään 60 % rasvaa", "roasting fat": "Paahtamiseen tarvitaan rasvaa, jossa on vähintään 60 % rasvaa",
+  spread: "Levitteeksi tarvitaan levitettävää rasvaa, jossa on vähintään 40 % rasvaa", drink: "Juomaksi tarvitaan samanlaista maitoa tai juomaa", "coffee milk": "Kahviin tarvitaan samanlaista maitoa tai juomaa" };
+const TEMP_FI = { frozen: "pakaste", ambient: "huoneenlämmössä säilyvä", chilled: "kylmätuote" };
+const REASON_FI = { cutoff_passed: "tilausaika tälle toimituspäivälle on mennyt", not_deliverable: "sitä ei voi nyt toimittaa minään päivänä", sales_block: "se on myyntiestossa", out_of_stock: "se on loppu", later_date_only: "se on saatavilla vasta myöhemmin",
+  no_price: "sinulle ei ole sille hintaa", no_data: "saatavuustietoa ei ole", product_recalled: "sen erä on takaisinvedossa, joten sitä ei voi tilata ennen kuin Valio Aimo päättää takaisinvedon", no_content_data: "pakkauskokoa ei tiedetä, joten määrää ei voi laskea",
+  allocation_share_used: "saatavuus on rajattu, ja sinun osuutesi tälle päivälle on jo käytetty" };
+const REASON_EN = { "the order cut-off for that delivery date has passed": "cutoff_passed", "it cannot currently be delivered on any date": "not_deliverable", "it is blocked for sale": "sales_block", "it is out of stock": "out_of_stock", "it is only available on a later date": "later_date_only",
+  "no price is available for this customer": "no_price", "no availability data": "no_data", "pack content unknown, so quantity cannot be computed": "no_content_data", "it cannot be delivered": "not_deliverable", "its cut-off has passed": "cutoff_passed", "it only comes on a later date": "later_date_only" };
+const WD = { Mon: "ma", Tue: "ti", Wed: "ke", Thu: "to", Fri: "pe", Sat: "la", Sun: "su" }, MON = { Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6, Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12 };
+const WDAY_FI = { Monday: "maanantaina", Tuesday: "tiistaina", Wednesday: "keskiviikkona", Thursday: "torstaina", Friday: "perjantaina", Saturday: "lauantaina", Sunday: "sunnuntaina" };
+const NO = {};  // thrown when a part of a sentence has no Finnish form: the sentence then stays English
+const need = v => { if (v === undefined || v === null || v === "") throw NO; return v; };
+const K = k => need(KIND_FI[String(k).toLowerCase().trim()]);
+const Ks = s => String(s).split(" / ").map(K).join(" / ");
+const D = s => { const m = String(s).trim().match(/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (\d\d?) (\w{3})$/); if (m) return `${WD[m[1]]} ${+m[2]}.${need(MON[m[3]])}.`; if (/^\d{4}-\d\d-\d\d$/.test(String(s).trim())) return day(String(s).trim()); throw NO; };
+const N = s => nf(Number(String(s).replace(/,/g, "")), 0, 2);
+const E = s => eur(Math.round(Number(String(s).replace(/[€,\s]/g, "")) * 100));
+const Q = s => { const m = String(s).trim().match(/^([\d.,]+) ?(\w+)$/); if (!m) throw NO; return `${N(m[1])} ${uu(m[2])}`; };
+const U = u => need(UNIT_FI[u]);
+const RF = s => need(REASON_FI[REASON_EN[String(s).trim()]]);
+const DSH = s => need(DISH_FI[String(s).toLowerCase()]);
+const ING = s => need(ING_FI[String(s).toLowerCase()]);
+const CL = c => need(CLAIM_FI[c]);
+const algs = s => String(s).split(/, | and /).map(n => need(ALG_FI[ALG_EN[n.trim().toLowerCase()]])).join(", ");
+const PROPOSAL_FI = { "standing order drift": "vakiotilauksen muutos", "short-dated stock": "lyhyen päiväyksen tuotteet", "before the cut-off": "ennen tilausaikaa", "shortage ahead": "tuleva puute", "fill the case": "täysi laatikko" };
+const subWhy = p => { let x;
+  if (p === "the mandate allows no substitutions") return "tilauslupa ei salli korvaavia tuotteita";
+  if (p === "it is not on Valio Aimo's substitute list for the requested product") return "se ei ole Valio Aimon korvaavien listalla tälle tuotteelle";
+  if ((x = p.match(/^it drops ([A-Z_:, ]+)$/))) return "siitä puuttuu: " + x[1].split(", ").map(CL).join(", ");
+  if ((x = p.match(/^the product it replaces has no allergen declaration to compare with \(this one contains (.+)\)$/))) return `korvattavalla tuotteella ei ole allergeeni-ilmoitusta vertailuun (tämä sisältää: ${algs(x[1])})`;
+  if ((x = p.match(/^it adds allergens: (.+)$/))) return "siinä on uusia allergeeneja: " + algs(x[1]);
+  if ((x = p.match(/^it costs (\d+)% more per (\w+) \(limit (\d+)%\)$/))) return `se on ${x[1]} % kalliimpi ${need(PER_FI[x[2]])} (raja ${x[3]} %)`;
+  if ((x = p.match(/^listed substitute, same claims, no new allergens, ([+-]\d+)% per (\w+)$/))) return `listattu korvaava, samat merkinnät, ei uusia allergeeneja, ${x[1].replace("-", "−")} % ${need(PER_FI[x[2]])}`;
+  throw NO; };
+const EM = "€[\\d,]+(?:\\.\\d+)?";
+const R = (src, fn) => [new RegExp("^" + src.replace(/€€/g, "(" + EM + ")") + "$"), fn];
+const P = [
+  // sourcing: why an option is there
+  R("What this account orders most often \\((\\d+) past orders\\), in full, delivered (.+)\\.", m => `Tätä tilaat useimmin (${N(m[1])} tilausta). Koko määrä, toimitus ${D(m[2])}.`),
+  R("Exactly the product asked for, in full, delivered (.+)\\.", m => `Juuri pyytämäsi tuote. Koko määrä, toimitus ${D(m[1])}.`),
+  R("Cheapest product that meets every requirement and covers the full quantity on the requested date\\.", () => "Edullisin tuote, joka täyttää kaikki vaatimukset ja riittää koko määrään toivottuna päivänä."),
+  R("Best delivery record \\(([\\d.]+)% of ordered quantity delivered historically\\)\\.", m => `Paras toimitusvarmuus: tähän asti toimitettu ${N(m[1])} % tilatusta määrästä.`),
+  R("Cheapest option carrying the Hyvää Suomesta \\(Finnish origin\\) label\\.", () => "Edullisin vaihtoehto, jossa on Hyvää Suomesta -merkki."),
+  R("No single product covers the quantity; this combines the cheapest ones that meet every requirement\\.", () => "Mikään tuote ei yksin riitä koko määrään, joten tässä on yhdistetty edullisimmat vaatimukset täyttävät tuotteet."),
+  R("Still ([\\d.,]+) (\\S+) short\\.", m => `Vielä ${N(m[1])} ${U(m[2])} puuttuu.`),
+  R("We can supply ([\\d.,]+) of your ([\\d.,]+) (\\S+) as (.+); the remaining ([\\d.,]+) \\S+ uses '(best|better|good)' substitute (.+)\\.", m => `Pyytämääsi tuotetta ${m[4]} voimme toimittaa ${N(m[1])} / ${N(m[2])} ${U(m[3])}. Loput ${N(m[5])} ${U(m[3])} korvataan. Korvaava tuote: ${m[7]} (${RANK_FI[m[6]]}).`),
+  R("We can supply ([\\d.,]+) of your ([\\d.,]+) (\\S+) of (.+); ([\\d.,]+) \\S+ is short\\.", m => `Tuotetta ${m[4]} voimme toimittaa ${N(m[1])} / ${N(m[2])} ${U(m[3])}; ${N(m[5])} ${U(m[3])} puuttuu.`),
+  R("On Valio Aimo's substitute list\\.", () => "Valio Aimo on nimennyt sen korvaavaksi tuotteeksi."),
+  R("This kitchen already orders it \\((\\d+) past orders\\)\\.", m => `Keittiösi tilaa sitä jo (${N(m[1])} tilausta).`),
+  R("The same kind of product \\(([^)]+)\\)\\.", m => `Samaa tuotelajia (${K(m[1])}).`),
+  R("The same kind of product \\(([^)]+)\\), but (\\w+) where yours is (\\w+)\\.", m => `Samaa tuotelajia (${K(m[1])}), mutta ${need(TEMP_FI[m[2]])}, kun omasi on ${need(TEMP_FI[m[3]])}.`),
+  R("Keeps every free-from and diet claim; adds no allergens\\.", () => "Kaikki erityisruokavaliomerkinnät säilyvät, eikä uusia allergeeneja tule."),
+  R("From Valio Aimo's own range, at this account's contract price\\.", () => "Valio Aimon omasta valikoimasta, sopimushintaasi."),
+  R("From Valio Aimo's own range, at this account's price\\.", () => "Valio Aimon omasta valikoimasta, sinun hintaasi."),
+  R("(.+) is (frozen|ambient|chilled) storage; (.+) is (frozen|ambient|chilled)\\.", m => `${m[1]} on ${TEMP_FI[m[2]]}; ${m[3]} on ${TEMP_FI[m[4]]}.`),
+  // sourcing: notes
+  R("Read '([A-Z_]+:[A-Z_]+)' from the query and applied it as a hard requirement\\.", m => `Pyynnössäsi luki “${CL(m[1])}”, joten se on ehdoton vaatimus.`),
+  R("Read label '([A-Z_]+)' from the query and applied it as a hard requirement\\.", m => `Pyynnössäsi luki “${CL(m[1])}”, joten merkki on ehdoton vaatimus.`),
+  R("Offered from the (\\d+) products that are plainly (.+)\\.", m => `Vaihtoehdot on haettu tuotelajista ${Ks(m[2])} (${N(m[1])} tuotetta).`),
+  R("Left out (\\d+) of other kinds that share the words \\((.+)\\)\\.", m => `Pois jätettiin ${N(m[1])} muun lajin tuotetta, joiden nimessä on sama sana (${m[2].split(", ").map(x => { const k = x.match(/^(.+) (\d+)$/); return K(need(k)[1]) + " " + k[2]; }).join(", ")}).`),
+  R("Ask for one of those by name to get it\\.", () => "Pyydä niitä nimeltä, jos tarkoitit niitä."),
+  R("'(.+)' does not say which kind of product is meant, and this account has not ordered any of them before: (.+)\\.", m => `“${K(m[1])}” ei kerro, mitä tuotelajia tarkoitat, etkä ole tilannut mitään niistä ennen: ${m[2].split(", ").map(x => { const k = x.match(/^(.+) \((\d+)\)$/); return K(need(k)[1]) + ` (${k[2]})`; }).join(", ")}.`),
+  R("Nothing is offered until the kind is named\\.", () => "Valitse laji, niin näytän vaihtoehdot."),
+  R("Call again with one of these kinds as the query if the request settles it; otherwise ask the kitchen\\.", () => ""),  // said to the assistant, not to the cook
+  R("'(.+)' does not say which kind: (.+)\\.", m => `“${K(m[1])}” ei kerro tuotelajia: ${m[2].split(", ").map(x => { const k = x.match(/^(.+) \((\d+)\)$/); return K(need(k)[1]) + ` (${k[2]})`; }).join(", ")}.`),
+  R("This account has ordered (.+) (\\d+) time\\(s\\), so that is what is offered\\.", m => `Olet tilannut lajia ${K(m[1])} ${N(m[2])} kertaa, joten vaihtoehdot ovat sitä.`),
+  R("Ask for another kind by name to get it\\.", () => "Pyydä muuta lajia nimeltä, jos tarkoitit sitä."),
+  R("This account has not ordered '(.+)' through Valio Aimo before(, only other kinds that share the word)?\\.", m => `Et ole tilannut tuotetta “${K(m[1])}” Valio Aimolta ennen${m[2] ? ", vain muita samannimisiä lajeja" : ""}.`),
+  R("Nothing meeting the requirements can be delivered on (.+)\\.", m => `Mitään vaatimukset täyttävää ei voi toimittaa ${D(m[1])}.`),
+  R("The preferred product (.+) cannot be ordered for (\\w{3} \\d\\d? \\w{3}): (.+)\\.", m => `Pyytämääsi tuotetta ${m[1]} ei voi tilata ${D(m[2])}, koska ${RF(m[3])}.`),
+  R("(.+) cannot be ordered for (\\w{3} \\d\\d? \\w{3}): (.+?)\\.", m => `${m[1]}: ei tilattavissa ${D(m[2])}, koska ${RF(m[3])}.`),
+  R("Try the plain name of the product\\.", () => "Kokeile tuotteen tavallista nimeä."),
+  R("Priced the first 200 of (\\d+) products of this kind\\.", m => `Hinnoiteltu ensimmäiset 200 tämän lajin tuotetta ${N(m[1])}:sta.`),
+  R("Add a requirement or a brand to narrow it\\.", () => "Lisää vaatimus tai merkki, niin valinta tarkentuu."),
+  R("Valio Aimo lists (\\d+) product\\(s\\) that are (.+), and none of them meets the requirements of this request\\.", m => `Valio Aimolla on ${N(m[1])} tuotetta lajia ${Ks(m[2])}, mutta mikään ei täytä pyynnön vaatimuksia.`),
+  R("Nothing of another kind is offered in their place\\.", () => "Muuta lajia ei tarjota tilalle."),
+  // rules
+  R("This assistant holds no signing key\\.", () => "Tämä tilausapuri ei allekirjoita tilauksia itse."),
+  R("Valio Aimo lets such assistants order alone up to €€; this order is €€\\.", m => `Siksi Valio Aimo antaa sen tilata yksin enintään ${E(m[1])}; tämä tilaus on ${E(m[2])}.`),
+  R("No signing key, and €€ is within the €€ Valio Aimo allows such assistants alone\\.", m => `Tilausapuri ei allekirjoita itse, ja ${E(m[1])} mahtuu rajaan ${E(m[2])}, jonka Valio Aimo sallii sille yksin.`),
+  R("Order is €€ ex VAT, €€ over the agent's €€ limit\\.", m => `Tilaus on ${E(m[1])} (alv 0 %), ${E(m[2])} yli tilausapurin tilausrajan ${E(m[3])}.`),
+  R("€€ ex VAT is within the €€ limit\\.", m => `${E(m[1])} (alv 0 %) on tilausrajan ${E(m[2])} sisällä.`),
+  R("€€ of €€ used this week including this order\\.", m => `Viikkorajasta ${E(m[2])} on käytetty ${E(m[1])} tämä tilaus mukaan lukien.`),
+  R("€€ already ordered in the last 7 days; this order would bring it to €€, over €€\\.", m => `Viimeisen 7 päivän aikana on tilattu jo ${E(m[1])}; tämän kanssa ${E(m[2])}, yli viikkorajan ${E(m[3])}.`),
+  R("Never ordered on this account before: (.+)\\.", m => `Et ole tilannut ennen: ${m[1]}.`),
+  R("A person must decide\\.", () => "Hyväksyjä päättää."),
+  R("(\\d+) of (\\d+) products are new to this account\\.", m => `${N(m[1])} tuotetta ${N(m[2])}:sta on sinulle uusia.`),
+  R("A person must decide about the first-time products\\.", () => "Hyväksyjä päättää uusista tuotteista."),
+  R("Every product has been ordered on this account before or is an allowed substitute\\.", () => "Kaikkia tuotteita on tilattu ennenkin, tai ne ovat sallittuja korvaavia tuotteita."),
+  R("Mandate (\\S+) signed by (.+), valid until (\\d\\d?) (\\w{3}) (\\d{4})\\.", m => `${m[2]} on antanut tilausapurille tilausluvan, voimassa ${+m[3]}.${need(MON[m[4]])}.${m[5]} asti.`),
+  R("Agent ordering is on for this account\\.", () => "Valio Aimo on sallinut tilausapurin tilaukset tällä asiakasnumerolla."),
+  R("Valio Aimo has paused agent ordering on this account\\.", () => "Valio Aimo on keskeyttänyt tilausapurin tilaukset tällä asiakasnumerolla."),
+  R("No (other )?line is more than (\\d+)x the usual order\\.", m => `Mikään ${m[1] ? "muu " : ""}rivi ei ole yli ${m[2]}-kertainen tavalliseen tilaukseen verrattuna.`),
+  R("(This product was|These products were) never ordered on this account before, so there is no usual quantity to compare with(; rule N1 asks a person about first-time products)?\\.", m => `${m[1][0] === "T" && m[1].startsWith("This") ? "Tätä tuotetta" : "Näitä tuotteita"} ei ole tilattu ennen, joten tavallista määrää ei ole verrattavaksi${m[2] ? "; uusista tuotteista päättää hyväksyjä" : ""}.`),
+  R("Products never ordered on this account before have no usual quantity to compare with(; rule N1 asks a person about first-time products)?\\.", m => `Uusilla tuotteilla ei ole tavallista määrää verrattavaksi${m[1] ? "; niistä päättää hyväksyjä" : ""}.`),
+  R("Order is €€; Valio Aimo lets agents place up to €€ without a person\\.", m => `Tilaus on ${E(m[1])}; Valio Aimo sallii tilausapurin tilata ilman hyväksyjää enintään ${E(m[2])}.`),
+  R("Re-order of products this account has bought before\\.", () => "Tilaat uudelleen tuotteita, joita olet ostanut ennenkin."),
+  R("All lines are in categories the agent may buy\\.", () => "Kaikki rivit ovat tuoteryhmissä, joita tilausapuri saa ostaa."),
+  R("Orders and open carts made for this delivery day without a person come to €€ including this one, within €€\\.", m => `Ilman hyväksyjää tehdyt tilaukset ja vahvistamattomat ostoskorit tälle toimituspäivälle ovat ${E(m[1])} tämä mukaan lukien, rajan ${E(m[2])} sisällä.`),
+  R("Every line carries ([A-Z_:, ]+), by the manufacturer's GS1 data\\.", m => `Valmistajan GS1-tietojen mukaan jokaisella rivillä on merkintä: ${m[1].split(", ").map(CL).join(", ")}.`),
+  R("No line contains or may contain ([a-z ,]+), excluded on the whole order\\.", m => `Mikään rivi ei sisällä eikä voi sisältää: ${algs(m[1])} (rajattu koko tilaukselta).`),
+  R("(.+?) replaces (.+?): (.+)\\.", m => `${m[1]} korvaa tuotteen ${m[2]}: ${m[3].split("; ").map(subWhy).join("; ")}.`),
+  R("(.+), by the manufacturer's GS1 data\\.", m => "Valmistajan GS1-tietojen mukaan " + m[1].split("; ").map(p => { const x = p.match(/^(every line|Every line|.+) carries ([A-Z_:, ]+)$/); if (!x) throw NO; return (/^every line$/i.test(x[1]) ? "jokaisella rivillä" : x[1] + ":") + " " + x[2].split(", ").map(CL).join(", "); }).join("; ") + "."),
+  R("(No line contains or may contain .+|[A-Z][a-z].+ checked on \\d+ named lines?: .+)\\.", m => cap(m[1].split("; ").map(p => { let x;
+    if ((x = p.match(/^[Nn]o line contains or may contain (.+), excluded on the whole order$/))) return `mikään rivi ei sisällä eikä voi sisältää: ${algs(x[1])} (rajattu koko tilaukselta)`;
+    if ((x = p.match(/^(.+?) checked on (\d+) named lines?: (.+)$/))) return `${algs(x[1])} tarkistettu ${N(x[2])} nimetyltä riviltä: ${x[3]}`;
+    throw NO; }).join("; ")) + "."),
+  R("(\\d+) lines? (?:has|have) no allergen declaration from the manufacturer; this mandate lets the agent order them\\.", m => `${N(m[1])} rivillä ei ole valmistajan allergeeni-ilmoitusta; tilauslupa sallii tilausapurin tilata ne.`),
+  R("(\\d+) lines? (?:has|have) no allergen declaration from the manufacturer; cleared for this exclusion by (.+) on (\\d{4}-\\d\\d-\\d\\d)\\.", m => `${N(m[1])} rivillä ei ole valmistajan allergeeni-ilmoitusta; ${m[2]} hyväksyi ne tälle rajaukselle ${day(m[3])}.`),
+  R("(.+) contains ([a-z ,]+), which is excluded\\.", m => `${m[1]} sisältää: ${algs(m[2])}, ja se on rajattu pois.`),
+  R("(.+) may contain traces of ([a-z ,]+)\\.", m => `${m[1]} voi sisältää jäämiä: ${algs(m[2])}.`),
+  R("(.+) does not carry ([A-Z_:, ]+)\\.", m => `Tuotteelta ${m[1]} puuttuu merkintä: ${m[2].split(", ").map(CL).join(", ")}.`),
+  R("([\\d.,]+) (\\S+) of (.+) is ([\\d.]+)x this kitchen's usual ([\\d.,]+)\\.", m => `${N(m[1])} ${U(m[2])} tuotetta ${m[3]} on ${N(m[4])}-kertainen määrä keittiösi tavalliseen (${N(m[5])}) verrattuna.`),
+  R("Orders and open carts made for this delivery day without a person already come to €€\\.", m => `Tälle toimituspäivälle on jo tilauksia tai vahvistamattomia ostoskoreja ${E(m[1])} edestä ilman hyväksyjää.`),
+  R("With this order that is €€, over the €€ limit, so it is treated as one order\\.", m => `Tämän kanssa se on ${E(m[1])}, yli rajan ${E(m[2])}, joten tilauksia käsitellään yhtenä.`),
+  R("Account is limited to re-orders; (\\d+) line\\(s\\) were never ordered before\\.", m => `Tällä asiakasnumerolla saa tilata vain aiemmin tilattuja tuotteita; ${N(m[1])} riviä on uusia.`),
+  R("This account's agents may look up prices and stock but not order\\.", () => "Tämän asiakasnumeron tilausapurit voivat katsoa hintoja ja saatavuutta, mutta eivät tilata."),
+  R("Delivery would be (\\d+) days? late\\.", m => `Toimitus myöhästyisi ${N(m[1])} pv.`),
+  R("Delivery is (\\d+) days? late, within the (\\d+) days? the mandate lets the agent accept on its own\\.", m => `Toimitus myöhästyy ${N(m[1])} pv; tilauslupa sallii tilausapurin hyväksyä enintään ${N(m[2])} pv.`),
+  R("The mandate lets the agent accept up to (\\d+) days? on its own\\.", m => `Tilauslupa sallii tilausapurin hyväksyä itse enintään ${N(m[1])} pv.`),
+  R("Only ([\\d.]+)% of (.+) would be delivered\\.", m => `Vain ${N(m[1])} % toimitettaisiin (${m[2] === "the line" ? "rivi" : m[2]}).`),
+  R("([\\d.]+)% of (.+) is still delivered, and the mandate lets the agent accept ([\\d.]+)% or more on its own\\.", m => `${N(m[1])} % toimitetaan (${m[2] === "the line" ? "rivi" : m[2]}); tilauslupa sallii tilausapurin hyväksyä itse vähintään ${N(m[3])} %.`),
+  R("The mandate lets the agent accept ([\\d.]+)% or more on its own\\.", m => `Tilauslupa sallii tilausapurin hyväksyä itse vähintään ${N(m[1])} %.`),
+  R("Lot (\\S+) is recalled\\.", m => `Erä ${m[1]} on takaisinvedossa.`),
+  R("It is replaced or credited\\.", () => "Se korvataan tai hyvitetään."),
+  R("Nobody, agent or person, can choose to keep it\\.", () => "Kukaan, tilausapuri tai ihminen, ei voi päättää pitää sitä."),
+  R("Lot (\\S+) leaves the order: it is replaced or credited, not kept\\.", m => `Erä ${m[1]} poistuu tilauksesta: se korvataan tai hyvitetään, ei pidetä.`),
+  R("Valio Aimo's agent may make proposals to this customer\\.", () => "Valio Aimo saa tehdä sinulle ehdotuksia."),
+  R("Proposal (\\d+) of at most (\\d+) today\\.", m => `Ehdotus ${N(m[1])}/${N(m[2])} tänään.`),
+  R("The customer has not declined this proposal before\\.", () => "Et ole hylännyt tätä ehdotusta aiemmin."),
+  R("€€ of the buyer's €€ a week, including this proposal\\.", m => `${E(m[1])} ostajan viikkorajasta ${E(m[2])} tämä ehdotus mukaan lukien.`),
+  R("The mandate lets the agent accept (.+) proposals alone\\.", m => `Tilauslupa sallii tilausapurin hyväksyä itse ehdotukset: ${need(PROPOSAL_FI[m[1]])}.`),
+  R("The mandate does not let the agent accept (.+) proposals alone, so a person decides\\.", m => `Tilauslupa ei salli tilausapurin hyväksyä itse ehdotuksia (${need(PROPOSAL_FI[m[1]])}), joten hyväksyjä päättää.`),
+  R("Adds €€; €€ of the €€ a week the agent may accept alone from proposals\\.", m => `Lisää ${E(m[1])}; tilausapurin ehdotuksista itse hyväksymä viikkosumma on ${E(m[2])} / ${E(m[3])}.`),
+  R("This proposal adds €€; with €€ accepted alone this week that is €€, over the €€ the agent may accept alone\\.", m => `Ehdotus lisää ${E(m[1])}; tällä viikolla itse hyväksyttyjen ${E(m[2])} kanssa se on ${E(m[3])}, yli rajan ${E(m[4])}.`),
+  R("This changes the standing order of (.+) from (\\d+) to (\\d+) units, every week from (\\d{4}-\\d\\d-\\d\\d)\\.", m => `Tämä muuttaa tuotteen ${m[1]} vakiotilausta ${N(m[2])} → ${N(m[3])} kpl joka viikko ${day(m[4])} alkaen.`),
+  R("The buyer's mandate lets the agent change standing orders alone\\.", () => "Ostajan tilauslupa sallii tilausapurin muuttaa vakiotilauksia itse."),
+  R("The buyer's mandate leaves standing-order changes to a person\\.", () => "Ostajan tilausluvan mukaan vakiotilauksen muutoksista päättää hyväksyjä."),
+  R("(\\d+) products? (?:are|is) plainly (.+); they come first\\.", m => `${N(m[1])} tuotetta on selvästi lajia ${Ks(m[2])}; ne ovat ensin.`),
+  R("Other kinds that share the words: (.+)\\.", m => `Muut lajit, joissa on sama sana: ${m[1].split(", ").map(K).join(", ")}.`),
+  R("Rule ([A-Z]\\d+): (.+)", m => { const d = trAll(cap(m[2])); if (d === null) throw NO; return `Sääntö ${m[1]}: ${d}`; }),
+  R("This request is over the mandate's ([\\d.]+) sales-unit per-order limit\\.", m => `Pyyntö ylittää tilausluvan rajan, ${N(m[1])} myyntierää tilausta kohden.`),
+  R("Reduce the quantity or ask the buyer to issue a wider mandate\\.", () => "Pienennä määrää tai pyydä laajempi tilauslupa."),
+  R("Nothing can be offered as asked\\.", () => "Pyynnön mukaan ei voi tarjota mitään."),
+  R("Checkout is 'requires_escalation', not ready_for_complete\\.", () => "Ostoskori odottaa vielä hyväksyjää."),
+  R("A person must approve it first at continue_url\\.", () => "Hyväksyjän on hyväksyttävä se ensin."),
+  // checkout messages
+  R("Quantity for (.+) must be a positive integer number of steps\\.", m => `Tuotteen ${m[1]} määrän on oltava kokonainen määrä tilauseriä.`),
+  R("The price and stock hold has expired\\.", () => "Hinnan ja varaston varaus on päättynyt."),
+  R("Update the checkout to get a fresh signed offer\\.", () => "Pyydä uusi ostoskori."),
+  R("Price or availability changed since the offer was signed\\.", () => "Hinta tai saatavuus on muuttunut ostoskorin koonnin jälkeen."),
+  R("Review this fresh offer\\.", () => "Tarkista uusi ostoskori."),
+  R("The delivery date (.+) has already passed\\.", m => `Toimituspäivä ${D(m[1])} on jo mennyt.`),
+  R("Ask for a date from (.+) on\\.", m => `Valitse päivä ${D(m[1])} tai myöhemmin.`),
+  R("No line items\\.", () => "Tilauksessa ei ole rivejä."),
+  R("Unknown product (\\S+)\\.", m => `Tuntematon tuote ${m[1]}.`),
+  R("No open proposals from Valio Aimo's agent\\.", () => "Valio Aimolla ei ole nyt avoimia ehdotuksia sinulle."),
+  R("No open problems on placed orders\\.", () => "Toimituksissa ei ole avoimia poikkeamia."),
+  R("Delivery (\\w{3} \\d\\d? \\w{3}) to (.+)", m => `Toimitus ${D(m[1])}, ${m[2] === "the account address" ? "asiakkaan osoitteeseen" : m[2].replace(/, goods in$/, ", tavaranvastaanotto")}`),
+  R("same as last week", () => "sama kuin viime viikolla"),
+  R("(.*): ([\\d,]+) guests(?:, ([^.]+?))?\\. Dishes: (.+?)(?:\\. Notes: (.+))?\\.", m => `${m[1] === "Menu" ? "Menu" : m[1]}: ${N(m[2])} vierasta${m[3] ? ", " + D(m[3]) : ""}. Ruoat: ${m[4].split(", ").map(dish).join(", ")}${m[5] ? ". Huomiot: " + m[5] : ""}.`),
+  // menu plan
+  R("The day before the first serving day \\((.+)\\)\\.", m => `Ensimmäistä tarjoilupäivää (${D(m[1])}) edeltävä päivä.`),
+  R("The first day Valio Aimo can deliver is (.+), so delivery is set to that day\\.", m => `Valio Aimo voi toimittaa aikaisintaan ${D(m[1])}, joten toimitus on silloin.`),
+  R("The menu gives no date, so delivery is set to the first possible day\\.", () => "Menussa ei ole päivää, joten toimitus on ensimmäisenä mahdollisena päivänä."),
+  R("The menu's date \\((.+)\\) is too close or has passed, so delivery is set to the first possible day\\.", m => `Menun päivä (${D(m[1])}) on liian lähellä tai mennyt, joten toimitus on ensimmäisenä mahdollisena päivänä.`),
+  R("(.+) is short: ([\\d.,]+) (\\w+) can be supplied and this menu needs more\\.", m => `Tuotetta ${m[1]} on saatavilla vain ${N(m[2])} ${U(m[3])}, ja menu tarvitsee enemmän.`),
+  R("(.+) is out of stock for this day\\.", m => `${m[1]} on loppu tältä päivältä.`),
+  R("A (.+?) needs (.+?), and no other product on this kitchen's list does that(, so cooking cream is not used)?\\.", m => `${need(NEEDS_FI[m[1]])}, eikä keittiön listalla ole muuta sopivaa tuotetta${m[3] ? ", joten ruokakermaa ei käytetä" : ""}.`),
+  R("A (.+?) needs (.+)\\.", m => need(NEEDS_FI[m[1]]) + "."),
+  R("This product \\((.*)\\) does that, so it covers (.+) for (.+)\\.", m => {
+    const fit = m[1].replace(/([\d.]+)% fat/, (_, n) => `${N(n)} % rasvaa`).replace(/, whips$/, ", vaahtoutuu").replace(/, made for cooking$/, ", ruoanlaittoon").replace(/^no fat figure$/, "rasvaprosenttia ei tiedetä");
+    if (/[a-z]{3,}/.test(fit.replace(/rasvaa|vaahtoutuu|ruoanlaittoon|rasvaprosenttia ei tiedetä/g, ""))) throw NO;
+    return `Tämä tuote${fit ? ` (${fit})` : ""} sopii. Se kattaa ${Q(m[2])} (${DSH(m[3])}).`;
+  }),
+  R("Cooking cream would not whip, so it is not used here\\.", () => "Ruokakerma ei vaahtoudu, joten sitä ei käytetä tässä."),
+  R("It is the cheapest per litre of the creams that fit\\.", () => "Se on sopivista kermoista edullisin litralta."),
+  R("This is the kitchen's next choice for (.+), so it covers (.+) for (.+)\\.", m => `Tämä on keittiön seuraava valinta (${ING(m[1])}). Se kattaa ${Q(m[2])} (${DSH(m[3])}).`),
+  R("The recipe names (.+); (.+) is used as a substitute because the named product did not pass the dietary checks\\.", m => `Reseptissä on ${ING(m[1])}; tilalla on ${m[2]}, koska nimetty tuote ei läpäissyt ruokavaliotarkistusta.`),
+  R("The trade-off: (.+)\\.", m => "Mitä muuttuu: " + m[1].split(/, (?![^(]*\))/).map(p => {
+    let x;
+    if ((x = p.match(new RegExp(`^(${EM}) (less|more) per (\\w+)$`)))) return `${E(x[1])} ${x[2] === "less" ? "halvempi" : "kalliimpi"} ${need(PER_FI[x[3]])}`;
+    if ((x = p.match(/^the same price per (\w+)$/))) return `sama hinta ${need(PER_FI[x[1]])}`;
+    if ((x = p.match(/^([\d.]+)% fat where the usual one has ([\d.]+)%$/))) return `${N(x[1])} % rasvaa, kun tavallisessa on ${N(x[2])} %`;
+    if ((x = p.match(/^another brand \((.+)\)$/))) return `eri merkki (${x[1]})`;
+    throw NO;
+  }).join(", ") + "."),
+  R("From Valio Aimo's range for your account\\.", () => "Valio Aimon valikoimasta asiakasnumerollesi."),
+  R("(Your contract price|Your price): €€ per (\\w+)(?:, list price €€)?\\.", m => `${m[1] === "Your price" ? "Hintasi" : "Sopimushintasi"} ${E(m[2])} / ${U(m[3])}${m[4] ? `, listahinta ${E(m[4])}` : ""}.`),
+  R("The menu gives a budget of €€\\.", m => `Menun budjetti on ${E(m[1])}.`),
+  R("The menu gives a budget of €€ per guest, €€ for ([\\d,]+) guests\\.", m => `Menun budjetti on ${E(m[1])} hengeltä, ${E(m[2])} ${N(m[3])} vieraalle.`),
+  R("This order is €€ ex VAT, €€ (under|over) the budget\\.", m => `Tämä tilaus on ${E(m[1])} (alv 0 %), ${E(m[2])} ${m[3] === "under" ? "alle" : "yli"} budjetin.`),
+  R("What is held, not ordered or taken from the pantry is not in that sum\\.", () => "Summassa eivät ole odottavat, tilaamatta jääneet eivätkä omasta varastosta otettavat."),
+  R("(.+) for (.+): not in Valio Aimo's range\\.", m => `${cap(ING(m[1]))} (${DSH(m[2])}): ei Valio Aimon valikoimassa.`),
+  R("Not ordered\\.", () => "Ei tilattu."),
+  R("(.+) for (.+): no product passes the checks, so it is not ordered\\.", m => `${cap(ING(m[1]))} (${DSH(m[2])}): mikään tuote ei läpäise tarkistuksia, joten sitä ei tilata.`),
+  R("(.+) for ([^:]+): (.+) is not covered\\.", m => `${cap(ING(m[1]))} (${DSH(m[2])}): ${Q(m[3])} puuttuu.`),
+  R("The line is kept short and a person decides\\.", () => "Rivi jää vajaaksi, ja päätät itse."),
+  R("There is no other product for (.+) on this kitchen's list\\.", m => `Keittiön listalla ei ole muuta tuotetta (${ING(m[1])}).`),
+  R("No other (.+) in Valio Aimo's range can be ordered for this day\\.", m => `Valio Aimon valikoimasta ei voi tilata tälle päivälle muuta (${ING(m[1])}).`),
+  // Valio Aimo's proposals: titles and the sentences code writes for them
+  R("Raise the standing order of (.+) from (\\d+) to (\\d+)", m => `Nostetaan vakiotilausta: ${m[1]}, ${N(m[2])} → ${N(m[3])}`),
+  R("Lower the standing order of (.+) from (\\d+) to (\\d+)", m => `Lasketaan vakiotilausta: ${m[1]}, ${N(m[2])} → ${N(m[3])}`),
+  R("([\\d.,]+) of the ([\\d.,]+) (.+) for (\\w{3} \\d\\d? \\w{3}) from a short-dated lot, (\\d+)% off", m => `${m[3]}: ${N(m[1])} kpl ${N(m[2])}:stä lyhyen päiväyksen erästä, −${m[5]} % (toimitus ${D(m[4])})`),
+  R("([\\d.,]+) (.+), best before (\\w{3} \\d\\d? \\w{3}), (\\d+)% off", m => `${N(m[1])} × ${m[2]}, parasta ennen ${D(m[3])}, −${m[4]} %`),
+  R("Your standing order for (\\w{3} \\d\\d? \\w{3}) is not placed yet", m => `Vakiotilaustasi toimitukseen ${D(m[1])} ei ole vielä tehty`),
+  R("(\\d+) (.+?) for the (\\d+) (.+) that cannot come", m => `${N(m[1])} × ${m[2]} korvaamaan ${N(m[3])} × ${m[4]}, joita ei voida toimittaa`),
+  R("Add (\\d+) (.+) to make (\\d+) full (case|pallet)s \\(([\\d.,]+) units\\)", m => `Lisätään ${N(m[1])} × ${m[2]}, niin saat ${N(m[3])} täyttä ${m[4] === "case" ? "laatikkoa" : "lavaa"} (${N(m[5])} kpl)`),
+  R("Your kitchen used (\\d+) of (.+) last week against a standing order of (\\d+), and usage has risen three weeks running\\.", m => `Keittiösi käytti viime viikolla ${N(m[1])} × ${m[2]}, kun vakiotilaus on ${N(m[3])}, ja käyttö on kasvanut kolme viikkoa peräkkäin.`),
+  R("Raise it to (\\d+) and add (\\d+) to (\\w{3} \\d\\d? \\w{3})\\.", m => `Nostetaan vakiotilaus määrään ${N(m[1])} ja lisätään ${N(m[2])} toimitukseen ${D(m[3])}.`),
+  R("Your kitchen used (\\d+) of (.+) last week against a standing order of (\\d+); usage has fallen three weeks running\\.", m => `Keittiösi käytti viime viikolla ${N(m[1])} × ${m[2]}, kun vakiotilaus on ${N(m[3])}, ja käyttö on laskenut kolme viikkoa peräkkäin.`),
+  R("Lower it to (\\d+), saving (\\d+) units a week \\(€€ ex VAT\\)\\.", m => `Lasketaan vakiotilaus määrään ${N(m[1])}, jolloin säästät ${N(m[2])} kpl viikossa (${E(m[3])}, alv 0 %).`),
+  R("Only (\\d+) of your usual (\\d+) (.+) can be delivered on (\\w{3} \\d\\d? \\w{3})\\.", m => `Tuotetta ${m[3]} voidaan toimittaa ${D(m[4])} vain ${N(m[1])}, kun tavallisesti tilaat ${N(m[2])}.`),
+  R("(.+) covers the other (\\d+), before your agent runs into the refusal\\.", m => `${m[1]} kattaa loput ${N(m[2])} jo ennen kuin tilaus ehtii pysähtyä.`),
+  R("Recipe card: (.+) uses (.+) as (.+); the replacement fits that role\\.", m => `Reseptikortti: ${DSH(m[1])} käyttää tuotetta ${m[2]} (${need(ROLE_FI[m[3]])}); korvaava sopii samaan käyttöön.`),
+  R("No recipe role is recorded for (.+); the replacement follows Valio Aimo's listed substitute ranking\\.", m => `Tuotteen ${m[1]} käyttöä resepteissä ei ole kirjattu; korvaava on Valio Aimon korvaavuusjärjestyksen mukainen.`),
+  R("Your standing order for (\\w{3} \\d\\d? \\w{3}) is not placed yet, and nothing arrives until it is\\.", m => `Vakiotilaustasi toimitukseen ${D(m[1])} ei ole vielä tehty, eikä mitään tule ennen kuin se on tehty.`),
+  R("You usually order by (\\w+day) (\\d\\d):(\\d\\d)\\.", m => `Tilaat yleensä viimeistään ${need(WDAY_FI[m[1]])} klo ${m[2]}.${m[3]}.`),
+  R("The cut-off is in (\\d+) hours\\.", m => `Tilausaika päättyy ${N(m[1])} tunnin kuluttua.`),
+  R("Here are its lines as a ready signed offer\\.", () => "Tässä sen rivit valmiina ostoskorina."),
+  R("A lot of (.+) is best before (\\w{3} \\d\\d? \\w{3})\\.", m => `Erä tuotetta ${m[1]} on parasta ennen ${D(m[2])}.`),
+  R("Accepted Valio Aimo's proposal (prp_\\w+): (.+)\\.", m => `Hyväksytty Valio Aimon ehdotus ${m[1]}: ${need(one(m[2]))}.`),
+  R("Proposal (prp_\\w+) is accepted: order (\\S+)\\.", m => `Ehdotus ${m[1]} on hyväksytty: tilaus ${m[2]}.`),
+  R("Standing order of (.+) is now (\\d+) a week \\(was (\\d+)\\)\\.", m => `Tuotteen ${m[1]} vakiotilaus on nyt ${N(m[2])} viikossa (oli ${N(m[3])}).`),
+  R("([\\d.,]+) of the ([\\d.,]+) (.+) on the standing delivery for (\\w{3} \\d\\d? \\w{3}) now come from the short-dated lot; ([\\d.,]+) come as usual\\.", m => `Toimituksen ${D(m[4])} vakiotilauksen ${N(m[2])} × ${m[3]} joukosta ${N(m[1])} kpl tulee nyt lyhyen päiväyksen erästä; ${N(m[5])} kpl tulee tavalliseen tapaan.`),
+  R("The usual-basket offer for (\\w{3} \\d\\d? \\w{3}) was withdrawn so it does not order these twice\\.", m => `Tavallisen tilauksen ehdotus toimitukseen ${D(m[1])} peruttiin, jotta samoja ei tilata kahdesti.`),
+  R("Part of this basket is now on order through proposal (prp_\\w+) \\((.+)\\), so Valio Aimo's agent withdrew it\\.", m => `Osa tästä tilauksesta on jo tilattu ehdotuksella ${m[1]} (${need(one(m[2]))}), joten Valio Aimo perui sen.`),
+  R("Its next offer for that day leaves out what is already on order\\.", () => "Sen seuraava ehdotus samalle päivälle jättää pois sen, mikä on jo tilattu."),
+  R("This checkout accepts Valio Aimo's proposal (prp_\\w+)\\.", m => `Tällä ostoskorilla hyväksytään Valio Aimon ehdotus ${m[1]}.`),
+  R("Short-dated lot (\\S+), best before (\\w{3} \\d\\d? \\w{3}), at (\\d+)% off\\.", m => `Lyhyen päiväyksen erä ${m[1]}, parasta ennen ${D(m[2])}, ${m[3]} % alennuksella.`),
+  R("It stands in for ([\\d.,]+) of the ([\\d.,]+) on the standing delivery for (\\w{3} \\d\\d? \\w{3}): order ([\\d.,]+) as usual, not ([\\d.,]+)\\.", m => `Se korvaa ${N(m[1])} kpl vakiotoimituksen ${N(m[2])} kappaleesta toimitukseen ${D(m[3])}: tilaa vakiotilauksella ${N(m[4])} kpl, ei ${N(m[5])}.`),
+  R("Completing this changes the standing order of (.+) from (\\d+) to (\\d+) units, every week\\.", m => `Tilauksen tekeminen muuttaa tuotteen ${m[1]} vakiotilauksen ${N(m[2])} kappaleesta ${N(m[3])} kappaleeseen joka viikko.`),
+  R("It carries no goods: nothing is ordered\\.", () => "Siinä ei ole tavaraa: mitään ei tilata."),
+  R("This proposal cannot be ordered as it stands now\\.", () => "Tätä ehdotusta ei voi nyt tilata sellaisenaan."),
+  R("It stays open; list_proposals shows its state\\.", () => "Se jää avoimeksi, ja sen tila näkyy Valio Aimon ehdotuksissa."),
+  R("Your kitchen uses about ([\\d.,]+) by then and your standing order already brings ([\\d.,]+) on (\\w{3} \\d\\d? \\w{3}), so extra would expire\\.", m => `Keittiösi käyttää siihen mennessä noin ${N(m[1])} kpl, ja vakiotilauksesi tuo jo ${N(m[2])} kpl toimituksessa ${D(m[3])}, joten lisämäärä vanhenisi.`),
+  R("Instead ([\\d.,]+) of those ([\\d.,]+) come from this lot at (\\d+)% off: the same ([\\d.,]+) units, nothing extra, €€ less\\.", m => `Siksi ${N(m[1])} kpl näistä ${N(m[2])} kappaleesta tulee tästä erästä ${m[3]} % alennuksella: sama ${N(m[4])} kpl, ei mitään ylimääräistä, ${E(m[5])} vähemmän.`),
+  R("Your kitchen uses about ([\\d.,]+) units of (.+) by then and ([\\d.,]+) are already coming, so ([\\d.,]+) more at (\\d+)% off are used in time\\.", m => `Keittiösi käyttää siihen mennessä noin ${N(m[1])} kpl tuotetta ${m[2]}, ja ${N(m[3])} kpl on jo tulossa, joten ${N(m[4])} kpl lisää ${m[5]} % alennuksella ehditään käyttää.`),
+  R("Your kitchen used about (\\d+) (.+) a week for the last 3 weeks against a standing order of (\\d+)\\.", m => `Keittiösi käytti kolmen viime viikon aikana noin ${N(m[1])} × ${m[2]} viikossa, kun vakiotilaus on ${N(m[3])}.`),
+  R("(\\d+) more for (\\w{3} \\d\\d? \\w{3}) make ([\\d.,]+) units, (\\d+) full (case|pallet)s\\.", m => `${N(m[1])} lisää toimitukseen ${D(m[2])} tekee ${N(m[3])} kpl eli ${N(m[4])} täyttä ${m[5] === "case" ? "laatikkoa" : "lavaa"}.`),
+  R("The price data has no quantity break, so adding this amount does not lower the unit price\\.", () => "Hintatiedoissa ei ole määräalennusta, joten lisämäärä ei laske yksikköhintaa."),
+  R("Seeded: the challenge data has no standing orders or usage, so these weekly figures are made up for the demo\\.", () => "Esimerkkiluku: haasteaineistossa ei ole vakiotilauksia eikä kulutusta, joten nämä viikkoluvut on keksitty esittelyä varten."),
+  R("Seeded: the challenge data has no lots or best-before dates, so this lot is made up for the demo\\.", () => "Esimerkkiluku: haasteaineistossa ei ole eriä eikä päiväyksiä, joten tämä erä on keksitty esittelyä varten."),
+  // after the order: a delivery problem (toimituspoikkeama), its ways out and what each one does
+  R("The warehouse can deliver only ([\\d.,]+) of the ([\\d.,]+) (\\S+) of (.+) on (\\w{3} \\d\\d? \\w{3})\\.", m => `${D(m[5])} voidaan toimittaa vain ${N(m[1])} / ${N(m[2])} ${U(m[3])}: ${m[4]}.`),
+  R("([\\d.,]+) are missing\\.", m => `${N(m[1])} puuttuu.`),
+  R("The warehouse cannot deliver any of the ([\\d.,]+) (\\S+) of (.+) on (\\w{3} \\d\\d? \\w{3})\\.", m => `${D(m[4])} ei voida toimittaa yhtään (${N(m[1])} ${U(m[2])}): ${m[3]}.`),
+  R("The delivery moves from (\\w{3} \\d\\d? \\w{3}) to (\\w{3} \\d\\d? \\w{3}), (\\d+) days? later\\.", m => `Toimitus siirtyy ${D(m[1])} → ${D(m[2])}, ${N(m[3])} pv myöhemmin.`),
+  R("Lot (\\S+) of (.+) is recalled: The supplier found a fault in this batch\\.", m => `Erä ${m[1]} on takaisinvedossa (${m[2]}): toimittaja löysi erästä vian.`),
+  R("This order has ([\\d.,]+) (\\S+) from that lot\\.", m => `Tilauksessa on siitä erästä ${N(m[1])} ${U(m[2])}.`),
+  R("They are not to be used; they are replaced or credited\\.", () => "Niitä ei saa käyttää; ne korvataan tai hyvitetään."),
+  R("A recall cannot be declined\\.", () => "Takaisinvetoa ei voi hylätä."),
+  R("The lot is replaced or credited, never kept\\.", () => "Erä korvataan tai hyvitetään, sitä ei pidetä."),
+  R("Take the ([\\d.,]+) and get the missing ([\\d.,]+) credited", m => `Ota ${N(m[1])}, puuttuvat ${N(m[2])} hyvitetään`),
+  R("(?:Fill the gap|Replace) with ([\\d.,]+) x (.+)", m => `Korvaava tuote: ${N(m[1])} × ${m[2]}`),
+  R("Drop the line", () => "Poista rivi tilauksesta"),
+  R("Accept delivery on (\\w{3} \\d\\d? \\w{3})", m => `Hyväksy toimitus ${D(m[1])}`),
+  R("Cancel the order", () => "Peru tilaus"),
+  R("Take a credit, no replacement", () => "Hyvitys, ei korvaavaa tuotetta"),
+  R("([\\d.,]+) of ([\\d.,]+) (\\S+) of (.+) are delivered\\.", m => `${N(m[1])} / ${N(m[2])} ${U(m[3])} toimitetaan (${m[4]}).`),
+  R("The missing ([\\d.,]+) are credited: €€ ex VAT\\.", m => `Puuttuvat ${N(m[1])} hyvitetään: ${E(m[2])} (alv 0 %).`),
+  R("Nothing replaces them\\.", () => "Tilalle ei tule mitään."),
+  R("([\\d.,]+) (\\S+) of (.+) are delivered as ordered\\.", m => `${N(m[1])} ${U(m[2])} toimitetaan tilauksen mukaan (${m[3]}).`),
+  R("The missing ([\\d.,]+) come as ([\\d.,]+) x (.+) on the same day \\((on|not on) Valio Aimo's substitute list(?:, ([+-]\\d+)% per (\\w+))?\\)\\.", m => `Puuttuvien ${N(m[1])} tilalle tulee samana päivänä ${N(m[2])} × ${m[3]} (${m[4] === "on" ? "Valio Aimon nimeämä korvaava tuote" : "ei Valio Aimon korvaavien listalla"}${m[5] ? `, ${m[5].replace("-", "−")} % ${need(PER_FI[m[6]])}` : ""}).`),
+  R("([\\d.,]+) x (.+) come instead on the same day \\((on|not on) Valio Aimo's substitute list(?:, ([+-]\\d+)% per (\\w+))?\\)\\.", m => `Tilalle tulee samana päivänä ${N(m[1])} × ${m[2]} (${m[3] === "on" ? "Valio Aimon nimeämä korvaava tuote" : "ei Valio Aimon korvaavien listalla"}${m[4] ? `, ${m[4].replace("-", "−")} % ${need(PER_FI[m[5]])}` : ""}).`),
+  R("New goods €€, credit €€: (?:the same amount as confirmed|(€[\\d,]+(?:\\.\\d+)?) (more|less) than confirmed), ex VAT\\.", m => `Uudet tuotteet ${E(m[1])}, hyvitys ${E(m[2])}: ${m[3] ? `${E(m[3])} ${m[4] === "more" ? "enemmän" : "vähemmän"} kuin vahvistetussa tilauksessa` : "sama summa kuin vahvistetussa tilauksessa"} (alv 0 %).`),
+  R("None of the ([\\d.,]+) (\\S+) of (.+) is delivered\\.", m => `Riviä ei toimiteta lainkaan (${N(m[1])} ${U(m[2])}, ${m[3]}).`),
+  R("The line is credited: €€ ex VAT\\.", m => `Rivi hyvitetään: ${E(m[1])} (alv 0 %).`),
+  R("The whole order arrives on (\\w{3} \\d\\d? \\w{3}) instead of (\\w{3} \\d\\d? \\w{3})\\.", m => `Koko tilaus tulee ${D(m[1])}, ei ${D(m[2])}.`),
+  R("Products, quantities and prices stay as confirmed\\.", () => "Tuotteet, määrät ja hinnat pysyvät ennallaan."),
+  R("Nothing from this order is delivered\\.", () => "Tilauksesta ei toimiteta mitään."),
+  R("€€ ex VAT is credited\\.", m => `${E(m[1])} (alv 0 %) hyvitetään.`),
+  R("The ([\\d.,]+) (\\S+) of (.+) from lot (\\S+) are taken off the order and credited(?:: €€ ex VAT)?\\.", m => `Erän ${m[4]} ${N(m[1])} ${U(m[2])} poistetaan tilauksesta ja hyvitetään${m[5] ? `: ${E(m[5])} (alv 0 %)` : ""} (${m[3]}).`),
+  R("This checkout changes order (\\S+)\\.", m => `Tämä muuttaa tilausta ${m[1]}.`),
+  R("Valio Aimo reported on order (\\S+): (.+)", m => `Valio Aimo ilmoitti toimituspoikkeamasta (tilaus ${m[1]}): ${need(trAll(m[2]))}`),
+  R("Way out chosen: (.+)\\.", m => `Valittu ratkaisu: ${need(one(m[1]))}.`),
+  R("Issue (iss_\\w+) on order (\\S+) is settled: (.+)\\.", m => `Tilauksen ${m[2]} toimituspoikkeama on ratkaistu: ${need(one(m[3]))}.`),
+  R("Declined\\.", () => "Hylätty."),
+  R("Valio Aimo's agent will not make this proposal again\\.", () => "Valio Aimo ei tee tätä ehdotusta uudelleen."),
+];
+const one = s => { for (const [re, fn] of P) { const m = s.match(re); if (m) { try { const r = fn(m); return typeof r === "string" ? r.replace(/(\d\.)\.(?=\s|$)/g, "$1") : r; } catch (e) { if (e === NO) return null; throw e; } } } return null; };
+const sentences = s => String(s).split(/(?<=[.!?])\s+(?=[A-Z€“'"(0-9])/);
+// A product's Finnish name, when the answer or the card's extras carry one (catalog answers do: the variant's description is the Finnish name).
+const fiName = (id, title) => fi() ? (S.x.names || {})[id] || (S.names || {})[id] || title : title;
+// In a Finnish sentence, the catalogue titles this card knows a Finnish name for are said by that name.
+const named = s => { if (!fi() || typeof s !== "string" || !S.titleFi) return s; for (const [en, f] of S.titleFi) if (s.includes(en)) s = s.split(en).join(f); return s; };
+// The Finnish form of a gateway sentence (or several): each sentence is said whole in Finnish, or stays whole in English.
+const tr = s => {
+  if (!fi() || s == null) return s;
+  const t = String(s).trim(); if (!t) return t;
+  const parts = sentences(t);
+  if (parts.length > 1) { const fs = parts.map(one); if (fs.every(x => x !== null)) return named(fs.filter(Boolean).join(" ")); }
+  const w = one(t); if (w !== null) return named(w);
+  return named(parts.map(x => { const f = one(x); return f === null ? x : f; }).filter(Boolean).join(" "));
+};
+// Every sentence in Finnish, or null.
+const trAll = s => {
+  if (!fi()) return s;
+  const t = String(s || "").trim(), parts = sentences(t);
+  if (parts.length > 1) { const fs = parts.map(one); if (fs.every(x => x !== null)) return named(fs.filter(Boolean).join(" ")); }
+  return named(one(t));
+};
+const RULE_FI = { "Valid mandate": "Tilauslupa voimassa", "Mandate quantity limit": "Tilausluvan määräraja", "Agent ordering enabled by Valio Aimo": "Valio Aimo sallii tilausapurin tilaukset", "Agent in good standing": "Tilausapurilla ei ole estoa", "Autonomy tier": "Tilausapurin oikeudet",
+  "Money is judged on the difference": "Raja lasketaan erotuksesta", "Valio Aimo cap per agent order": "Valio Aimon raja tilausapurin tilaukselle", "Valio Aimo ceiling per delivery day": "Valio Aimon päiväkatto", "Assistant without a signing key": "Tilausapuri ei allekirjoita itse",
+  "Spend limit per order": "Tilauskohtainen raja", "Split-order check": "Pilkottu tilaus", "Spend limit per week": "Viikkoraja", "Product categories": "Tuoteryhmät", "Allergen exclusions": "Allergeenirajaukset", "Stated product requirements": "Tuotevaatimukset",
+  "Required certificates": "Vaaditut merkit", "Substitution": "Korvaava tuote", "First-time products": "Uudet tuotteet", "Unusual quantity": "Poikkeava määrä", "Recalled goods are never kept": "Takaisinvedettyä ei pidetä", "Delay the agent may accept": "Myöhästyminen, jonka tilausapuri voi hyväksyä",
+  "Partial delivery the agent may accept": "Osatoimitus, jonka tilausapuri voi hyväksyä", "Valio Aimo's proposals switched on": "Valio Aimon ehdotukset käytössä", "Proposals per customer per day": "Ehdotuksia päivässä", "A declined proposal is never made again": "Hylättyä ehdotusta ei tehdä uudelleen",
+  "A proposal may not go over the weekly cap": "Ehdotus ei ylitä viikkorajaa", "Proposals the agent may accept alone": "Ehdotukset, jotka tilausapuri voi hyväksyä itse", "Extra spend from proposals per week": "Ehdotusten lisäkulut viikossa", "Standing-order changes need a person": "Vakiotilauksen muutos tarvitsee hyväksyjän" };
+const ruleTitle = t => fi() ? RULE_FI[t] || t : t;
+// "Rule title: detail" from the gateway: in Finnish only when every part is.
+const titled = s => { if (!fi()) return s; const m = String(s).match(/^([^:]+): (.+)$/); if (m && RULE_FI[m[1]]) { const d = trAll(m[2]); if (d !== null) return RULE_FI[m[1]] + ": " + d; return s; } return tr(s); };
+// The request word the assistant searched with ("lactose-free milk"), said in Finnish when every word has a Finnish form.
+const QADJ = { "lactose-free": "laktoositon", "lactose free": "laktoositon", "gluten-free": "gluteeniton", "gluten free": "gluteeniton", organic: "luomu", vegan: "vegaaninen", finnish: "suomalainen", "low-fat": "vähärasvainen", "milk-free": "maidoton" };
+const queryFi = q => { let s = String(q || "").toLowerCase().trim(); if (!s) return ""; const adj = []; for (const [en, f] of Object.entries(QADJ)) if (s.includes(en)) { adj.push(f); s = s.replace(en, " "); } s = s.replace(/\s+/g, " ").trim(); const k = s ? KIND_FI[s] : ""; if (s && !k) return ""; return cap([...new Set(adj), k].filter(Boolean).join(" ")); };
+
 const IC = {
   ok: '<span class="ic ok"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.4 8.6l3 3 6.2-7.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>',
   warn: '<span class="ic warn"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.1" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6.4 5.6v4.8M9.6 5.6v4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>',
@@ -208,7 +621,11 @@ const IC = {
   wait: '<span class="ic dim"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 3"/></svg></span>',
   soft: '<span class="ic dim"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.4 8.6l3 3 6.2-7.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2.4 2.4"/></svg></span>',
 };
+const BOX = '<svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 6.2L9 3l6 3.2v5.6L9 15l-6-3.2zM3 6.2l6 3.1 6-3.1M9 9.3V15" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>';
+const pic = (id, cls = "") => { const src = (S.x.pictures || {})[id]; return src ? `<span class="th ${cls}"><img src="${esc(src)}" alt=""></span>` : `<span class="th none ${cls}">${BOX}</span>`; };
 const fold = (k, summary, body, cls = "fold") => `<details class="${cls}" data-k="${esc(k)}"${S.open[k] ? " open" : ""}><summary>${summary}<span class="car"></span></summary>${body}</details>`;
+// A button that says something to the assistant: the full text for the assistant, a short label for the person's own bubble.
+const sayBtn = (cls, text, label, inner) => `<button class="btn${cls ? " " + cls : ""}" data-act="say" data-text="${esc(text)}" data-label="${esc(label)}">${inner}</button>`;
 
 // ------------------------------------------------------------------ talking to the chat host (JSON-RPC over postMessage, MCP Apps 2026-01-26)
 let seq = 1;
@@ -235,14 +652,18 @@ window.addEventListener("message", ev => {
   if (m.method === "ui/notifications/tool-input") { S.input = p.arguments || {}; if (!S.res) render(); }
   else if (m.method === "ui/notifications/tool-result") take(p);
   else if (m.method === "ui/notifications/tool-cancelled") { S.cancelled = p.reason || "cancelled"; render(); }
-  else if (m.method === "ui/notifications/host-context-changed") applyCtx(p);
+  else if (m.method === "ui/notifications/host-context-changed") applyCtx(p, true);
   else if (m.method === "ui/resource-teardown") { stopWatch(); post({ jsonrpc: "2.0", id: m.id, result: {} }); }
   else if (m.method === "ping") post({ jsonrpc: "2.0", id: m.id, result: {} });
   else if (m.id !== undefined) post({ jsonrpc: "2.0", id: m.id, error: { code: -32601, message: "Method not found" } });
 });
-function applyCtx(c) {
-  Object.assign(S.ctx, c || {});
+function applyCtx(c, changed) {
+  c = c || {};
+  const was = [S.lang, S.ctx.platform];
+  Object.assign(S.ctx, c);
+  S.lang = /^fi\b/i.test(String(S.ctx.locale || "")) ? "fi" : "en";
   const root = document.documentElement;
+  root.lang = S.lang;
   if (c.theme) { root.dataset.theme = c.theme; root.style.colorScheme = c.theme; }
   const st = c.styles || {};
   for (const [k, v] of Object.entries(st.variables || {})) if (v && /^--[\w-]+$/.test(k)) root.style.setProperty(k, v);
@@ -250,6 +671,8 @@ function applyCtx(c) {
   const sa = c.safeAreaInsets;
   if (sa) document.body.style.padding = `${Math.max(1, sa.top || 0)}px ${Math.max(1, sa.right || 0)}px ${Math.max(1, sa.bottom || 0)}px ${Math.max(1, sa.left || 0)}px`;
   if (c.toolInfo && c.toolInfo.tool && c.toolInfo.tool.name) S.tool = S.tool || c.toolInfo.tool.name;
+  // A new language or a new screen width while the card is open: draw it again (the order's checks are words too).
+  if (changed && (was[0] !== S.lang || was[1] !== S.ctx.platform)) { render(); if (was[0] !== S.lang && S.checks) runChecks(); }
 }
 let sized = [0, 0];
 function size() {
@@ -261,14 +684,17 @@ function size() {
 }
 const parse = r => { if (r && r.structuredContent && typeof r.structuredContent === "object") return r.structuredContent; try { return JSON.parse(((r && r.content) || []).find(c => c.type === "text").text); } catch (e) { return null; } };
 async function tool(name, args) { return parse(await request("tools/call", { name, arguments: args }, 45000)); }
-async function say(text) {
-  try { const r = await request("ui/message", { role: "user", content: [{ type: "text", text }] }, 60000); if (r && r.isError) throw new Error("refused"); return true; }
-  catch (e) { const ok = await copy(text); toast(ok ? "Copied. Paste it into the chat." : "Tell the assistant: " + text); return false; }
+async function say(text, label) {
+  try {
+    const params = { role: "user", content: [{ type: "text", text }] };
+    if (label) params._meta = { "fi.valioaimo/label": label };  // a host that shows the person's own bubble shows this; the assistant reads text
+    const r = await request("ui/message", params, 60000); if (r && r.isError) throw new Error("refused"); return true;
+  } catch (e) { const ok = await copy(text); toast(ok ? L("Copied. Paste it into the chat.", "Kopioitu. Liitä se keskusteluun.") : L("Tell the assistant: ", "Kerro tilausapurille: ") + text); return false; }
 }
 const tell = text => { if (can("updateModelContext")) request("ui/update-model-context", { content: [{ type: "text", text }] }).catch(() => {}); };
 async function openLink(url) {
   try { await request("ui/open-link", { url }, 60000); }
-  catch (e) { try { if (!window.open(url, "_blank", "noopener")) throw e; } catch (e2) { const ok = await copy(url); toast(ok ? "Link copied. Open it in a browser." : url); } }
+  catch (e) { try { if (!window.open(url, "_blank", "noopener")) throw e; } catch (e2) { const ok = await copy(url); toast(ok ? L("Link copied. Open it in a browser.", "Linkki kopioitu. Avaa se selaimessa.") : url); } }
 }
 async function copy(text) {
   try { await navigator.clipboard.writeText(text); return true; } catch (e) {}
@@ -314,57 +740,97 @@ async function deviceOk(d, ap) {
 async function orderChecks(o, audit, seller) {
   const ev = o.wholesale.evidence, out = [];
   const c1 = await verifyDetached(without(o, "proof"), o.proof.jws, seller);
-  out.push([c1, c1 ? "Valio Aimo signed this confirmation" : "This is not what Valio Aimo signed", c1 ? `Every field of this order is covered by Valio Aimo's signature (ES256 over the canonical JSON). Key ${seller.kid}.` : "The document does not match Valio Aimo's signature. It was changed after signing."]);
+  out.push([c1, c1 ? L("Valio Aimo signed this confirmation", "Valio Aimo allekirjoitti tämän tilausvahvistuksen") : L("This is not what Valio Aimo signed", "Tämä ei ole se, minkä Valio Aimo allekirjoitti"),
+    c1 ? L(`Every field of this order is covered by Valio Aimo's signature (ES256 over the canonical JSON). Key ${seller.kid}.`, `Valio Aimon allekirjoitus kattaa tilauksen jokaisen tiedon (ES256). Avain ${seller.kid}.`) : L("The document does not match Valio Aimo's signature. It was changed after signing.", "Asiakirja ei vastaa Valio Aimon allekirjoitusta. Sitä on muutettu allekirjoituksen jälkeen.")]);
   const m = await verifyJwt(ev.mandate, audit.keys.buyer);
-  out.push([!!m, "The buying company signed the assistant's mandate", m ? `Mandate ${m.jti} from ${m.iss}: alone up to ${eur(m.mandate.budget.max_per_order)} an order. ` + ((ev.mandate_key || {}).held_by === "buyer" ? "Signed with a key the buyer registered itself." : "Checked against the buyer key this gateway keeps for demo accounts.") : "The mandate's signature does not match the buyer's registered key."]);
+  out.push([!!m, L("The buying company signed the assistant's mandate", "Ostava yritys allekirjoitti tilausapurin tilausluvan"), m ? L(`Mandate ${m.jti} from ${m.iss}: alone up to ${eur(m.mandate.budget.max_per_order)} an order. `, `Tilauslupa ${m.jti}: tilausapuri saa tilata yksin enintään ${eur(m.mandate.budget.max_per_order)} kerralla. `) + ((ev.mandate_key || {}).held_by === "buyer" ? L("Signed with a key the buyer registered itself.", "Allekirjoitettu ostajan itse rekisteröimällä avaimella.") : L("Checked against the buyer key this gateway keeps for demo accounts.", "Tarkistettu ostajan avaimella, jota palvelu säilyttää esittelytileille.")) : L("The mandate's signature does not match the buyer's registered key.", "Tilausluvan allekirjoitus ei vastaa ostajan rekisteröityä avainta.")]);
   const rc = ev.keyless_receipt;
   let acc = null;
   if (ev.agent_class === "keyless") {
     if (m && rc && rc.mandate_jti === m.jti && await verifyDetached(without(rc, "proof"), rc.proof.jws, seller)) acc = { iss: rc.agent, mandate_jti: rc.mandate_jti, checkout_digest: rc.checkout_digest };
-    out.push([!!acc, "The assistant accepted the offer under its mandate", acc ? "This assistant signed in and holds no key, so it cannot sign. Valio Aimo signed a receipt of what it accepted, and gives such assistants less room (rule T1)." : "The receipt of the assistant's acceptance does not verify."]);
+    out.push([!!acc, L("The assistant accepted the offer under its mandate", "Tilausapuri hyväksyi ostoskorin tilausluvallaan"), acc ? L("This assistant signed in and holds no key, so it cannot sign. Valio Aimo signed a receipt of what it accepted, and gives such assistants less room (rule T1).", "Tämä tilausapuri kirjautui sisään eikä sillä ole omaa avainta, joten se ei voi allekirjoittaa. Valio Aimo allekirjoitti kuitin siitä, minkä se hyväksyi, ja antaa tällaiselle tilausapurille pienemmät rajat (sääntö T1).") : L("The receipt of the assistant's acceptance does not verify.", "Kuitti tilausapurin hyväksynnästä ei täsmää.")]);
   } else {
     acc = m && m.cnf ? await verifyJwt(ev.agent_acceptance, m.cnf.jwk) : null;
-    out.push([!!acc && acc.mandate_jti === m.jti, "The agent accepted with the key named in its mandate", acc ? `Signed by ${acc.iss}. A copied mandate is useless without this key.` : "The acceptance is not signed with the agent key the mandate is bound to."]);
+    out.push([!!acc && acc.mandate_jti === m.jti, L("The agent accepted with the key named in its mandate", "Tilausapuri hyväksyi tilausluvassa nimetyllä avaimella"), acc ? L(`Signed by ${acc.iss}. A copied mandate is useless without this key.`, `Allekirjoittaja ${acc.iss}. Kopioitu tilauslupa on hyödytön ilman tätä avainta.`) : L("The acceptance is not signed with the agent key the mandate is bound to.", "Hyväksyntää ei ole allekirjoitettu tilauslupaan sidotulla avaimella.")]);
   }
   const dig = audit.offer ? await sha256hex(utf8(jcs(audit.offer))) : "";
   const c4 = !!acc && dig === ev.offer_digest && acc.checkout_digest === dig && await verifyDetached(audit.offer, ev.offer_signature, seller) && jcs(audit.offer.totals) === jcs(o.totals);
-  out.push([c4, c4 ? "Both sides signed exactly the same terms" : "These are not the terms both sides signed", c4 ? `The offer's digest (sha-256 ${dig.slice(0, 20)}…) is what Valio Aimo signed and what the assistant accepted, and its totals equal this order's.` : "The offer that was accepted is not the offer behind this order: the totals differ."]);
+  out.push([c4, c4 ? L("Both sides signed exactly the same terms", "Molemmat osapuolet allekirjoittivat täsmälleen samat ehdot") : L("These are not the terms both sides signed", "Nämä eivät ole ehdot, jotka molemmat allekirjoittivat"), c4 ? L(`The offer's digest (sha-256 ${dig.slice(0, 20)}…) is what Valio Aimo signed and what the assistant accepted, and its totals equal this order's.`, `Ostoskorin tiiviste (sha-256 ${dig.slice(0, 20)}…) on sama, jonka Valio Aimo allekirjoitti ja tilausapuri hyväksyi, ja sen summat vastaavat tätä tilausta.`) : L("The offer that was accepted is not the offer behind this order: the totals differ.", "Hyväksytty ostoskori ei ole tämän tilauksen takana: summat eroavat.")]);
   const ap = ev.approval;
   if (ap) {
     const c5 = await verifyDetached(without(ap, "signature"), ap.signature.jws, audit.keys.approver);
-    out.push([c5, `${ap.by} approved it`, c5 ? `Recorded ${dayTime(ap.at)}, lifting ${(ap.overrides || []).join(", ") || "the stop"}.` + (ap.asked_by ? ` Asked by ${ap.asked_by}.` : "") : "The approval record's signature does not verify."]);
-    if (ap.device) { const c6 = await deviceOk(ap.device, ap); out.push([c6, "The approval was signed on the approver's own device", c6 ? `A key on ${ap.device.device || "their device"} signed this offer's digest, the decision and the name${ap.device.user_verified ? ", after the device checked the person" : ""}. Nobody without that device can make this signature: not the assistant, not Valio Aimo, not this server.` : "The device signature does not match this approval."]); }
-  } else out.push([true, "No person was needed", "Every rule passed, so the mandate alone authorised this order."]);
+    out.push([c5, L(`${ap.by} approved it`, `${ap.by} hyväksyi tilauksen`), c5 ? L(`Recorded ${dayTime(ap.at)}, lifting ${(ap.overrides || []).join(", ") || "the stop"}.`, `Kirjattu ${dayTime(ap.at)}, ohittaa ${(ap.overrides || []).join(", ") || "pysäytyksen"}.`) + (ap.asked_by ? L(` Asked by ${ap.asked_by}.`, ` Pyytäjä ${ap.asked_by}.`) : "") : L("The approval record's signature does not verify.", "Hyväksyntäkirjauksen allekirjoitus ei täsmää.")]);
+    if (ap.device) { const c6 = await deviceOk(ap.device, ap); out.push([c6, L("The approval was signed on the approver's own device", "Hyväksyntä allekirjoitettiin hyväksyjän omalla laitteella"), c6 ? L(`A key on ${ap.device.device || "their device"} signed this offer's digest, the decision and the name${ap.device.user_verified ? ", after the device checked the person" : ""}. Nobody without that device can make this signature: not the assistant, not Valio Aimo, not this server. It does not prove who holds the device: the prototype enrols the first device that approves, and in production the approver signs in with their own Minun Aimo account.`, `Laitteen ${ap.device.device || "hyväksyjän laite"} avain allekirjoitti ostoskorin tiivisteen, päätöksen ja nimen${ap.device.user_verified ? ", kun laite oli ensin tunnistanut käyttäjän" : ""}. Kukaan ilman tätä laitetta ei voi tehdä tätä allekirjoitusta: ei tilausapuri, ei Valio Aimo eikä tämä palvelin. Se ei todista, kuka laitetta käyttää: prototyypissä hyväksyjän laitteeksi tulee ensimmäinen laite, joka hyväksyy, ja tuotannossa hyväksyjä kirjautuu omilla Minun Aimo -tunnuksillaan.`) : L("The device signature does not match this approval.", "Laitteen allekirjoitus ei vastaa tätä hyväksyntää.")]); }
+  } else out.push([true, L("No person was needed", "Hyväksyjää ei tarvittu"), L("Every rule passed, so the mandate alone authorised this order.", "Kaikki säännöt menivät läpi, joten tilauslupa riitti tähän tilaukseen.")]);
   const led = audit.ledger || {};
-  if (led.intact !== undefined) out.push([!!led.intact, "The audit ledger has not been edited", led.intact ? `As the gateway reports: ${led.events_checked || "all"} entries chain hash to hash. This one is not recomputed in the chat; the order page recomputes it in your browser.` : `The chain breaks at entry ${led.first_bad_seq}.`, true]);
+  if (led.intact !== undefined) out.push([!!led.intact, L("The audit ledger has not been edited", "Tapahtumalokia ei ole muokattu"), led.intact ? L(`As the gateway reports: ${led.events_checked || "all"} entries chain hash to hash. This one is not recomputed in the chat; the order page recomputes it in your browser.`, `Palvelun ilmoituksen mukaan ${led.events_checked ? nf(led.events_checked) : "kaikki"} merkintää ketjuuntuvat tiivisteestä toiseen. Tätä ei lasketa uudelleen keskustelussa; tilaussivu laskee sen selaimessasi.`) : L(`The chain breaks at entry ${led.first_bad_seq}.`, `Ketju katkeaa merkinnässä ${led.first_bad_seq}.`), true]);
   return out;
 }
 
 // ------------------------------------------------------------------ pieces
-const head = (title, sub, chip) => `<header class="hd"><div class="brand"><i></i>Valio Aimo <span>agent gateway</span></div>${chip || ""}</header><div class="tt"><h1>${title}</h1>${sub ? `<p>${sub}</p>` : ""}</div>`;
+// Inside Valio Aimo's own shop the card is simply Valio Aimo's; in an outside chat it says it is the gateway.
+const inShop = () => ((S.host || {}).hostInfo || {}).name === "aimo-shop";
+const head = (title, sub, chip) => `<header class="hd"><div class="brand"><i></i>Valio Aimo${inShop() ? "" : " <span>agent gateway</span>"}</div>${chip || ""}</header><div class="tt"><h1>${title}</h1>${sub ? `<p>${sub}</p>` : ""}</div>`;
 const chip = (cls, text) => `<span class="chip ${cls}">${esc(text)}</span>`;
-const sigLine = (id, what) => `<div class="sig" data-sig="${id}">${IC.wait}<span>${esc(what)}: checking the signature here…</span></div>`;
+const SIGWHAT = { options: ["Options signed by Valio Aimo", "Valio Aimon allekirjoittamat vaihtoehdot"], offer: ["Offer signed by Valio Aimo", "Valio Aimon allekirjoittama ostoskori"], plan: ["Plan signed by Valio Aimo", "Valio Aimon allekirjoittama suunnitelma"], signed: ["Signed by Valio Aimo", "Valio Aimon allekirjoittama"] };
+// In the shop a cook sees the answer; signatures, rule codes, keys, Peppol and the raw text wait behind one fold at the foot, "Näytä tarkistukset".
+// A view hands such parts to tech() while it draws; foot() puts them in that fold. In an outside chat everything stays where it was.
+let CHK = [];
+const tech = html => { if (html) CHK.push(html); return ""; };
+const shopTech = html => inShop() ? tech(html) : html;
+const sigLine = (id, what) => shopTech(`<div class="sig" data-sig="${id}">${IC.wait}<span>${esc(L(SIGWHAT[what][0], SIGWHAT[what][1]))}${L(": checking the signature here…", ": allekirjoitusta tarkistetaan…")}</span></div>`);
 function foot() {
   const raw = S.res && ((S.res.content || []).find(c => c.type === "text") || {}).text;
-  const body = raw ? `<pre class="raw">${esc(raw.length > 9000 ? raw.slice(0, 9000) + "\n… " + nf(raw.length - 9000) + " more characters" : raw)}</pre><p class="xs" style="margin-top:6px">This text is what the assistant reads, and all that a connector without cards shows.</p>` : "";
-  const note = "Prototype on Valio Aimo's challenge data. Not a Valio Aimo system.";
-  return `<footer class="ft">${raw ? `<details data-k="raw"${S.open.raw ? " open" : ""}><summary><span>${note}</span><span style="white-space:nowrap">Raw answer, ${nf(raw.length)} characters<span class="car"></span></span></summary>${body}</details>` : `<p class="note">${note}</p>`}</footer>`;
+  const body = raw ? `<pre class="raw">${esc(raw.length > 9000 ? raw.slice(0, 9000) + "\n… " + nf(raw.length - 9000) + L(" more characters", " merkkiä lisää") : raw)}</pre><p class="xs" style="margin-top:6px">${L("This text is what the assistant reads, and all that a connector without cards shows.", "Tämän tekstin tilausapuri lukee. Ilman kortteja näkyisi vain tämä.")}</p>` : "";
+  const note = L("Prototype on Valio Aimo's challenge data. Not a Valio Aimo system.", "Prototyyppi Valio Aimon haasteaineistolla. Ei Valio Aimon järjestelmä.") + (Object.keys(S.x.pictures || {}).length ? L(inShop() ? " Pictures: Open Food Facts, by EAN, not Valio Aimo's own." : " Pictures: Open Food Facts, by GTIN, not Valio Aimo's own.", " Kuvat: Open Food Facts (EAN), eivät Valio Aimon omia.") : "");
+  if (inShop()) {
+    const parts = CHK.splice(0);
+    const rawF = raw ? fold("raw", `${L("The text the assistant read", "Teksti, jonka tilausapuri luki")}, ${nf(raw.length)} ${L("characters", "merkkiä")}`, body) : "";
+    return `<footer class="ft"><details class="checks" data-k="checks"${S.open.checks ? " open" : ""}><summary><span>${note}</span><span style="white-space:nowrap">${L("Show the checks", "Näytä tarkistukset")}<span class="car"></span></span></summary><div class="chkb">${parts.join("")}${rawF}</div></details></footer>`;
+  }
+  return `<footer class="ft">${raw ? `<details data-k="raw"${S.open.raw ? " open" : ""}><summary><span>${note}</span><span style="white-space:nowrap">${L("Raw answer", "Tilausapurin vastaus")}, ${nf(raw.length)} ${L("characters", "merkkiä")}<span class="car"></span></span></summary>${body}</details>` : `<p class="note">${note}</p>`}</footer>`;
 }
 const wrap = inner => `<div class="card">${inner}${foot()}</div>${S.toast ? `<div class="toast" role="status">${esc(S.toast)}</div>` : ""}`;
 const facts = w => {
   if (!w) return "";
   const a = w.allergens || {}, bits = [];
   if (w.origin) bits.push(esc(country(w.origin)));
-  if (a.declared === false) bits.push('<span class="warn">allergens not declared by the maker</span>');
-  else if ((a.contains || []).length) bits.push("contains " + esc(names(a.contains)));
-  if ((a.may_contain || []).length) bits.push("may contain " + esc(names(a.may_contain)));
+  if (a.declared === false) bits.push(`<span class="warn">${L("allergens not declared by the maker", "valmistaja ei ole ilmoittanut allergeeneja")}</span>`);
+  else if ((a.contains || []).length) bits.push(L("contains ", "sisältää: ") + esc(names(a.contains)));
+  if ((a.may_contain || []).length) bits.push(L("may contain ", "voi sisältää: ") + esc(names(a.may_contain)));
   return bits.join(" · ");
 };
 function authBlock(k, a) {
-  const [cls, text] = AUTH[(a || {}).decision] || ["dim", (a || {}).decision || ""];
+  const [cls, en, f] = AUTH[(a || {}).decision] || ["dim", (a || {}).decision || "", (a || {}).decision || ""];
+  const text = L(en, f);
   const rs = ((a || {}).reasons || []).length ? a.reasons : (a || {}).basis || [];
+  // In the shop the decision is one plain line; the rule behind it waits in the checks fold.
+  if (inShop()) { if (rs.length) tech(`<p class="sm"><b>${esc(text)}.</b> ${esc(rs.map(r => tr(String(r).replace(/^[A-Z]\d+: /, ""))).join(" "))}</p>`); return `<div class="why"><span class="${cls}">${esc(text)}</span></div>`; }
   if (!rs.length) return `<div class="why"><span class="${cls}"><b>${esc(text)}</b></span></div>`;
-  return `<details class="why" data-k="${esc(k)}"${S.open[k] ? " open" : ""}><summary class="${cls}">${esc(text)}<span class="car"></span></summary><ul>${rs.map(r => `<li>${esc(r)}</li>`).join("")}</ul></details>`;
+  return `<details class="why" data-k="${esc(k)}"${S.open[k] ? " open" : ""}><summary class="${cls}">${esc(text)}<span class="car"></span></summary><ul>${rs.map(r => `<li>${esc(tr(r))}</li>`).join("")}</ul></details>`;
+}
+// Quantities in whole sales units, as the shop writes them: "11 kpl", "3 ltk".
+const SALES_FI = { piece: "kpl", pieces: "kpl", pcs: "kpl", pc: "kpl", C62: "kpl", case: "ltk", CS: "ltk", CT: "ltk", box: "ltk" };
+const SALES_EN = { kpl: "pcs", ltk: "cases" };
+const salesUnit = it => { const q = (it || {}).quantity_unit || {}; return SALES_FI[q.display_text] || SALES_FI[q.unit] || "kpl"; };
+const qtyFi = (n, u) => `${nf(Math.round(Number(n)), 0, 0)} ${fi() ? u || "kpl" : SALES_EN[u || "kpl"] || u}`;
+// Why a checkout stopped, in one or two plain sentences from the rules' own numbers: no codes, no rule names.
+const EUR_RE = /€[\d,]+(?:\.\d+)?/g;
+const cents = s => Math.round(Number(String(s).replace(/[€,]/g, "")) * 100);
+function stopWhy(rs, sub) {
+  const out = [], caps = [];
+  for (const r of rs) {
+    const d = String(r.detail || ""), m = d.match(EUR_RE) || [];
+    if (["T1", "B1", "W3"].includes(r.id) && m.length) { const lim = r.id === "B1" ? m[m.length - 1] : (d.match(/up to (€[\d,]+(?:\.\d+)?)/) || [])[1]; if (lim) caps.push(cents(lim)); continue; }
+    if (r.id === "B2" && m.length >= 3) { out.push(L(`With this order the last 7 days come to ${eur(cents(m[1]))}. The weekly limit is ${eur(cents(m[2]))}.`, `Tämän tilauksen kanssa viimeisen 7 päivän ostokset ovat ${eur(cents(m[1]))}. Viikkoraja on ${eur(cents(m[2]))}.`)); continue; }
+    if (r.id === "B3" && m.length >= 3) { out.push(L(`Orders and open carts for this delivery day already come to ${eur(cents(m[0]))}. Together that is ${eur(cents(m[1]))}, over the ${eur(cents(m[2]))} limit.`, `Samalle toimituspäivälle on jo tilauksia tai vahvistamattomia ostoskoreja ${eur(cents(m[0]))} edestä. Yhteensä ${eur(cents(m[1]))} ylittää rajan ${eur(cents(m[2]))}.`)); continue; }
+    const q = r.id === "Q1" && d.match(/^([\d.]+) (\S+) of (.+) is ([\d.]+)x this kitchen's usual ([\d.]+)\.$/);
+    if (q) { const u = SALES_FI[q[2]] || "kpl", nm = fi() ? named(q[3]) : q[3]; out.push(L(`${qtyFi(q[1], u)} of ${nm} is ${q[4]} times your usual ${qtyFi(q[5], u)}.`, `${qtyFi(q[1], u)} ${nm} on ${nf(Number(q[4]), 0, 1)} kertaa tavallinen määräsi (${qtyFi(q[5], u)}).`)); continue; }
+    const t = tr(String(d).replace(/^[A-Z]\d+: /, ""));
+    out.push(t && (!fi() || t !== d) ? t : L(r.title + ".", (RULE_FI[r.title] || "Sääntö") + "."));
+  }
+  if (caps.length) out.unshift(L(`The order is ${eur(sub || 0)} ex VAT. Without approval at most ${eur(Math.min(...caps))} may be ordered.`, `Tilaus on ${eur(sub || 0)} (alv 0 %). Ilman hyväksyntää saa tilata enintään ${eur(Math.min(...caps))}.`));
+  return [...new Set(out)].map(s => `<p>${esc(s)}</p>`).join("");
 }
 function lines(items, withFacts = true) {
   return (items || []).map(l => {
@@ -372,148 +838,250 @@ function lines(items, withFacts = true) {
     const sub = total(l.totals, "subtotal") ?? l.line_total_ex_vat;
     const sf = w.substitutes_for || l.substitutes_for;
     const f = [];
-    if (it.price != null) f.push(`${eur(it.price)} each${it.list_price && it.list_price > it.price ? ` <s>${eur(it.list_price)}</s>` : ""}`);
-    if (w.gtin) f.push(`GTIN <span class="m">${esc(w.gtin)}</span>`);
+    if (it.price != null) f.push(fi() ? `à ${eur(it.price)}${it.list_price && it.list_price > it.price ? ` <s>${eur(it.list_price)}</s>` : ""}` : `${eur(it.price)} each${it.list_price && it.list_price > it.price ? ` <s>${eur(it.list_price)}</s>` : ""}`);
+    if (w.gtin) f.push(`${inShop() ? "EAN" : L("GTIN", "EAN")} <span class="m">${esc(w.gtin)}</span>`);
     if (w.supplier) f.push(esc(cap(String(w.supplier).toLowerCase())));
     const fx = facts(w);
     if (fx) f.push(fx);
-    if (w.lot) f.push(`lot <span class="m">${esc(w.lot)}</span>`);
-    return `<div class="li"><div class="a"><span class="q">${nf(n)} ×</span> ${esc(it.title)}${sf ? ` <span class="dim sm">in place of ${esc(typeof sf === "object" ? sf.for_title || sf.title || sf.id : sf)}</span>` : ""}</div><div class="p">${sub != null ? eur(sub) : ""}</div>${withFacts && f.length ? `<div class="f">${f.join(" · ")}</div>` : ""}</div>`;
+    if (w.lot) f.push(`${L("lot", "erä")} <span class="m">${esc(w.lot)}</span>`);
+    const sft = sf ? esc(typeof sf === "object" ? sf.for_title || sf.title || sf.id : sf) : "";
+    return `<div class="li pi">${pic(it.id)}<div class="a"><span class="q">${fi() ? qtyFi(n, salesUnit(it)) : nf(n) + " ×"}</span> ${esc(fiName(it.id, it.title))}${sf ? ` <span class="dim sm">${fi() ? `Korvaava tuote tuotteelle ${sft}` : `in place of ${sft}`}</span>` : ""}</div><div class="p">${sub != null ? eur(sub) : ""}</div>${withFacts && f.length ? `<div class="f">${f.join(" · ")}</div>` : ""}</div>`;
   }).join("");
 }
-const totals = (ts, bad) => `<div class="tots"><div><span>Subtotal ex VAT</span><span>${eur(total(ts, "subtotal"))}</span></div><div><span>${esc(((ts || []).find(t => t.type === "tax") || {}).display_text || "VAT")}</span><span>${eur(total(ts, "tax") || 0)}</span></div><div class="tot"><span>Total</span><span${bad ? ' class="amt-bad"' : ""}>${eur(total(ts, "total"))}</span></div></div>`;
+// The first four lines, the rest behind one fold.
+const SHOW = 4;
+function someLines(items, k, withFacts = true) {
+  const ls = items || [];
+  if (ls.length <= SHOW + 1 || !(phone() || inShop())) return lines(ls, withFacts);  // an outside chat on a wide screen keeps every line in view, as before
+  return lines(ls.slice(0, SHOW), withFacts) + fold(k, `<span class="sw-c">${L(`Show all ${ls.length} lines`, `Näytä kaikki ${ls.length} riviä`)}</span><span class="sw-o">${L(`${ls.length} lines`, `${ls.length} riviä`)}</span>`, `<div style="margin-top:4px">${lines(ls.slice(SHOW), withFacts)}</div>`, "fold more-lines");
+}
+const taxText = ts => { const t = ((ts || []).find(t => t.type === "tax") || {}).display_text || "VAT"; return fi() ? t.replace(/^VAT/, "ALV").replace(/(\d)\.(\d)/, "$1,$2") : t; };
+const totals = (ts, bad) => `<div class="tots"><div><span>${L("Subtotal ex VAT", "Ostokset (alv 0 %)")}</span><span>${eur(total(ts, "subtotal"))}</span></div><div><span>${esc(taxText(ts))}</span><span>${eur(total(ts, "tax") || 0)}</span></div><div class="tot"><span>${L("Total", "Yhteensä (sis. alv)")}</span><span${bad ? ' class="amt-bad"' : ""}>${eur(total(ts, "total"))}</span></div></div>`;
+const ruleLi = r => `<li>${r.outcome === "pass" ? IC.ok : r.outcome === "escalate" ? IC.warn : IC.bad}<div><b>${esc(ruleTitle(r.title))}</b><span class="rid">${esc(r.id)}</span><p>${esc(tr(r.detail))}</p></div></li>`;
+const passedTitle = (n, others) => fi() ? `${n} ${others ? "muuta " : ""}tarkistus${n === 1 ? "" : "ta"} kunnossa` : `${n} ${others ? "other " : ""}rule${n === 1 ? "" : "s"} passed`;
 function rules(pol, k) {
   const rs = (pol || {}).rules || [], stop = rs.filter(r => r.outcome !== "pass"), pass = rs.filter(r => r.outcome === "pass");
-  const li = r => `<li>${r.outcome === "pass" ? IC.ok : r.outcome === "escalate" ? IC.warn : IC.bad}<div><b>${esc(r.title)}</b><span class="rid">${esc(r.id)}</span><p>${esc(r.detail)}</p></div></li>`;
   if (!rs.length) return "";
-  const passed = pass.length ? fold(k, `${stop.length ? IC.ok + " " : ""}${pass.length} ${stop.length ? "other " : ""}rule${pass.length === 1 ? "" : "s"} passed`, `<ul class="rules">${pass.map(li).join("")}</ul>`) : "";
-  return (stop.length ? `<ul class="rules">${stop.map(li).join("")}</ul>` : "") + passed;
+  const passed = pass.length ? fold(k, `${stop.length ? IC.ok + " " : ""}${passedTitle(pass.length, stop.length)}`, `<ul class="rules">${pass.map(ruleLi).join("")}</ul>`) : "";
+  return (stop.length ? `<ul class="rules">${stop.map(ruleLi).join("")}</ul>` : "") + passed;
 }
-function payment(k, pay, sub, placed) {
+function payment(k, pay, sub, placed, bare) {
   const m = S.x.mandate;
   let meter = "", auth = "";
   if (m && m.max_per_week) {
     const before = placed ? Math.max(0, m.spent_week - (sub || 0)) : m.spent_week, pct = v => Math.max(0, Math.min(100, 100 * v / m.max_per_week));
     const over = before + (sub || 0) > m.max_per_week;
-    meter = `<div class="meter"><div class="bar${over ? " short" : ""}" role="img" aria-label="Weekly room used"><i class="b2" style="width:${pct(before)}%"></i><i style="width:${Math.min(100 - pct(before), pct(sub || 0))}%"></i></div><p>${eur(sub || 0)} ${placed ? "this order" : "this offer"}${before ? ` on top of ${eur(before)} in the last 7 days` : ""}, of the ${eur(m.max_per_week)} a week the buyer signed for.</p></div>`;
+    meter = `<div class="meter"><div class="bar${over ? " short" : ""}" role="img" aria-label="${L("Weekly room used", "Viikkorajasta käytetty")}"><i class="b2" style="width:${pct(before)}%"></i><i style="width:${Math.min(100 - pct(before), pct(sub || 0))}%"></i></div><p>${fi()
+      ? `${placed ? "Tämä tilaus" : "Tämä ostoskori"} ${eur(sub || 0)}${before ? `, lisäksi ${eur(before)} viimeisen 7 päivän aikana` : ""}. Ostajan viikkoraja on ${eur(m.max_per_week)}.`
+      : `${eur(sub || 0)} ${placed ? "this order" : "this offer"}${before ? ` on top of ${eur(before)} in the last 7 days` : ""}, of the ${eur(m.max_per_week)} a week the buyer signed for.`}</p></div>`;
   }
-  if (m) auth = fold(k, "What authorises the spend", `<p style="margin-top:5px">Mandate <span class="m">${esc(m.id)}</span>, signed by ${esc(m.buyer || "the buyer")}: this assistant may order alone${m.max_per_order != null ? ` up to ${eur(m.max_per_order)} an order` : ""}${m.max_per_week != null ? ` and ${eur(m.max_per_week)} a week` : ""}${m.expires ? `, until ${dayTime(m.expires)}` : ""}. Above that a person signs. The mandate records who allowed the order; the invoice is the claim for payment, and Valio Aimo collects it the way it does today.${m.key_held_by === "gateway" ? " On this demo account the gateway keeps the buyer's signing key." : ""}</p>`);
-  return `<section class="sec"><p class="lab">Payment</p><p class="sm">Invoice on the account's existing terms with Valio Aimo. <span class="mut">Nothing is paid in the chat, and no card or payment token passes through the assistant.</span></p>${meter}${auth}</section>`;
+  if (m) auth = fold(k, L("What authorises the spend", "Kuka on sallinut tilauksen"), `<p style="margin-top:5px">${fi()
+    ? `${esc(m.buyer || "Ostaja")} on allekirjoittanut tilausapurille tilausluvan: se saa tilata yksin${m.max_per_order != null ? ` enintään ${eur(m.max_per_order)} kerralla` : ""}${m.max_per_week != null ? ` ja ${eur(m.max_per_week)} viikossa` : ""}${m.expires ? `, ${dayTime(m.expires)} asti` : ""}. Sen yli hyväksyjä päättää. Lupa kertoo, kuka tilauksen salli; lasku on maksuvaatimus, ja Valio Aimo laskuttaa kuten nykyään.${m.key_held_by === "gateway" ? " Tällä esittelyasiakkaalla ostajan allekirjoitusavainta säilyttää palvelu." : ""}`
+    : `Mandate <span class="m">${esc(m.id)}</span>, signed by ${esc(m.buyer || "the buyer")}: this assistant may order alone${m.max_per_order != null ? ` up to ${eur(m.max_per_order)} an order` : ""}${m.max_per_week != null ? ` and ${eur(m.max_per_week)} a week` : ""}${m.expires ? `, until ${dayTime(m.expires)}` : ""}. Above that a person signs. The mandate records who allowed the order; the invoice is the claim for payment, and Valio Aimo collects it the way it does today.${m.key_held_by === "gateway" ? " On this demo account the gateway keeps the buyer's signing key." : ""}`}</p>`);
+  const inner = `<p class="sm">${L("Invoice on the account's existing terms with Valio Aimo.", "Lasku nykyisillä maksuehdoillasi.")} <span class="mut">${L("Nothing is paid in the chat, and no card or payment token passes through the assistant.", "Keskustelussa ei makseta mitään, eikä korttitietoja kulje tilausapurin kautta.")}</span></p>${meter}${auth}`;
+  return bare ? inner : `<section class="sec"><p class="lab">${L("Payment", "Maksu")}</p>${inner}</section>`;
 }
 
 // ------------------------------------------------------------------ views
 function vLoading() {
   const a = S.input || {}, t = S.tool;
-  const doing = { plan_sourcing: () => `Finding ${a.need_quantity ? nf(a.need_quantity) + " " + (a.need_unit || "") + " of " : ""}${a.query || "products"}${a.delivery_date ? " for " + day(a.delivery_date) : ""}`, search_catalog: () => `Searching the catalog for ${a.query || "products"}`, lookup_catalog: () => "Looking up products",
-    create_checkout: () => "Asking Valio Aimo for a signed offer", update_checkout: () => "Asking for a fresh signed offer", complete_checkout: () => "Placing the order", get_checkout: () => "Reading the offer", get_order: () => "Reading the order", usual_orders: () => "Reading what this kitchen usually orders",
-    list_proposals: () => "Reading proposals from Valio Aimo's agent", list_order_issues: () => "Checking placed orders for problems", plan_menu_order: () => "Working out the order for the menu" }[t];
-  return `<div class="card">${head(esc(doing ? doing() : "Asking Valio Aimo"), "", "")}<div class="sec"><div class="sk"></div><div class="sk w6"></div><div class="sk w4"></div></div></div>`;
+  const doing = fi() ? { plan_sourcing: () => `Etsitään vaihtoehtoja${a.need_quantity ? ": " + nf(a.need_quantity) + " " + uu(a.need_unit || "") : ""}${a.delivery_date ? ", toimitus " + day(a.delivery_date) : ""}`, search_catalog: () => "Haetaan valikoimasta", lookup_catalog: () => "Haetaan tuotteita",
+      create_checkout: () => "Kootaan ostoskori", update_checkout: () => "Päivitetään ostoskori", complete_checkout: () => "Vahvistetaan tilaus", get_checkout: () => "Luetaan ostoskoria", get_order: () => "Luetaan tilausta", usual_orders: () => "Luetaan usein ostetut",
+      list_proposals: () => "Luetaan Valio Aimon ehdotukset", list_order_issues: () => "Tarkistetaan toimituspoikkeamat", plan_menu_order: () => "Lasketaan menun tilausta", answer_proposal: () => "Vastataan ehdotukseen", resolve_order_issue: () => "Ratkaistaan poikkeamaa" }[t]
+    : { plan_sourcing: () => `Finding ${a.need_quantity ? nf(a.need_quantity) + " " + (a.need_unit || "") + " of " : ""}${a.query || "products"}${a.delivery_date ? " for " + day(a.delivery_date) : ""}`, search_catalog: () => `Searching the catalog for ${a.query || "products"}`, lookup_catalog: () => "Looking up products",
+      create_checkout: () => "Asking Valio Aimo for a signed offer", update_checkout: () => "Asking for a fresh signed offer", complete_checkout: () => "Placing the order", get_checkout: () => "Reading the offer", get_order: () => "Reading the order", usual_orders: () => "Reading what this kitchen usually orders",
+      list_proposals: () => "Reading proposals from Valio Aimo's agent", list_order_issues: () => "Checking placed orders for problems", plan_menu_order: () => "Working out the order for the menu" }[t];
+  return `<div class="card">${head(esc(doing ? doing() : L("Asking Valio Aimo", "Kysytään Valio Aimolta")), "", "")}<div class="sec"><div class="sk"></div><div class="sk w6"></div><div class="sk w4"></div></div></div>`;
 }
 function vError(d) {
   const ms = (d.messages || []).filter(m => m.content);
   const code = (ms[0] || {}).code || "";
   const need = /mandate|unauthor|401/.test(code);
-  return wrap(head(need ? "Connect the account first" : "Valio Aimo said no", "", chip("bad", "Stopped")) + `<section class="sec">${ms.map(m => `<div class="done" style="margin-bottom:6px">${IC.bad}<div><p>${esc(m.content)}</p>${m.code ? `<p class="m dim">${esc(m.code)}</p>` : ""}</div></div>`).join("") || `<p class="mut">No reason was given.</p>`}${d.retry_after != null ? `<p class="sm mut">Try again in ${esc(d.retry_after)} s.</p>` : ""}</section>`);
+  return wrap(head(need ? L("Connect the account first", "Yhdistä asiakasnumero ensin") : L("Valio Aimo said no", "Valio Aimo ei hyväksynyt tätä"), "", chip("bad", L("Stopped", "Pysäytetty"))) + `<section class="sec">${ms.map(m => `<div class="done" style="margin-bottom:6px">${IC.bad}<div><p>${esc(titled(m.content))}</p>${m.code ? shopTech(`<p class="m dim">${esc(m.code)}</p>`) : ""}</div></div>`).join("") || `<p class="mut">${L("No reason was given.", "Syytä ei kerrottu.")}</p>`}${d.retry_after != null ? `<p class="sm mut">${L(`Try again in ${esc(d.retry_after)} s.`, `Yritä uudelleen ${esc(d.retry_after)} s kuluttua.`)}</p>` : ""}</section>`);
 }
+const pctWord = (p, per) => { const v = Number(p), a = nf(Math.abs(v), 0, 0); if (!per || p == null || isNaN(v)) return ""; const w = fi() ? PER_FI[per] : PER_EN[per]; if (!w) return ""; return Math.round(Math.abs(v)) === 0 ? L(`Same price ${w}.`, `Sama hinta ${w}.`) : fi() ? `${a} % ${v < 0 ? "halvempi" : "kalliimpi"} ${w}.` : `${a}% ${v < 0 ? "cheaper" : "dearer"} ${w}.`; };
 function vPlan(d) {
   const need = d.need || {}, unit = need.unit || "", q = (S.input || {}).query, P = S.x.products || {};
-  const req = ((d.requirements || {}).claims || []).map(claim).concat(((d.requirements || {}).exclude_allergens || []).map(a => "no " + String(a).toLowerCase())).join(", ");
+  const reqs = d.requirements || {};
+  const req = (reqs.claims || []).map(claim).concat((reqs.exclude_allergens || []).map(a => fi() ? "ei sisällä: " + (ALG_FI[a] || ALG_FI[ALG_EN[String(a).toLowerCase()]] || a) : "no " + String(a).toLowerCase())).join(", ");
   const opts = d.options || [];
   const cut = Object.values(P).map(p => p.order_by).filter(Boolean).sort()[0];
-  const title = `${need.quantity ? nf(need.quantity) + " " + esc(unit) + " " : ""}${esc(q || req || "Options")}`;
-  const sub = `Delivery ${day(d.delivery_date)}${cut ? ` · order by ${dayTime(cut)} · ${until(cut)}` : ""}`;
+  const amount = need.quantity ? nf(need.quantity) + " " + esc(uu(unit)) : "";
+  const title = fi() ? (queryFi(q) ? `${esc(queryFi(q))}${amount ? ", " + amount : ""}` : `${amount ? amount + ": " : ""}vaihtoehdot`) : `${need.quantity ? nf(need.quantity) + " " + esc(unit) + " " : ""}${esc(q || req || "Options")}`;
+  const sub = fi() ? `Toimituspäivä ${day(d.delivery_date)}${cut ? ` · tilaa viimeistään ${dayTime(cut)} · ${until(cut)}` : ""}` : `Delivery ${day(d.delivery_date)}${cut ? ` · order by ${dayTime(cut)} · ${until(cut)}` : ""}`;
   const one = (o, i) => {
     const pct = o.covers_pct == null ? 100 : o.covers_pct, short = pct < 100;
-    const per = o.covers ? `${eur(Math.round(o.total_ex_vat / o.covers))} / ${esc(unit || "unit")}` : "";
+    const per = o.covers ? `${eur(Math.round(o.total_ex_vat / o.covers))} / ${esc(uu(unit || "unit"))}` : "";
     const ls = (o.line_items || []).map(l => {
       const p = P[l.item.id] || {}, sf = (l.wholesale || {}).substitutes_for;
-      return `<div class="o-line"><span>${nf(l.units ?? l.quantity)} × ${esc(l.item.title)}${sf ? ` <span class="dim sm">in place of your usual</span>` : ""}</span>${(o.line_items || []).length > 1 ? `<span class="per">${eur(l.line_total_ex_vat)}</span>` : ""}</div>${facts(p) ? `<div class="o-sub">${facts(p)}</div>` : ""}`;
+      return `<div class="wp" style="margin-top:7px">${pic(l.item.id, "lg")}<div class="bd"><div class="o-line"><span>${nf(l.units ?? l.quantity)} × ${esc(l.item.title)}${sf ? ` <span class="dim sm">${L("in place of your usual", "tavallisen tuotteesi tilalla")}</span>` : ""}</span>${(o.line_items || []).length > 1 ? `<span class="per">${eur(l.line_total_ex_vat)}</span>` : ""}</div>${facts(p) ? `<div class="o-sub">${facts(p)}</div>` : ""}</div></div>`;
     }).join("");
-    const text = `Go with "${OPT[o.label] || o.label}": ${(o.line_items || []).map(l => `${nf(l.units ?? l.quantity)} × ${l.item.title} (product ${l.item.id})`).join(" and ")}, ${eur(o.total_ex_vat)} ex VAT, delivery ${day(d.delivery_date)}. Get the signed offer.`;
-    return `<article class="opt"><div class="o-top"><span class="tag">${esc(OPT[o.label] || cap(String(o.label).replace(/_/g, " ")))}</span><span class="price">${eur(o.total_ex_vat)}<small>ex VAT${per ? " · " + per : ""}</small></span></div>${ls}
-      ${need.quantity && short ? `<div class="cov"><div class="bar short"><i style="width:${pct}%"></i></div><span class="warn">Only ${nf(o.covers)} of ${nf(need.quantity)} ${esc(unit)}</span></div>` : ""}
-      <p class="trade">${esc(o.tradeoff)}${(o.differs_from_usual || []).length ? " " + esc(o.differs_from_usual.join(" ")) : ""}</p>
-      <div class="o-foot">${authBlock("auth" + i, o.authority)}${["not_allowed", "invalid"].includes((o.authority || {}).decision) ? "" : `<button class="btn${i ? " ghost" : ""}" data-act="say" data-text="${esc(text)}">Choose</button>`}</div></article>`;
+    const text = `Go with "${OPT[o.label] ? OPT[o.label][0] : o.label}": ${(o.line_items || []).map(l => `${(l.units ?? l.quantity).toLocaleString("en-US")} × ${l.item.title} (product ${l.item.id})`).join(" and ")}, €${(o.total_ex_vat / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ex VAT, delivery ${dayEn(d.delivery_date)}. Get the signed offer.`;
+    const sb = o.substitute && TIER[o.substitute.tier] ? o.substitute : null;
+    const rank = sb ? `<p class="rank">${esc(L(TIER[sb.tier][2], TIER[sb.tier][3]))}${pctWord(sb.price_delta_pct, sb.per) ? ` <b>${esc(pctWord(sb.price_delta_pct, sb.per))}</b>` : ""}</p>` : "";
+    return `<article class="opt"><div class="o-top"><span class="tag">${esc(optName(o))}</span><span class="price">${eur(o.total_ex_vat)}<small>${L("ex VAT", "alv 0 %")}${per ? " · " + per : ""}</small></span></div>${rank}${ls}
+      ${need.quantity && short ? `<div class="cov"><div class="bar short"><i style="width:${pct}%"></i></div><span class="warn">${L(`Only ${nf(o.covers)} of ${nf(need.quantity)} ${esc(unit)}`, `Vain ${nf(o.covers)} / ${nf(need.quantity)} ${esc(uu(unit))}`)}</span></div>` : ""}
+      <p class="trade">${esc(tr(o.tradeoff))}${(o.differs_from_usual || []).length ? " " + esc(o.differs_from_usual.map(tr).join(" ")) : ""}</p>
+      <div class="o-foot">${authBlock("auth" + i, o.authority)}${["not_allowed", "invalid"].includes((o.authority || {}).decision) ? "" : sayBtn(i ? "ghost" : "", text, L("I choose: ", "Valitsen: ") + optName(o), L("Choose", "Valitse"))}</div></article>`;
   };
   const shown = opts.slice(0, 3).map(one).join(""), more = opts.slice(3);
   const notes = [];
-  for (const m of d.messages || []) notes.push(`<p${m.type === "warning" ? ' class="warn"' : ""}>${plain(m.content)}</p>`);
-  if ((d.kinds_to_choose || []).length) notes.push(`<div class="acts">${d.kinds_to_choose.map(k => { const n = k.kind || k; return `<button class="btn ghost" data-act="say" data-text="${esc("I mean " + n + ".")}">${esc(cap(n))}</button>`; }).join("")}</div>`);
-  if ((d.not_offered || []).length) notes.push(`<p>Left out: ${d.not_offered.map(n => `${n.products} where ${plain(n.meaning)}`).join("; ")}.</p>`);
+  for (const m of d.messages || []) { const t = tr(m.content); if (t) notes.push(`<p${m.type === "warning" ? ' class="warn"' : ""}>${plain(t)}</p>`); }
+  if ((d.kinds_to_choose || []).length) notes.push(`<div class="acts">${d.kinds_to_choose.map(k => { const n = k.kind || k, nm = fi() && KIND_FI[n] ? KIND_FI[n] : n; return sayBtn("ghost", "I mean " + n + ".", L("I mean ", "Tarkoitan: ") + nm, esc(cap(nm))); }).join("")}</div>`);
+  if ((d.not_offered || []).length) notes.push(fi() ? `<p>Pois jätettiin: ${d.not_offered.map(n => REASON_FI[n.reason] ? `${nf(n.products)} ${n.products === 1 ? "tuote" : "tuotetta"}, koska ${REASON_FI[n.reason]}` : null).every(Boolean) ? d.not_offered.map(n => `${nf(n.products)} ${n.products === 1 ? "tuote" : "tuotetta"}, koska ${REASON_FI[n.reason]}`).join("; ") : esc(d.not_offered.map(n => `${n.products} where ${n.meaning}`).join("; "))}.</p>`
+    : `<p>Left out: ${d.not_offered.map(n => `${n.products} where ${plain(n.meaning)}`).join("; ")}.</p>`);
   const aq = d.also_qualifying || [];
-  if (aq.length) notes.push(fold("aq", `${aq.length} more product${aq.length === 1 ? "" : "s"} qualify`, `<div class="rows">${aq.map(a => { const pk = Object.keys(a).find(k => k.startsWith("price_per_")); return `<div class="rw"><span><b>${esc(a.title)}</b>${a.ordered_before ? " · ordered before" : ""}</span><span class="r">${a.total_ex_vat != null ? eur(a.total_ex_vat) : ""}${pk ? ` <span class="dim">· ${eur(a[pk])} / ${esc(pk.slice(10).replace("piece", "pc").toUpperCase().replace("PC", "pc"))}</span>` : ""}</span></div>`; }).join("")}</div>`, ""));
-  return wrap(head(title, sub, req ? `<span class="chip">${esc(req)}</span>` : "") + (shown || "") + (more.length ? fold("moreopts", `${more.length} more option${more.length === 1 ? "" : "s"}`, more.map((o, i) => one(o, i + 3)).join(""), "sec fold") : "")
-    + (notes.length ? `<section class="sec notes">${notes.join("")}</section>` : "") + (d.proof ? sigLine("doc", "Options signed by Valio Aimo") : ""));
+  if (aq.length) notes.push(fold("aq", fi() ? `${aq.length} muu${aq.length === 1 ? "" : "ta"} sopiva${aq.length === 1 ? "" : "a"} tuote${aq.length === 1 ? "" : "tta"}` : `${aq.length} more product${aq.length === 1 ? "" : "s"} qualify`, `<div class="rows">${aq.map(a => { const pk = Object.keys(a).find(k => k.startsWith("price_per_")); const pu = pk ? pk.slice(10).replace("piece", "pc") : ""; return `<div class="rw"><span><b>${esc(a.title)}</b>${a.ordered_before ? L(" · ordered before", " · tilattu ennenkin") : ""}</span><span class="r">${a.total_ex_vat != null ? eur(a.total_ex_vat) : ""}${pk ? ` <span class="dim">· ${eur(a[pk])} / ${esc(fi() ? uu(pu === "pc" ? "pcs" : pu) : pu.toUpperCase().replace("PC", "pc"))}</span>` : ""}</span></div>`; }).join("")}</div>`, ""));
+  return wrap(head(title, sub, req ? `<span class="chip">${esc(req)}</span>` : "") + (shown || "") + (more.length ? fold("moreopts", fi() ? `${more.length} muu${more.length === 1 ? "" : "ta"} vaihtoehto${more.length === 1 ? "" : "a"}` : `${more.length} more option${more.length === 1 ? "" : "s"}`, more.map((o, i) => one(o, i + 3)).join(""), "sec fold") : "")
+    + (notes.length ? `<section class="sec notes">${notes.join("")}</section>` : "") + (d.proof ? sigLine("doc", "options") : ""));
 }
+// English days in the text the assistant reads, whatever the card's language.
+const dayEn = s => { const was = S.lang; S.lang = "en"; try { return day(s); } finally { S.lang = was; } };
 function approvalLine(ap) {
-  const dv = ap.device;
-  return `<div class="done">${ap.decision === "approved" ? IC.ok : IC.bad}<div><b>${ap.decision === "approved" ? "Approved" : "Rejected"} by ${esc(ap.by)}</b> at ${clock(ap.at)}${dv ? `, signed on their own device${dv.device ? " (" + esc(dv.device) + ")" : ""}` : ", by link"}.${ap.note ? ` <span class="mut">“${esc(ap.note)}”</span>` : ""}${(ap.overrides || []).length ? `<p class="sm mut">Lifts ${esc(ap.overrides.join(", "))} for this offer only. The rules ran again when it was approved.</p>` : ""}</div></div>`;
+  const dv = ap.device, ok = ap.decision === "approved";
+  if (fi()) return `<div class="done">${ok ? IC.ok : IC.bad}<div><b>${ok ? "Hyväksynyt" : "Hylännyt"} ${esc(ap.by)}</b> klo ${clock(ap.at)}${dv ? `, omalla laitteellaan${dv.device ? " (" + esc(dv.device) + ")" : ""}` : ", linkin kautta"}.${ap.note ? ` <span class="mut">“${esc(ap.note)}”</span>` : ""}${(ap.overrides || []).length ? `<p class="sm mut">Ohittaa ${ap.overrides.length === 1 ? "säännön" : "säännöt"} ${esc(ap.overrides.join(", "))} vain tässä ostoskorissa. Säännöt tarkistettiin uudelleen hyväksynnän yhteydessä.</p>` : ""}</div></div>`;
+  return `<div class="done">${ok ? IC.ok : IC.bad}<div><b>${ok ? "Approved" : "Rejected"} by ${esc(ap.by)}</b> at ${clock(ap.at)}${dv ? `, signed on their own device${dv.device ? " (" + esc(dv.device) + ")" : ""}` : ", by link"}.${ap.note ? ` <span class="mut">“${esc(ap.note)}”</span>` : ""}${(ap.overrides || []).length ? `<p class="sm mut">Lifts ${esc(ap.overrides.join(", "))} for this offer only. The rules ran again when it was approved.</p>` : ""}</div></div>`;
 }
 function vCheckout(c) {
   const w = c.wholesale || {}, st = c.status, ap = w.approval, sub = total(c.totals, "subtotal");
   const rejected = ap && ap.decision === "rejected";
-  const [title, ch] = st === "requires_escalation" ? ["Stopped for a second person", chip("warn", "Needs approval")]
-    : rejected ? ["Rejected", chip("bad", "Rejected")]
-    : st === "ready_for_complete" ? [ap ? "Approved, ready to order" : "Signed offer, ready to order", chip("ok", ap ? "Approved" : "All rules passed")]
-    : st === "completed" ? [`Order ${esc((c.order || {}).label || "")} placed`, chip("ok", "Placed")]
-    : st === "canceled" ? ["Offer cancelled", chip("", "Cancelled")] : ["This cannot be ordered as it stands", chip("bad", "Stopped")];
+  const [title, ch] = st === "requires_escalation" ? [L("Stopped for a second person", "Odottaa hyväksyjää"), chip("warn", L("Needs approval", "Tarvitsee hyväksynnän"))]
+    : rejected ? [L("Rejected", "Hylätty"), chip("bad", L("Rejected", "Hylätty"))]
+    : st === "ready_for_complete" ? [ap ? L("Approved, ready to order", "Hyväksytty, valmis tilattavaksi") : L(inShop() ? "Cart ready to order" : "Signed offer, ready to order", "Ostoskori valmis tilattavaksi"), chip("ok", ap ? L("Approved", "Hyväksytty") : L(inShop() ? "All good" : "All rules passed", "Kaikki kunnossa"))]
+    : st === "completed" ? [L(`Order ${esc((c.order || {}).label || "")} placed`, `Vahvistettu tilaus ${esc((c.order || {}).label || "")}`), chip("ok", L("Placed", "Vahvistettu"))]
+    : st === "canceled" ? [L("Offer cancelled", "Ostoskori peruttu"), chip("", L("Cancelled", "Peruttu"))] : [L("This cannot be ordered as it stands", "Tätä ei voi tilata näin"), chip("bad", L("Stopped", "Pysäytetty"))];
   let top = "";
   if (st === "requires_escalation") {
-    const phone = S.ctx.platform === "mobile";
+    const ph = phone();
     const stale = S.live.stopped;
-    top = `<section class="sec"><div class="hand">${S.x.qr && !phone ? `<figure class="qr" role="img" aria-label="QR code of the approval page">${S.x.qr}</figure>` : ""}<div class="tx"><p><b>The assistant cannot approve its own order.</b> ${S.x.qr && !phone ? "Scan this with the approver's phone, or open the page there." : "Open the approval page on the approver's phone."} They sign with their own device.</p>
-      <div class="acts"><button class="btn" data-act="open" data-url="${esc(c.continue_url || "")}">Open approval page</button><button class="btn ghost" data-act="copy" data-text="${esc(c.continue_url || "")}">Copy link</button></div>
-      <p class="live">${stale ? "" : '<span class="pulse"></span>'}<span>${can("serverTools") ? (stale ? `Stopped watching. <button class="lnk" data-act="watch">Check again</button>` : `Waiting for their decision<span data-checked>${S.live.at ? ", checked " + clock(S.live.at) : ""}</span>. This card updates by itself.`) : "When they have approved, tell the assistant to go on."}</span></p></div></div></section>`;
+    const how = fi() ? (S.x.qr ? (ph ? "Hyväksyjä voi skannata koodin, tai lähetä hänelle linkki." : "Skannaa koodi hyväksyjän puhelimella tai avaa sivu siellä.") : "Avaa hyväksyntäsivu hyväksyjän puhelimella.") + " Hän hyväksyy omalla laitteellaan."
+      : (S.x.qr ? (ph ? "Let the approver scan this code, or send them the link." : "Scan this with the approver's phone, or open the page there.") : "Open the approval page on the approver's phone.") + " They sign with their own device.";
+    const live = can("serverTools") ? (stale ? `${L("Stopped watching.", "Seuranta päättyi.")} <button class="lnk" data-act="watch">${L("Check again", "Tarkista uudelleen")}</button>` : `${L("Waiting for their decision", "Odotetaan hyväksyjän päätöstä")}<span data-checked>${S.live.at ? L(", checked ", ", tarkistettu ") + clock(S.live.at) : ""}</span>. ${L("This card updates by itself.", "Kortti päivittyy itsestään.")}`) : L("When they have approved, tell the assistant to go on.", "Kun hyväksyntä on tehty, pyydä tilausapuria jatkamaan.");
+    top = `<section class="sec"><div class="hand">${S.x.qr ? `<figure class="qr" role="img" aria-label="${L("QR code of the approval page", "Hyväksyntäsivun QR-koodi")}">${S.x.qr}</figure>` : ""}<div class="tx"><p><b>${L("The assistant cannot approve its own order.", "Tilausapuri ei voi hyväksyä omaa tilaustaan.")}</b> ${how}</p>
+      <div class="acts"><button class="btn" data-act="open" data-url="${esc(c.continue_url || "")}">${L("Open approval page", "Avaa hyväksyntäsivu")}</button><button class="btn ghost" data-act="copy" data-text="${esc(c.continue_url || "")}">${L("Copy link", "Kopioi linkki")}</button></div>
+      <p class="live">${stale ? "" : '<span class="pulse"></span>'}<span>${live}</span></p></div></div></section>`;
   } else if (ap && st !== "completed") {
-    top = `<section class="sec">${approvalLine(ap)}${st === "ready_for_complete" ? `<div class="acts" style="margin-top:11px"><button class="btn" data-act="say" data-text="${esc(`${ap.by} approved it. Place the order now.`)}">Place the order</button></div>` : ""}</section>`;
+    top = `<section class="sec">${approvalLine(ap)}${st === "ready_for_complete" ? `<div class="acts" style="margin-top:11px">${sayBtn("", `${ap.by} approved it. Place the order now.`, L("Approved. Place the order.", "Hyväksytty. Vahvista tilaus."), L("Place the order", "Vahvista tilaus"))}</div>` : ""}</section>`;
   } else if (st === "ready_for_complete") {
-    top = `<section class="sec"><div class="done">${IC.ok}<div><b>Every rule passed.</b> The assistant may place this alone, under its mandate.</div></div><div class="acts" style="margin-top:11px"><button class="btn" data-act="say" data-text="Place the order.">Place the order</button></div></section>`;
+    top = `<section class="sec"><div class="done">${IC.ok}<div>${L(inShop() ? "<b>All good.</b> You can confirm the order." : "<b>Every rule passed.</b> The assistant may place this alone, under its mandate.", "<b>Kaikki kunnossa.</b> Voit vahvistaa tilauksen.")}</div></div><div class="acts" style="margin-top:11px">${sayBtn("", "Place the order.", L("Place the order.", "Vahvista tilaus."), L("Place the order", "Vahvista tilaus"))}</div></section>`;
   } else if (st === "completed" && c.order) {
-    top = `<section class="sec"><div class="done">${IC.ok}<div><b>Order ${esc(c.order.label)}</b> was placed from this offer${ap && ap.decision === "approved" ? `, approved by ${esc(ap.by)}` : ", with no person needed"}.</div></div><div class="acts" style="margin-top:11px"><button class="btn ghost" data-act="say" data-text="${esc(`Show me order ${c.order.label} with its proof.`)}">Show the order and its proof</button></div></section>`;
+    top = `<section class="sec"><div class="done">${IC.ok}<div>${fi() ? `<b>Tilaus ${esc(c.order.label)}</b> vahvistettiin tästä ostoskorista${ap && ap.decision === "approved" ? `, hyväksyjä ${esc(ap.by)}` : " ilman hyväksyjää"}.` : `<b>Order ${esc(c.order.label)}</b> was placed from this offer${ap && ap.decision === "approved" ? `, approved by ${esc(ap.by)}` : ", with no person needed"}.`}</div></div><div class="acts" style="margin-top:11px">${sayBtn("ghost", `Show me order ${c.order.label} with its proof.`, L(`Show order ${c.order.label}`, `Näytä tilaus ${c.order.label}`), L("Show the order and its proof", "Näytä tilaus ja todisteet"))}</div></section>`;
   }
   const msgs = (c.messages || []).filter(m => !["approval_required", "approved"].includes(m.code) && m.content);
-  const stopSec = st === "incomplete" || msgs.length ? `<section class="sec"><ul class="rules">${msgs.map(m => `<li>${m.type === "error" ? IC.bad : m.type === "warning" ? IC.warn : IC.ok}<div><p style="color:var(--tx)">${esc(m.content)}</p></div></li>`).join("")}</ul></section>` : "";
-  const rs = rules(w.policy, "rules");
+  const stopSec = st === "incomplete" || msgs.length ? `<section class="sec"><ul class="rules">${msgs.map(m => `<li>${m.type === "error" ? IC.bad : m.type === "warning" ? IC.warn : IC.ok}<div><p style="color:var(--tx)">${esc(titled(m.content))}</p></div></li>`).join("")}</ul></section>` : "";
   const over = st === "completed" || st === "canceled";
-  const dl = `<dl class="kv left" style="margin-top:11px"><dt>Delivery</dt><dd>${day(w.delivery_date)}${w.ship_to ? " to " + esc(w.ship_to) : ""}</dd>${w.order_by && !over ? `<dt>Order by</dt><dd>${dayTime(w.order_by)} · ${until(w.order_by)}</dd>` : ""}${(w.hold || {}).price_and_stock_held_until && !over ? `<dt>Held</dt><dd>price and stock until ${clock(w.hold.price_and_stock_held_until)} · ${until(w.hold.price_and_stock_held_until)}</dd>` : ""}</dl>`;
-  return wrap(head(title, w.intent ? "“" + esc(w.intent) + "”" : "", ch) + top + stopSec
-    + (rs ? `<section class="sec"><p class="lab">${st === "requires_escalation" ? "Why it stopped" : "Rules, run in code"}</p>${rs}</section>` : "")
-    + `<section class="sec">${lines(c.line_items)}<div style="margin-top:11px">${totals(c.totals)}</div>${dl}</section>`
+  const dl = `<dl class="kv left" style="margin-top:11px"><dt>${L("Delivery", "Toimituspäivä")}</dt><dd>${day(w.delivery_date)}${w.ship_to ? L(" to ", ", ") + esc(fi() ? String(w.ship_to).replace(/, goods in$/, ", tavaranvastaanotto") : w.ship_to) : ""}</dd>${w.order_by && !over ? `<dt>${L("Order by", "Tilaa viimeistään")}</dt><dd>${dayTime(w.order_by)} · ${until(w.order_by)}</dd>` : ""}${(w.hold || {}).price_and_stock_held_until && !over ? `<dt>${L("Held", "Varattu")}</dt><dd>${L("price and stock until ", "hinta ja varasto klo ")}${clock(w.hold.price_and_stock_held_until)}${L("", " asti")} · ${until(w.hold.price_and_stock_held_until)}</dd>` : ""}</dl>`;
+  const intent = w.intent ? "“" + esc(tr(w.intent)) + "”" : "";
+  const whyLab = st === "requires_escalation" ? L("Why it stopped", "Miksi se pysähtyi") : L("Rules, run in code", "Tarkistukset");
+  if (inShop()) {
+    // In the shop: the answer, one plain reason when it stopped, the approval hand-off, the sum and the lines. Rules, payment and signature wait in the checks fold.
+    const rs = (w.policy || {}).rules || [];
+    const why = st === "requires_escalation" ? stopWhy(rs.filter(r => r.outcome !== "pass"), sub) : "";
+    if (rs.length) tech(`<section class="sec"><p class="lab">${L("Rules, run in code", "Säännöt")}</p>${rules(w.policy, "rules")}</section>`);
+    if (!over) tech(payment("pay", w.payment, sub, false));
+    if (c.ap2) sigLine("offer", "offer");
+    const msgS = st === "requires_escalation" ? "" : stopSec;
+    return wrap(head(title, intent, ch) + (why ? `<section class="sec whyp">${why}</section>` : "") + top + msgS
+      + `<section class="sec">${totals(c.totals)}${dl}</section>`
+      + `<section class="sec">${someLines(c.line_items, "lines")}</section>`);
+  }
+  if (phone()) {
+    // On a phone: the decision, then what it costs and when it comes, then the lines; the rest folded.
+    const rs = (w.policy || {}).rules || [], stop = rs.filter(r => r.outcome !== "pass"), pass = rs.filter(r => r.outcome === "pass");
+    return wrap(head(title, intent, ch) + top + stopSec
+      + (stop.length ? `<section class="sec"><p class="lab">${whyLab}</p><ul class="rules">${stop.map(ruleLi).join("")}</ul></section>` : "")
+      + `<section class="sec">${totals(c.totals)}${dl}</section>`
+      + `<section class="sec">${someLines(c.line_items, "lines")}</section>`
+      + (pass.length ? fold("rules", `${passedTitle(pass.length, stop.length)}`, `<ul class="rules">${pass.map(ruleLi).join("")}</ul>`, "sec fold") : "")
+      + (over && !c.ap2 ? "" : fold("record", over ? L("Signature", "Allekirjoitus") : L("Payment and signature", "Maksu ja allekirjoitus"), (over ? "" : payment("pay", w.payment, sub, false, true)) + (c.ap2 ? sigLine("offer", "offer") : ""), "sec fold")));
+  }
+  const rs = rules(w.policy, "rules");
+  return wrap(head(title, intent, ch) + top + stopSec
+    + (rs ? `<section class="sec"><p class="lab">${whyLab}</p>${rs}</section>` : "")
+    + `<section class="sec">${someLines(c.line_items, "lines")}<div style="margin-top:11px">${totals(c.totals)}</div>${dl}</section>`
     + (over ? "" : payment("pay", w.payment, sub, false))
-    + (c.ap2 ? sigLine("offer", "Offer signed by Valio Aimo") : ""));
+    + (c.ap2 ? sigLine("offer", "offer") : ""));
 }
 function vOrder(o) {
   const w = o.wholesale || {}, ev = w.evidence || {}, ap = ev.approval, pp = S.x.peppol, sub = total(o.totals, "subtotal");
-  const exp = (((o.fulfillment || {}).expectations || [])[0] || {}).description || `Delivery ${day(w.delivery_date)}`;
+  const ex0 = (((o.fulfillment || {}).expectations || [])[0] || {}).description;
+  const exp = ex0 ? tr(ex0) : L(`Delivery ${day(w.delivery_date)}`, `Toimitus ${day(w.delivery_date)}`);
   const shown = S.tamper ? S.tampered : o;
   let proof;
-  if (!subtle) proof = `<p class="sm mut">This frame has no WebCrypto, so the signatures cannot be checked here. The order page checks them in your browser.</p>`;
-  else if (!S.x.audit) proof = `<p class="sm mut">Reading the signed documents…</p>`;
-  else if (!S.checks) proof = `<p class="sm mut">${IC.wait} Checking the signatures here…</p>`;
-  else proof = S.checks.map((c, i) => `<details class="chk${c[0] ? "" : " fail"}" data-k="chk${i}"${S.open["chk" + i] || !c[0] ? " open" : ""}><summary>${c[0] ? (c[3] ? IC.soft : IC.ok) : IC.bad}<span>${esc(c[1])}${c[3] ? ' <span class="soft">· reported</span>' : ""}</span></summary><p>${esc(c[2])}</p></details>`).join("");
+  if (!subtle) proof = `<p class="sm mut">${L("This frame has no WebCrypto, so the signatures cannot be checked here. The order page checks them in your browser.", "Tässä näkymässä allekirjoituksia ei voi tarkistaa. Tilaussivu tarkistaa ne selaimessasi.")}</p>`;
+  else if (!S.x.audit) proof = `<p class="sm mut">${L("Reading the signed documents…", "Luetaan allekirjoitettuja asiakirjoja…")}</p>`;
+  else if (!S.checks) proof = `<p class="sm mut">${IC.wait} ${L("Checking the signatures here…", "Tarkistetaan allekirjoituksia…")}</p>`;
+  else proof = S.checks.map((c, i) => `<details class="chk${c[0] ? "" : " fail"}" data-k="chk${i}"${S.open["chk" + i] || !c[0] ? " open" : ""}><summary>${c[0] ? (c[3] ? IC.soft : IC.ok) : IC.bad}<span>${esc(c[1])}${c[3] ? ` <span class="soft">· ${L("reported", "ilmoitettu")}</span>` : ""}</span></summary><p>${esc(c[2])}</p></details>`).join("");
   const kid = ((S.x.keys || {}).seller || {}).kid || (o.proof || {}).kid || "";
-  const tam = subtle && S.x.audit ? `<div class="acts" style="margin-top:10px"><button class="btn ghost" data-act="tamper">${S.tamper ? "Put the cent back" : "Change the total by one cent"}</button><span class="xs dim" style="flex:1;min-width:150px">${S.tamper ? "The copy in this card was changed. The signature no longer fits." : "Try it: edit this card's copy of the order and watch the checks."}</span></div>` : "";
+  const tam = subtle && S.x.audit ? `<div class="acts" style="margin-top:10px"><button class="btn ghost" data-act="tamper">${S.tamper ? L("Put the cent back", "Palauta sentti") : L("Change the total by one cent", "Muuta summaa sentillä")}</button><span class="xs dim" style="flex:1;min-width:150px">${S.tamper ? L("The copy in this card was changed. The signature no longer fits.", "Kortin kopiota muutettiin. Allekirjoitus ei enää täsmää.") : L("Try it: edit this card's copy of the order and watch the checks.", "Kokeile: muuta kortin kopiota tilauksesta ja katso tarkistuksia.")}</span></div>` : "";
   const pc = pp && pp.check;
-  const peppolSec = pp ? `<section class="sec"><p class="lab">Peppol BIS Ordering 3 · Order</p>
-    <div class="done">${pc && pc.ok ? IC.ok : pc && pc.ok === false ? IC.bad : IC.wait}<div>${pc && pc.ok ? `<b>A valid Peppol order.</b> Passed the UBL 2.1 schema and OpenPeppol's own rules: ${pc.fired} rules fired, ${(pc.errors || []).length} errors, ${(pc.warnings || []).length} warnings.` : pc && pc.ok === false ? `<b>Not valid.</b> ${esc(((pc.errors || [])[0] || {}).text || "")}` : esc((pc || {}).why || "Not validated.")}${pc && pc.at ? ` <span class="mut">Validated ${dayTime(pc.at)} at the gateway.</span>` : ""}</div></div>
-    <div class="acts" style="margin-top:10px"><button class="btn ghost" data-act="xml">${S.xml ? "Hide the document" : "Open the document"}</button><button class="btn ghost" data-act="dl">Download XML</button></div>
+  const peppolBody = pp ? `<div class="done">${pc && pc.ok ? IC.ok : pc && pc.ok === false ? IC.bad : IC.wait}<div>${pc && pc.ok ? L(`<b>A valid Peppol order.</b> Passed the UBL 2.1 schema and OpenPeppol's own rules: ${pc.fired} rules fired, ${(pc.errors || []).length} errors, ${(pc.warnings || []).length} warnings.`, `<b>Kelvollinen Peppol-tilaus.</b> Läpäisi UBL 2.1 -skeeman ja OpenPeppolin säännöt: ${nf(pc.fired)} sääntöä, ${(pc.errors || []).length} virhettä, ${(pc.warnings || []).length} varoitusta.`) : pc && pc.ok === false ? `<b>${L("Not valid.", "Ei kelvollinen.")}</b> ${esc(((pc.errors || [])[0] || {}).text || "")}` : esc(tr((pc || {}).why) || L("Not validated.", "Ei tarkistettu."))}${pc && pc.at ? ` <span class="mut">${L(`Validated ${dayTime(pc.at)} at the gateway.`, `Tarkistettu ${dayTime(pc.at)}.`)}</span>` : ""}</div></div>
+    <div class="acts" style="margin-top:10px"><button class="btn ghost" data-act="xml">${S.xml ? L("Hide the document", "Piilota asiakirja") : L("Open the document", "Näytä asiakirja")}</button><button class="btn ghost" data-act="dl">${L("Download XML", "Lataa XML")}</button></div>
     ${S.xml ? `<pre>${esc(pp.xml).replace(/(&lt;\/?)([\w:.-]+)/g, '<span class="t">$1$2</span>').replace(/(\/?&gt;)/g, '<span class="t">$1</span>')}</pre>` : ""}
-    ${pp.stand_in ? `<p class="xs dim" style="margin-top:8px">${esc(pp.stand_in)}</p>` : ""}</section>` : "";
-  return wrap(head(`Order <span style="white-space:nowrap">${esc(o.label)}</span>`, esc(exp), chip(S.tamper ? "bad" : "ok", S.tamper ? "Changed" : "Placed and signed"))
-    + `<section class="sec">${lines(shown.line_items)}<div style="margin-top:11px">${totals(shown.totals, S.tamper)}</div>
-       <p class="sm mut" style="margin-top:10px">${ap ? `Approved by ${esc(ap.by)}${ap.device ? " on their own device" : ""}. ` : "No person was needed. "}Placed ${dayTime(w.placed_at)} by <span class="m">${esc(w.placed_by || "")}</span>.</p></section>`
-    + `<section class="sec"><p class="lab">Proof · checked here in the chat, not by Valio Aimo</p>${proof}${tam}${kid ? `<p class="xs dim" style="margin-top:9px">Valio Aimo's key <span class="m">${esc(kid)}</span>. Compare it with verify/pinned-keys.json in the public repo.</p>` : ""}</section>`
-    + peppolSec + payment("pay", w.payment, sub, true)
-    + `<section class="sec"><div class="acts"><button class="btn ghost" data-act="open" data-url="${esc(o.permalink_url || S.x.order_url || "")}">Open the order page</button><button class="btn ghost" data-act="say" data-text="${esc(`Is there any problem with order ${o.label}?`)}">Any problems?</button></div></section>`);
+    ${pp.stand_in ? `<p class="xs dim" style="margin-top:8px">${esc(fi() && /^Not sent: this prototype has no Peppol access point/.test(pp.stand_in) ? "Ei lähetetty: prototyypillä ei ole Peppol-yhteyspistettä, ja asiakirjan GLN-numerot ovat testinumeroita." : pp.stand_in)}</p>` : ""}` : "";
+  const proofBody = `${proof}${tam}${kid ? `<p class="xs dim" style="margin-top:9px">${L("Valio Aimo's key", "Valio Aimon avain")} <span class="m">${esc(kid)}</span>. ${L("Compare it with verify/pinned-keys.json in the public repo.", "Vertaa julkisen koodin tiedostoon verify/pinned-keys.json.")}</p>` : ""}`;
+  const proofLab = L("Proof · checked here in the chat, not by Valio Aimo", "Todisteet · tarkistettu tässä keskustelussa, ei Valio Aimon palvelimella");
+  const acts = `<section class="sec"><div class="acts"><button class="btn ghost" data-act="open" data-url="${esc(o.permalink_url || S.x.order_url || "")}">${L("Open the order page", "Avaa tilaussivu")}</button>${sayBtn("ghost", `Is there any problem with order ${o.label}?`, L(`Any problems with order ${o.label}?`, `Onko tilauksessa ${o.label} ongelmia?`), L("Any problems?", "Onko ongelmia?"))}</div></section>`;
+  const hd = head(`${L("Order", "Tilaus")} <span style="white-space:nowrap">${esc(o.label)}</span>`, esc(exp), chip(S.tamper ? "bad" : "ok", S.tamper ? L("Changed", "Muutettu") : L("Placed and signed", "Tehty ja allekirjoitettu")));
+  const who = fi() ? (ap ? `Hyväksyjä ${esc(ap.by)}${ap.device ? ", omalla laitteellaan" : ""}. ` : "Hyväksyjää ei tarvittu. ") + `Tilausapuri teki tilauksen ${dayTime(w.placed_at)}.`
+    : `${ap ? `Approved by ${esc(ap.by)}${ap.device ? " on their own device" : ""}. ` : "No person was needed. "}Placed ${dayTime(w.placed_at)} by <span class="m">${esc(w.placed_by || "")}</span>.`;
+  if (inShop()) {
+    // In the shop: the confirmed order, its day, sum and lines. Proof, Peppol and payment wait in the checks fold.
+    tech(`<section class="sec"><p class="lab">${proofLab}</p>${proofBody}</section>`);
+    if (pp) tech(`<section class="sec"><p class="lab">${L("Peppol BIS Ordering 3 · Order", "Peppol BIS Ordering 3 · tilaus")}</p>${peppolBody}</section>`);
+    tech(payment("pay", w.payment, sub, true));
+    const whoS = fi() ? (ap ? `Hyväksyjä ${esc(ap.by)}${ap.device ? ", omalla laitteellaan" : ""}.` : "Hyväksyjää ei tarvittu.") : ap ? `Approved by ${esc(ap.by)}${ap.device ? " on their own device" : ""}.` : "No approval was needed.";
+    return wrap(head(`${L("Confirmed order", "Vahvistettu tilaus")} <span style="white-space:nowrap">${esc(o.label)}</span>`, "", chip(S.tamper ? "bad" : "ok", S.tamper ? L("Changed", "Muutettu") : L("Confirmed", "Vahvistettu")))
+      + `<section class="sec"><div class="sum"><span class="mut">${L("Total incl. VAT", "Yhteensä (sis. alv)")}</span><span class="big${S.tamper ? " amt-bad" : ""}">${eur(total(shown.totals, "total"))}</span></div>
+         <dl class="kv left" style="margin-top:8px"><dt>${L("Delivery", "Toimituspäivä")}</dt><dd>${esc(exp.replace(/^(Delivery|Toimitus) /, ""))}</dd><dt>${L("Confirmed", "Vahvistettu")}</dt><dd>${dayTime(w.placed_at)}</dd></dl><p class="sm mut" style="margin-top:8px">${whoS}</p></section>`
+      + `<section class="sec">${someLines(shown.line_items, "olines")}<div style="margin-top:11px">${totals(shown.totals, S.tamper)}</div></section>`
+      + acts);
+  }
+  if (phone()) {
+    // On a phone: number, delivery day, total and who approved; everything else folded.
+    const n = (shown.line_items || []).length;
+    return wrap(hd
+      + `<section class="sec"><div class="sum"><span class="mut">${L("Total", "Yhteensä")}</span><span class="big${S.tamper ? " amt-bad" : ""}">${eur(total(shown.totals, "total"))}</span></div>
+         <dl class="kv left" style="margin-top:8px"><dt>${L("Delivery", "Toimitus")}</dt><dd>${day(w.delivery_date)}</dd><dt>${L("Approved", "Hyväksyjä")}</dt><dd>${ap ? esc(ap.by) + (ap.device ? L(", on their own device", ", omalla laitteellaan") : "") : L("no person needed", "ei tarvittu")}</dd><dt>${L("Placed", "Tehty")}</dt><dd>${dayTime(w.placed_at)}</dd></dl></section>`
+      + fold("olines", fi() ? `${n} rivi${n === 1 ? "" : "ä"} ja summat` : `${n} line${n === 1 ? "" : "s"} and totals`, `<div style="margin-top:4px">${lines(shown.line_items)}</div><div style="margin-top:11px">${totals(shown.totals, S.tamper)}</div><p class="sm mut" style="margin-top:10px">${who}</p>`, "sec fold")
+      + fold("oproof", proofLab, proofBody, "sec fold")
+      + (pp ? fold("opeppol", L("Peppol BIS Ordering 3 · Order", "Peppol BIS Ordering 3 · tilaus"), peppolBody, "sec fold") : "")
+      + fold("opay", L("Payment", "Maksu"), payment("pay", w.payment, sub, true, true), "sec fold")
+      + acts);
+  }
+  return wrap(hd
+    + `<section class="sec">${someLines(shown.line_items, "olines")}<div style="margin-top:11px">${totals(shown.totals, S.tamper)}</div>
+       <p class="sm mut" style="margin-top:10px">${who}</p></section>`
+    + `<section class="sec"><p class="lab">${proofLab}</p>${proofBody}</section>`
+    + (pp ? `<section class="sec"><p class="lab">${L("Peppol BIS Ordering 3 · Order", "Peppol BIS Ordering 3 · tilaus")}</p>${peppolBody}</section>` : "") + payment("pay", w.payment, sub, true)
+    + acts);
 }
 function vUsual(d) {
-  const row = u => `<div class="rw"><span><b>${esc(u.title)}</b><br><span class="dim">${esc(u.kind || "")} · ${u.past_orders} past orders</span></span><span class="r"><b>${u.usual_amount ? nf(u.usual_amount.quantity) + " " + esc(u.usual_amount.unit) : nf(u.usual_units)}</b><br><span class="dim">usually</span></span></div>`;
+  const kind = k => fi() ? KIND_FI[String(k || "").toLowerCase()] || k : k;
+  const row = u => `<div class="rw pi">${pic(u.id)}<span><b>${esc(u.title)}</b><br><span class="dim">${u.kind ? esc(kind(u.kind)) + " · " : ""}${fi() ? `${nf(u.past_orders)} tilausta` : `${u.past_orders} past orders`}</span></span><span class="r"><b>${u.usual_amount ? nf(u.usual_amount.quantity) + " " + esc(uu(u.usual_amount.unit)) : nf(u.usual_units)}</b><br><span class="dim">${L("usually", "yleensä")}</span></span></div>`;
   const us = d.usual || [], ot = d.other_kinds_ordered || [];
-  return wrap(head(d.query ? `What this kitchen usually orders: ${esc(d.query)}` : "What this kitchen usually orders", "From the account's past orders at Valio Aimo.", "")
-    + `<section class="sec">${us.length ? `<div class="rows" style="margin-top:0">${us.map(row).join("")}</div>` : `<p class="mut">Nothing of that kind has been ordered before.</p>`}${us[0] && us[0].usual_amount ? `<div class="acts" style="margin-top:11px"><button class="btn" data-act="say" data-text="${esc(`Order the usual: ${nf(us[0].usual_amount.quantity)} ${us[0].usual_amount.unit} of ${us[0].title} for the next delivery day.`)}">Order the usual ${nf(us[0].usual_amount.quantity)} ${esc(us[0].usual_amount.unit)}</button></div>` : ""}</section>`
-    + (ot.length ? `<section class="sec"><p class="lab">Other kinds it orders</p><div class="rows" style="margin-top:0">${ot.map(row).join("")}</div></section>` : "")
-    + (d.proof ? sigLine("doc", "Signed by Valio Aimo") : ""));
+  const starts = [["1,000 L lactose-free milk by Monday", "1 000 l laktoositonta maitoa maanantaiksi", "We need 1,000 litres of lactose-free milk by Monday. What are the options?"], ["Any offers from Valio Aimo?", "Valio Aimon ehdotukset", "Does Valio Aimo's agent have any offers for us?"], ["Any problems with our orders?", "Onko tilauksissa ongelmia?", "Is there any problem with our placed orders?"]];
+  const qk = d.query && fi() ? KIND_FI[String(d.query).toLowerCase()] : d.query;
+  const ttl = fi() ? (qk ? `Mitä keittiösi yleensä tilaa: ${esc(qk)}` : "Mitä keittiösi yleensä tilaa") : d.query ? `What this kitchen usually orders: ${esc(d.query)}` : "What this kitchen usually orders";
+  const u0 = us[0];
+  if (inShop()) {
+    // In the shop: "Usein ostetut", each with "Tilaa uudelleen"; the starters after the list.
+    const amt = u => u.usual_amount ? `${nf(u.usual_amount.quantity)} ${uu(u.usual_amount.unit)}` : qtyFi(u.usual_units, "kpl");
+    const again = u => sayBtn("ghost", `Order the usual: ${u.usual_amount ? u.usual_amount.quantity.toLocaleString("en-US") + " " + u.usual_amount.unit : (u.usual_units || 0).toLocaleString("en-US") + " pcs"} of ${u.title} (product ${u.id}) for the next delivery day.`, L(`Order again: ${u.title} ${amt(u)}`, `Tilaa uudelleen: ${fiName(u.id, u.title)} ${amt(u)}`), L("Order again", "Tilaa uudelleen"));
+    const rowS = u => `<div class="rw pi us">${pic(u.id)}<span><b>${esc(fiName(u.id, u.title))}</b><br><span class="dim">${u.kind ? esc(cap(kind(u.kind))) + " · " : ""}${fi() ? `${nf(u.past_orders)} tilausta · yleensä ${esc(amt(u))}` : `${nf(u.past_orders)} orders · usually ${esc(amt(u))}`}</span><span class="acts" style="margin-top:6px">${again(u)}</span></span></div>`;
+    return wrap(head(fi() ? (qk ? `Usein ostetut: ${esc(qk)}` : "Usein ostetut") : d.query ? `Bought often: ${esc(d.query)}` : "Bought often", "", "")
+      + `<section class="sec" style="padding-top:0;border-top:0">${us.length ? `<div class="rows" style="margin-top:0">${us.map(rowS).join("")}</div>` : `<p class="mut">${L("Nothing of that kind has been ordered before.", "Tätä tuotelajia ei ole tilattu ennen.")}</p>`}</section>`
+      + (ot.length ? `<section class="sec"><p class="lab">${L("Other kinds you order", "Muut tilaamasi tuotelajit")}</p><div class="rows" style="margin-top:0">${ot.map(rowS).join("")}</div></section>` : "")
+      + `<section class="sec"><p class="sm mut">${L("Or say what you need and when:", "Tai kerro, mitä tarvitset ja milloin:")}</p><div class="start">${starts.map(([a, f, t]) => sayBtn("ghost", t, L(a, f), esc(L(a, f)))).join("")}</div></section>`
+      + (d.proof ? sigLine("doc", "signed") : ""));
+  }
+  return wrap(head(ttl, L("This is Valio Aimo's order desk inside the chat. Say what you need and when, or start here:", "Kerro, mitä tarvitset ja milloin, tai aloita tästä:"), "")
+    + `<section class="sec" style="padding-top:0;border-top:0;margin-top:-6px"><div class="start">${starts.map(([a, f, t]) => sayBtn("ghost", t, L(a, f), esc(L(a, f)))).join("")}</div></section>`
+    + `<section class="sec">${us.length ? `<div class="rows" style="margin-top:0">${us.map(row).join("")}</div>` : `<p class="mut">${L("Nothing of that kind has been ordered before.", "Tätä tuotelajia ei ole tilattu ennen.")}</p>`}${u0 && u0.usual_amount ? `<div class="acts" style="margin-top:11px">${sayBtn("", `Order the usual: ${u0.usual_amount.quantity.toLocaleString("en-US")} ${u0.usual_amount.unit} of ${u0.title} for the next delivery day.`, L(`Order the usual ${nf(u0.usual_amount.quantity)} ${u0.usual_amount.unit}`, `Tilaa tavallinen ${nf(u0.usual_amount.quantity)} ${uu(u0.usual_amount.unit)}`), `${L("Order the usual", "Tilaa tavallinen")} ${nf(u0.usual_amount.quantity)} ${esc(uu(u0.usual_amount.unit))}`)}</div>` : ""}</section>`
+    + (ot.length ? `<section class="sec"><p class="lab">${L("Other kinds it orders", "Muut tilaamasi tuotelajit")}</p><div class="rows" style="margin-top:0">${ot.map(row).join("")}</div></section>` : "")
+    + (d.proof ? sigLine("doc", "signed") : ""));
 }
+const AV_FI = { out: "Loppu", available: "Saatavilla", limited: "Rajoitetusti", out_of_stock: "Loppu", not_available: "Ei saatavilla", unavailable: "Ei saatavilla", on_order: "Tilaustuote" };
 function vCatalog(d) {
   const ps = d.products || [], dd = (d.wholesale || {}).delivery_date;
   const one = p => {
@@ -521,65 +1089,214 @@ function vCatalog(d) {
     const price = pr.unit_price ?? (v.price || {}).amount, cmp = pr.comparison;
     const av = w.availability || (v.availability || {}).band;
     const avc = av === "available" ? "ok" : av === "limited" ? "warn" : av ? "bad" : "";
-    return `<article class="prod"><div class="o-top"><h2 style="margin:0">${esc(p.title)}</h2>${price != null ? `<span class="price">${eur(price)}${cmp ? `<small>${eur(cmp.amount)} / ${esc(cmp.per)}</small>` : ""}</span>` : ""}</div>
-      <p class="f">${[w.brand, w.supplier && cap(String(w.supplier).toLowerCase()), w.origin && country(w.origin), w.storage].filter(Boolean).map(esc).join(" · ")}</p>
-      <p class="f">${av ? `<span class="${avc}"><b style="color:inherit">${esc(cap(String(av).replace(/_/g, " ")))}</b></span>` : ""}${w.orderable === false && w.reason ? ` · ${esc(String(w.reason).replace(/_/g, " "))}` : ""}${dl.order_by ? ` · order by ${dayTime(dl.order_by)}` : ""}${dl.earliest_date ? ` · delivers ${day(dl.earliest_date)}` : ""}</p>
-      <p class="f">${a.declared === false ? '<span class="warn"><b style="color:inherit">Allergens not declared by the maker.</b></span>' : `<b>Contains</b> ${esc(names(a.contains) || "no listed allergen")}${(a.may_contain || []).length ? ` · <b>may contain</b> ${esc(names(a.may_contain))}` : ""}`}</p>
+    const avt = fi() && AV_FI[av] ? AV_FI[av] : cap(String(av).replace(/_/g, " "));
+    return `<article class="prod"><div class="wp">${pic(p.id, "lg")}<div class="bd"><div class="o-top"><h2 style="margin:0">${esc(p.title)}</h2>${price != null ? `<span class="price">${eur(price)}${cmp ? `<small>${eur(cmp.amount)} / ${esc(uu(cmp.per))}</small>` : ""}</span>` : ""}</div>
+      <p class="f">${[w.brand, w.supplier && cap(String(w.supplier).toLowerCase()), w.origin && country(w.origin), fi() ? TEMP_FI[w.storage] || (/^(frozen|ambient|chilled)$/.test(w.storage || "") ? "" : w.storage) : w.storage].filter(Boolean).map(esc).join(" · ")}</p>
+      <p class="f">${av ? `<span class="${avc}"><b style="color:inherit">${esc(avt)}</b></span>` : ""}${w.orderable === false && w.reason ? ` · ${esc(fi() && REASON_FI[w.reason] ? REASON_FI[w.reason] : String(w.reason).replace(/_/g, " "))}` : ""}${dl.order_by ? ` · ${L("order by", "tilattava viimeistään")} ${dayTime(dl.order_by)}` : ""}${dl.earliest_date ? ` · ${L("delivers", "toimitus")} ${day(dl.earliest_date)}` : ""}</p>
+      <p class="f">${a.declared === false ? `<span class="warn"><b style="color:inherit">${L("Allergens not declared by the maker.", "Valmistaja ei ole ilmoittanut allergeeneja.")}</b></span>` : `<b>${L("Contains", "Sisältää")}</b> ${esc(names(a.contains) || L("no listed allergen", "ei listattuja allergeeneja"))}${(a.may_contain || []).length ? ` · <b>${L("may contain", "voi sisältää")}</b> ${esc(names(a.may_contain))}` : ""}`}</p>
       ${(w.claims || []).length || (w.labels || []).length ? `<p class="claims">${(w.claims || []).slice(0, 6).concat(w.labels || []).map(c => `<span class="pill">${esc(claim(c))}</span>`).join("")}${(w.claims || []).length > 6 ? `<span class="pill">+${w.claims.length - 6}</span>` : ""}</p>` : ""}
-      <p class="xs dim" style="margin-top:4px">GTIN <span class="m">${esc(w.gtin || ((v.barcodes || [])[0] || {}).value || "")}</span>${w.data_source ? ` · ${esc(w.data_source)}` : ""}</p></article>`;
+      <p class="xs dim" style="margin-top:4px">GTIN <span class="m">${esc(w.gtin || ((v.barcodes || [])[0] || {}).value || "")}</span>${w.data_source && !fi() ? ` · ${esc(w.data_source)}` : ""}</p></div></div></article>`;
   };
-  const more = ps.slice(4);
-  return wrap(head(`${ps.length} product${ps.length === 1 ? "" : "s"}${(S.input || {}).query ? ` for “${esc(S.input.query)}”` : ""}`, dd ? `For delivery ${day(dd)}. Price, stock band and cut-off are this account's own.` : "", "")
-    + ps.slice(0, 4).map(one).join("") + (more.length ? fold("moreprod", `${more.length} more`, more.map(one).join(""), "sec fold") : "")
-    + ((d.messages || []).length ? `<section class="sec notes">${d.messages.map(m => `<p>${esc(m.content)}</p>`).join("")}</section>` : "") + (d.proof ? sigLine("doc", "Signed by Valio Aimo") : ""));
+  // In the shop a product row reads like the shop: name, price (alv 0 %) and comparison price, sales unit, stock and cut-off; allergens and origin one tap away.
+  const oneShop = (p, i) => {
+    const w = p.wholesale || {}, v = (p.variants || [])[0] || {}, a = w.allergens || {}, pr = w.price || {}, dl = w.delivery || {};
+    const price = pr.unit_price ?? (v.price || {}).amount, cmp = pr.comparison, su = salesUnit(v);
+    const av = w.availability || (v.availability || {}).band;
+    const avc = av === "available" ? "ok" : av === "limited" ? "warn" : av ? "bad" : "";
+    const avt = fi() ? AV_FI[av] || cap(String(av).replace(/_/g, " ")) : cap(String(av).replace(/_/g, " "));
+    const stock = w.stock_units != null ? L(`${nf(w.stock_units)} ${SALES_EN[su] || su} in stock`, `${nf(w.stock_units)} ${su} varastossa`) : "";
+    const priceKind = pr.contract_price ? `${L("Contract price", "Sopimushinta")}${pr.list_price && pr.list_price > price ? `, ${L("list price", "listahinta")} <s>${eur(pr.list_price)}</s>` : ""}` : pr.list_price ? L("List price", "Listahinta") : "";
+    const info = [
+      a.declared === false ? `<span class="warn">${L("Allergens not declared by the maker.", "Valmistaja ei ole ilmoittanut allergeeneja.")}</span>` : `<b>${L("Contains", "Sisältää")}</b> ${esc(names(a.contains) || L("no listed allergen", "ei listattuja allergeeneja"))}${(a.may_contain || []).length ? ` · <b>${L("may contain", "voi sisältää")}</b> ${esc(names(a.may_contain))}` : ""}`,
+      [w.origin && L("Origin ", "Alkuperä: ") + country(w.origin), w.brand, w.supplier && cap(String(w.supplier).toLowerCase()), fi() ? TEMP_FI[w.storage] || "" : w.storage].filter(Boolean).map(esc).join(" · "),
+      (w.claims || []).length || (w.labels || []).length ? `<span class="claims">${(w.claims || []).concat(w.labels || []).map(c => `<span class="pill">${esc(claim(c))}</span>`).join("")}</span>` : "",
+      `${L("EAN", "EAN")} <span class="m">${esc(w.gtin || ((v.barcodes || [])[0] || {}).value || "")}</span> · ${L("Product no.", "Tuotenumero")} <span class="m">${esc(p.id)}</span>`,
+    ].filter(Boolean).map(t => `<p class="f">${t}</p>`).join("");
+    return `<article class="prod"><div class="wp">${pic(p.id, "lg")}<div class="bd"><h2 style="margin:0">${esc(fiName(p.id, p.title))}</h2>${price != null ? `<p class="price" style="margin-top:3px;text-align:left">${eur(price)}<small>${L("ex VAT", "alv 0 %")}${cmp ? ` · ${eur(cmp.amount)}/${esc(uu(cmp.per))}` : ""}</small></p>` : ""}
+      <p class="f">${L("Sales unit", "Myyntierä")} 1 ${esc(fi() ? su : SALES_EN[su] === "cases" ? "case" : "pc")}${priceKind ? ` · ${priceKind}` : ""}</p>
+      <p class="f">${av ? `<span class="${avc}"><b style="color:inherit">${esc(avt)}</b></span>` : ""}${stock ? ` · ${esc(stock)}` : ""}${w.orderable === false && w.reason ? ` · ${esc(fi() && REASON_FI[w.reason] ? REASON_FI[w.reason] : String(w.reason).replace(/_/g, " "))}` : ""}${dl.order_by ? ` · ${L("Order by", "Tilaa viimeistään")} ${dayTime(dl.order_by)}` : ""}</p>
+      ${fold("pinfo" + i, L("Product details: allergens, origin", "Tuotetiedot: allergeenit, alkuperä"), `<div style="margin-top:4px">${info}</div>`)}</div></div></article>`;
+  };
+  const more = ps.slice(4), q = (S.input || {}).query;
+  if (inShop()) {
+    for (const m of d.messages || []) { const t = tr(m.content); if (t) tech(`<p class="sm">${fi() ? plain(t) : esc(t)}</p>`); }
+    if (d.proof) sigLine("doc", "signed");
+    const ttlS = fi() ? `${ps.length} tuote${ps.length === 1 ? "" : "tta"}${q && queryFi(q) ? `: ${esc(queryFi(q))}` : ""}` : `${ps.length} product${ps.length === 1 ? "" : "s"}${q ? `: ${esc(q)}` : ""}`;
+    return wrap(head(ttlS, dd ? L(`Delivery date ${day(dd)}. Prices, stock and cut-offs are your account's.`, `Toimituspäivä ${day(dd).replace(/\.$/, "")}. Hinnat, saatavuus ja tilausajat koskevat asiakasnumeroasi.`) : "", "")
+      + ps.slice(0, 4).map(oneShop).join("") + (more.length ? fold("moreprod", L(`${more.length} more`, `${more.length} lisää`), more.map((p, i) => oneShop(p, i + 4)).join(""), "sec fold") : ""));
+  }
+  const ttl = fi() ? `${ps.length} tuote${ps.length === 1 ? "" : "tta"}${q && queryFi(q) ? `: ${esc(queryFi(q))}` : ""}` : `${ps.length} product${ps.length === 1 ? "" : "s"}${q ? ` for “${esc(q)}”` : ""}`;
+  return wrap(head(ttl, dd ? L(`For delivery ${day(dd)}. Price, stock band and cut-off are this account's own.`, `Toimituspäivä ${day(dd)}. Hinnat, saatavuus ja tilausajat koskevat asiakasnumeroasi.`) : "", "")
+    + ps.slice(0, 4).map(one).join("") + (more.length ? fold("moreprod", L(`${more.length} more`, `${more.length} lisää`), more.map(one).join(""), "sec fold") : "")
+    + ((d.messages || []).length ? `<section class="sec notes">${d.messages.map(m => tr(m.content)).filter(Boolean).map(t => `<p>${fi() ? plain(t) : esc(t)}</p>`).join("")}</section>` : "") + (d.proof ? sigLine("doc", "signed") : ""));
 }
-function vProposals(d) {
+const PKIND_FI = { drift: "Vakiotilaus muuttunut", short_dated: "Lyhyt päiväys", cutoff: "Ennen tilausaikaa", shortage: "Puute tulossa", fill: "Täysi laatikko" };
+const STATUS_FI = { open: "Avoin", pending: "Odottaa", accepted: "Hyväksytty", declined: "Hylätty", expired: "Vanhentunut", ordered: "Tilattu", settled: "Ratkaistu", resolved: "Ratkaistu", withdrawn: "Peruttu" };
+const status = s => fi() && STATUS_FI[s] ? STATUS_FI[s] : cap(String(s || "").replace(/_/g, " "));
+const BASIS_FI = { product: "Tuote", standing_units: "Vakiotilaus", used_last_week: "Käyttö viime viikolla", corrected_units: "Uusi määrä", saved_units_per_week: "Säästö viikossa (kpl)", weekly_saving_ex_vat: "Säästö viikossa", best_before: "Parasta ennen", units_in_lot: "Erässä",
+  usual_per_week: "Tavallisesti viikossa", off_pct: "Alennus %", can_be_delivered: "Voidaan toimittaa", short_by: "Puuttuu", replacement: "Korvaava", average_last_3_weeks: "Keskimäärin viikossa (3 vk)", standing_delivery: "Vakiotoimitus", regular_after_swap: "Normaalia vaihdon jälkeen",
+  saving_ex_vat: "Säästö", seeded: "Huom.", why: "Syy", case_size: "Laatikossa", pallet_size: "Lavalla" };
+// One sentence on why, from the proposal's own numbers.
+function whyP(p) {
+  const b = p.basis || {}, n = v => qtyFi(v, "kpl");
+  try {
+    if (p.kind === "drift" && b.used_last_week != null && b.standing_units != null) return L(`You used ${n(b.used_last_week)} last week; the standing order is ${n(b.standing_units)}.`, `Käytit viime viikolla ${n(b.used_last_week)}, vakiotilaus on ${n(b.standing_units)}.`);
+    if (p.kind === "short_dated" && b.best_before && b.offered_units != null) return L(`A lot is best before ${b.best_before}; ${n(b.offered_units)} come from it at ${b.off_pct}% off${b.saving_ex_vat ? `, ${b.saving_ex_vat} less` : ""}.`, `Erä on parasta ennen ${D(b.best_before)}; ${n(b.offered_units)} tulee siitä ${nf(b.off_pct)} % alennuksella${b.saving_ex_vat ? `, ${E(b.saving_ex_vat)} vähemmän` : ""}.`);
+    if (p.kind === "cutoff" && b.delivery && b.cutoff) return L(`Nothing arrives until it is placed. Ordering closes ${dayTime(b.cutoff)}.`, `Ilman sitä mitään ei toimiteta. Tilausaika päättyy ${dayTime(b.cutoff)}.`);
+  } catch (e) { if (e !== NO) throw e; }
+  const r = String(p.reason || ""), first = sentences(r)[0] || r;
+  return tr(first) || (fi() ? "" : first);
+}
+// A cart of the customer's own for the same day already holds some of the proposed products: say so before they accept.
+const dupP = o => L(`You already have a cart for this delivery day with the same products, waiting for ${o.waits_for === "approval" ? "an approver" : "your confirmation"}. Accepting this too would bring the same products twice.`,
+  `Sinulla on jo tälle toimituspäivälle ostoskori, jossa on samoja tuotteita. Se odottaa ${o.waits_for === "approval" ? "hyväksyjää" : "vahvistustasi"}. Jos hyväksyt myös tämän, samat tuotteet tulevat kahteen kertaan.`);
+function vProposals(d, ttlOver) {
   const ps = d.proposals || (d.type === "proposal" || d.kind_title ? [d] : []);
+  if (inShop() && ps.length) {
+    // In the shop: what is proposed and why, one sentence each, the sum, and Hyväksy / Hylkää. The rest one tap away.
+    const oneS = (p, i) => {
+      const open = !p.status || p.status === "open";
+      const kt = fi() ? PKIND_FI[p.kind] || p.kind_title || "Ehdotus" : p.kind_title || p.kind || "Proposal";
+      let basis = Object.entries(p.basis || {}).filter(([, v]) => v !== null && typeof v !== "object");
+      basis = (fi() ? basis.filter(([k]) => BASIS_FI[k] && k !== "seeded").map(([k, v]) => [BASIS_FI[k], typeof v === "number" ? nf(v) : k === "product" || k === "replacement" ? named(v) : REASON_FI[REASON_EN[v]] || trAll(v) || (/^[\d\s.,€%-]+$/.test(String(v)) ? tr(String(v)) : null)]).filter(([, v]) => v !== null) : basis.filter(([k]) => k !== "seeded").map(([k, v]) => [cap(k.replace(/_/g, " ")), v])).slice(0, 6);
+      const seeded = (p.basis || {}).seeded ? tr((p.basis || {}).seeded) : "";
+      if (p.reason_written_by) tech(`<p class="sm">${esc(kt)}: ${L("worded by", "sanamuoto:")} ${esc(p.reason_written_by === "template" ? L("template", "vakioteksti") : p.reason_written_by)}.</p>`);
+      const more = `<p class="trade" style="margin-top:6px">${esc(tr(p.reason || ""))}</p>${basis.length ? `<dl class="kv left sm" style="margin-top:6px">${basis.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>` : ""}${seeded ? `<p class="xs dim" style="margin-top:6px">${esc(seeded)}</p>` : ""}`;
+      return `<article class="opt"><div class="o-top"><span class="tag">${esc(kt)}</span><span class="price">${p.extra_ex_vat ? "+" + eur(p.extra_ex_vat) : eur(p.total_ex_vat || 0)}<small>${p.extra_ex_vat ? L("added, ex VAT", "lisää, alv 0 %") : L("ex VAT", "alv 0 %")}</small></span></div>
+        <h2>${esc(tr(p.title))}</h2><p class="trade">${esc(whyP(p))}</p>
+        ${open && p.open_cart ? `<p class="trade warn">${esc(dupP(p.open_cart))}</p>` : ""}
+        <div style="margin-top:9px">${someLines(p.line_items, "plines" + i, false)}</div>
+        ${fold("basis" + i, L("More details", "Lisätiedot"), more)}
+        <div style="margin-top:10px">${authBlock("pauth" + i, p.authority)}</div><div style="margin-top:8px">${open ? `<div class="acts">${sayBtn("ghost", `Decline proposal ${p.id} (${p.title}).`, L(`I decline: ${kt}`, `Hylkään: ${kt}`), L("Decline", "Hylkää"))}${sayBtn("", `Accept proposal ${p.id} (${p.title}).`, L(`I accept: ${kt}`, `Hyväksyn: ${kt}`), L("Accept", "Hyväksy"))}</div>` : `<span class="chip">${esc(status(p.status))}</span>`}</div>
+        ${p.expires_at && open ? `<p class="xs dim" style="margin-top:8px">${L("Answer by", "Vastaa viimeistään")} ${dayTime(p.expires_at)} · ${until(p.expires_at)}</p>` : ""}</article>`;
+    };
+    if (d.proof) sigLine("doc", "signed");
+    return wrap(head(ttlOver || (fi() ? `Valio Aimo ehdottaa ${ps.length === 1 ? "yhtä muutosta" : ps.length + " muutosta"}` : `Valio Aimo proposes ${ps.length === 1 ? "one change" : ps.length + " changes"}`), ttlOver ? "" : L("A declined proposal is never made again.", "Hylättyä ehdotusta ei tehdä uudelleen."), "") + ps.map(oneS).join(""));
+  }
   const one = (p, i) => {
     const open = !p.status || p.status === "open";
-    const basis = Object.entries(p.basis || {}).filter(([, v]) => v !== null && typeof v !== "object").slice(0, 5);
-    return `<article class="opt"><div class="o-top"><span class="tag">${esc(p.kind_title || p.kind || "Proposal")}</span><span class="price">${p.extra_ex_vat ? "+" + eur(p.extra_ex_vat) : eur(p.total_ex_vat || 0)}<small>${p.extra_ex_vat ? "added" : "ex VAT"}</small></span></div>
-      <h2>${esc(p.title)}</h2><p class="trade">${esc(p.reason || "")}${p.reason_written_by ? ` <span class="dim">· worded by ${esc(p.reason_written_by)}</span>` : ""}</p>
-      <div style="margin-top:9px">${lines(p.line_items, false)}</div>
-      ${basis.length ? fold("basis" + i, "The numbers behind it", `<dl class="kv left sm" style="margin-top:6px">${basis.map(([k, v]) => `<dt>${esc(cap(k.replace(/_/g, " ")))}</dt><dd>${esc(v)}</dd>`).join("")}</dl>`) : ""}
-      <div class="o-foot">${authBlock("pauth" + i, p.authority)}${open ? `<div class="acts"><button class="btn ghost" data-act="say" data-text="${esc(`Decline proposal ${p.id} (${p.title}).`)}">Decline</button><button class="btn" data-act="say" data-text="${esc(`Accept proposal ${p.id} (${p.title}).`)}">Accept</button></div>` : `<span class="chip">${esc(cap(String(p.status).replace(/_/g, " ")))}</span>`}</div>
-      ${p.expires_at && open ? `<p class="xs dim" style="margin-top:8px">Answer by ${dayTime(p.expires_at)} · ${until(p.expires_at)}</p>` : ""}</article>`;
+    let basis = Object.entries(p.basis || {}).filter(([, v]) => v !== null && typeof v !== "object");
+    // In Finnish only what reads in Finnish: a figure, or a sentence that has a Finnish form.
+    basis = fi() ? basis.filter(([k]) => BASIS_FI[k]).map(([k, v]) => [BASIS_FI[k], typeof v === "number" ? nf(v) : k === "product" || k === "replacement" ? v : REASON_FI[REASON_EN[v]] || trAll(v) || (/^[\d\s.,€%-]+$/.test(String(v)) ? tr(String(v)) : null)]).filter(([, v]) => v !== null) : basis.map(([k, v]) => [cap(k.replace(/_/g, " ")), v]);
+    basis = basis.slice(0, 5);
+    const kt = fi() ? PKIND_FI[p.kind] || p.kind_title || "Ehdotus" : p.kind_title || p.kind || "Proposal";
+    const by = p.reason_written_by ? (p.reason_written_by === "template" ? L("template", "vakioteksti") : fi() ? "kielimalli " + p.reason_written_by : p.reason_written_by) : "";
+    return `<article class="opt"><div class="o-top"><span class="tag">${esc(kt)}</span><span class="price">${p.extra_ex_vat ? "+" + eur(p.extra_ex_vat) : eur(p.total_ex_vat || 0)}<small>${p.extra_ex_vat ? L("added", "lisää") : L("ex VAT", "alv 0 %")}</small></span></div>
+      <h2>${esc(tr(p.title))}</h2><p class="trade">${esc(tr(p.reason || ""))}${by ? ` <span class="dim">· ${L("worded by", "sanamuoto:")} ${esc(by)}</span>` : ""}</p>
+      <div style="margin-top:9px">${someLines(p.line_items, "plines" + i, false)}</div>
+      ${basis.length ? fold("basis" + i, L("The numbers behind it", "Luvut taustalla"), `<dl class="kv left sm" style="margin-top:6px">${basis.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>`) : ""}
+      <div class="o-foot">${authBlock("pauth" + i, p.authority)}${open ? `<div class="acts">${sayBtn("ghost", `Decline proposal ${p.id} (${p.title}).`, L(`I decline: ${kt}`, `Hylkään: ${kt}`), L("Decline", "Hylkää"))}${sayBtn("", `Accept proposal ${p.id} (${p.title}).`, L(`I accept: ${kt}`, `Hyväksyn: ${kt}`), L("Accept", "Hyväksy"))}</div>` : `<span class="chip">${esc(status(p.status))}</span>`}</div>
+      ${p.expires_at && open ? `<p class="xs dim" style="margin-top:8px">${L("Answer by", "Vastaa viimeistään")} ${dayTime(p.expires_at)} · ${until(p.expires_at)}</p>` : ""}</article>`;
   };
-  return wrap(head(ps.length ? `Valio Aimo's agent proposes ${ps.length === 1 ? "one change" : ps.length + " changes"}` : "No proposals from Valio Aimo's agent", ps.length ? "Each one passed Valio Aimo's own rules before it was sent. A declined proposal is never made again." : esc(((d.messages || [])[0] || {}).content || ""), "")
-    + ps.map(one).join("") + (d.proof ? sigLine("doc", "Signed by Valio Aimo") : ""));
+  if (!ps.length) return `<div class="one"><i></i><span>${esc(tr(((d.messages || [])[0] || {}).content || "No open proposals from Valio Aimo's agent."))}</span></div>`;
+  return wrap(head(fi() ? `Valio Aimo ehdottaa ${ps.length === 1 ? "yhtä muutosta" : ps.length + " muutosta"}` : `Valio Aimo's agent proposes ${ps.length === 1 ? "one change" : ps.length + " changes"}`, L("Each one passed Valio Aimo's own rules before it was sent. A declined proposal is never made again.", "Jokainen ehdotus on tarkistettu Valio Aimon säännöillä ennen lähettämistä. Hylättyä ehdotusta ei tehdä uudelleen."), "")
+    + ps.map(one).join("") + (d.proof ? sigLine("doc", "signed") : ""));
 }
+const IKIND_FI = { short_pick: "Vajaa keräily", delay: "Myöhästyminen", recall: "Takaisinveto", issue: "Ongelma" };
 function vIssues(d) {
   const is = d.issues || (d.what_happened ? [d] : []);
-  const net = w => w.net_ex_vat < 0 ? `${eur(-w.net_ex_vat)} less` : w.net_ex_vat > 0 ? `${eur(w.net_ex_vat)} more` : "Same price";
-  const way = (x, i) => (w, j) => `<div class="way"><div class="o-top"><span class="a">${esc(w.title)}</span><span class="price" style="font-size:14px">${net(w)}</span></div><p class="o-sub">${esc(w.effect || "")}</p><div class="o-foot">${authBlock(`w${i}_${j}`, w.authority)}<button class="btn ghost" data-act="say" data-text="${esc(`Settle issue ${x.id} with option ${w.option} (${w.title}).`)}">Choose</button></div></div>`;
+  const net = w => w.net_ex_vat < 0 ? L(`${eur(-w.net_ex_vat)} less`, `${eur(-w.net_ex_vat)} vähemmän`) : w.net_ex_vat > 0 ? L(`${eur(w.net_ex_vat)} more`, `${eur(w.net_ex_vat)} enemmän`) : L("Same price", "Sama hinta");
+  const way = (x, i) => (w, j) => `<div class="way"><div class="o-top"><span class="a">${esc(tr(w.title))}</span><span class="price" style="font-size:14px">${net(w)}</span></div><p class="o-sub">${esc(tr(w.effect || ""))}</p><div class="o-foot">${authBlock(`w${i}_${j}`, w.authority)}${sayBtn("ghost", `Settle issue ${x.id} with option ${w.option} (${w.title}).`, L(`I choose: ${w.title}`, "Valitsen tämän ratkaisun"), L("Choose", "Valitse"))}</div></div>`;
   const one = (x, i) => {
     const ws = x.ways_out || [], open = x.status === "open" && !x.pending;
-    return `<article class="opt"><div class="o-top"><span class="tag">${esc(cap(String(x.kind || "issue").replace(/_/g, " ")))} · order ${esc((x.order || {}).label || "")}</span><span class="chip ${x.status === "open" ? "warn" : "ok"}">${esc(cap(x.status || ""))}</span></div>
-    <h2>${esc(x.what_happened || "")}</h2>${x.recall && x.recall.note ? `<p class="trade">${esc(x.recall.note)}</p>` : ""}
-    ${open ? ws.slice(0, 2).map(way(x, i)).join("") + (ws.length > 2 ? fold("ways" + i, `${ws.length - 2} more way${ws.length === 3 ? "" : "s"} out`, ws.slice(2).map((w, j) => way(x, i)(w, j + 2)).join(""), "fold ways") : "") : ""}
-    ${x.pending ? `<p class="trade">${esc(x.pending.title || "")}. ${esc(x.pending.next || "")}</p>` : ""}${x.resolution ? `<p class="trade">${esc(typeof x.resolution === "string" ? x.resolution : x.resolution.title || x.resolution.text || "Settled.")}</p>` : ""}</article>`;
+    const kn = fi() ? IKIND_FI[x.kind || "issue"] || cap(String(x.kind || "issue").replace(/_/g, " ")) : cap(String(x.kind || "issue").replace(/_/g, " "));
+    return `<article class="opt"><div class="o-top"><span class="tag">${esc(kn)} · ${L("order", "tilaus")} ${esc((x.order || {}).label || "")}</span><span class="chip ${x.status === "open" ? "warn" : "ok"}">${esc(status(x.status))}</span></div>
+    <h2>${esc(tr(x.what_happened || ""))}</h2>${x.recall && x.recall.note ? `<p class="trade">${esc(tr(x.recall.note))}</p>` : ""}
+    ${open ? ws.slice(0, 2).map(way(x, i)).join("") + (ws.length > 2 ? fold("ways" + i, fi() ? `${ws.length - 2} muu${ws.length === 3 ? "" : "ta"} ratkaisu${ws.length === 3 ? "" : "a"}` : `${ws.length - 2} more way${ws.length === 3 ? "" : "s"} out`, ws.slice(2).map((w, j) => way(x, i)(w, j + 2)).join(""), "fold ways") : "") : ""}
+    ${x.pending ? `<p class="trade">${esc(tr(x.pending.title || ""))}. ${esc(tr(x.pending.next || ""))}</p>` : ""}${x.resolution ? `<p class="trade">${esc(tr(typeof x.resolution === "string" ? x.resolution : x.resolution.title || x.resolution.text || L("Settled.", "Ratkaistu.")))}</p>` : ""}</article>`;
   };
-  return wrap(head(is.length ? `${is.length} problem${is.length === 1 ? "" : "s"} on placed orders` : "No problems on placed orders", is.length ? "Reported by Valio Aimo, each with its ways out. Settling one amends the signed order." : esc(((d.messages || [])[0] || {}).content || ""), "")
-    + is.map(one).join("") + (d.proof ? sigLine("doc", "Signed by Valio Aimo") : ""));
+  if (!is.length) return `<div class="one"><i></i><span>${esc(tr(((d.messages || [])[0] || {}).content || "No open problems on placed orders."))}</span></div>`;
+  if (inShop()) {
+    // In the shop: "toimituspoikkeama", what happened, then each way out with its cost and one button.
+    const IK_S = { delay: ["Delivery problem: late", "Toimituspoikkeama: myöhästyminen"], short_pick: ["Delivery problem: short", "Toimituspoikkeama: vajaa toimitus"], recall: ["Recall", "Takaisinveto"] };
+    const wayS = (x, i) => (w, j) => { const t = tr(w.title) || w.title, swap = /^substitute|^replace/.test(String(w.option || ""));
+      return `<div class="way"><div class="o-top"><span class="a">${esc(t)}</span><span class="price" style="font-size:14px">${net(w)}</span></div>${w.effect ? `<p class="o-sub">${esc(tr(w.effect))}</p>` : ""}<div class="o-foot">${authBlock(`w${i}_${j}`, w.authority)}${sayBtn(j ? "ghost" : "", `Settle issue ${x.id} with option ${w.option} (${w.title}).`, L(`I choose: ${w.title}`, `Valitsen: ${t}`), swap ? L("Swap", "Vaihda") : L("Choose", "Valitse"))}</div></div>`; };
+    const oneS = (x, i) => {
+      const ws = x.ways_out || [], open = x.status === "open" && !x.pending, k = IK_S[x.kind];
+      return `<article class="opt"><div class="o-top"><span class="tag">${esc(k ? L(k[0], k[1]) : L("Delivery problem", "Toimituspoikkeama"))}</span><span class="chip ${x.status === "open" ? "warn" : "ok"}">${esc(status(x.status))}</span></div>
+      <h2>${esc(tr(x.what_happened || ""))}</h2><p class="xs dim" style="margin-top:3px">${L("Order", "Tilaus")} ${esc((x.order || {}).label || "")}</p>${x.recall && x.recall.note ? `<p class="trade">${esc(tr(x.recall.note))}</p>` : ""}
+      ${open ? ws.slice(0, 2).map(wayS(x, i)).join("") + (ws.length > 2 ? fold("ways" + i, fi() ? `${ws.length - 2} muu${ws.length === 3 ? "" : "ta"} ratkaisu${ws.length === 3 ? "" : "a"}` : `${ws.length - 2} more way${ws.length === 3 ? "" : "s"} out`, ws.slice(2).map((w, j) => wayS(x, i)(w, j + 2)).join(""), "fold ways") : "") : ""}
+      ${x.pending ? `<p class="trade">${esc(tr(x.pending.title || ""))}. ${esc(tr(x.pending.next || ""))}</p>` : ""}${x.resolution ? `<p class="trade">${esc(tr(typeof x.resolution === "string" ? x.resolution : x.resolution.title || x.resolution.text || L("Settled.", "Ratkaistu.")))}</p>` : ""}</article>`;
+    };
+    if (d.proof) sigLine("doc", "signed");
+    return wrap(head(fi() ? `${is.length} toimituspoikkeama${is.length === 1 ? "" : "a"}` : `${is.length} delivery problem${is.length === 1 ? "" : "s"}`, L("Reported by Valio Aimo. Choose how to go on.", "Valio Aimon ilmoittamat. Valitse, miten jatketaan."), "") + is.map(oneS).join(""));
+  }
+  return wrap(head(fi() ? `${is.length} ongelma${is.length === 1 ? "" : "a"} tilauksissa` : `${is.length} problem${is.length === 1 ? "" : "s"} on placed orders`, L("Reported by Valio Aimo, each with its ways out. Settling one amends the signed order.", "Valio Aimon ilmoittamat, kukin ratkaisuineen. Ratkaisu muuttaa allekirjoitettua tilausta."), "")
+    + is.map(one).join("") + (d.proof ? sigLine("doc", "signed") : ""));
+}
+// A whole menu turned into one order (plan_menu_order): what it is for, what it orders, what code changed or left out, and one button to make the order.
+const UW = { piece: "pieces", bag: "bags", box: "boxes", bottle: "bottles", can: "cans", pack: "packs", tray: "trays", bucket: "buckets", jar: "jars", carton: "cartons", sack: "sacks", pc: "pcs" };
+const uw = (u, n) => fi() ? UNIT_FI[u] || u : Number(n) === 1 ? u : UW[u] || u;
+const DIET_FI = { "nut-free": "pähkinätön", "peanut-free": "maapähkinätön", "sesame-free": "seesamiton", "soy-free": "soijaton", "shellfish-free": "äyriäisetön", "celery-free": "sellerityön", "mustard-free": "sinapiton", "lactose-free": "laktoositon", "gluten-free": "gluteeniton",
+  "milk-free": "maidoton", vegan: "vegaaninen", vegetarian: "kasvis", "egg-free": "kananmunaton", "fish-free": "kalaton" };
+DIET_FI["celery-free"] = "selleritön";
+const fQ = s => fi() ? String(s).replace(/(\d),(\d{3})/g, "$1 $2").replace(/(\d)\.(\d)/g, "$1,$2").replace(/\bL\b/g, "l") : s;
+function vMenu(d) {
+  const rd = d.reading || {}, ds = (d.dishes || rd.dishes || []).filter(x => x && x.name), g = rd.guests, T = d.totals || {};
+  const what = (ds.length ? esc(ds.map(x => dish(x.name)).join(", ")) : L("The menu", "Menu")) + (g ? fi() ? ` · ${nf(g)} vieras${g === 1 ? "" : "ta"}` : ` · ${nf(g)} guest${g === 1 ? "" : "s"}` : "");
+  const sig = d.proof ? sigLine("doc", "plan") : "";
+  if (d.status === "not_a_menu") return wrap(head(L("Nothing to order from this", "Tästä ei voi tilata mitään"), esc(tr(d.message || "")), chip("bad", L("Not a menu", "Ei ruokalista"))) + sig);
+  if (d.status === "needs_answers") {
+    const qs = d.questions || [];
+    return wrap(head(esc(rd.title || L("A menu order", "Menun tilaus")), what, chip("warn", L("Needs your answer", "Tarvitsee vastauksesi")))
+      + `<section class="sec"><p class="lab">${fi() ? `Ennen tilausta on kysyttävä ${qs.length === 1 ? "yksi asia" : qs.length + " asiaa"}` : `Code found ${qs.length === 1 ? "one thing" : qs.length + " things"} to ask before ordering`}</p><ul class="rules">${qs.map(q => `<li>${IC.warn}<div><p style="color:var(--tx)">${esc(tr(q.text))}</p></div></li>`).join("")}</ul><p class="sm mut" style="margin-top:6px">${L("Answer in the chat. Nothing is ordered until then.", "Vastaa keskustelussa. Mitään ei tilata sitä ennen.")}</p></section>` + sig);
+  }
+  const ls = d.lines || [], subs = ls.filter(l => l.substitutes_for), no = d.not_ordered || [], pantry = d.pantry || [];
+  const forOf = l => [...new Set((l.for || []).map(f => dish(f.dish)))].join(", ");
+  const row = l => `<div class="li pi">${pic(l.product.id)}<div class="a"><span class="q">${nf(l.units, 0, 2)} ${esc(uw(l.unit, l.units))}</span> ${esc(l.product.title)}</div><div class="p">${eur(l.amount)}</div>${forOf(l) || l.partial ? `<div class="f">${forOf(l) ? L("For ", "Ruokaan: ") + esc(forOf(l)) : ""}${l.partial ? `${forOf(l) ? " · " : ""}<span class="warn">${L("less than the menu needs is in stock", "varastossa vähemmän kuin menu tarvitsee")}</span>` : ""}</div>` : ""}</div>`;
+  // A replacement says why, what changes for the kitchen (price, fat, brand) and that it is Valio Aimo's own range at this account's price.
+  const sub = l => `<div class="li pi">${pic(l.product.id)}<div class="a">${esc(l.product.title)} <span class="dim sm">${L("in place of", "korvaa tuotteen")} ${esc(l.substitutes_for.title)}</span></div><div class="p">${eur(l.amount)}</div><div class="f">${[l.reason, l.tradeoff, l.from_range].filter(Boolean).map(t => esc(tr(t))).join(" ")}</div></div>`;
+  const nope = o => { const t = fi() && o.dish && o.item ? `${cap(ing(o.item))}, ${dish(o.dish)}` : fi() ? dish(o.dish) || ing(o.item) || "" : o.dish && o.item ? o.item + ", " + o.dish : o.dish || o.item || ""; return `<li>${IC.warn}<div><b>${esc(cap(t))}</b>${o.amount ? ` <span class="dim">${esc(fQ(o.amount))}</span>` : ""}<p>${esc(tr(o.text || ""))}</p></div></li>`; };
+  const checked = ds.filter(x => /check it/.test(x.recipe || ""));
+  const notes = [];
+  if (d.budget) notes.push(`<p${d.budget.fits ? "" : ' class="bad"'}><b>${d.budget.fits ? L("Within the budget.", "Budjetin sisällä.") : L("Over the budget.", "Yli budjetin.")}</b> ${esc(tr(d.budget.text || ""))}</p>`);
+  for (const w of d.warnings || []) notes.push(`<p class="bad"><b>${L("Severe allergy.", "Vakava allergia.")}</b> ${esc(tr(w.text))}</p>`);
+  for (const f of d.flags || []) notes.push(`<p class="warn"><b>${L("Check this recipe.", "Tarkista resepti.")}</b> ${esc(tr(f.text))}</p>`);
+  if (checked.length) notes.push(`<p>${esc(checked.map(x => dish(x.name)).join(", "))}: ${L("no recipe card in this kitchen, so a model proposed the recipe. Check it.", "keittiöllä ei ole tälle reseptikorttia, joten kielimalli ehdotti reseptin. Tarkista se.")}</p>`);
+  if ((d.diet || []).length) { const ws = [...new Set(d.diet.map(r => r.note))]; notes.push(`<p>${fi() ? "Ruokavaliot: " + esc(ws.map(w => DIET_FI[String(w).toLowerCase()] || w).join(", ")) : "Diet applied: " + esc(ws.join(", "))}.</p>`); }
+  const ready = d.status === "ready" && ls.length;
+  const text = `Make the order from this menu plan: ${T.lines} lines, €${((T.subtotal || 0) / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ex VAT, delivery ${dayEn(d.delivery_date)}.`;
+  const nL = T.lines || ls.length;
+  return wrap(head(fi() ? `${nf(nL)} tilausrivi${nL === 1 ? "" : "ä"} · ${eur(T.subtotal || 0)}` : `${nf(nL)} order line${nL === 1 ? "" : "s"} · ${eur(T.subtotal || 0)}`, what, no.length ? chip("warn", L(`${no.length} for a person`, `${no.length} päätettävää`)) : chip("ok", L("Checked in code", "Tarkistettu")))
+    + `<section class="sec"><dl class="kv left"><dt>${L("Delivery", "Toimitus")}</dt><dd>${day(d.delivery_date)}${d.delivery_note ? ` <span class="dim sm">· ${esc(String(tr(d.delivery_note)).replace(/\.$/, ""))}</span>` : ""}</dd><dt>${L("Total", "Yhteensä")}</dt><dd>${eur(T.subtotal || 0)} <span class="dim sm">${L("ex VAT", "alv 0 %")}</span></dd></dl>
+       ${ready ? `<div class="acts" style="margin-top:12px">${sayBtn("", text, L("Make the order from this menu", "Tee tilaus tästä menusta"), L("Make the order", "Tee tilaus"))}<span class="xs dim" style="flex:1;min-width:150px">${L("Valio Aimo signs an offer and the rules run again before anything is ordered.", "Valio Aimo kokoaa ostoskorin, ja säännöt tarkistetaan uudelleen ennen tilausta.")}</span></div>` : `<p class="sm mut" style="margin-top:10px">${L("Nothing on this menu can be ordered as it stands.", "Tästä menusta ei voi tilata mitään näin.")}</p>`}</section>`
+    + (subs.length ? `<section class="sec"><p class="lab">${L("Replaces a short product", "Korvaa loppuneen tuotteen")}</p>${subs.map(sub).join("")}</section>` : "")
+    + (no.length ? `<section class="sec"><p class="lab">${L("Not ordered, a person decides", "Ei tilattu, päätä itse")}</p><ul class="rules">${no.map(nope).join("")}</ul></section>` : "")
+    + (ls.length ? `<section class="sec">${fold("menulines", L(`All ${ls.length} lines`, `Kaikki ${ls.length} riviä`), `<div style="margin-top:9px">${ls.map(row).join("")}</div>`, "fold")}${pantry.length ? `<p class="sm mut" style="margin-top:8px">${L("Left to your own pantry, not ordered: ", "Omasta varastostasi, ei tilattu: ")}${esc(pantry.map(x => `${ing(x.item)} ${fQ(x.amount)}`).join(", "))}.</p>` : ""}</section>` : "")
+    + (notes.length ? `<section class="sec notes">${notes.join("")}</section>` : "")
+    + sig);
 }
 function vOther(d) {
-  const ms = (d.messages || []).map(m => m.content).concat(d.message ? [d.message] : []).filter(Boolean);
-  const facts = Object.entries(d).filter(([k, v]) => !["ucp", "proof", "messages", "message"].includes(k) && v !== null && typeof v !== "object").slice(0, 8);
-  return wrap(head(esc(cap(String(S.tool || "Answer").replace(/_/g, " "))), "", d.status ? `<span class="chip">${esc(cap(String(d.status).replace(/_/g, " ")))}</span>` : "")
-    + `<section class="sec">${ms.map(m => `<p style="margin-bottom:6px">${esc(m)}</p>`).join("")}${facts.length ? `<dl class="kv left">${facts.map(([k, v]) => `<dt>${esc(cap(k.replace(/_/g, " ")))}</dt><dd>${esc(v)}</dd>`).join("")}</dl>` : ""}${!ms.length && !facts.length ? `<p class="mut">The full answer is below.</p>` : ""}</section>` + (d.proof ? sigLine("doc", "Signed by Valio Aimo") : ""));
+  if (inShop() && d.proposal) { const st = d.proposal.status; return vProposals({ proposals: [d.proposal] }, st === "declined" ? L("Proposal declined", "Ehdotus hylätty") : st === "accepted" ? L("Proposal accepted", "Ehdotus hyväksytty") : L("Proposal", "Ehdotus")); }
+  const ms = (d.messages || []).map(m => m.content).concat(d.message ? [d.message] : []).filter(Boolean).map(tr);
+  const facts = fi() ? [] : Object.entries(d).filter(([k, v]) => !["ucp", "proof", "messages", "message"].includes(k) && v !== null && typeof v !== "object").slice(0, 8);
+  return wrap(head(fi() ? "Vastaus" : esc(cap(String(S.tool || "Answer").replace(/_/g, " "))), "", d.status ? `<span class="chip">${esc(status(d.status))}</span>` : "")
+    + `<section class="sec">${ms.map(m => `<p style="margin-bottom:6px">${esc(m)}</p>`).join("")}${facts.length ? `<dl class="kv left">${facts.map(([k, v]) => `<dt>${esc(cap(k.replace(/_/g, " ")))}</dt><dd>${esc(v)}</dd>`).join("")}</dl>` : ""}${!ms.length && !facts.length ? `<p class="mut">${L("The full answer is below.", "Koko vastaus on alla.")}</p>` : ""}</section>` + (d.proof ? sigLine("doc", "signed") : ""));
 }
 
 // ------------------------------------------------------------------ state
-const kindOf = d => !d ? "none" : (d.ucp || {}).status === "error" ? "error" : d.checkout && d.card ? "checkout" : d.order && d.card ? "order"
+const kindOf = d => !d ? "none" : (d.ucp || {}).status === "error" ? "error" : (Array.isArray(d.lines) && Array.isArray(d.not_ordered)) || (d.reading && d.status === "needs_answers") || d.status === "not_a_menu" ? "menu" : d.checkout && d.card ? "checkout" : d.order && d.card ? "order"
   : Array.isArray(d.options) && d.need ? "plan" : d.ap2 && d.id ? "checkout" : d.label && d.proof && (d.wholesale || {}).evidence ? "order"
   : Array.isArray(d.usual) ? "usual" : Array.isArray(d.products) ? "catalog" : Array.isArray(d.proposals) || d.type === "proposal" ? "proposals" : Array.isArray(d.issues) || d.what_happened ? "issues" : "other";
 function take(res) {
   S.res = res;
   const meta = ((res && res._meta) || {})["fi.valioaimo/card"] || {};
   S.x = meta; S.tool = S.tool || meta.tool || "";
-  S.d = parse(res);
+  S.d = meta.full || parse(res);
   if (res && res.isError && !S.d) S.d = { ucp: { status: "error" }, messages: [{ content: (((res.content || [])[0]) || {}).text || "The tool failed." }] };
   S.kind = kindOf(S.d);
+  // Finnish product names: from the card's extras (names: {id: name}) and from catalog answers, whose variant description is the Finnish name.
+  S.names = Object.assign({}, S.x.names || {});
+  for (const p of (S.d && S.d.products) || []) { const v = ((p.variants || [])[0] || {}).description, n = v && v.plain; if (n && !/ · /.test(n) && n !== p.title) S.names[p.id] = n; }
+  const titles = {};
+  for (const p of (S.d && S.d.products) || []) if (S.names[p.id]) titles[p.title] = S.names[p.id];
+  // every product the answer names anywhere (a proposal's lines, an offer's items): its English title is said by its Finnish name in a Finnish sentence
+  (function walk(v, depth) {
+    if (!v || typeof v !== "object" || depth > 7) return;
+    if (!Array.isArray(v) && v.id != null && typeof v.title === "string" && S.names[v.id] && S.names[v.id] !== v.title) titles[v.title] = S.names[v.id];
+    for (const k in v) if (k !== "proof" && k !== "ap2") walk(v[k], depth + 1);
+  })(S.d, 0);
+  S.titleFi = Object.entries(titles).sort((a, b) => b[0].length - a[0].length);
   if (S.kind === "checkout" && S.d.status === "completed" && S.x.order) { S.order = S.x.order; S.kind = "order"; }
   else if (S.kind === "order") S.order = S.d;
   S.checks = null; S.tamper = false;
@@ -587,6 +1304,8 @@ function take(res) {
   after();
 }
 function after() {
+  // The assistant was handed the short answer and this chat kept the whole one from the card: ask the connector for it by its id.
+  if (S.d && S.d.card && S.d.note && !S.x.full) { tool("card_data", { kind: "result", id: S.d.card }).then(r => { if (r && r.full) { S.res = Object.assign({}, S.res, { _meta: { "fi.valioaimo/card": Object.assign({ full: r.full }, r.card) } }); take(S.res); checkSigs(); } }).catch(() => {}); return; }
   if (S.kind === "order") {
     if (!S.x.audit) tool("card_data", { kind: "order", id: S.order.id }).then(r => { if (r && r.card) { S.x = Object.assign({}, S.x, r.card); render(); runChecks(); } }).catch(() => {});
     else runChecks();
@@ -601,7 +1320,7 @@ function after() {
 async function runChecks() {
   if (!subtle || !S.x.audit || !S.order) return;
   const o = S.tamper ? S.tampered : S.order;
-  try { S.checks = await orderChecks(o, S.x.audit, (S.x.keys || {}).seller || S.x.audit.keys.seller); } catch (e) { S.checks = [[false, "The checks could not run here", String(e && e.message || e)]]; }
+  try { S.checks = await orderChecks(o, S.x.audit, (S.x.keys || {}).seller || S.x.audit.keys.seller); } catch (e) { S.checks = [[false, L("The checks could not run here", "Tarkistuksia ei voitu tehdä tässä"), String(e && e.message || e)]]; }
   render();
 }
 // A checkout that waits (for a person, or for the assistant to place it) is read again until it settles.
@@ -624,7 +1343,7 @@ function watch() {
         S.d = c; S.x = Object.assign({}, S.x, r.card); misses = 0;
         // Draw again only when something changed: a redraw under a finger loses the tap.
         if (changed || fresh) { if (changed) settled(was, c); render(); if (fresh) checkSigs(); }
-        else { const el = app.querySelector("[data-checked]"); if (el) el.textContent = ", checked " + clock(S.live.at); }
+        else { const el = app.querySelector("[data-checked]"); if (el) el.textContent = L(", checked ", ", tarkistettu ") + clock(S.live.at); }
         if (!["requires_escalation", "ready_for_complete"].includes(c.status)) return;
       }
     } catch (e) { if (++misses >= 4) { S.live.stopped = true; render(); return; } }  // this chat does not let the card call the connector
@@ -643,35 +1362,45 @@ function settled(was, c) {
 // ------------------------------------------------------------------ draw
 function render() {
   let html;
+  CHK = [];
   try {
-    html = S.cancelled && !S.res ? `<div class="card">${head("Cancelled", esc(S.cancelled), "")}</div>` : !S.res ? vLoading()
+    html = S.cancelled && !S.res ? `<div class="card">${head(L("Cancelled", "Peruttu"), esc(S.cancelled), "")}</div>` : !S.res ? vLoading()
       : S.kind === "error" ? vError(S.d) : S.kind === "plan" ? vPlan(S.d) : S.kind === "checkout" ? vCheckout(S.d.checkout && S.d.card ? S.d.checkout : S.d) : S.kind === "order" ? vOrder(S.order)
-      : S.kind === "usual" ? vUsual(S.d) : S.kind === "catalog" ? vCatalog(S.d) : S.kind === "proposals" ? vProposals(S.d) : S.kind === "issues" ? vIssues(S.d) : S.kind === "none" ? wrap(head("No answer to draw", "", "")) : vOther(S.d);
-  } catch (e) { html = wrap(head("This answer could not be drawn", esc(String(e && e.message || e)), "")); }
+      : S.kind === "usual" ? vUsual(S.d) : S.kind === "catalog" ? vCatalog(S.d) : S.kind === "proposals" ? vProposals(S.d) : S.kind === "issues" ? vIssues(S.d) : S.kind === "menu" ? vMenu(S.d) : S.kind === "none" ? wrap(head(L("No answer to draw", "Ei näytettävää vastausta"), "", "")) : vOther(S.d);
+  } catch (e) { html = wrap(head(L("This answer could not be drawn", "Tätä vastausta ei voitu näyttää"), esc(String(e && e.message || e)), "")); }
   app.innerHTML = html;
   for (const [id, v] of Object.entries(S.sig)) paintSig(id, v);
   if (S.res && !S.sigStarted) { S.sigStarted = true; checkSigs(); }
   requestAnimationFrame(size);
 }
+// A signature line's words, in the card's language at the time it is drawn.
+function sigText(v) {
+  const kid = v.kid ? L(` Key ${String(v.kid).slice(0, 12)}…`, ` Avain ${String(v.kid).slice(0, 12)}…`) : "", dg = String(v.digest || "").slice(0, 16);
+  if (v.what === "offer") return v.ok === null ? L(`Offer signed by Valio Aimo (ES256), digest sha-256 ${dg}…. This frame cannot check it; the approval page can.`, `Valio Aimon allekirjoittama ostoskori (ES256), tiiviste sha-256 ${dg}…. Tässä näkymässä sitä ei voi tarkistaa; hyväksyntäsivu voi.`)
+    : v.ok ? L(`Offer signed by Valio Aimo, checked here in the chat. Digest sha-256 ${dg}…: what the approver signs and what the order must match.${kid}`, `Valio Aimon allekirjoittama ostoskori, tarkistettu tässä keskustelussa. Tiiviste sha-256 ${dg}…: tämän hyväksyjä vahvistaa, ja tilauksen on vastattava sitä.${kid}`)
+    : L("This offer does not match Valio Aimo's signature.", "Tämä ostoskori ei vastaa Valio Aimon allekirjoitusta.");
+  return v.ok === null ? L("Signed by Valio Aimo (ES256). This frame cannot check signatures itself.", "Valio Aimon allekirjoittama (ES256). Tässä näkymässä allekirjoitusta ei voi tarkistaa.")
+    : v.ok ? L(`Signed by Valio Aimo, checked here in the chat.${kid}`, `Valio Aimon allekirjoittama, tarkistettu tässä keskustelussa.${kid}`) : L("This answer does not match Valio Aimo's signature.", "Tämä vastaus ei vastaa Valio Aimon allekirjoitusta.");
+}
 function paintSig(id, v) {
   const el = app.querySelector(`[data-sig="${id}"]`);
   if (!el) return;
   el.classList.toggle("fail", v.ok === false);
-  el.innerHTML = (v.ok ? IC.ok : v.ok === false ? IC.bad : IC.soft) + `<span>${esc(v.text)}</span>`;
+  el.innerHTML = (v.ok ? IC.ok : v.ok === false ? IC.bad : IC.soft) + `<span>${esc(sigText(v))}</span>`;
 }
 async function checkSigs() {
   const d = S.d, seller = (S.x.keys || {}).seller;
   const set = (id, v) => { S.sig[id] = v; paintSig(id, v); requestAnimationFrame(size); };
-  const kid = seller ? ` Key ${String(seller.kid).slice(0, 12)}…` : "";
+  const kid = seller ? seller.kid : "";
   if (!d) return;
   if (S.kind === "checkout" && d.ap2) {
-    if (!subtle || !seller) return set("offer", { ok: null, text: `Offer signed by Valio Aimo (ES256), digest sha-256 ${String(d.ap2.checkout_digest).slice(0, 16)}…. This frame cannot check it; the approval page can.` });
+    if (!subtle || !seller) return set("offer", { ok: null, what: "offer", digest: d.ap2.checkout_digest });
     const c = S.d, ok = await verifyDetached(without(c, "ap2"), c.ap2.merchant_authorization, seller);
-    set("offer", ok ? { ok: true, text: `Offer signed by Valio Aimo, checked here in the chat. Digest sha-256 ${String(c.ap2.checkout_digest).slice(0, 16)}…: what the approver signs and what the order must match.${kid}` } : { ok: false, text: "This offer does not match Valio Aimo's signature." });
+    set("offer", { ok, what: "offer", digest: c.ap2.checkout_digest, kid });
   } else if (d.proof && d.proof.jws) {
-    if (!subtle || !seller) return set("doc", { ok: null, text: "Signed by Valio Aimo (ES256). This frame cannot check signatures itself." });
+    if (!subtle || !seller) return set("doc", { ok: null, what: "doc" });
     const ok = await verifyDetached(without(d, "proof"), d.proof.jws, seller);
-    set("doc", ok ? { ok: true, text: `Signed by Valio Aimo, checked here in the chat.${kid}` } : { ok: false, text: "This answer does not match Valio Aimo's signature." });
+    set("doc", { ok, what: "doc", kid });
   }
 }
 app.addEventListener("toggle", e => { const k = e.target && e.target.dataset && e.target.dataset.k; if (k) { S.open[k] = e.target.open; requestAnimationFrame(size); } }, true);
@@ -679,9 +1408,9 @@ app.addEventListener("click", async e => {
   const b = e.target.closest("[data-act]");
   if (!b) return;
   const act = b.dataset.act;
-  if (act === "say") { b.disabled = true; const ok = await say(b.dataset.text); if (ok) toast("Sent to the chat."); else b.disabled = false; }
+  if (act === "say") { b.disabled = true; const ok = await say(b.dataset.text, b.dataset.label); if (ok) toast(L("Sent to the chat.", "Lähetetty keskusteluun.")); else b.disabled = false; }
   else if (act === "open") openLink(b.dataset.url);
-  else if (act === "copy") toast((await copy(b.dataset.text)) ? "Link copied." : b.dataset.text);
+  else if (act === "copy") toast((await copy(b.dataset.text)) ? L("Link copied.", "Linkki kopioitu.") : b.dataset.text);
   else if (act === "watch") { watch(); render(); }
   else if (act === "xml") { S.xml = !S.xml; render(); }
   else if (act === "tamper") {
@@ -710,6 +1439,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && S.
   try {
     S.host = await request("ui/initialize", { protocolVersion: "2026-01-26", appInfo: { name: "valio-aimo-cards", version: "1.0.0" }, appCapabilities: { availableDisplayModes: ["inline"] } }, 30000);
     applyCtx(S.host.hostContext || {});
+    render();
   } catch (e) {}
   notify("ui/notifications/initialized");
   // ChatGPT's older bridge hands the result over on a global; use it if the standard notification has not come.

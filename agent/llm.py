@@ -25,7 +25,7 @@ MODELS = [
     {"id": "gemini-4-hydrogen", "label": "Gemini 4 Hydrogen", "provider": "google", "pick": True},  # the Gemini a person waits for
     {"id": "gemini-4-carbon", "label": "Gemini 4 Carbon", "provider": "google", "pick": False},     # the Gemini for work nobody waits on (the test runs)
     # The one model here that is not a frontier model, kept for one reason: a buyer that must run its agent on its own hardware uses open weights.
-    {"id": "gemma-4-31b-it", "label": "Gemma 4 31B (open weights)", "provider": "google", "pick": True},
+    {"id": "gemma-4-31b-it", "label": "Gemma 4 31B (open weights)", "provider": "google", "pick": False},  # minutes per run: in the test runs, not offered to a visitor who waits
 ]
 # Models in earlier recorded runs, so their records still read well. None of them is used any more.
 PAST = {"claude-sonnet-5-5": "Claude Sonnet 5.5", "claude-haiku-5-5": "Claude Haiku 5.5", "gpt-6-sol": "GPT-6 Sol", "gpt-6-luna": "GPT-6 Luna", "gpt-5.6-luna": "GPT-5.6 Luna", "gemini-3.8-flash": "Gemini 3.8 Flash"}

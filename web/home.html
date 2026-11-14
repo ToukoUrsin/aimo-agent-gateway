@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Aimo Agent Gateway</title>
-<meta name="description" content="How a customer's AI agent orders from Valio Aimo, inside limits both sides set. Junction 2026 prototype.">
+<meta name="description" content="Valio Aimo's own door for agents: from what a kitchen wants to serve to an order that can be filled, under Valio Aimo's rules. Junction 2026 prototype.">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/static/inter.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/static/app.css">
@@ -65,6 +65,17 @@
 .feed-row b{font-weight:500}
 .feed-row .x{color:var(--muted);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 
+h2.part{display:flex;align-items:center;gap:var(--s3);font-size:var(--t6);letter-spacing:-.014em;margin:var(--s7) 0 var(--s3)}
+h2.part span{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:var(--t3);font-weight:600;flex:none}
+.top+h2.part{margin-top:var(--s3)}
+.kitchen{background:var(--panel);border:1px solid var(--line-2);border-radius:var(--r-l);padding:var(--s5)}
+.kitchen .q{margin:0;font-size:clamp(24px,2.7vw,34px);line-height:1.18;letter-spacing:-.024em;font-weight:600;text-wrap:balance}
+.kitchen .say>p:not(.q){margin:var(--s3) 0 0;color:var(--ink-2);font-size:var(--t4);line-height:1.55;max-width:70ch}
+.kitchen .cta{display:flex;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s4)}
+.kitchen .aside{margin:var(--s4) 0 0;padding-top:var(--s3);border-top:1px solid var(--line);font-size:var(--t2);color:var(--muted);max-width:80ch}
+.kitchen .btn svg{transition:transform .2s var(--ease)}
+.kitchen .btn:hover svg{transform:translateX(3px)}
+@media (max-width:640px){.kitchen{padding:var(--s4)}.kitchen .q{font-size:23px}.kitchen .cta .btn{flex:1 1 100%}h2.part{font-size:var(--t5);margin-top:var(--s6)}}
 h2.sec{margin-top:var(--s7)}
 .doors{border-top:1px solid var(--line)}
 .door{display:grid;grid-template-columns:minmax(0,17rem) minmax(0,1fr) auto;gap:var(--s2) var(--s6);align-items:baseline;padding:var(--s4) 0;border-bottom:1px solid var(--line);text-decoration:none;color:inherit}
@@ -118,18 +129,36 @@ a.door:hover .go{color:var(--ink);transform:translateX(3px)}
 <main class="wrap">
 
 <section class="top">
-  <h1>Customers' AI agents are coming. This is Valio Aimo's own door.</h1>
-  <p class="lead">A customer's AI agent looks up products, gets a signed offer and orders. Both companies set the limits: inside them it orders alone, outside them a person approves on their own device.</p>
+  <h1>From “this is what we want to serve” to an order Valio Aimo can fill.</h1>
+  <p class="lead">One door for agents, owned by Valio Aimo and run on Valio Aimo's rules. The kitchen uses it from a chat in Valio Aimo's own web shop. The customer's own purchasing software uses the same door, under the same rules.</p>
 </section>
 
+<h2 class="part"><span>1</span>The kitchen's job, in Valio Aimo's own shop</h2>
+<section class="kitchen">
+  <div class="say">
+    <p class="q">“Salmon soup and a cake for 180 on Saturday.”</p>
+    <p>The signed-in cook or purchasing manager says what they want to serve, in a chat inside the web shop. What comes back is a ready order: quantities worked out, pack sizes rounded, every product and price as Valio Aimo's systems answer for that account. Anything that cannot be filled is said plainly, and an order over the account's limit goes to its approver.</p>
+    <div class="cta"><a class="btn primary lg" href="/shop" id="shopit">Open the shop chat</a><a class="btn" href="/menu" id="door-menu" hidden>From a menu photo</a><a class="btn" href="/byhand">The same order by hand</a></div>
+  </div>
+  <p class="aside" id="menuline">The same planner reads a phone photo of a menu. The by-hand page is the same order in a bare web shop search box, product by product, timed.</p>
+</section>
+
+<h2 class="part"><span>2</span>Valio Aimo's rules and view</h2>
+<section class="doors" id="doors">
+  <a class="door" href="/access"><h3>What an agent can see</h3><p>For one customer account: its own range, its own prices, whether its order can be filled. Never another customer, never margins. Valio Aimo switches it per customer, and the page shows what an agent gets right now.</p><span class="go"></span></a>
+  <a class="door" href="/tower"><h3>Control tower</h3><p id="rushline">Every order, approval and refusal on every account. Sixty kitchens' agents ask for the same short milk at once, and the rules split it by contract share. That run is a recording. On the tower you can start a live rush of 12 agents yourself.</p><span class="go"></span></a>
+  <a class="door" href="/seller" id="door-seller" hidden><h3>Valio Aimo's own agent</h3><p id="sellerline">It tells a kitchen what it missed: a standing order that has drifted, stock close to its date, a shortage ahead. Each proposal is a signed offer under the same rules.</p><span class="go"></span></a>
+</section>
+
+<h2 class="part"><span>3</span>Any outside agent, through the same door</h2>
 <section class="sheet1" aria-label="The challenge's request, from asking to the order">
   <div class="ask">
     <blockquote>“I need 1,000 litres of lactose-free milk by Monday.”</blockquote>
-    <div class="run"><a class="btn primary lg" href="/demo?run=challenge" id="runit">Run it now</a><span>The request from Valio Aimo's challenge. A real model orders it on a sandbox account made for you. About a minute, no sign-up.</span></div>
+    <div class="run"><a class="btn primary lg" href="/demo?run=challenge" id="runit">Run it now</a><span>The challenge's own request, as a hotel chain's purchasing software sends it. A real model runs it on a test account made for you. About a minute, no sign-up.</span></div>
   </div>
   <ol class="flow">
-    <li><b>The agent asks</b><span>Any model, over MCP or REST. It carries a mandate the buying company signed: what it may order alone.</span></li>
-    <li><b>Valio Aimo answers</b><span>The products that fit, at a fixed price with the stock held, as an offer Valio Aimo signs.</span></li>
+    <li><b>The software asks</b><span>Any model or script, over MCP or REST. It carries a mandate the buying company signed: what it may order alone.</span></li>
+    <li><b>Valio Aimo answers</b><span>The products that fit, at this account's fixed price with the stock held, as an offer Valio Aimo signs.</span></li>
     <li><b>Code checks the rules</b><span>The buyer's limits, Valio Aimo's own limits, allergens, first-time products. No model decides.</span></li>
     <li><b>It orders, or asks a person</b><span>Inside the limits the order goes through alone. Outside them one person approves on their own device, and the device signs.</span></li>
   </ol>
@@ -137,18 +166,13 @@ a.door:hover .go{color:var(--ink);transform:translateX(3px)}
     <div class="lh" style="padding-bottom:10px"><span class="wait"><span class="spin"></span>Reading the latest order from the ledger</span></div>
   </div>
 </section>
-
-<h2 class="sec">Three things that go further</h2>
-<section class="doors" id="doors">
-  <a class="door" href="/menu" id="door-menu" hidden><h3>A menu photo becomes an order</h3><p id="menuline">A chef's phone photo of a menu becomes a checked order, line by line. Code works out the recipe quantities, pack sizes, allergens and stock.</p><span class="go"></span></a>
-  <a class="door" href="/seller" id="door-seller" hidden><h3>Valio Aimo's own selling agent</h3><p id="sellerline">It tells a kitchen's agent what it missed: a standing order that has drifted, stock close to its date, a shortage ahead. Each proposal is a signed offer under the same rules.</p><span class="go"></span></a>
-  <a class="door" href="/tower"><h3>The Monday rush</h3><p id="rushline">Sixty kitchens' agents ask for the same short milk at once, and the rules split it by contract share. That run is a recording. On the tower you can start a live rush of 12 agents yourself.</p><span class="go"></span></a>
+<section class="doors" style="margin-top:var(--s4)">
+  <div class="door"><h3>Connect an agent</h3><div><p>Point any MCP client at this address, or use the REST API. A chat assistant such as Claude or ChatGPT connects the same way: one more caller, the same rules.</p><div class="row"><input type="text" id="mcp" readonly aria-label="MCP address" placeholder="Loading the address"><button class="btn" id="copy" type="button"></button></div></div></div>
 </section>
 
 <h2 class="sec">Proof</h2>
 <section class="doors">
   <div class="door"><h3>Counted from signed records</h3><div><p id="nowline"><span class="wait"><span class="spin"></span>Counting orders, test runs and ledger entries on the gateway</span></p><div class="cta"><a class="btn" href="/proof">Open the proof</a><a class="btn" href="/ledger">Read the ledger</a><a class="btn" href="#film" id="filmbtn" hidden></a></div></div></div>
-  <div class="door"><h3>Your own assistant can order here</h3><div><p>Add this address to Claude or ChatGPT as a connector. You set what it may order alone.</p><div class="row"><input type="text" id="mcp" readonly aria-label="MCP address" placeholder="Loading the address"><button class="btn" id="copy" type="button"></button></div></div></div>
   <div class="door" id="film" hidden><h3>The film, 2 minutes</h3><div><video controls preload="none" playsinline poster="/static/poster.jpg" src="/static/film.mp4"></video></div></div>
 </section>
 
@@ -160,6 +184,7 @@ for (const g of document.querySelectorAll(".go")) g.innerHTML = ICON.arrow;
 $("#copy").innerHTML = ICON.copy + "<span>Copy</span>";
 $("#filmbtn").innerHTML = ICON.play + "<span>Watch the film, 2 min</span>";
 $("#runit").innerHTML = "<span>Run it now</span>" + ICON.arrow;
+$("#shopit").innerHTML = "<span>Open the shop chat</span>" + ICON.arrow;
 const n = v => Number(v || 0).toLocaleString("en-GB");
 
 // ---- Stats
@@ -292,11 +317,11 @@ async function doors() {
   const [m, r, s] = await Promise.all([get("/api/menu/latest").catch(() => null), get("/api/rush/latest?events=0").catch(() => null), get("/api/seller/summary?view=valio").catch(() => null)]);
   if (m && m.line_count && m.phases) {
     const sec = (Number(m.phases.read || 0) + Number(m.phases.plan || 0)).toFixed(1), h = m.by_hand;
-    $("#menuline").textContent = `Latest run: a photo of a menu for ${n(m.guests)} guests became ${n(m.line_count)} checked order lines in ${sec} seconds.` + (h && h.minutes ? ` By hand: about ${h.minutes} minutes (${h.basis === "estimate" ? "our estimate" : "measured"}).` : "");
+    $("#menuline").textContent = `From a menu photo, latest run: a photo of a menu for ${n(m.guests)} guests became ${n(m.line_count)} checked order lines in ${sec} seconds.` + (h && h.minutes ? ` By hand: about ${h.minutes} minutes (${h.basis === "estimate" ? "our estimate" : "measured"}).` : "");
   }
   if (r && r.ready && r.agents_total) {
     const refused = Object.values(r.refused_by_rule || {}).reduce((a, b) => a + b, 0);
-    $("#rushline").textContent = `Recorded run: ${n(r.agents_total)} kitchens' agents asked for the same short milk at once. The rules split it by contract share: ${n(r.placed_alone)} orders needed nobody, ${n(r.people.asked)} of ${n(r.agents_total)} agents needed a person, ${n(refused)} were refused by a rule, all in ${Math.round(r.seconds.first_request_to_last_order)} seconds.` + (r.agents_total > 12 ? " On the tower you can start a live rush of 12 agents yourself." : "");
+    $("#rushline").textContent = `Every order, approval and refusal on every account. Recorded run: ${n(r.agents_total)} kitchens' agents asked for the same short milk at once. The rules split it by contract share: ${n(r.placed_alone)} orders needed nobody, ${n(r.people.asked)} of ${n(r.agents_total)} agents needed a person, ${n(refused)} were refused by a rule, all in ${Math.round(r.seconds.first_request_to_last_order)} seconds.` + (r.agents_total > 12 ? " On the tower you can start a live rush of 12 agents yourself." : "");
   }
   const t = s && s.total;
   if (t && t.made) $("#sellerline").textContent = `It tells a kitchen's agent what it missed: a drifted standing order, stock close to its date, a shortage ahead. On the demo accounts: ${n(t.made)} signed proposals, ${n(t.accepted_alone)} accepted by the agent alone, ${n(t.sent_to_person)} sent to a person, ${n(t.refused_before_leaving)} stopped by a rule before leaving.`;

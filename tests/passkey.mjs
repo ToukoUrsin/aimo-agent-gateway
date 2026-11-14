@@ -14,6 +14,7 @@ const ok = (cond, what, extra = "") => { cond ? pass++ : fail++; console.log(`${
 
 async function withPasskey(browser) {
   const ctx = await browser.newContext();
+  await english(ctx);
   const page = await ctx.newPage();
   const cdp = await ctx.newCDPSession(page);
   await cdp.send("WebAuthn.enable");
@@ -32,7 +33,9 @@ const askPerson = page => page.evaluate(async () => {
 const post = (page, path, body) => page.evaluate(async ([path, body]) => { const r = await fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }); return { status: r.status, body: await r.json() }; }, [path, body]);
 const code = r => (r.body.messages || [{}])[0].code;
 // A plain browser: no fingerprint, face or screen lock, like many desktop browsers and an automated Chrome.
-async function plain(browser) { const ctx = await browser.newContext(); return { ctx, page: await ctx.newPage() }; }
+async function plain(browser) { const ctx = await browser.newContext(); await english(ctx); return { ctx, page: await ctx.newPage() }; }
+// The approval page opens in Finnish (the shop's language switch); these checks read its English.
+const english = ctx => ctx.addInitScript(() => { try { localStorage.setItem("shop.lang", "en"); } catch (e) {} });
 // A checkout with lines that have no allergen declaration on a peanut-free order. A line the wholesaler cannot deliver is dropped and asked again.
 const UNDECLARED = ["460006", "460007", "460012", "460026", "460027"], DECLARED = "460001";
 const askClear = (page, n = 3) => page.evaluate(async ([ids, declared, n]) => {
@@ -69,9 +72,10 @@ async function browserKeyPath(browser) {
   // 12. The approval page on an account with no device: none of the undeclared lines is ticked, and Approve waits for every one.
   let c = await askClear(C.page);
   ok(c.status === "requires_escalation" && c.und.length === 3, "a peanut-free order with three undeclared lines asks a person", c.status + " " + JSON.stringify(c.messages || c.und.length));
+  await C.page.evaluate(() => localStorage.setItem("shop.lang", "en"));  // the approval page opens in Finnish; these checks read its English
   await C.page.goto(`${BASE}/approve/${c.id}?k=${c.k}`);
   await C.page.waitForSelector(".tick input", { timeout: 15000 });
-  await C.page.waitForSelector(".pk b", { timeout: 15000 });
+  await C.page.waitForSelector(".pk b", { timeout: 15000, state: "attached" });  // the signing details sit behind the closed "Show the checks" fold
   const boxes = C.page.locator(".tick input");
   ok((await boxes.count()) === 3 && (await C.page.locator(".tick input:checked").count()) === 0, "each undeclared line has its own tick and none is ticked at first");
   ok(!/tick all|select all/i.test(await C.page.textContent("#main")), "there is no 'tick all'");
@@ -114,6 +118,7 @@ async function browserKeyPath(browser) {
   await shot(C.page, "approve-signed");
 
   // 15. The visible refusal: the same link, without the device, on the approved page.
+  await C.page.evaluate(() => document.querySelectorAll("details.fold").forEach(d => { d.open = true; }));  // open "Show the checks"
   await C.page.click("#try");
   await C.page.waitForSelector(".try pre", { timeout: 10000 });
   const shown = await C.page.textContent(".try");
@@ -132,7 +137,7 @@ async function browserKeyPath(browser) {
   r = await post(D.page, "/api/passkey/enrol/begin", { cid: c.id, k: c.k });
   ok(r.status === 403, "after the first device the approval link cannot enrol another browser", String(r.status));
   await D.page.goto(`${BASE}/approve/${c.id}?k=${c.k}`);
-  await D.page.waitForSelector(".pk b", { timeout: 15000 });
+  await D.page.waitForSelector(".pk b", { timeout: 15000, state: "attached" });
   ok(/not one of the account's approver devices/.test(await D.page.textContent("#main")) && await D.page.isDisabled("#yes") && !(await D.page.isDisabled("#no")), "on another browser the page says so: Approve is off, Reject still works");
 
   // 17. A browser-key signature fits one decision only, and a tampered one is refused.
@@ -179,7 +184,7 @@ async function browserKeyPath(browser) {
   await E.page.goto(BASE + "/enrol");
   c = await askPerson(E.page);
   await F.page.goto(`${BASE}/approve/${c.id}?k=${c.k}`);
-  await F.page.waitForSelector(".pk b", { timeout: 15000 });
+  await F.page.waitForSelector(".pk b", { timeout: 15000, state: "attached" });
   await F.page.fill("#who", "Night manager");
   await F.page.click("#yes");
   await F.page.waitForSelector(".big-mark.ok", { timeout: 20000 });
@@ -317,7 +322,7 @@ try {
   c = await askPerson(A.page);
   await A.page.goto(`${BASE}/approve/${c.id}?k=${c.k}`);
   await A.page.waitForSelector("#yes:not([disabled])", { timeout: 15000 });
-  await A.page.waitForSelector(".pk b", { timeout: 15000 });
+  await A.page.waitForSelector(".pk b", { timeout: 15000, state: "attached" });
   ok(/Signed on an approver's device/.test(await A.page.textContent("#main")) && /a passkey/.test(await A.page.textContent("#main")), "the approval page says approvals are signed on a device, with a passkey");
   await shot(A.page, "approve-device");
   await A.page.click("#yes");

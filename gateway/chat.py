@@ -14,6 +14,7 @@ also ask for it again through `card_data`, a tool only the card may call.
 from __future__ import annotations
 
 import json
+import secrets
 import time
 from contextvars import ContextVar
 
@@ -22,7 +23,7 @@ from mcp.server.apps import APP_MIME_TYPE, Apps
 from mcp.server.mcpserver.resources import FunctionResource
 from mcp_types import CallToolResult, TextContent, ToolAnnotations
 
-from . import peppol, peppol_check, policy
+from . import peppol, peppol_check, pictures, policy
 from .config import PUBLIC_URL, WEB, order_url
 from .service import GatewayError, iso
 
@@ -117,9 +118,48 @@ def product_facts(g, out: dict, p: dict) -> dict:
     return facts
 
 
+def product_ids(out: dict) -> list[str]:
+    """Every product an answer names, in the order the card shows them."""
+    ids, lines = [], lambda x: [(l.get("item") or {}).get("id") for l in (x or {}).get("line_items") or [] if isinstance(l, dict)]
+    for o in out.get("options") or []:
+        ids += lines(o)
+    ids += lines(out) + lines(out.get("checkout")) + lines(out.get("order"))
+    for k in ("usual", "other_kinds_ordered", "products", "also_qualifying"):
+        ids += [r.get("id") for r in out.get(k) or [] if isinstance(r, dict)]
+    for pr in out.get("proposals") or []:
+        ids += lines(pr)
+    for l in out.get("lines") or []:  # a menu plan
+        if isinstance(l, dict) and isinstance(l.get("product"), dict):
+            ids.append(l["product"].get("id"))
+    for i in out.get("issues") or []:
+        for w in i.get("ways_out") or []:
+            ids += lines(w)
+    return list(dict.fromkeys(str(i) for i in ids if i))
+
+
+def product_pictures(g, out: dict) -> dict:
+    """{product id: picture} for the products of an answer that have a public picture (gateway/pictures.py)."""
+    gtin = {i: (g.cat.get(i) or {}).get("gtin") for i in product_ids(out)}
+    got = pictures.pictures([v for v in gtin.values() if v])
+    return {i: got[v] for i, v in gtin.items() if v in got}
+
+
 def extras(g, tool: str, out: dict, p: dict | None = None) -> dict:
     """What the card needs on top of the tool's answer."""
     x = {"tool": tool, "site": PUBLIC_URL, "keys": {"seller": g.key.jwk}}
+    try:
+        pics = product_pictures(g, out)
+        if pics:
+            x["pictures"], x["pictures_from"] = pics, pictures.SOURCE
+    except Exception:
+        pass  # a card without pictures is still the whole answer
+    try:  # the shop page shows a product by its Finnish name when the catalogue has one
+        stood_in = [str(((l.get("wholesale") or {}).get("substitutes_for") or {}).get("for") or "") for d in (out, out.get("checkout") or {}, out.get("order") or {}) for l in d.get("line_items") or [] if isinstance(l, dict)]
+        fi = {i: n for i in product_ids(out) + [i for i in stood_in if i] if (n := ((g.cat.get(i) or {}).get("names") or {}).get("fi"))}  # and the product a replacement stands in for
+        if fi:
+            x["names_fi"] = x["names"] = fi  # the card reads "names", the shop page "names_fi"
+    except Exception:
+        pass
     try:
         if p and p.get("ok"):
             x["mandate"] = mandate_view(g, p)
@@ -137,10 +177,146 @@ def extras(g, tool: str, out: dict, p: dict | None = None) -> dict:
     return x
 
 
+# ---------------------------------------------------------------------------------------------------------------------
+# What the assistant reads when a person sees the card. A chat that is handed the whole answer types it out again under
+# the card, as a table. So an assistant that signed in through the consent page (a chat with a person) gets one line on
+# what the card shows and what to do next, and only the fields it needs for its next call. The whole answer, signed, goes
+# to the card. Every other caller (an agent with a mandate of its own, the REST side) reads the whole answer as before.
+
+_chat: dict = {}
+_kept: dict = {}  # result id -> (customer, tool, answer): for a chat that keeps _meta from the card, which then asks for it
+CLIENTS: dict = {}  # agent id -> what its MCP client last said about itself (name, protocol, capabilities); kept by the /mcp gate in app.py
+UI_EXT = "io.modelcontextprotocol/ui"
+SEEN = "The person sees this as a card under your reply"
+
+
+def in_chat(g, p) -> bool:
+    """Is this an assistant in a chat that draws the card? It signed in through the consent page, and its client says it draws MCP Apps
+    (clients that say nothing about themselves are taken as chats: the consent page is how chats arrive)."""
+    if p and p.get("ok") and str(p.get("agent") or "").endswith("/shop-assistant"):  # Valio Aimo's own shop assistant (gateway/shopchat.py): its page draws the card when its client says so
+        c = CLIENTS.get(p["agent"]) or g.store.get(f"mcp_client:{p['agent']}") or {}
+        return UI_EXT in ((c.get("capabilities") or {}).get("extensions") or {})
+    if not p or not p.get("ok") or p.get("bound"):
+        return False
+    a = p.get("agent")
+    if a not in _chat or (not _chat[a][0] and time.time() - _chat[a][1] > 60):
+        _chat[a] = (any((g.store.get(k) or {}).get("agent") == a for k, in g.store.q("select k from kv where k like 'oauth_grant:%'")), time.time())
+    if not _chat[a][0]:
+        return False
+    c = CLIENTS.get(a) or g.store.get(f"mcp_client:{a}")
+    return not c or UI_EXT in ((c.get("capabilities") or {}).get("extensions") or {})
+
+
+def _eur(cents) -> str:
+    return "€{:,.2f}".format((cents or 0) / 100)
+
+
+def _amount(totals, kind="subtotal"):
+    return next((t.get("amount") for t in totals or [] if t.get("type") == kind), None)
+
+
+def _lines(items) -> list:
+    return [{"item": {"id": (l.get("item") or {}).get("id"), "title": (l.get("item") or {}).get("title")}, "quantity": l["quantity"]["total"] if isinstance(l.get("quantity"), dict) else l.get("quantity")} for l in items or []]
+
+
+def _said(out) -> str:
+    return " ".join(m.get("content", "") for m in out.get("messages") or [] if m.get("type") in ("error", "warning") and m.get("content"))
+
+
+def brief(tool: str, out: dict):
+    """(one line for the assistant, the fields it needs for its next call), or None where the assistant reads the whole answer."""
+    if (out.get("ucp") or {}).get("status") == "error":
+        return None
+    day = (out.get("wholesale") or {}).get("delivery_date") or out.get("delivery_date")
+    if isinstance(out.get("options"), list) and out.get("need"):
+        opts, need = out["options"], out["need"]
+        slim = {"need": need, "delivery_date": day, "options": [{"label": o.get("label"), "line_items": _lines(o.get("line_items")), "covers_pct": o.get("covers_pct"), "total_ex_vat": o.get("total_ex_vat"),
+                                                                 "authority": {"decision": (o.get("authority") or {}).get("decision")},
+                                                                 **({"replacement": {k: o["substitute"].get(k) for k in ("tier", "title", "price_delta_pct", "why")}} if o.get("substitute") else {})} for o in opts]}
+        for k in ("kinds_to_choose",):
+            if out.get(k):
+                slim[k] = out[k]
+        if not opts:
+            return f"Nothing can be offered as asked. {_said(out) or ' '.join(m.get('content', '') for m in out.get('messages') or [])} {SEEN}. Say it in one or two sentences.", slim
+        names = "; ".join(f"{str(o.get('label')).replace('_', ' ')} {_eur(o.get('total_ex_vat'))} ex VAT ({'needs a second person' if (o.get('authority') or {}).get('decision') == 'needs_human_approval' else str((o.get('authority') or {}).get('decision')).replace('_', ' ')})" for o in opts)
+        return (f"{len(opts)} option{'s' if len(opts) != 1 else ''} for {need.get('quantity'):g} {need.get('unit')}, delivery {day}: {names}. {SEEN}, each option with its price, stock, cut-off and a Choose button. "
+                "Do not list or describe the options again. If the person already said which one they want, call create_checkout with that option's line_items now; otherwise say in one short sentence that they can choose on the card."), slim
+    if isinstance(out.get("ap2"), dict) and out.get("id"):
+        st, w = out.get("status"), out.get("wholesale") or {}
+        ap, sub = w.get("approval"), _eur(_amount(out.get("totals")))
+        stops = [r.get("title") for r in (w.get("policy") or {}).get("rules") or [] if r.get("outcome") != "pass"]
+        slim = {"id": out["id"], "status": st, "delivery_date": day, "line_items": _lines(out.get("line_items")), "subtotal_ex_vat": _amount(out.get("totals")), "total": _amount(out.get("totals"), "total")}
+        slim["rules"] = {r.get("id"): r.get("outcome") for r in (w.get("policy") or {}).get("rules") or []}
+        if ap:
+            slim["approval"] = {"decision": ap.get("decision"), "by": ap.get("by")}
+        if out.get("order"):
+            slim["order"] = out["order"]
+        if st == "requires_escalation":
+            slim["continue_url"] = out.get("continue_url")
+            return (f"Signed offer {out['id']}, {sub} ex VAT, stopped for a second person ({', '.join(stops) or 'a rule'}). {SEEN}, with the reasons, a QR code and the approval link; the card watches for the approval by itself. "
+                    "Say in one or two short sentences that a second person has to approve it on their own phone. Do not repeat the offer, do not open the link yourself, and do not call complete_checkout before you are told it is approved."), slim
+        if st == "ready_for_complete":
+            return (f"Signed offer {out['id']}, {sub} ex VAT, {'approved by ' + str(ap.get('by')) if ap and ap.get('decision') == 'approved' else 'every rule passed'}: ready to order. {SEEN}. "
+                    "If the person told you to order this, call complete_checkout now. If they only asked for an offer, ask once, in one sentence. Do not repeat the offer."), slim
+        if st == "completed":
+            return (f"Order {(out.get('order') or {}).get('label')} is placed, {sub} ex VAT, delivery {day}. {SEEN}, with the signature checks they can run themselves, the Peppol document and a one-cent tamper test. "
+                    "Confirm in one short sentence. Do not repeat the lines or the totals."), slim
+        return f"Offer {out['id']} is {str(st).replace('_', ' ')}. {_said(out)} {SEEN}. Say what stopped it in one or two sentences.", slim
+    if out.get("label") and out.get("proof") and (out.get("wholesale") or {}).get("evidence") is not None:
+        slim = {"id": out.get("id"), "label": out["label"], "delivery_date": day, "line_items": _lines(out.get("line_items")), "subtotal_ex_vat": _amount(out.get("totals")), "total": _amount(out.get("totals"), "total"), "permalink_url": out.get("permalink_url")}
+        return (f"Order {out['label']}, {_eur(_amount(out.get('totals')))} ex VAT, delivery {day}. {SEEN}, with seven signature checks run in the chat, the Peppol document and a one-cent tamper test. "
+                "Say one short sentence. Do not repeat the order."), slim
+    if isinstance(out.get("usual"), list):
+        row = lambda u: {"id": u.get("id"), "title": u.get("title"), "kind": u.get("kind"), "usual_amount": u.get("usual_amount")}
+        us, ot = out["usual"], out.get("other_kinds_ordered") or []
+        slim = {"usual": [row(u) for u in us], "other_kinds_ordered": [row(u) for u in ot]}
+        return (f"{len(us)} product{'s' if len(us) != 1 else ''} this kitchen usually orders{': ' + ', '.join(dict.fromkeys(str(u.get('kind')) for u in us)) if us else ''}. {SEEN}, as a list with the usual amounts and a button to order the usual. "
+                "Do not list or tabulate them again. Say one short sentence and ask what they need."), slim
+    if isinstance(out.get("products"), list):
+        ps = out["products"]
+        slim = {"delivery_date": day, "products": [{"id": x.get("id"), "title": x.get("title"), "unit_price": ((x.get("wholesale") or {}).get("price") or {}).get("unit_price"), "availability": (x.get("wholesale") or {}).get("availability"),
+                                                      "orderable": (x.get("wholesale") or {}).get("orderable")} for x in ps[:12]]}
+        return (f"{len(ps)} product{'s' if len(ps) != 1 else ''} found. {SEEN}, each with its price, stock, cut-off, origin and allergens. Do not list them again. "
+                "Say one short sentence, or go on with what the person asked for."), slim
+    if isinstance(out.get("proposals"), list):
+        ps = out["proposals"]
+        slim = {"proposals": [{"id": x.get("id"), "kind": x.get("kind"), "title": x.get("title"), "status": x.get("status"), "total_ex_vat": x.get("total_ex_vat"), "extra_ex_vat": x.get("extra_ex_vat"),
+                               "authority": {"decision": (x.get("authority") or {}).get("decision")}} for x in ps]}
+        if not ps:
+            return "No open proposals from Valio Aimo's agent. The person sees one line saying so. Say it in a few words, or not at all if they did not ask.", slim
+        return (f"{len(ps)} proposal{'s' if len(ps) != 1 else ''} from Valio Aimo's agent: {'; '.join(str(x.get('title')) for x in ps)}. {SEEN}, each with its reason, the numbers behind it and Accept and Decline buttons. "
+                "Do not repeat them. Say one short sentence."), slim
+    if isinstance(out.get("issues"), list):
+        xs = out["issues"]
+        slim = {"issues": [{"id": x.get("id"), "kind": x.get("kind"), "status": x.get("status"), "order": (x.get("order") or {}).get("label"), "what_happened": x.get("what_happened"),
+                            "ways_out": [{"option": w.get("option"), "title": w.get("title"), "authority": {"decision": (w.get("authority") or {}).get("decision")}} for w in x.get("ways_out") or []]} for x in xs]}
+        if not xs:
+            return "No open problems on this account's placed orders. The person sees one line saying so. Say it in a few words.", slim
+        return (f"{len(xs)} problem{'s' if len(xs) != 1 else ''} on placed orders. {SEEN}, each with its ways out, what each costs and a Choose button. Do not repeat them. "
+                "Say one short sentence, or settle one with resolve_order_issue if the person asked you to and its way out says agent_may_resolve."), slim
+    return None
+
+
 def result(g, tool: str, out: dict) -> CallToolResult:
-    """The same JSON the model always got, as text and as structured content, plus the card's extras where the model does not read."""
-    x = {"tool": tool, "site": PUBLIC_URL} if tool == "card_data" else extras(g, tool, out, CALLER.get())  # card_data carries its extras in the answer itself
-    return CallToolResult(content=[TextContent(type="text", text=json.dumps(out, ensure_ascii=False))], structured_content=out, _meta={META: x})
+    """What the model reads (text and structured content) and what only the card reads (_meta)."""
+    if tool == "card_data":  # for the card only; it carries its extras in the answer itself
+        return CallToolResult(content=[TextContent(type="text", text=json.dumps(out, ensure_ascii=False))], structured_content=out, _meta={META: {"tool": tool, "site": PUBLIC_URL}})
+    p = CALLER.get()
+    x = extras(g, tool, out, p)
+    try:
+        b = brief(tool, out) if in_chat(g, p) else None
+    except Exception:
+        b = None  # the assistant reads the whole answer, as every other client does
+    if not b:
+        return CallToolResult(content=[TextContent(type="text", text=json.dumps(out, ensure_ascii=False))], structured_content=out, _meta={META: x})
+    line, slim = b
+    rid = "res_" + secrets.token_hex(6)
+    _kept[rid] = (p.get("customer"), tool, out)
+    while len(_kept) > 400:
+        _kept.pop(next(iter(_kept)))
+    slim = {"note": line, **slim, "card": rid}
+    return CallToolResult(content=[TextContent(type="text", text=line + "\nFor your next call only, not for the person: " + json.dumps({k: v for k, v in slim.items() if k != "note"}, ensure_ascii=False))],
+                          structured_content=slim, _meta={META: {**x, "full": out}})
 
 
 def card_data(g, kind: str, id: str, p) -> dict:
@@ -155,4 +331,9 @@ def card_data(g, kind: str, id: str, p) -> dict:
         if o["wholesale"].get("customer") != p.get("customer"):
             raise GatewayError(403, "forbidden", "This order belongs to another account.")
         return {"order": o, "card": extras(g, "get_order", o, p)}
-    raise GatewayError(400, "bad_request", "kind is checkout or order.")
+    if kind == "result":  # a chat that kept the result's _meta from the card: the card asks for the whole answer by its id
+        kept = _kept.get(id)
+        if not kept or kept[0] != p.get("customer"):
+            raise GatewayError(404, "not_found", "That answer is no longer kept. Ask the assistant again.")
+        return {"full": kept[2], "card": extras(g, kept[1], kept[2], p)}
+    raise GatewayError(400, "bad_request", "kind is checkout, order or result.")

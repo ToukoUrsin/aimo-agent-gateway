@@ -826,6 +826,24 @@ class Seller:
         for p in self._rows(a["customer"], [OPEN, PENDING]):
             self._sync(p)
 
+    def _open_cart(self, p) -> dict | None:
+        """A cart of the customer's own for the same delivery day that already holds products of this proposal and still waits for a person.
+        Accepting the proposal on top of it would order those products twice, so the proposal says so."""
+        ids = {x["item"]["id"] for x in p["doc"].get("line_items") or []}
+        if not ids:
+            return None
+        for (doc,) in self.g.store.q("select doc from checkouts where customer=? and status in ('ready_for_complete','requires_escalation') order by created desc limit 40", (p["customer"],)):
+            c = json.loads(doc)
+            w = c.get("wholesale") or {}
+            if w.get("delivery_date") != p["day"] or w.get("proposal") or c["id"] == p.get("checkout_id") or parse_ts(c["expires_at"]).timestamp() < time.time():
+                continue
+            same = sum(1 for l in c["line_items"] if l["item"]["id"] in ids)
+            if same:
+                waits = "approval" if c["status"] == "requires_escalation" else "confirmation"
+                return {"checkout_id": c["id"], "waits_for": waits, "same_products": same, "of": len(ids),
+                        "note": f"A cart of your own for the same delivery day already holds {same} of these {len(ids)} products and waits for {'an approver' if waits == 'approval' else 'your confirmation'}. Accepting this proposal as well would order them twice."}
+        return None
+
     def view(self, p) -> dict:
         """What the customer's agent sees of one proposal."""
         v = {k: p["doc"][k] for k in ("id", "kind", "kind_title", "made_at", "delivery_date", "title", "reason", "reason_written_by", "basis", "line_items", "total_ex_vat", "extra_ex_vat",
@@ -834,6 +852,8 @@ class Seller:
                             "line_total_ex_vat": next(t["amount"] for t in x["totals"] if t["type"] == "subtotal"),
                             **({"substitutes_for": x["wholesale"]["substitutes_for"]["for_title"]} if x["wholesale"].get("substitutes_for") else {})} for x in p["doc"]["line_items"]]
         v["status"] = p["status"]
+        if p["status"] == OPEN and (dup := self._open_cart(p)):
+            v["open_cart"] = dup
         if p["status"] == PENDING:
             c = self.g.store.checkout(p["checkout_id"]) or {}
             v["pending"] = {"checkout_id": p["checkout_id"], "checkout_status": c.get("status"),

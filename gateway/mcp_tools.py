@@ -98,7 +98,7 @@ def build(g: Gateway) -> MCPServer:
                           "If the name does not say which kind is meant ('chicken', 'pasta', 'cream'), it goes by what this account has ordered before; when there is no such history it returns no options and kinds_to_choose: "
                           "call again with one of those kinds if the buyer's request settles which, otherwise ask the buyer. "
                           "Handles pack sizes, partial stock and substitutes, and tells you for each option whether you may order it yourself or a person must approve. "
-                          "Set preferred_product to a product id when the buyer wants a specific product.")
+                          "Set preferred_product to a product id, or to the brand or product name as the buyer said it, when the buyer wants a specific product.")
     async def plan_sourcing(ctx: Context, query: str, need_quantity: float, need_unit: str, delivery_date: str, preferred_product: str = "", claims: list[str] = [],
                       exclude_allergens: list[str] = [], labels: list[str] = [], categories: list[str] = [], origin: list[str] = []) -> CallToolResult:
         p, tr = who(ctx)
@@ -183,8 +183,9 @@ def build(g: Gateway) -> MCPServer:
         p, tr = who(ctx)
         return chat.result(g, "answer_proposal", await guard(lambda: g.seller.answer(id, answer, reason, p, tr)))
 
-    @srv.tool(meta=chat.TOOL_META, description="Turn a whole menu or meal plan into one checked order plan. dishes: [\"Creamy salmon soup\", {name, portions?, days?, notes?: [\"L\", \"G\", \"vegetarian\"], recipe?: [{item, role, amount, unit: g|ml}]}]; "
-                          "portions only when a dish has its own number, recipe (per portion) only for a dish the kitchen has no card for. guests: how many it is for. event_date: YYYY-MM-DD of the first day served. "
+    @srv.tool(meta=chat.TOOL_META, description="Turn a whole menu or meal plan into one checked order plan. dishes: [\"Creamy salmon soup\", {name, portions?, days?, notes?: [\"L\", \"G\", \"vegetarian\"], recipe?: [{item, role, amount, unit: g|ml|kg|l|dl}], recipe_portions?}]; "
+                          "portions only when a dish has its own number, recipe (per portion) only for a dish the kitchen has no card for. When the buyer gives their own recipe with amounts, pass the amounts as written "
+                          "and recipe_portions = how many portions they make: code divides, and that recipe stands in place of the card. guests: how many it is for. event_date: YYYY-MM-DD of the first day served. "
                           "notes: every dietary note as written, e.g. [\"Nut-free kitchen\", \"Table 6 lactose-free\", \"6 gluten-free\"]. image: instead of dishes, a photo of the menu as a data URL (JPEG, PNG or WebP). "
                           "budget_eur: the budget when the buyer gave one, with budget_per total or guest. order_staples: true also orders salt, oil and spices a kitchen keeps on the shelf (left off by default and listed under pantry). "
                           "Returns lines (product, units, the dishes each is for, and the pack, allergen, stock and price checks code ran), not_ordered (what a person must sort out), pantry, diet (the rules applied), "

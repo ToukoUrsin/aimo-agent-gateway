@@ -1,7 +1,7 @@
 {
- "id": "20261114T083306Z",
- "at": "2026-11-14T08:33:57Z",
- "seconds": 51,
+ "id": "20261114T122210Z",
+ "at": "2026-11-14T12:22:41Z",
+ "seconds": 31,
  "seed": 2026,
  "menus": 60,
  "orders": 60,
@@ -46,7 +46,7 @@
  "left_for_person": 56,
  "approved_by_person": 60,
  "cleared_lines": 266,
- "median_plan_s": 0.53,
+ "median_plan_s": 0.41,
  "checks": [
   {
    "id": "allergen",
@@ -150,7 +150,7 @@
  ],
  "checked": 6843,
  "failed": 0,
- "file": "evals/menu-runs/20261114T083306Z.jsonl",
+ "file": "evals/menu-runs/20261114T122210Z.jsonl",
  "rerun": "AIMO_DATA=/tmp/aimo-menu-eval uv run -q python -m agent.menu_evals",
  "photos": {
   "reads_each": 10,
@@ -168,7 +168,7 @@
     "no_question": 10,
     "dishes": 8,
     "differences": [],
-    "median_s": 7.6
+    "median_s": 7.0
    },
    {
     "id": "school",
@@ -183,7 +183,7 @@
     "no_question": 10,
     "dishes": 9,
     "differences": [],
-    "median_s": 7.2
+    "median_s": 9.5
    },
    {
     "id": "hotel",
@@ -193,15 +193,12 @@
     "failed_calls": 0,
     "refused": 0,
     "guests_right": 10,
-    "same_dishes": 6,
+    "same_dishes": 10,
     "same_notes": 10,
     "no_question": 10,
     "dishes": 14,
-    "differences": [
-     "smoked salmon with lemon and dill",
-     "smoked salmon, lemon and dill"
-    ],
-    "median_s": 7.8
+    "differences": [],
+    "median_s": 9.9
    },
    {
     "id": "lounas",
@@ -211,16 +208,12 @@
     "failed_calls": 0,
     "refused": 0,
     "guests_right": 10,
-    "same_dishes": 4,
+    "same_dishes": 10,
     "same_notes": 10,
     "no_question": 10,
     "dishes": 6,
-    "differences": [
-     "chicken and vegetable stir fry with rice",
-     "chicken and vegetable stir-fry with rice",
-     "chicken and vegetable wok with rice"
-    ],
-    "median_s": 10.6
+    "differences": [],
+    "median_s": 9.4
    },
    {
     "id": "notmenu",

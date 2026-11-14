@@ -333,6 +333,9 @@ def build() -> int:
     return len(docs)
 
 
+_SKIMMED = re.compile(r"(?<!semi )(?<!semi-)\bskimmed\b|\bfat[- ]free\b|\bnon[- ]?fat\b|\brasvaton")
+_ONE_PCT = re.compile(r"\b1 ?%|ykkos")
+
 class Catalog:
     def __init__(self):
         if not INDEX.exists():
@@ -431,6 +434,8 @@ class Catalog:
                 docs = [d for d in self.by_kind.get(k, []) if self.matches(d, f)]
                 if n < 0.5 * total:
                     choices = {kk: self.by_kind[kk] for kk, _ in vote.most_common(6)}
+        if _SKIMMED.search(q):  # a named variety means that variety: "skimmed" is not "semi skimmed", "fat free" is not "lactose free, low fat"
+            docs = [d for d in docs if _SKIMMED.search(d["_text"]) and not _ONE_PCT.search(d["_text"])] or docs
         first = {d["id"]: n for n, d in enumerate(text_docs)}
         docs.sort(key=lambda d: first.get(d["id"], 999))
         other = {}

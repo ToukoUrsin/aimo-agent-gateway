@@ -54,20 +54,24 @@ const waitHtml = text => `<span class="wait"><span class="spin"></span><span>${e
 
 // ---- The one header every page shares. A page puts <header id="site"></header> where it goes;
 // anything already inside it (a page's own buttons) moves to the right-hand side.
-// Six places, the buyer's own chat first, then the challenge's flow. Everything else is one click deeper: the More group and the footer.
+// Six places in the order the story goes: the kitchen's chat in Valio Aimo's own web shop, the customer's own purchasing
+// software through the same door, what Valio Aimo lets an agent see, then Valio Aimo's side. Everything else is one click deeper.
+// /chat (a chat assistant's cards) still works but is not on show: an outside assistant is one caller among many.
 const SITE_NAV = [
-  ["/chat", "In the chat"],
-  ["/demo", "Order"],
-  ["/menu", "Menu to order"],
-  ["/seller", "Selling agent"],
+  ["/shop", "Chat in the web shop"],
+  ["/demo", "The customer's own software"],
+  ["/access", "What an agent can see"],
+  ["/seller", "Valio Aimo's agent"],
   ["/tower", "Control tower"],
   ["/proof", "Proof"],
 ];
 const SITE_MORE = [
-  ["/spec", "How it works"],
-  ["/ledger", "Ledger"],
+  ["/menu", "Order from a menu photo"],
   ["/byhand", "The same order by hand"],
-  ["/demo#connect", "Connect your own assistant"],
+  ["/spec", "How it works"],
+  ["/architecture", "Architecture"],
+  ["/ledger", "Ledger"],
+  ["/demo#connect", "Connect an agent"],
   ["/docs", "REST API"],
 ];
 // Pages that may not exist yet are shown only when the server says they are live (GET /api/pages).
@@ -86,7 +90,7 @@ function livePages() {
 function mountSite(el) {
   const path = location.pathname.replace(/\/+$/, "") || "/";
   // An order, its approval and the by-hand comparison belong to the place they came from.
-  const cur = href => href === "/" ? path === "/" : path === href || path.startsWith(href + "/") || (href === "/menu" && path === "/byhand") || (href === "/demo" && /^\/(orders|approve)\//.test(path));
+  const cur = href => href === "/" ? path === "/" : path === href || path.startsWith(href + "/") || (href === "/demo" && /^\/(orders|approve)\//.test(path));
   // Until the server answers, show what this tab saw last time, or the pages that always exist.
   let live = { "/tower": true, "/ledger": true };
   try { live = (JSON.parse(sessionStorage.getItem("aimo-pages") || "null") || {}).live || live; } catch (e) { }
@@ -275,9 +279,10 @@ async function orderChecks(o, audit, profile, led, genesis) {
     // A passkey: the key was made inside the approver's phone or laptop and never left it. Checked here from the record alone.
     if (dv) {
       const c5b = typeof PK !== "undefined" && await PK.verify(dv, ev.approval);
-      out.push([c5b, "The approval was signed on the approver's own device", c5b ? `A passkey on ${dv.device} (key ${dv.thumbprint}) signed this order's digest, the decision, the name and the note${dv.user_verified ? ", after the device checked the person by fingerprint, face or screen lock" : ""}. Nobody without that device can make this signature: not the agent, not Valio Aimo, not this server.` : "The device signature does not match this approval."]);
+      out.push([c5b, "The approval was signed on the approver's own device", c5b ? `A passkey on ${dv.device} (key ${dv.thumbprint}) signed this order's digest, the decision, the name and the note${dv.user_verified ? ", after the device checked the person by fingerprint, face or screen lock" : ""}. Nobody without that device can make this signature: not the agent, not Valio Aimo, not this server. What it does not prove is who holds that device: in this prototype the first device that approves for an account becomes its approver and the name is typed, so a second browser of the asker's own would pass. In production the approver signs in with their own Minun Aimo account and role before a device is enrolled.` : "The device signature does not match this approval."]);
     }
-  } else out.push([true, "No person was needed", "Every guardrail passed, so the mandate alone authorised this order."]);
+  } else if (/\/shop-assistant$/.test(String(o.wholesale.placed_by || ""))) out.push([true, "No second person was needed", "The ledger records that the signed-in person confirmed this cart in the shop. Every rule passed, so no approver was asked."]);
+  else out.push([true, "No person was needed", "Every guardrail passed, so the mandate alone authorised this order."]);
 
   const chain = await verifyChain(led, genesis);
   const bad = chain.firstBad, hidden = led.filter(e => e.withheld).length;

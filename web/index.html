@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Order · Aimo Agent Gateway</title>
+<title>The customer's own software · Aimo Agent Gateway</title>
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/static/inter.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/static/app.css">
@@ -136,6 +136,21 @@ details.card[open]>summary{margin-bottom:var(--s3)}
 .step.you{border-top:1px solid var(--line);margin-top:var(--s2);padding-top:var(--s3)}
 .step.you.first{border-top:0;margin-top:0;padding-top:6px}
 .linkish{background:none;border:0;padding:0;font:inherit;color:var(--ink);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.intro{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:var(--s3) var(--s6);align-items:end;padding:var(--s2) 0 var(--s2)}
+.intro h1{font-size:var(--t7);line-height:1.15;letter-spacing:-.02em}
+.intro p{margin:var(--s2) 0 0;color:var(--muted);font-size:var(--t3);line-height:1.5;max-width:60ch}
+.fl{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;counter-reset:f}
+.fl li{counter-increment:f;border:1px solid var(--line);background:var(--panel);border-radius:var(--r);padding:8px 10px;font-size:var(--t2);color:var(--muted);line-height:1.3;min-width:0;transition:background-color .3s,border-color .3s,color .3s}
+.fl li b{display:flex;align-items:center;gap:6px;color:var(--ink-2);font-weight:600;font-size:var(--t2)}
+.fl li b::before{content:counter(f);display:grid;place-items:center;width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--line-2);font-size:11px;flex:none}
+.fl li span{display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fl li.now{border-color:var(--ink)}
+.fl li.now b::before{box-shadow:none;background:var(--ink);color:var(--bg)}
+.fl li.did b::before{box-shadow:none;background:var(--pass-bg);color:var(--pass)}
+.fl li.did.esc b::before{background:var(--esc-bg);color:var(--esc)}
+.fl li.did.bad b::before{background:var(--deny-bg);color:var(--deny)}
+@media (max-width:980px){.intro{grid-template-columns:1fr;order:-1}}
+@media (max-width:640px){.fl{grid-template-columns:repeat(2,minmax(0,1fr))}.intro h1{font-size:var(--t6)}.reqc .row{flex-wrap:wrap}.reqc .row>select,.reqc .row .btn{flex:1 1 100%}}
 .panel-steps{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-l);padding:var(--s3) var(--s5)}
 @media (max-width:640px){
   .panel-steps{padding:var(--s3) var(--s4)}
@@ -158,18 +173,27 @@ details.card[open]>summary{margin-bottom:var(--s3)}
 <div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
 <header id="site"><button class="btn small" id="reset" type="button" title="Start this account again from a clean slate">Reset demo</button></header>
 <main class="grid">
-  <section class="col buyer" aria-label="Buyer side">
-    <div class="side"><span class="tag">Buyer side</span><span id="buyername" class="muted">Opening your sandbox account</span><span class="note" id="acctnote"></span></div>
+  <section class="intro" aria-label="What this page shows">
+    <div><h1>The customer's own purchasing software</h1><p>A hotel chain's purchasing software gets a booking or an email and asks Valio Aimo's door for the order. Here it is a model over MCP or a plain script over REST. Valio Aimo's rules decide either way, in code.</p></div>
+    <ol class="fl" id="flow" aria-label="The four steps of this request">
+      <li id="f-req"><b>Request</b><span>Pick one and run it</span></li>
+      <li id="f-look"><b>Lookup</b><span>Products, prices, stock</span></li>
+      <li id="f-offer"><b>Signed offer</b><span>Valio Aimo's rules run</span></li>
+      <li id="f-end"><b>Order or approval</b><span>Alone, or a person decides</span></li>
+    </ol>
+  </section>
+  <section class="col buyer" aria-label="Customer side">
+    <div class="side"><span class="tag">Customer's software</span><span id="buyername" class="muted">Opening your sandbox account</span><span class="note" id="acctnote"></span></div>
     <div class="card reqc">
-      <h3><label for="req" style="font-size:inherit;color:inherit">Request to the purchasing agent</label></h3>
+      <h3><label for="req" style="font-size:inherit;color:inherit">What came in: a booking, an email or a buyer's note</label></h3>
       <textarea id="req" rows="3"></textarea>
       <div class="chips" id="presets" role="group" aria-label="Example requests"></div>
       <div class="row">
         <select id="agent" aria-label="Which agent"></select>
-        <button class="btn primary" id="run" type="button">Send to agent</button>
+        <button class="btn primary" id="run" type="button">Run the purchasing agent</button>
       </div>
       <p class="muted" id="botnote" hidden style="font-size:var(--t2);margin:var(--s2) 0 0"></p>
-      <p class="muted" id="threadnote" hidden style="font-size:var(--t2);margin:var(--s2) 0 0">The agent has this conversation in front of it, so you can answer its question. <button type="button" class="linkish" id="newthread">Start a new request</button></p>
+      <p class="muted" id="threadnote" hidden style="font-size:var(--t2);margin:var(--s2) 0 0">The agent keeps this request in front of it, so you can answer its question as the buyer would. <button type="button" class="linkish" id="newthread">Start a new request</button></p>
     </div>
     <div class="panel-steps" aria-live="polite"><div class="steps" id="steps"></div></div>
     <details class="card" id="mandatecard">
@@ -189,10 +213,10 @@ details.card[open]>summary{margin-bottom:var(--s3)}
     </details>
     <div class="card quiet" id="agents"><h3>Agents on this account</h3><div class="empty"><span class="wait"><span class="spin"></span>Reading the agents that have called on this account</span></div></div>
     <details class="card" id="connect">
-      <summary><b>Connect your own assistant</b> <span class="muted">Claude, ChatGPT or any MCP client</span></summary>
-      <p style="margin:0 0 var(--s2)">Add this address as a connector. Your assistant sends you to a page where you set what it may order alone.</p>
+      <summary><b>Connect an agent</b> <span class="muted">your purchasing software, or any MCP client</span></summary>
+      <p style="margin:0 0 var(--s2)">Point your agent's MCP client at this address. Signing in opens a page where the buyer sets what the agent may order alone.</p>
       <div class="row"><input type="text" id="mcpurl" readonly class="mono" aria-label="MCP address"><button class="btn small" id="copy" type="button">Copy</button></div>
-      <p class="muted" style="font-size:var(--t2);margin:var(--s2) 0 0">Claude: Settings, Connectors, Add custom connector. ChatGPT: Settings, Connectors, Create. It orders on this account, under the same rules as every other agent.</p>
+      <p class="muted" style="font-size:var(--t2);margin:var(--s2) 0 0">A chat assistant can connect the same way (Claude: Settings, Connectors, Add custom connector; ChatGPT: Settings, Connectors, Create). Every caller orders on this account under the same rules. REST: <a href="/openapi.json">/openapi.json</a>.</p>
     </details>
   </section>
 
@@ -289,13 +313,42 @@ function approvalBox(url) {
   return `<div class="qr" style="margin-top:8px"><img alt="QR code for the approval page" src="/api/qr?u=${encodeURIComponent(url)}"><div><div>Scan with a phone, or</div><a href="${esc(url)}" target="_blank" rel="noopener"><b>open the approval page</b></a><div class="muted" style="font-size:12.5px;margin-top:4px">In production this link goes to the approver by email, Teams or the buyer's procurement system.</div></div></div>`;
 }
 
+// The four steps of the challenge's flow, lit from the run's real steps and the offer Valio Aimo signed.
+const FLOW_IDLE = { "f-req": "Pick one and run it", "f-look": "Products, prices, stock", "f-offer": "Valio Aimo's rules run", "f-end": "Alone, or a person decides" };
+let flowOffer = null;
+function flowSet(id, state, text, tone) {
+  const li = $("#" + id); li.className = state + (tone ? " " + tone : "");
+  const sp = $("span", li); if (sp.textContent !== text) sp.textContent = text;
+}
+function flowReset() { flowOffer = null; for (const id in FLOW_IDLE) flowSet(id, "", FLOW_IDLE[id]); }
+function flowFrom(r) {
+  const steps = r.steps || [], titles = steps.filter(x => x.kind === "call" || x.kind === "result").map(x => x.title || "");
+  const looked = titles.some(t => /plan_sourcing|search_catalog|lookup_catalog|usual_orders|plan_menu_order|\/sourcing|\/catalog|^Options$/.test(t));
+  const offered = titles.some(t => /create_checkout|update_checkout|POST \/checkout-sessions$|^Signed offer$/.test(t)) || !!flowOffer;
+  const ended = r.status !== "running" || steps.some(x => x.kind === "wait" || x.kind === "done");
+  flowSet("f-req", "did", r.agent === "claude" ? "Read by the agent" : "A fixed standing order");
+  flowSet("f-look", looked ? "did" : "now", looked ? "Gateway answered" : "Asking the gateway");
+  if (!looked) { flowSet("f-offer", "", FLOW_IDLE["f-offer"]); flowSet("f-end", "", FLOW_IDLE["f-end"]); return; }
+  const st = flowOffer && flowOffer.status;
+  flowSet("f-offer", offered ? "did" : ended ? "" : "now", offered ? (st === "incomplete" ? "Refused by a rule" : "Signed, rules checked") : ended ? "No offer asked for" : "Waiting for the offer", st === "incomplete" ? "bad" : "");
+  const end = st === "completed" ? ["did", flowOffer.approved ? "Ordered after approval" : "Ordered, no person needed", ""]
+    : st === "requires_escalation" ? ["did", "Sent to the approver", "esc"]
+    : st === "canceled" ? ["did", "Rejected or cancelled", "bad"]
+    : st === "incomplete" && ended ? ["did", "Nothing ordered", "bad"]
+    : ended ? ["did", r.status === "error" ? "Stopped" : "Agent finished", ""]
+    : offered ? ["now", "Deciding", ""] : ["", FLOW_IDLE["f-end"], ""];
+  flowSet("f-end", end[0], end[1], end[2]);
+}
+let flowRun = null;
+
 async function pollRun() {
   if (!run) return;
   const r = await api("/api/demo/run/" + run.id);
   if (!r || !r.steps) return;   // busy or rate limited: the next poll asks again
   const box = $("#steps");
-  if (shown === 0) box.innerHTML = keep || (r.agent === "claude" && r.request ? `<div class="step you first"><div class="t">You</div><div class="b">${esc(r.request)}</div></div>` : "");
+  if (shown === 0) box.innerHTML = keep || (r.agent === "claude" && r.request ? `<div class="step you first"><div class="t">Request</div><div class="b">${esc(r.request)}</div></div>` : "");
   for (; shown < r.steps.length; shown++) box.insertAdjacentHTML("beforeend", stepHtml(r.steps[shown]));
+  flowRun = r; flowFrom(r);
   let sp = $("#spinner");
   if (r.status === "running") {
     // Say what the run is waiting for: the gateway's answer to a call, or the model's next move.
@@ -357,6 +410,7 @@ async function renderOffer(c) {
   if (!c) return set("#offer", OFFER_EXAMPLE);
   if (!c.wholesale) return;   // a busy or failed answer: keep what is on screen
   const w = c.wholesale, pol = w.policy;
+  if (flowRun && focusCid && c.id === focusCid) { flowOffer = { status: c.status, approved: !!w.approval }; flowFrom(flowRun); }
   let html = `<h3>Valio Aimo's decision</h3>` + decision(c);
   if (c.line_items.length) html += `<details class="offer-more"><summary>The signed offer: lines, totals, signature</summary><div style="margin-top:var(--s3)">` + linesTable(c.line_items) + totalsBlock(c.totals) + `<dl class="kv" style="margin:10px 0">
     <dt>Delivery</dt><dd>${esc(day(w.delivery_date))}${w.order_by ? ` · order by ${esc(new Date(w.order_by).toLocaleString("en-GB", { weekday: "short", hour: "2-digit", minute: "2-digit", timeZone: TZ }))}` : ""}</dd>
@@ -413,10 +467,10 @@ async function startRun() {
   clearInterval(retryT);
   const a = $("#agent").value, llm = a.startsWith("llm:"), follows = llm && thread ? thread : null;
   if (llm && !$("#req").value.trim()) { $("#req").focus(); return; }
-  $("#run").disabled = true; shown = 0; focusCid = null;
+  $("#run").disabled = true; shown = 0; focusCid = null; flowRun = null; flowReset(); flowSet("f-req", "now", "Sent to the agent");
   if (follows) {   // the earlier turns stay on screen, the reply is shown as the kitchen's line
     $("#spinner")?.remove();
-    keep = $("#steps").innerHTML.replaceAll("step arrive", "step") + `<div class="step you"><div class="t">You</div><div class="b">${esc($("#req").value)}</div></div>`;
+    keep = $("#steps").innerHTML.replaceAll("step arrive", "step") + `<div class="step you"><div class="t">Reply</div><div class="b">${esc($("#req").value)}</div></div>`;
     $("#steps").innerHTML = keep + '<div class="calm"><span class="spin"></span> The agent is reading your answer</div>';
   } else { keep = ""; $("#steps").innerHTML = '<div class="calm"><span class="spin"></span> Starting the agent</div>'; }
   let res, body;
@@ -454,7 +508,7 @@ $("#orders").onchange = async e => {
 $("#agents").onclick = async e => { const b = e.target.closest("[data-agent]"); if (!b) return; b.disabled = true; await api("/api/demo/agent", { id: b.dataset.agent, suspended: b.dataset.s === "1" }); tick(); };
 $("#copy").innerHTML = ICON.copy + "<span>Copy</span>";
 $("#copy").onclick = () => copyFrom($("#mcpurl"), $("#copy"));
-$("#reset").onclick = async () => { await api("/api/demo/reset", {}); run = null; shown = 0; focusCid = null; setThread(null); $("#run").disabled = false; $("#steps").innerHTML = STEPS_EXAMPLE; tick(); };
+$("#reset").onclick = async () => { await api("/api/demo/reset", {}); flowRun = null; flowReset(); run = null; shown = 0; focusCid = null; setThread(null); $("#run").disabled = false; $("#steps").innerHTML = STEPS_EXAMPLE; tick(); };
 for (const id of ["m_order", "m_week", "m_sub", "m_new", "p_cap", "p_ceil", "p_tier"]) { $("#" + id).onfocus = () => editing = true; $("#" + id).onblur = () => setTimeout(() => editing = false, 300); }
 $("#m_save").onclick = async () => {
   await api("/api/demo/mandate", { budget: { currency: "EUR", max_per_order: money($("#m_order").value), max_per_week: money($("#m_week").value) }, substitution: { allow: $("#m_sub").value, max_unit_price_increase_pct: 10 }, new_products: $("#m_new").value });
@@ -509,7 +563,7 @@ setInterval(() => { if ($("#approver").open) loadPk().catch(() => {}); }, 4000);
 $("#steps").innerHTML = STEPS_EXAMPLE;
 let autoRun = new URLSearchParams(location.search).get("run") === "challenge";
 if (autoRun) { history.replaceState(null, "", location.pathname); $("#steps").innerHTML = '<div class="calm"><span class="spin"></span> Starting the agent</div>'; }
-// The More menu links straight to "Connect your own assistant".
+// The More menu links straight to "Connect an agent".
 const openHash = () => { if (location.hash === "#connect") { $("#connect").open = true; $("#connect").scrollIntoView({ block: "center" }); } };
 addEventListener("hashchange", openHash); openHash();
 let down = 0;

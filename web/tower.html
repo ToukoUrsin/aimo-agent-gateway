@@ -1,10 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="fi">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Control tower · Aimo Agent Gateway</title>
 <link rel="stylesheet" href="/static/app.css">
+<script>try { document.documentElement.lang = localStorage.getItem("shop.lang") === "en" ? "en" : "fi"; } catch (e) { }</script>
 <style>
 main.tw{max-width:1440px;margin:0 auto;padding:0 var(--s5) var(--s8);display:flex;flex-direction:column;gap:var(--s4)}
 .tw .page-head{padding:var(--s6) 0 0;display:flex;gap:var(--s2) var(--s5);align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
@@ -189,38 +190,47 @@ main.tw{max-width:1440px;margin:0 auto;padding:0 var(--s5) var(--s8);display:fle
   .ev{grid-template-columns:minmax(0,1fr);gap:0}.ev .t{padding:0}.ev .who{flex-wrap:wrap}.ev .who .by{flex:1 1 100%}
   .acct .ctl{width:100%}.acct .ctl select{flex:1 1 0;min-width:0}
 }
+html[lang=fi] .en-only,html[lang=en] .fi-only{display:none!important}
+.lang{display:flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;flex:none}
+.lang button{border:0;background:none;height:30px;min-width:38px;border-radius:999px;font-size:var(--t1);font-weight:600;color:var(--muted);cursor:pointer}
+.lang button[aria-pressed=true]{background:var(--ink);color:var(--panel)}
+.tech{margin-top:var(--s3)}
+.tech .in{margin-top:var(--s2);font-size:var(--t2);color:var(--muted);line-height:1.5}
+.rl.fi{grid-template-columns:minmax(0,1fr) auto}
+.capg{display:inline-flex;gap:6px;align-items:center}
+@media (max-width:640px){html[lang=fi] .acct .ctl select{flex:1 1 auto;min-width:auto}}
 </style>
 </head>
 <body>
-<div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
-<header id="site"></header>
+<div class="banner"><span class="en-only">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</span><span class="fi-only">Prototyyppi Valio Aimon haastedatalla, ei Valio Aimon järjestelmä.</span></div>
+<header id="site"><div class="lang" role="group" aria-label="Kieli / Language"><button type="button" data-lang="fi">FI</button><button type="button" data-lang="en">EN</button></div></header>
 <main class="tw">
   <div class="page-head">
-    <div><h1>Control tower</h1><p class="lead">Valio Aimo's live view of every customer's agents: each order, approval and refusal as it happens.</p></div>
-    <div class="clock" id="clockw"><i></i><span id="clock">Connecting</span></div>
+    <div><h1><span class="en-only">Control tower</span><span class="fi-only">Valvomo</span></h1><p class="lead"><span class="en-only">Valio Aimo's live view of every customer's agents: each order, approval and refusal as it happens.</span><span class="fi-only">Valio Aimon ajantasainen näkymä siihen, mitä kunkin asiakkaan oma tilausohjelma tai tekoälyapuri (lyhyesti tilausapuri tai apuri) tekee: jokainen tilaus, hyväksyntä ja hylkäys heti, kun se tapahtuu.</span></p></div>
+    <div class="clock" id="clockw"><i></i><span id="clock"><span class="en-only">Connecting</span><span class="fi-only">Yhdistetään</span></span></div>
   </div>
-  <div class="alarm" id="alarm" hidden>Valio Aimo has paused agent ordering on every account.</div>
+  <div class="alarm" id="alarm" hidden><span class="en-only">Valio Aimo has paused agent ordering on every account.</span><span class="fi-only">Valio Aimo on keskeyttänyt apurien tilaukset kaikilta asiakkailta.</span></div>
   <div class="ops">
-    <div class="state" id="floor"><span class="wait"><span class="spin"></span>Asking whether agents are running</span></div>
+    <div class="state" id="floor"><span class="wait"><span class="spin"></span><span class="en-only">Asking whether agents are running</span><span class="fi-only">Tarkistetaan, onko apureita käynnissä</span></span></div>
     <div class="grp" id="opctl">
       <span class="grp" id="floorctl" hidden>
-        <select id="mins" aria-label="Length of the floor run"><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option></select>
-        <label title="One real model agent orders next to the bots"><input type="checkbox" id="llm"> one model agent</label>
-        <button class="btn small" id="start">Start the floor</button>
-        <button class="btn small" id="stop">Stop</button>
-        <button class="btn small" id="reset">Reset floor</button>
+        <select id="mins" aria-label="Length of the floor run" data-fi-aria="Simulaation pituus"><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option></select>
+        <label title="One real model agent orders next to the bots" data-fi-title="Yksi oikea tekoälyapuri tilaa skriptattujen bottien rinnalla"><input type="checkbox" id="llm"> <span class="en-only">one model agent</span><span class="fi-only">yksi tekoälyapuri</span></label>
+        <button class="btn small" id="start"><span class="en-only">Start the floor</span><span class="fi-only">Käynnistä simulaatio</span></button>
+        <button class="btn small" id="stop"><span class="en-only">Stop</span><span class="fi-only">Pysäytä</span></button>
+        <button class="btn small" id="reset"><span class="en-only">Reset floor</span><span class="fi-only">Nollaa simulaatio</span></button>
       </span>
-      <label id="rmodl" hidden title="12 of the 60 recorded agents are real models: 4 each from three providers. The rest are scripted bots."><input type="checkbox" id="rmod" checked> 12 model agents</label>
+      <label id="rmodl" hidden title="12 of the 60 recorded agents are real models: 4 each from three providers. The rest are scripted bots." data-fi-title="60 tallennetusta apurista 12 on oikeita tekoälymalleja, 4 kultakin kolmelta toimittajalta. Loput ovat skriptattuja botteja."><input type="checkbox" id="rmod" checked> <span class="en-only">12 model agents</span><span class="fi-only">12 tekoälyapuria</span></label>
       <button class="btn small primary" id="rstart" hidden>Start a live visitor rush</button>
-      <button class="btn small" id="rstop" hidden>Stop the rush</button>
+      <button class="btn small" id="rstop" hidden></button>
       <button class="btn small danger" id="pause">Pause all agent ordering</button>
-      <span class="lock" id="viewer" hidden><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3.5" y="7" width="9" height="6.5" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>Valio Aimo's operator only</span>
+      <span class="lock" id="viewer" hidden><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3.5" y="7" width="9" height="6.5" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg><span class="en-only">Valio Aimo's operator only</span><span class="fi-only">Vain Valio Aimon henkilökunnalle</span></span>
     </div>
     <div class="msg" id="msg" role="status" aria-live="polite"></div>
   </div>
   <section class="card rush" id="rush" aria-labelledby="rush-h">
-    <div class="rh"><h2 id="rush-h">The Monday rush</h2><span class="mode" id="rmode"></span></div>
-    <p class="rsay" id="rsay"><span class="wait"><span class="spin"></span>Reading the recorded Monday rush</span></p>
+    <div class="rh"><h2 id="rush-h"><span class="en-only">The Monday rush</span><span class="fi-only">Maanantairuuhka</span></h2><span class="mode" id="rmode"></span></div>
+    <p class="rsay" id="rsay"><span class="wait"><span class="spin"></span><span class="en-only">Reading the recorded Monday rush</span><span class="fi-only">Luetaan tallennettua maanantairuuhkaa</span></span></p>
     <div id="rbody" hidden>
       <div class="prog" aria-hidden="true"><i id="rprog"></i></div>
       <div class="rnum" id="rnum"></div>
@@ -229,34 +239,189 @@ main.tw{max-width:1440px;margin:0 auto;padding:0 var(--s5) var(--s8);display:fle
         <div><div class="cells" id="cells"></div><div class="rkey" id="rkey"></div></div>
         <div class="rlog"><div class="one" id="rone"></div><div id="rlines"></div></div>
       </div>
-      <details id="rsplit"><summary>The split by contract share. Only Valio Aimo sees this; each agent is told its own share.</summary><div class="tbl"><table id="rtable"></table></div></details>
+      <details id="rsplit"><summary><span class="en-only">The split by contract share. Only Valio Aimo sees this; each agent is told its own share.</span><span class="fi-only">Jako sopimusosuuksin. Vain Valio Aimo näkee tämän; kukin apuri kuulee vain oman osuutensa.</span></summary><div class="tbl"><table id="rtable"></table></div></details>
       <div class="rsum" id="rsum"></div>
     </div>
     <div class="empty" id="rempty" hidden></div>
   </section>
-  <section class="card today share"><h2>Today</h2><p class="say" id="tiles"><span class="wait"><span class="spin"></span>Reading today's orders, approvals and refusals</span></p><div class="bar" id="bar"></div><div class="legend" id="legend"></div></section>
+  <section class="card today share"><h2><span class="en-only">Today</span><span class="fi-only">Tänään</span></h2><p class="say" id="tiles"><span class="wait"><span class="spin"></span><span class="en-only">Reading today's orders, approvals and refusals</span><span class="fi-only">Luetaan tämän päivän tilauksia, hyväksyntöjä ja hylkäyksiä</span></span></p><div class="bar" id="bar"></div><div class="legend" id="legend"></div></section>
   <section class="card slim" id="seller" hidden></section>
   <div class="grid">
-    <section class="card a-acc"><h2><span>Accounts and their agents</span><span class="muted" id="sand"></span></h2>
-      <p class="limits">Three limits apply to every order. <b>The buyer's own limit</b> is in the mandate the buyer signs for its agent (rule B1), and <b>Valio Aimo's cap per agent order</b> is set here, per account (rule W3): above either, a person at the kitchen decides. <b>Valio Aimo's ceiling per delivery day</b> (rule W5, €25,000 unless changed) is not the kitchen's to approve: above it the order is refused.</p>
-      <div id="accounts"><span class="wait"><span class="spin"></span>Reading the accounts</span></div></section>
-    <section class="card a-feed"><h2>Latest, newest first</h2><div class="feed" id="feed"><span class="wait"><span class="spin"></span>Waiting for the first events</span></div></section>
-    <section class="card a-stock"><h2>Stock under pressure</h2><div id="stock"></div></section>
-    <section class="card a-rules"><h2>What the rules stopped today</h2><div id="rules"></div></section>
+    <section class="card a-acc"><h2><span><span class="en-only">Accounts and their agents</span><span class="fi-only">Asiakkaat ja niiden apurit</span></span><span class="muted" id="sand"></span></h2>
+      <p class="limits en-only">Three limits apply to every order. <b>The buyer's own limit</b> is in the mandate the buyer signs for its agent (rule B1), and <b>Valio Aimo's cap per agent order</b> is set here, per account (rule W3): above either, a person at the kitchen decides. <b>Valio Aimo's ceiling per delivery day</b> (rule W5, €25,000 unless changed) is not the kitchen's to approve: above it the order is refused.</p>
+      <p class="limits fi-only">Jokaiseen tilaukseen pätee kolme rajaa. <b>Asiakkaan oma tilausraja</b> on tilausluvassa, jonka asiakas antaa apurilleen, ja <b>Valio Aimon tilausraja apurin tilaukselle</b> asetetaan tässä asiakas kerrallaan: kummankin yli menevästä tilauksesta päättää keittiön hyväksyjä. <b>Valio Aimon katto toimituspäivää kohden</b> (25&nbsp;000&nbsp;€, ellei sitä muuteta) ei ole keittiön hyväksyttävissä: sen yli menevä tilaus hylätään.</p>
+      <div id="accounts"><span class="wait"><span class="spin"></span><span class="en-only">Reading the accounts</span><span class="fi-only">Luetaan asiakkaita</span></span></div>
+      <details class="tech fi-only"><summary>Näytä tekniset tiedot</summary><div class="in">Three limits apply to every order. The buyer's own limit is in the mandate the buyer signs for its agent (rule B1), and Valio Aimo's cap per agent order is set here, per account (rule W3): above either, a person at the kitchen decides. Valio Aimo's ceiling per delivery day (rule W5, €25,000 unless changed) is not the kitchen's to approve: above it the order is refused. What the rules stopped today lists each rule by its code: <span id="rulecodes"></span></div></details></section>
+    <section class="card a-feed"><h2><span class="en-only">Latest, newest first</span><span class="fi-only">Uusimmat ensin</span></h2><div class="feed" id="feed"><span class="wait"><span class="spin"></span><span class="en-only">Waiting for the first events</span><span class="fi-only">Odotetaan ensimmäisiä tapahtumia</span></span></div></section>
+    <section class="card a-stock"><h2><span class="en-only">Stock under pressure</span><span class="fi-only">Niukat tuotteet</span></h2><div id="stock"></div></section>
+    <section class="card a-rules"><h2><span class="en-only">What the rules stopped today</span><span class="fi-only">Mitä säännöt pysäyttivät tänään</span></h2><div id="rules"></div></section>
   </div>
 </main>
 <script src="/static/lib.js"></script>
 <script>
 let OP = false, D = null, seen = 0, first = true, busy = false;
-const n0 = x => (x || 0).toLocaleString("en-IE");
-const hms = iso => iso ? new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: TZ }) : "";
+let lang = document.documentElement.lang === "en" ? "en" : "fi";
+const FI = () => lang === "fi";
+const tr = (en, fi) => FI() ? fi : en;
+const n0 = x => (x || 0).toLocaleString(FI() ? "fi-FI" : "en-IE");
+const hms = iso => iso ? new Date(iso).toLocaleTimeString(FI() ? "fi-FI" : "en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: TZ }) : "";
 const TIER = { order: "Orders alone", reorder: "Re-orders only", read: "Look up only" };
+const TIER_FI = { order: "Saa tilata", reorder: "Vain uusintatilaus", read: "Vain tiedot" };
+const tierW = k => (FI() ? TIER_FI : TIER)[k];
 const plural = (n, one, many) => `${n0(n)} ${n === 1 ? one : many || one + "s"}`;
-const qty = x => (Math.round(x * 10) / 10).toLocaleString("en-IE");
+const qty = x => (Math.round(x * 10) / 10).toLocaleString(FI() ? "fi-FI" : "en-IE");
 const UNIT = { piece: "pcs", case: "cases" };
+const UNIT_FI = { L: "l", pcs: "kpl", cases: "ltk", piece: "kpl", case: "ltk", kg: "kg" };
+const L_ = () => FI() ? "l" : "L";
+// Money in Finnish as the web shop writes it: 25 000 €.
+const eurW = c => FI() ? Math.round((c || 0) / 100).toLocaleString("fi-FI") + " €" : eur0(c);
+const eurF = c => ((c || 0) / 100).toLocaleString("fi-FI", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+const FI_D = ["su", "ma", "ti", "ke", "to", "pe", "la"];
+function whenFi(iso) {  // "la 14.11. klo 4.08" in Helsinki time
+  if (!iso) return "";
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23", weekday: "short" }).formatToParts(new Date(iso)).map(x => [x.type, x.value]));
+  const wd = { Sun: "su", Mon: "ma", Tue: "ti", Wed: "ke", Thu: "to", Fri: "pe", Sat: "la" }[p.weekday];
+  return `${wd} ${+p.day}.${+p.month}. klo ${+p.hour}.${p.minute}`;
+}
+const dayEnFi = s => { const m = /(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (\d\d) (\w{3})/.exec(s || ""); if (!m) return s; const mo = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].indexOf(m[3]) + 1; return `${{ Mon: "ma", Tue: "ti", Wed: "ke", Thu: "to", Fri: "pe", Sat: "la", Sun: "su" }[m[1]]} ${+m[2]}.${mo}.`; };
+
+// ---- Finnish product names: the catalogue has one for most products. Asked once per name, one at a time, from the public catalogue (no call to Valio Aimo's price API).
+const FIN = {}, finQ = []; let finBusy = false;
+function fiName(t) {
+  if (!t || !FI()) return t;
+  if (t in FIN) return FIN[t] || t;
+  FIN[t] = null; finQ.push(t); finRun();
+  return t;
+}
+async function finRun() {
+  if (finBusy) return;
+  finBusy = true;
+  while (finQ.length) {
+    const t = finQ.shift();
+    try {
+      const r = await fetch("/catalog/search", { method: "POST", headers: { "content-type": "application/json", accept: "application/json" }, body: JSON.stringify({ query: t, limit: 3 }) });
+      const p = ((await r.json()).products || []).find(x => x.title === t);
+      FIN[t] = p ? (((p.variants || [])[0] || {}).description || {}).plain || "" : "";
+    } catch (e) { FIN[t] = ""; }
+  }
+  finBusy = false;
+  redraw();
+}
+
+// ---- Rules in Finnish, from their id and the numbers and names in their English detail.
+const RULE_FI = {
+  M1: "Voimassa oleva tilauslupa", M2: "Tilausluvan määräraja", W1: "Valio Aimo sallii apurin tilaukset", W2: "Mitä apuri saa tehdä", W3: "Valio Aimon tilausraja apurin tilaukselle",
+  W4: "Apurin luotettavuus", W5: "Valio Aimon katto toimituspäivää kohden", T1: "Apuri ilman omaa tunnistetta", L1: "Niukka tuote jaetaan sopimusosuuksin", B0: "Raha lasketaan erotuksesta",
+  B1: "Asiakkaan tilausraja tilausta kohden", B2: "Asiakkaan tilausraja viikossa", B3: "Pilkotun tilauksen tarkistus", C1: "Tuoteryhmät", A1: "Kielletyt allergeenit", A2: "Tuotteelle asetetut vaatimukset",
+  A3: "Vaaditut sertifikaatit", S1: "Korvaava tuote", N1: "Ensimmäistä kertaa tilattavat tuotteet", R1: "Takaisinvedettyä tuotetta ei pidetä", D1: "Viive, jonka apuri saa hyväksyä", P1: "Osatoimitus, jonka apuri saa hyväksyä",
+  SIG: "Tilaus ei tullut apurin omalla tunnisteella", V1: "Valio Aimon ehdotukset sallittu", V2: "Ehdotuksia asiakkaalle päivässä", V3: "Hylättyä ehdotusta ei tehdä uudelleen", V4: "Ehdotus ei ylitä viikon rajaa",
+  V5: "Ehdotukset, jotka apuri saa hyväksyä itse", V6: "Ehdotusten lisäkulut viikossa", V7: "Vakiotilauksen muutokseen tarvitaan ihminen",
+};
+const ALG = { soybeans: "soija", "cereals containing gluten": "gluteenia sisältävät viljat", oats: "kaura", milk: "maito", eggs: "kananmuna", fish: "kala", crustaceans: "äyriäiset", molluscs: "nilviäiset", peanuts: "maapähkinä",
+  "tree nuts": "pähkinät", sesame: "seesami", mustard: "sinappi", celery: "selleri", lupin: "lupiini", sulphites: "sulfiitit", wheat: "vehnä", barley: "ohra", rye: "ruis", spelt: "speltti", lactose: "laktoosi", almond: "manteli" };
+const algFi = s => String(s || "").split(/, | and /).map(x => ALG[x.trim()] || x.trim()).join(", ");
+const CLAIM = { "FREE_FROM:LACTOSE": "laktoositon", "FREE_FROM:GLUTEN": "gluteeniton", "FREE_FROM:MILK": "maidoton" };
+const cents = s => [...String(s || "").matchAll(/€([\d,]+(?:\.\d+)?)/g)].map(m => Math.round(parseFloat(m[1].replace(/,/g, "")) * 100));
+function ruleSay(id, d, deny) {  // one sentence, or "" when there is no Finnish wording for it
+  const e = cents(d); let m;
+  switch (id) {
+    case "W1": return "Valio Aimo on keskeyttänyt apurien tilaukset tällä asiakkaalla.";
+    case "W2": return deny !== false && /not order/.test(d || "") || deny ? "Tämän asiakkaan apuri saa katsoa hintoja ja saatavuutta, mutta ei tilata." : "Asiakas saa vain uusintatilata, ja tilauksessa on tuote, jota ei ole tilattu ennen.";
+    case "W3": return e.length >= 2 ? `Tilaus on ${eurF(e[0])}, yli Valio Aimon tilausrajan ${eurF(e[1])}, joten hyväksyjä päättää.` : "Tilaus ylittää Valio Aimon tilausrajan, joten hyväksyjä päättää.";
+    case "W4": return "Valio Aimo on pysäyttänyt apurin. Se voi hakea tuotteita, mutta ei tilata.";
+    case "W5": return `Valio Aimon katto apurien tilauksille tälle toimituspäivälle${e.length ? " on " + eurF(e[e.length - 1]) : ""}. Mikään hyväksyntä ei nosta sitä.`;
+    case "B1": return e.length >= 3 ? `Tilaus on ${eurF(e[0])} (alv 0 %), ${eurF(e[1])} yli asiakkaan apurilleen antaman tilausrajan ${eurF(e[2])}.` : "Tilaus ylittää asiakkaan tilausrajan.";
+    case "B2": return "Asiakkaan viikon tilausraja ylittyisi.";
+    case "B3": return "Saman toimituspäivän apuritilaukset ylittäisivät yhdessä asiakkaan tilausrajan.";
+    case "S1": return (m = /^(.*?) replaces (.*?): it is not on Valio Aimo's substitute list/.exec(d || "")) ? `${fiName(m[1])} korvaisi tuotteen ${fiName(m[2])}, mutta se ei ole Valio Aimon korvaavien tuotteiden listalla, joten hyväksyjä päättää.` : "Korvaava tuote vaatii hyväksyjän.";
+    case "A1":
+      if ((m = /^(.*?) contains (.*?), which is excluded/.exec(d || ""))) return `${fiName(m[1])} sisältää: ${algFi(m[2])}. Se on tältä keittiöltä kielletty.`;
+      if ((m = /^(.*?) may contain traces of (.*?)\./.exec(d || ""))) return `${fiName(m[1])} voi sisältää jäämiä: ${algFi(m[2])}. Hyväksyjä päättää.`;
+      return "Tuotteessa on allergeeni, joka on tältä keittiöltä kielletty.";
+    case "A2":
+      if ((m = /^(.*?) does not carry (.*?)\./.exec(d || ""))) return `${fiName(m[1])} ei ole ${m[2].split(", ").map(x => CLAIM[x] || x).join(", ")}${/only LOW in lactose/.test(d) ? ", vain vähälaktoosinen" : ""}. Tilauksen tuotteen on oltava.`.replace(". Tilauksen tuotteen on oltava.", ", vaikka tilaus sitä vaatii.");
+      return "Tuote ei täytä tilaukselle asetettua vaatimusta.";
+    case "T1": return "Apurilla ei ole omaa tunnistetta, joten se saa tilata itse vain pieniä tilauksia.";
+    case "SIG": return "Tilausta ei vahvistettu apurin omalla tunnisteella.";
+  }
+  return "";
+}
+const whyFi = (ids, why, deny) => (ids || []).map(id => ruleSay(id, why, deny) || RULE_FI[id] || id).filter((x, i, a) => a.indexOf(x) === i).join(" ");
+const ROLE = { "restaurant manager": "Ravintolapäällikkö", "f&b manager": "F&B-päällikkö", owner: "Omistaja", "kitchen manager": "Keittiöpäällikkö", "nutrition manager": "Ravitsemispäällikkö", "head cook": "Vastaava kokki",
+  "head chef": "Keittiömestari", "purchasing manager": "Ostopäällikkö", "catering manager": "Ravintolapalvelupäällikkö", "head of kitchens": "Keittiöiden johtaja", "the approver": "Hyväksyjä", "valio aimo account manager": "Valio Aimon asiakasvastaava" };
+const roleFi = by => { const s = String(by || "The approver").replace(/^Purchasing agent\b/, "Ostoapuri").replace(/^Ordering agent\b/, "Tilausapuri"), i = s.indexOf(", "), r = i < 0 ? s : s.slice(0, i); const f = ROLE[r.toLowerCase()]; return f ? f + (i < 0 ? "" : s.slice(i)) : s; };
+
+// ---- The live feed's lines, from the gateway's English, in Finnish.
+const HEAD_FI = { "Offered its share": "Sai osuutensa", Refused: "Hylätty", "Asked a person": "Hyväksyjälle", "A person approved": "Hyväksyjä hyväksyi", "A person said no": "Hyväksyjä sanoi ei",
+  "Agent suspended": "Apuri pysäytetty", "Valio Aimo": "Valio Aimo", "Stock short": "Saatavuus ei riitä", Exception: "Poikkeama" };
+const headFi = h => { const m = /^Ordered €([\d,.]+)/.exec(h || ""); return m ? "Tilattu " + eurF(Math.round(parseFloat(m[1].replace(/,/g, "")) * 100)) : HEAD_FI[h] || h; };
+function feedFi(e) {
+  const t = String(e.text || ""); let m, more = "";
+  const x = t.replace(/ And (\d+) more products?\.$/, (_, n) => { more = ` Ja ${n} muuta tuotetta.`; return ""; });
+  if (e.tone === "order") return (/^A person approved it\./.test(x) ? "Hyväksyjä hyväksyi. " : "Apuri tilasi itse, tilausluvan rajoissa. ") + x.replace(/^(A person approved it\.|Alone, inside its mandate\.)\s*/, "");
+  if ((e.tone === "deny" || e.tone === "ask") && (m = /^([A-Z0-9]+(?: [A-Z0-9]+)*): (.*)$/.exec(x))) return whyFi(m[1].split(" "), m[2], e.tone === "deny");
+  if (e.tone === "share" && (m = /^([\d.]+) of your ([\d.]+) (\S+)/.exec(x))) return `Sai sopimusosuutensa: ${qty(+m[1])} / ${qty(+m[2])} ${UNIT_FI[m[3]] || m[3]}. Tuote jaetaan sopimusosuuksin, koska saatavuus ei riitä.`;
+  if (e.tone === "share") return "Sai sopimusosuutensa, koska saatavuus ei riitä kaikille.";
+  if (e.tone === "human") return `${roleFi(x.split(":")[0])}: kyllä.`;
+  if (e.tone === "no") return `${roleFi(x.split(":")[0])}: ei.`;
+  if (e.tone === "deny" && e.head === "Agent suspended") return "Apuri pysäytettiin automaattisesti, koska säännöt hylkäsivät sen pyyntöjä toistuvasti. Vain Valio Aimo voi palauttaa sen.";
+  if (e.tone === "deny") {
+    if (/catalogue harvesting/.test(x)) return "Hylätty: apuri haki paljon tuotteita tilaamatta mitään.";
+    if (/not signed with the agent key/.test(x)) return "Hylätty: tilausta ei vahvistettu apurin omalla tunnisteella.";
+    if (/signed different terms/.test(x)) return "Hylätty: apuri vahvisti eri ehdot kuin ostoskorissa oli.";
+    return "Säännöt hylkäsivät pyynnön.";
+  }
+  if (e.tone === "short") {
+    if ((m = /^We can supply ([\d.]+) of your ([\d.]+) (\S+) of (.+?) for (\w{3} \d\d \w{3})/.exec(x))) return `Ei tarpeeksi saatavuutta: ${fiName(m[4])}, ${qty(+m[1])} / ${qty(+m[2])} ${UNIT_FI[m[3].replace(/s$/, "")] || m[3]} toimituspäivälle ${dayEnFi(m[5])}.${more}`;
+    if (/Price or stock changed/.test(x)) return "Hinta tai saatavuus muuttui ostoskorin ja tilauksen välillä. Apuri sai uuden ostoskorin.";
+    if (/rules were run again/.test(x)) return "Säännöt tarkistettiin uudelleen hyväksynnän jälkeen, ja vastaus oli muuttunut. Ostoskori uusittiin.";
+    return "Poikkeama tilauksessa." + more;
+  }
+  if (e.tone === "control") {
+    if ((m = /paused agent ordering on every account \((\d+)/.exec(x))) return `Valio Aimo keskeytti apurien tilaukset kaikilta asiakkailta (${m[1]}). Tuotehaut vastaavat silti.`;
+    if ((m = /switched agent ordering back on \((\d+)/.exec(x))) return `Valio Aimo palautti apurien tilaukset (${m[1]} asiakasta).`;
+    if ((m = /^Valio Aimo (.+) for (.+)\.$/.exec(x)) && /paused agent ordering|switched agent ordering back on|set the agents' tier|set the cap per agent order/.test(m[1])) {
+      const did = m[1].split(" and ").map(d => /paused/.test(d) ? "keskeytti apurin tilaukset" : /back on/.test(d) ? "palautti apurin tilaukset" : /tier to '(.+)'/.test(d) ? `asetti apurin oikeudeksi "${({ "orders alone": TIER_FI.order, "re-orders only": TIER_FI.reorder, "look up only": TIER_FI.read })[/tier to '(.+)'/.exec(d)[1]] || ""}"` : /cap per agent order to (€[\d,.]+)/.test(d) ? `asetti tilausrajaksi ${eurF(cents(d)[0])}` : d);
+      return `Valio Aimo ${did.join(" ja ")}: ${m[2]}.`;
+    }
+    if ((m = /^(.+) (suspended|reinstated) (.+?) \(agent:/.exec(x))) return `Valio Aimo ${m[2] === "suspended" ? "pysäytti" : "palautti"} apurin ${m[3]}.`;
+    if ((m = /starts over: (\d+) simulated/.exec(x))) return /Monday rush/.test(x) ? `Maanantairuuhka alkaa alusta: ${m[1]} simuloitua asiakasta, täysi varasto.` : `Simulaatio alkaa alusta: ${m[1]} simuloitua asiakasta, täysi varasto.`;
+    if ((m = /^(?:.+ put|Went) (.+?) on allocation for (\w{3} \d\d \w{3})/.exec(x))) return `${fiName(m[1])} jaetaan sopimusosuuksin toimituspäivälle ${dayEnFi(m[2])}, koska saldo ei riitä odotettuun kysyntään.`;
+    if ((m = /^Released unclaimed shares of (.+?) for (\w{3} \d\d \w{3}): ([\d.]+) (\S+)/.exec(x))) return `Lunastamattomat osuudet vapautettiin: ${qty(+m[3])} ${UNIT_FI[m[4]] || m[4]} tuotetta ${fiName(m[1])} jonossa oleville asiakkaille.`;
+    if (/^Release time for/.test(x)) return "Vapautusaika: kukaan ei odota lisää, joten lunastamaton määrä on vapaasti tilattavissa.";
+    if (/took .* off allocation/.test(x)) return "Valio Aimo lopetti sopimusosuuksiin jaon. Loput ovat vapaasti tilattavissa.";
+    if ((m = /changed its agent rules for (.+?): (\w+) = (.+)\.$/.exec(x))) {
+      const k = m[2], v = m[3], what = k === "show_exact_stock" ? (v === "True" ? "kytki varastosaldon näkyviin apurille" : "piilotti varastosaldon apurilta")
+        : k === "max_order_total" && /^\d+$/.test(v) ? `asetti tilausrajaksi ${eurF(+v)}` : k === "enabled" ? (v === "True" ? "palautti apurin tilaukset" : "keskeytti apurin tilaukset")
+        : k === "tier" ? `asetti apurin oikeudeksi "${TIER_FI[v] || v}"` : "";
+      if (what) return `Valio Aimo ${what}: ${m[1]}.`;
+    }
+    if (/changed its agent rules/.test(x)) return "Valio Aimo muutti asiakkaan apurin sääntöjä.";
+    if (/changed its agent's mandate/.test(x)) return "Asiakas muutti apurinsa tilauslupaa.";
+    if (/proposals (on|off)/.test(x)) return `Valio Aimo ${/proposals on/.test(x) ? "salli" : "lopetti"} myyntiapurinsa ehdotukset tälle asiakkaalle.`;
+    if (/connected .* as /.test(x)) return "Asiakas yhdisti uuden apurin.";
+    if (/declined to connect/.test(x)) return "Asiakas kieltäytyi yhdistämästä apuria.";
+    if (/registered its own signing key/.test(x)) return "Asiakas rekisteröi oman tunnisteensa Valio Aimolle.";
+    return "Valio Aimon muutos.";
+  }
+  return "";
+}
+const acctFi = a => ({ "A visitor's sandbox": "Kävijän testiasiakas", "Unknown caller": "Tuntematon kysyjä" })[a] || a;
+const noteFi = n => { if (!n) return ""; let m; if ((m = /^Round (\d+) of (\d+)/.exec(n))) return `Kierros ${m[1]}/${m[2]}`; if (/^Stopped:/.test(n)) return "Pysähtyi virheeseen";
+  return { Starting: "Käynnistyy", Stopping: "Pysähtyy", Finishing: "Viimeistellään", Running: "Käynnissä", Counting: "Lasketaan tuloksia", "Setting up": "Valmistellaan", "Setting up the 12-agent live rush": "Valmistellaan 12 apurin ruuhkaa", Finished: "Valmis", Stopped: "Pysäytetty" }[n] || n; };
 
 function tiles(d) {
   const t = d.today, L = d.ledger;
+  if (FI()) {
+    const parts = [
+      `<b>${n0(t.agents_active)}</b> ${t.agents_active === 1 ? "apuri" : "apuria"} asioi tänään${t.agents_now ? ` (${n0(t.agents_now)} viimeisen 2 minuutin aikana)` : ""}`,
+      `<b>${n0(t.orders)} ${t.orders === 1 ? "tilaus" : "tilausta"}</b> arvoltaan <b>${eurW(t.ordered)}</b> (alv 0 %) tehtiin`,
+      `<b>${n0(t.waiting)}</b> odottaa hyväksyjää`,
+    ];
+    $("#tiles").innerHTML = parts.join(", ").replace(/, ([^,]*)$/, " ja $1") + `. ${t.agents_suspended ? `<b class="bad">${n0(t.agents_suspended)} ${t.agents_suspended === 1 ? "apuri" : "apuria"}</b> on pysäytetty. ` : ""}`
+      + (L.intact ? `Tapahtumalokin <b>${n0(L.events)}</b> merkintää ovat eheät.` : `<b class="bad">Tapahtumaloki on rikki kohdassa ${n0(L.first_bad_seq)}.</b>`);
+    return;
+  }
   const parts = [
     `<b>${n0(t.agents_active)}</b> ${t.agents_active === 1 ? "agent" : "agents"} called today${t.agents_now ? ` (${n0(t.agents_now)} in the last 2 minutes)` : ""}`,
     `<b>${plural(t.orders, "order")}</b> worth <b>${eur0(t.ordered)}</b> ex VAT were placed`,
@@ -267,46 +432,64 @@ function tiles(d) {
 }
 
 function share(d) {
-  const t = d.today, parts = [["k-alone", t.alone, "placed by an agent alone"], ["k-ok", t.approved, "placed after a person approved"], ["k-no", t.rejected, "a person said no"], ["k-ref", t.refused, "refused by the rules"]];
-  const sum = parts.reduce((a, p) => a + p[1], 0);
+  const t = d.today, parts = FI()
+    ? [["k-alone", t.alone, "apurin itse tekemää tilausta"], ["k-ok", t.approved, "hyväksyjän luvalla tehtyä tilausta"], ["k-no", t.rejected, "kertaa hyväksyjä sanoi ei"], ["k-ref", t.refused, "kertaa säännöt hylkäsivät"]]
+    : [["k-alone", t.alone, "placed by an agent alone"], ["k-ok", t.approved, "placed after a person approved"], ["k-no", t.rejected, "a person said no"], ["k-ref", t.refused, "refused by the rules"]];
+  const sum = parts.reduce((a, p) => a + p[1], 0), pct = x => FI() ? `${x} %` : `${x}%`;
   $("#bar").innerHTML = sum ? parts.map(p => `<i class="${p[0]}" style="flex:${p[1]} 0 0" title="${p[1]} ${p[2]}"></i>`).join("") : "";
-  $("#legend").innerHTML = parts.map(p => `<div><i class="dot ${p[0]}"></i><span><b>${n0(p[1])}</b> ${p[2]}${sum ? ` <span class="tnum">(${Math.round(100 * p[1] / sum)}%)</span>` : ""}</span></div>`).join("");
+  $("#legend").innerHTML = parts.map(p => `<div><i class="dot ${p[0]}"></i><span><b>${n0(p[1])}</b> ${p[2]}${sum ? ` <span class="tnum">(${pct(Math.round(100 * p[1] / sum))})</span>` : ""}</span></div>`).join("");
 }
 
 function accounts(d) {
   const box = $("#accounts"), a = document.activeElement;
   if (a && box.contains(a) && (a.tagName === "SELECT" || a.tagName === "INPUT")) return;  // do not redraw under someone's hand
-  $("#sand").textContent = d.today.sandboxes ? `plus ${plural(d.today.sandboxes, "visitor sandbox", "visitor sandboxes")}` : "";
+  const fi = FI();
+  $("#sand").textContent = d.today.sandboxes ? (fi ? `lisäksi ${n0(d.today.sandboxes)} ${d.today.sandboxes === 1 ? "kävijän testiasiakas" : "kävijän testiasiakasta"}` : `plus ${plural(d.today.sandboxes, "visitor sandbox", "visitor sandboxes")}`) : "";
   const rushN = d.accounts.filter(x => x.kind === "rush").length;
-  const note = rushN ? `<div class="empty">${rushN} more accounts belong to the Monday rush (simulated). ${RU.cells.length ? 'Each is <a href="#rush">one cell in the rush above</a>.' : "They show in the rush above once one has been recorded."}</div>` : "";
+  const note = rushN ? (fi ? `<div class="empty">${rushN} muuta asiakasta kuuluu maanantairuuhkaan (simuloitu). ${RU.cells.length ? 'Kukin on <a href="#rush">yksi ruutu ruuhkassa yllä</a>.' : "Ne näkyvät ruuhkassa yllä, kun sellainen on tallennettu."}</div>`
+    : `<div class="empty">${rushN} more accounts belong to the Monday rush (simulated). ${RU.cells.length ? 'Each is <a href="#rush">one cell in the rush above</a>.' : "They show in the rush above once one has been recorded."}</div>`) : "";
   box.innerHTML = d.accounts.filter(x => x.kind !== "rush").map(x => {
     const ctl = OP
-      ? `<button class="btn small sw ${x.enabled ? "" : "off"}" data-act="enabled" data-slug="${esc(x.slug)}" data-v="${x.enabled ? 0 : 1}" title="${x.enabled ? "Pause agent ordering for this account" : "Switch agent ordering back on"}">${x.enabled ? "On" : "Paused"}</button>
-         <select name="tier-${esc(x.slug)}" data-act="tier" data-slug="${esc(x.slug)}" aria-label="What this account's agents may do">${Object.entries(TIER).map(([k, v]) => `<option value="${k}" ${k === x.tier ? "selected" : ""}>${v}</option>`).join("")}</select>
-         <span class="capl">Valio Aimo's cap €</span><input type="number" min="0" max="1000000" step="100" value="${Math.round((x.cap || 0) / 100)}" name="cap-${esc(x.slug)}" data-act="cap" data-slug="${esc(x.slug)}" aria-label="Valio Aimo's cap per agent order, euros ex VAT">`
+      ? `<button class="btn small sw ${x.enabled ? "" : "off"}" data-act="enabled" data-slug="${esc(x.slug)}" data-v="${x.enabled ? 0 : 1}" title="${fi ? (x.enabled ? "Keskeytä tämän asiakkaan apurien tilaukset" : "Palauta apurien tilaukset") : (x.enabled ? "Pause agent ordering for this account" : "Switch agent ordering back on")}">${fi ? (x.enabled ? "Päällä" : "Keskeytetty") : (x.enabled ? "On" : "Paused")}</button>
+         <select name="tier-${esc(x.slug)}" data-act="tier" data-slug="${esc(x.slug)}" aria-label="${fi ? "Mitä tämän asiakkaan apuri saa tehdä" : "What this account's agents may do"}">${Object.keys(TIER).map(k => `<option value="${k}" ${k === x.tier ? "selected" : ""}>${tierW(k)}</option>`).join("")}</select>
+         ${fi ? `<span class="capg"><span class="capl">Tilausraja</span><input type="number" min="0" max="1000000" step="100" value="${Math.round((x.cap || 0) / 100)}" name="cap-${esc(x.slug)}" data-act="cap" data-slug="${esc(x.slug)}" aria-label="Valio Aimon tilausraja apurin tilaukselle, euroa ilman arvonlisäveroa"><span class="capl">€</span></span>`
+              : `<span class="capl">Valio Aimo's cap €</span><input type="number" min="0" max="1000000" step="100" value="${Math.round((x.cap || 0) / 100)}" name="cap-${esc(x.slug)}" data-act="cap" data-slug="${esc(x.slug)}" aria-label="Valio Aimo's cap per agent order, euros ex VAT">`}`
+      : fi ? `<span class="pill ${x.enabled ? "pass" : "deny"}">${x.enabled ? "Päällä" : "Keskeytetty"}</span><span class="pill">${TIER_FI[x.tier] || esc(x.tier)}</span><span class="capl">Tilausraja <b>${eurW(x.cap)}</b></span>`
       : `<span class="pill ${x.enabled ? "pass" : "deny"}">${x.enabled ? "On" : "Paused"}</span><span class="pill">${TIER[x.tier] || esc(x.tier)}</span><span class="capl">Valio Aimo's cap <b>${eur0(x.cap)}</b></span>`;
-    const ags = x.agents.map(g => `<div class="ag ${g.status === "suspended" ? "sus" : ""}">
-        <div class="an" title="${esc(g.id)}"><i class="${g.now && g.status !== "suspended" ? "live" : ""}"></i>${esc(g.name)}</div>
-        <div class="cls">${g.kind === "keyless" ? "signed in, no key" : "own key"}</div>
-        <div class="rec" title="${esc(g.reason || "")}"><span class="c2">${g.kind === "keyless" ? "no key" : "own key"} · </span>${g.status === "suspended" ? (/^suspended/i.test(g.reason || "suspended") ? "Suspended by Valio Aimo" : "Cut off by the rules") : `${plural(g.orders, "order")} · ${n0(g.asked)} asked · ${n0(g.refused)} refused`}</div>
-        <div>${OP ? `<button class="btn small" data-act="agent" data-id="${esc(g.id)}" data-v="${g.status === "suspended" ? 0 : 1}">${g.status === "suspended" ? "Reinstate" : "Suspend"}</button>` : (g.status === "suspended" ? '<span class="pill deny">suspended</span>' : "")}</div>
-      </div>`).join("");
+    const ags = x.agents.map(g => {
+      const sus = g.status === "suspended", byValio = /^suspended/i.test(g.reason || "suspended");
+      const rec = fi ? `<span class="c2">${g.kind === "keyless" ? "ei omaa tunnistetta" : "oma tunniste"} · </span>${sus ? (byValio ? "Valio Aimo pysäytti" : "Säännöt pysäyttivät") : `${n0(g.orders)} ${g.orders === 1 ? "tilaus" : "tilausta"} · ${n0(g.asked)} hyväksyjälle · ${n0(g.refused)} hylätty`}`
+        : `<span class="c2">${g.kind === "keyless" ? "no key" : "own key"} · </span>${sus ? (byValio ? "Suspended by Valio Aimo" : "Cut off by the rules") : `${plural(g.orders, "order")} · ${n0(g.asked)} asked · ${n0(g.refused)} refused`}`;
+      return `<div class="ag ${sus ? "sus" : ""}">
+        <div class="an" title="${esc(g.id)}"><i class="${g.now && !sus ? "live" : ""}"></i>${esc(g.name)}</div>
+        <div class="cls">${fi ? (g.kind === "keyless" ? "kirjautunut, ei tunnistetta" : "oma tunniste") : (g.kind === "keyless" ? "signed in, no key" : "own key")}</div>
+        <div class="rec" title="${esc(g.reason || "")}">${rec}</div>
+        <div>${OP ? `<button class="btn small" data-act="agent" data-id="${esc(g.id)}" data-v="${sus ? 0 : 1}">${fi ? (sus ? "Palauta" : "Pysäytä") : (sus ? "Reinstate" : "Suspend")}</button>` : (sus ? `<span class="pill deny">${fi ? "pysäytetty" : "suspended"}</span>` : "")}</div>
+      </div>`;
+    }).join("");
+    const nums = fi ? `${x.kind === "stage" ? "Esittelyasiakas · " : ""}<b>${n0(x.orders)} ${x.orders === 1 ? "tilaus" : "tilausta"}</b> · ${eurW(x.ordered)}${x.waiting ? ` · <b>${x.waiting} odottaa hyväksyjää</b>` : ""}`
+      : `${x.kind === "stage" ? "Stage account · " : ""}<b>${plural(x.orders, "order")}</b> · ${eur0(x.ordered)}${x.waiting ? ` · <b>${x.waiting} waiting for a person</b>` : ""}`;
+    const none = fi ? (x.orders ? "Tällä asiakkaalla ei ole nyt rekisteröityä apuria. Yllä olevat luvut ovat apureilta, joiden tunnisteet on sittemmin nollattu." : "Yksikään apuri ei ole vielä asioinut tällä asiakkaalla. Kukin apuri näkyy tässä ensimmäisestä kyselystään alkaen tilauksineen ja hylkäyksineen.")
+      : (x.orders ? "No agent is registered on this account right now. The numbers above are from agents whose keys were reset since." : "No agent has called on this account yet. Each agent shows here from its first call, with its orders and refusals.");
     return `<div class="acct ${x.enabled ? "" : "off"}"><div class="head">
         <div class="who"><div class="name">${esc(x.name)}</div>
-        <div class="nums">${x.kind === "stage" ? "Stage account · " : ""}<b>${plural(x.orders, "order")}</b> · ${eur0(x.ordered)}${x.waiting ? ` · <b>${x.waiting} waiting for a person</b>` : ""}</div></div>
-        <div class="ctl">${ctl}</div></div>${ags || `<div class="ag" style="display:block"><div class="muted">${x.orders ? "No agent is registered on this account right now. The numbers above are from agents whose keys were reset since." : "No agent has called on this account yet. Each agent shows here from its first call, with its orders and refusals."}</div></div>`}</div>`;
-  }).join("") + note || '<div class="empty">No accounts yet. Customer accounts show here with their agents, switches and caps.</div>';
+        <div class="nums">${nums}</div></div>
+        <div class="ctl">${ctl}</div></div>${ags || `<div class="ag" style="display:block"><div class="muted">${none}</div></div>`}</div>`;
+  }).join("") + note || (fi ? '<div class="empty">Ei vielä asiakkaita. Asiakkaat näkyvät tässä apureineen, kytkimineen ja tilausrajoineen.</div>' : '<div class="empty">No accounts yet. Customer accounts show here with their agents, switches and caps.</div>');
 }
 
 function feed(d) {
-  const top = d.feed.length ? d.feed[0].seq : 0, rows = [];
+  const top = d.feed.length ? d.feed[0].seq : 0, rows = [], fi = FI();
   for (const e of d.feed) {  // the same line again is counted on the line above it, never shown twice in a row
     const p = rows[rows.length - 1];
     if (p && p.account === e.account && p.agent === e.agent && p.head === e.head && p.text === e.text) p.n = (p.n || 1) + (e.n || 1);
     else rows.push({ ...e });
   }
-  $("#feed").innerHTML = rows.map(e => `<div class="ev ${!first && e.seq > seen ? "new" : ""}"><div class="t">${hms(e.ts)}</div><div><div class="who"><span class="tag ${esc(e.tone)}">${esc(e.head)}</span>${e.n > 1 ? `<span class="rep" title="The same thing ${e.n} times in a row">x${e.n}</span>` : ""}<b>${esc(e.account)}</b>${e.agent ? `<span class="by">${esc(e.agent)}</span>` : ""}</div><div class="txt">${esc(e.text)}</div></div></div>`).join("")
-    || '<div class="empty">Nothing yet today. Orders, approvals and refusals show up here as they happen.</div>';
+  $("#feed").innerHTML = rows.map(e => {
+    const txt = fi ? (feedFi(e) || e.text) : e.text;
+    return `<div class="ev ${!first && e.seq > seen ? "new" : ""}"><div class="t">${hms(e.ts)}</div><div><div class="who"><span class="tag ${esc(e.tone)}">${esc(fi ? headFi(e.head) : e.head)}</span>${e.n > 1 ? `<span class="rep" title="${fi ? `Sama asia ${e.n} kertaa peräkkäin` : `The same thing ${e.n} times in a row`}">x${e.n}</span>` : ""}<b>${esc(fi ? acctFi(e.account) : e.account)}</b>${e.agent ? `<span class="by">${esc(fi ? roleFi(e.agent) : e.agent)}</span>` : ""}</div><div class="txt"${fi ? ` title="${esc(e.text)}"` : ""}>${esc(txt)}</div></div></div>`;
+  }).join("")
+    || (fi ? '<div class="empty">Ei vielä mitään tänään. Tilaukset, hyväksynnät ja hylkäykset näkyvät tässä sitä mukaa kuin niitä tulee.</div>' : '<div class="empty">Nothing yet today. Orders, approvals and refusals show up here as they happen.</div>');
   seen = Math.max(seen, top);
 }
 
@@ -318,23 +501,39 @@ function stockUnit(s, d) {
   return UNIT[s.unit] || s.unit;
 }
 function stock(d) {
-  $("#stock").innerHTML = d.stock.length ? d.stock.map(s => `<div class="st"><div class="row"><div class="ti" title="${esc(s.title)}">${esc(s.title)}</div><div class="left ${s.left <= 0 ? "out" : ""}">${s.left <= 0 ? `all ${qty(s.source)} ${esc(stockUnit(s, d))} taken` : `${qty(s.left)} of ${qty(s.source)} ${esc(stockUnit(s, d))} left`}</div></div>
-      <div class="bar"><i class="o" style="width:${100 * s.ordered / s.source}%"></i><i class="h" style="width:${100 * s.held / s.source}%"></i></div></div>`).join("")
-    + '<div class="key"><span><i style="background:var(--ink)"></i>ordered</span><span><i style="background:var(--faint)"></i>held by an open offer</span><span><i style="background:var(--soft);box-shadow:inset 0 0 0 1px var(--line)"></i>left at Valio Aimo</span></div>'
-    : '<div class="empty">No product with limited stock is held or ordered right now. When agents order one, its bar shows here: ordered, held by an open offer, left at Valio Aimo.</div>';
+  const fi = FI(), u = s => fi ? UNIT_FI[stockUnit(s, d)] || stockUnit(s, d) : stockUnit(s, d);
+  $("#stock").innerHTML = d.stock.length ? d.stock.map(s => { const t = fiName(s.title); return `<div class="st"><div class="row"><div class="ti" title="${esc(t)}">${esc(t)}</div><div class="left ${s.left <= 0 ? "out" : ""}">${s.left <= 0 ? (fi ? `kaikki ${qty(s.source)} ${esc(u(s))} viety` : `all ${qty(s.source)} ${esc(u(s))} taken`) : (fi ? `${qty(s.left)} / ${qty(s.source)} ${esc(u(s))} jäljellä` : `${qty(s.left)} of ${qty(s.source)} ${esc(u(s))} left`)}</div></div>
+      <div class="bar"><i class="o" style="width:${100 * s.ordered / s.source}%"></i><i class="h" style="width:${100 * s.held / s.source}%"></i></div></div>`; }).join("")
+    + (fi ? '<div class="key"><span><i style="background:var(--ink)"></i>tilattu</span><span><i style="background:var(--faint)"></i>avoimen ostoskorin varaama</span><span><i style="background:var(--soft);box-shadow:inset 0 0 0 1px var(--line)"></i>jäljellä Valio Aimolla</span></div>'
+      : '<div class="key"><span><i style="background:var(--ink)"></i>ordered</span><span><i style="background:var(--faint)"></i>held by an open offer</span><span><i style="background:var(--soft);box-shadow:inset 0 0 0 1px var(--line)"></i>left at Valio Aimo</span></div>')
+    : (fi ? '<div class="empty">Yhtään niukkaa tuotetta ei ole nyt varattu tai tilattu. Kun apurit tilaavat sellaista, sen palkki näkyy tässä: tilattu, avoimen ostoskorin varaama, jäljellä Valio Aimolla.</div>'
+      : '<div class="empty">No product with limited stock is held or ordered right now. When agents order one, its bar shows here: ordered, held by an open offer, left at Valio Aimo.</div>');
 }
 
 function rules(d) {
+  if (FI()) {
+    $("#rulecodes").textContent = d.rules.length ? d.rules.map(r => `${r.id} ${r.title}`).join("; ") + "." : "none today.";
+    $("#rules").innerHTML = d.rules.length ? d.rules.map(r => `<div class="rl fi"><div class="ti" title="${esc(r.id)}">${esc(RULE_FI[r.id] || r.title)}</div>
+      <div><div class="cnt">${n0(r.asked + r.refused)}</div><div class="split">${[r.asked ? `${n0(r.asked)} hyväksyjälle` : "", r.refused ? `${n0(r.refused)} hylätty` : ""].filter(Boolean).join(" · ")}</div></div></div>`).join("")
+      : '<div class="empty">Mikään sääntö ei ole pysäyttänyt mitään tänään. Sääntö lasketaan tähän aina, kun se lähettää tilauksen hyväksyjälle tai hylkää sen.</div>';
+    return;
+  }
   $("#rules").innerHTML = d.rules.length ? d.rules.map(r => `<div class="rl"><div class="id">${esc(r.id)}</div><div class="ti">${esc(r.title)}</div>
       <div><div class="cnt">${n0(r.asked + r.refused)}</div><div class="split">${[r.asked ? `${n0(r.asked)} to a person` : "", r.refused ? `${n0(r.refused)} refused` : ""].filter(Boolean).join(" · ")}</div></div></div>`).join("")
     : '<div class="empty">No rule has stopped anything today. A rule is counted here each time it sends an order to a person or refuses it.</div>';
 }
 
 function ops(d) {
-  const f = d.floor || {}, s = f.summary, ru = d.rush || {};
-  const replay = RU.mode === "replay" ? " The Monday rush on this page is a replay of a recorded run." : "";
+  const f = d.floor || {}, s = f.summary, ru = d.rush || {}, fi = FI();
+  const replay = RU.mode === "replay" ? tr(" The Monday rush on this page is a replay of a recorded run.", " Tämän sivun maanantairuuhka on tallennetun ajon toisto.") : "";
   $("#alarm").hidden = !d.paused_all;
-  $("#floor").innerHTML = f.running
+  $("#floor").innerHTML = fi
+    ? (f.running ? `<b>Simulaatio ${f.stopping ? "pysähtyy" : "on käynnissä"}.</b> ${esc(noteFi(f.note || ""))}${f.agents ? `, ${f.agents} apuria` : ""}.`
+      : ru.running ? `<b>Maanantairuuhka ${ru.stopping ? "pysähtyy" : "on käynnissä nyt"}.</b> ${esc(noteFi(ru.note || ""))}.`
+      : ru.cooldown_s ? `Mikään ei ole nyt käynnissä. Edellinen kävijän ruuhka päättyi; uuden voi aloittaa <b>${Math.ceil(ru.cooldown_s)} s</b> kuluttua.${replay}`
+      : s ? `Mikään ei ole nyt käynnissä.${replay} Edellinen simulaatio: <b>${n0(s.orders)} tilausta</b>, ${n0(s.alone)} apurin itse tekemää, ${n0(s.approved)} hyväksyjän hyväksymää, ${n0(s.refused + s.said_no)} pysäytettyä.`
+      : `Mikään ei ole nyt käynnissä.${replay}${f.note && /^Stopped:/.test(f.note) ? " Edellinen simulaatio pysähtyi virheeseen." : ""}`)
+    : f.running
     ? `<b>The floor is ${f.stopping ? "stopping" : "running"}.</b> ${esc(f.note || "")}${f.agents ? `, ${f.agents} agents` : ""}.`
     : ru.running ? `<b>The Monday rush is ${ru.stopping ? "stopping" : "running live"}.</b> ${esc(ru.note || "")}.`
     : ru.cooldown_s ? `Nothing is running live. The last live visitor rush finished; a new one can start in <b>${Math.ceil(ru.cooldown_s)} s</b>.${replay}`
@@ -344,28 +543,31 @@ function ops(d) {
   $("#floorctl").hidden = !OP;
   $("#rmodl").hidden = !OP || !d.rush || !!ru.live;
   $("#viewer").hidden = OP;
-  const why = OP ? "" : "Only Valio Aimo's operator can do this";
+  const why = OP ? "" : tr("Only Valio Aimo's operator can do this", "Vain Valio Aimon henkilökunta voi tehdä tämän");
   $("#start").disabled = !!f.running || !!ru.running;
   $("#reset").disabled = !!f.running || !!ru.running;
   $("#stop").disabled = !f.running || !!f.stopping;
   $("#rstart").hidden = !d.rush;
   $("#rstop").hidden = !OP || !ru.running;
+  $("#rstop").textContent = tr("Stop the rush", "Pysäytä ruuhka");
   const cooling = (ru.cooldown_s || 0) > 0;
   $("#rstart").disabled = !!f.running || (!!ru.running && !ru.live) || (cooling && !ru.running);
   $("#rstart").classList.toggle("primary", !cooling);
-  $("#rstart").textContent = ru.running && ru.live ? "Watch the live rush" : cooling ? `New live rush in ${Math.ceil(ru.cooldown_s)} s` : OP ? "Start the recorded 60-agent rush" : "Start a live visitor rush";
+  $("#rstart").textContent = fi
+    ? (ru.running && ru.live ? "Katso ruuhkaa" : cooling ? `Uusi ruuhka ${Math.ceil(ru.cooldown_s)} s päästä` : OP ? "Käynnistä tallennettu 60 apurin ruuhka" : "Käynnistä oma pieni ruuhka")
+    : (ru.running && ru.live ? "Watch the live rush" : cooling ? `New live rush in ${Math.ceil(ru.cooldown_s)} s` : OP ? "Start the recorded 60-agent rush" : "Start a live visitor rush");
   $("#rstop").disabled = !ru.running || !!ru.stopping;
   const p = $("#pause");
-  p.textContent = d.paused_all ? "Switch agent ordering back on" : "Pause all agent ordering";
+  p.textContent = fi ? (d.paused_all ? "Palauta apurien tilaukset" : "Keskeytä kaikki apurien tilaukset") : (d.paused_all ? "Switch agent ordering back on" : "Pause all agent ordering");
   p.className = "btn small " + (d.paused_all ? "primary" : "danger");
   p.disabled = !OP;
-  $("#rstart").title = cooling ? "A short cool-down prevents runs being queued." : (ru.running && ru.live ? "Everyone watches this same live run." : why);
+  $("#rstart").title = cooling ? tr("A short cool-down prevents runs being queued.", "Lyhyt tauko estää ajojen jonoutumisen.") : (ru.running && ru.live ? tr("Everyone watches this same live run.", "Kaikki katsovat samaa ajoa.") : why);
   p.title = why;
 }
 
 function render(d) {
   D = d; OP = !!d.operator;
-  $("#clock").textContent = "Live · " + hms(d.now) + " Helsinki";
+  $("#clock").textContent = FI() ? "Ajantasainen · klo " + hms(d.now) : "Live · " + hms(d.now) + " Helsinki";
   tiles(d); share(d); accounts(d); feed(d); stock(d); rules(d); ops(d);
   first = false;
   if (d.rush && d.rush.running && RU.mode !== "live") rushLive();
@@ -374,7 +576,7 @@ function render(d) {
 async function tick(once) {
   let ok = true;
   try { render(await api("/api/tower")); $("#clockw").classList.remove("lost"); }
-  catch (e) { ok = false; $("#clock").textContent = "Lost contact with the gateway. Trying again."; $("#clockw").classList.add("lost"); }
+  catch (e) { ok = false; $("#clock").textContent = tr("Lost contact with the gateway. Trying again.", "Yhteys palveluun katkesi. Yritetään uudelleen."); $("#clockw").classList.add("lost"); }
   if (!once) setTimeout(tick, 1500);
   return ok;
 }
@@ -390,19 +592,20 @@ function say(text, kind) {
 async function act(path, body, done) {
   if (busy) return;
   busy = true;
-  say("Sending", "wait");
+  say(tr("Sending", "Lähetetään"), "wait");
   try {
     const res = await fetch(path, { method: "POST", headers: { "content-type": "application/json", accept: "application/json" }, body: JSON.stringify(body || {}) });
     const r = await res.json().catch(() => ({}));
     const err = (r.messages || []).find(m => m.type === "error");
-    if (res.status === 403) say("Only Valio Aimo's operator can do this. Nothing was changed.", "bad");
-    else if (err || !res.ok) say((err && err.content) || `The gateway said no (${res.status}). Nothing was changed.`, "bad");
-    else say(done || "Done.", "ok");
+    if (res.status === 403) say(tr("Only Valio Aimo's operator can do this. Nothing was changed.", "Vain Valio Aimon henkilökunta voi tehdä tämän. Mitään ei muutettu."), "bad");
+    else if (err || !res.ok) say(FI() ? `Palvelu ei hyväksynyt tätä (${res.status}). Mitään ei muutettu.` : (err && err.content) || `The gateway said no (${res.status}). Nothing was changed.`, "bad");
+    else say(done || tr("Done.", "Valmis."), "ok");
   } catch (e) {
     // No answer came back, so the change may or may not have been made. Read the state again before saying anything about it.
-    say("No answer came back. Reading the gateway's state again", "wait");
+    say(tr("No answer came back. Reading the gateway's state again", "Vastausta ei tullut. Luetaan palvelun tila uudelleen"), "wait");
     const read = await tick(true);
-    say(read ? "No answer came back for that. The page now shows what the gateway has: look before you press again." : "The gateway is not answering. Whether that took effect shows here as soon as it does.", "bad");
+    say(read ? tr("No answer came back for that. The page now shows what the gateway has: look before you press again.", "Vastausta ei tullut. Sivu näyttää nyt palvelun tilan: katso ennen kuin painat uudelleen.")
+      : tr("The gateway is not answering. Whether that took effect shows here as soon as it does.", "Palvelu ei vastaa. Näet tässä, menikö muutos läpi, heti kun se vastaa."), "bad");
     busy = false;
     return;
   }
@@ -412,17 +615,18 @@ async function act(path, body, done) {
 
 document.addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
-  if (b.id === "start") act("/api/tower/floor/start", { minutes: +$("#mins").value, llm: $("#llm").checked ? 1 : 0 }, "The floor is starting.");
-  else if (b.id === "stop") act("/api/tower/floor/stop", null, "The floor is stopping.");
-  else if (b.id === "reset") act("/api/tower/floor/reset", null, "The floor was reset.");
+  if (b.dataset.lang) { if (b.dataset.lang !== lang) { lang = b.dataset.lang; try { localStorage.setItem("shop.lang", lang); } catch (err) { } paint(); redraw(); } }
+  else if (b.id === "start") act("/api/tower/floor/start", { minutes: +$("#mins").value, llm: $("#llm").checked ? 1 : 0 }, tr("The floor is starting.", "Simulaatio käynnistyy."));
+  else if (b.id === "stop") act("/api/tower/floor/stop", null, tr("The floor is stopping.", "Simulaatio pysähtyy."));
+  else if (b.id === "reset") act("/api/tower/floor/reset", null, tr("The floor was reset.", "Simulaatio nollattiin."));
   else if (b.id === "rstart") {
     const live = !(D && D.operator);
-    act(live ? "/api/tower/rush/live/start" : "/api/tower/rush/start", live ? {} : { models: $("#rmod").checked ? 12 : 0 }, live ? "A small live rush is starting. The grid below switches to it in a moment." : "The recorded 60-agent rush is starting.");
+    act(live ? "/api/tower/rush/live/start" : "/api/tower/rush/start", live ? {} : { models: $("#rmod").checked ? 12 : 0 }, live ? tr("A small live rush is starting. The grid below switches to it in a moment.", "Pieni ruuhka käynnistyy. Ruudukko alla vaihtuu siihen hetken päästä.") : tr("The recorded 60-agent rush is starting.", "Tallennettu 60 apurin ruuhka käynnistyy."));
   }
-  else if (b.id === "rstop") act("/api/tower/rush/stop", null, "The rush is stopping.");
+  else if (b.id === "rstop") act("/api/tower/rush/stop", null, tr("The rush is stopping.", "Ruuhka pysähtyy."));
   else if (b.id === "rplay") rushRestart();
   else if (b.classList.contains("cell")) { RU.sel = RU.sel === +b.dataset.i ? null : +b.dataset.i; RU.dirty = true; rushPaint(); }
-  else if (b.id === "pause") act("/api/tower/pause-all", { paused: !(D && D.paused_all) }, D && D.paused_all ? "Agent ordering is back on." : "Agent ordering is paused on every account.");
+  else if (b.id === "pause") act("/api/tower/pause-all", { paused: !(D && D.paused_all) }, D && D.paused_all ? tr("Agent ordering is back on.", "Apurien tilaukset ovat taas päällä.") : tr("Agent ordering is paused on every account.", "Apurien tilaukset on keskeytetty kaikilta asiakkailta."));
   else if (b.dataset.act === "enabled") act("/api/tower/account", { slug: b.dataset.slug, enabled: b.dataset.v === "1" });
   else if (b.dataset.act === "agent") act("/api/tower/agent", { id: b.dataset.id, suspended: b.dataset.v === "1" });
 });
@@ -438,31 +642,55 @@ const RU = { mode: "", run: null, cells: [], evs: [], k: 0, T: 0, end: 0, speed:
              status: {}, split: null, title: "", floor: false, manual: false, busy: false, table: 0, onAlloc: false };
 const lit = x => qty(x || 0);
 const SEG = { restaurant: "restaurant", hotel: "hotel", caterer: "caterer", school: "school kitchen", hospital: "hospital kitchen", elderly_care: "care home kitchen" };
+const SEG_FI = { restaurant: "ravintola", hotel: "hotelli", caterer: "pitopalvelu", school: "koulukeittiö", hospital: "sairaalakeittiö", elderly_care: "hoivakodin keittiö" };
 const KIND = { standing: "standing-order bot (scripted)", planner: "planner bot (scripted, asks for a sourcing plan)", model: "model agent" };
+const KIND_FI = { standing: "vakiotilausbotti (skriptattu)", planner: "suunnittelubotti (skriptattu, pyytää ehdotuksen)", model: "tekoälyapuri" };
+const segW = s => (FI() ? SEG_FI : SEG)[s] || s, kindW = k => (FI() ? KIND_FI : KIND)[k] || k;
+const DOES_FI = {
+  "Orders a small top-up, less than its share": "Tilaa pienen täydennyksen, alle osuutensa",
+  "If short: keeps its share and adds a substitute it may order alone": "Jos ei riitä: ottaa osuutensa ja lisää korvaavan tuotteen, jonka saa tilata itse",
+  "If short: orders its share and waits for shares others do not claim": "Jos ei riitä: tilaa osuutensa ja jää odottamaan osuuksia, joita muut eivät lunasta",
+  "If short: orders its share and leaves the rest": "Jos ei riitä: tilaa osuutensa ja jättää loput",
+  "If short: adds a substitute that its manager must approve": "Jos ei riitä: lisää korvaavan tuotteen, joka vaatii esihenkilön hyväksynnän",
+  "If short: adds a substitute, which takes the order over the agent's own spending limit": "Jos ei riitä: lisää korvaavan tuotteen, jolloin tilaus ylittää asiakkaan oman tilausrajan",
+  "If short: adds a substitute, which takes the order over Valio Aimo's cap for agent orders": "Jos ei riitä: lisää korvaavan tuotteen, jolloin tilaus ylittää Valio Aimon tilausrajan",
+  "Careless bot: fills the gap with a soy drink, in a kitchen that excludes soy": "Huolimaton botti: paikkaa vajeen soijajuomalla keittiössä, jossa soija on kielletty",
+  "Careless bot: fills the gap with an oat drink, in a kitchen that excludes gluten cereals": "Huolimaton botti: paikkaa vajeen kaurajuomalla keittiössä, jossa gluteenia sisältävät viljat on kielletty",
+  "Careless bot: fills the gap with low-lactose milk on an order that must be lactose free": "Huolimaton botti: paikkaa vajeen vähälaktoosisella maidolla tilauksessa, jonka on oltava laktoositon",
+  "Valio Aimo has set this account to look only, and its bot tries to order": "Valio Aimo on rajannut asiakkaan vain katseluun, ja sen botti yrittää silti tilata",
+};
 
 async function get(path) {
   try { const r = await fetch(path, { headers: { accept: "application/json" } }); return r.ok ? await r.json() : null; } catch (e) { return null; }
 }
 
+function rushKey() {
+  $("#rkey").innerHTML = FI()
+    ? `<span><i style="background:var(--buyer-bg)"></i>ostoskori koottu</span><span><i style="background:var(--pass-bg)"></i>tilattu</span><span><i style="background:var(--human-bg)"></i>odottaa hyväksyjää</span><span><i style="background:var(--deny-bg)"></i>hylätty</span><span><i class="k-care"></i>hoivakeittiö, taattu vähimmäismäärä</span><span><i class="k-m"></i>oikea tekoälyapuri</span>`
+    : `<span><i style="background:var(--buyer-bg)"></i>offer in hand</span><span><i style="background:var(--pass-bg)"></i>ordered</span><span><i style="background:var(--human-bg)"></i>waiting for a person</span><span><i style="background:var(--deny-bg)"></i>refused</span><span><i class="k-care"></i>care kitchen, guaranteed minimum</span><span><i class="k-m"></i>real model agent</span><span><b class="mono">A1</b> the rule that refused it or sent it to a person</span>`;
+}
 function rushSetup(cast, S, exp) {
   Object.assign(RU, { k: 0, T: 0, o: 0, h: 0, S: S || 0, exp: exp || 0, log: [], sel: null, dirty: true, gun: false, hold: 0, onAlloc: false, table: 0 });
   RU.cells = cast.map(c => ({ ...c, st: "idle", got: 0, sub: 0, extra: 0, offered: null, orders: 0, person: null, rules: [], refused: null, over: false, why: "", wait: 0, what: "", by: "", err: "", el: null, sig: "", pop: false }));
   $("#cells").innerHTML = RU.cells.map(c => `<button class="cell" data-i="${c.i}"></button>`).join("");
   RU.cells.forEach((c, i) => { c.el = $("#cells").children[i]; });
-  $("#rkey").innerHTML = `<span><i style="background:var(--buyer-bg)"></i>offer in hand</span><span><i style="background:var(--pass-bg)"></i>ordered</span><span><i style="background:var(--human-bg)"></i>waiting for a person</span><span><i style="background:var(--deny-bg)"></i>refused</span><span><i class="k-care"></i>care kitchen, guaranteed minimum</span><span><i class="k-m"></i>real model agent</span><span><b class="mono">A1</b> the rule that refused it or sent it to a person</span>`;
+  rushKey();
 }
 
+// Each line of the rush log is kept in both languages, so the switch shows the same lines in the other one.
 function rushApply(e) {
-  const say = (k, b, x) => RU.log.unshift({ t: e.t, k, b, x });
+  const say = (k, b, x, bf, xf) => RU.log.unshift({ t: e.t, k, b, x, bf, xf: xf || "" });
   RU.dirty = true;
   if (e.g) {
     if (e.g === "gun") RU.gun = true;
     else if (e.g === "allocation") {
       RU.S = e.stock; RU.exp = e.expected; RU.onAlloc = true;
-      say("", "The milk goes on allocation.", `Its stock is under the demand expected from order history (seeded): ${lit(e.stock)} L against ${lit(e.expected)} L. Each kitchen can take its contract share, and no more. Shares nobody claims are released after ${lit(e.release_in)} s.`);
+      say("", "The milk goes on allocation.", `Its stock is under the demand expected from order history (seeded): ${lit(e.stock)} L against ${lit(e.expected)} L. Each kitchen can take its contract share, and no more. Shares nobody claims are released after ${lit(e.release_in)} s.`,
+        "Maito jaetaan sopimusosuuksin.", () => `Saldo on alle tilaushistorian perusteella odotetun kysynnän (simuloitu historia): ${lit(e.stock)} l, odotettu ${lit(e.expected)} l. Kukin keittiö saa sopimusosuutensa, ei enempää. Osuudet, joita kukaan ei lunasta, vapautetaan ${lit(e.release_in)} s kuluttua.`);
     } else if (e.g === "stock") { RU.o = e.o; RU.h = e.h; }
     else if (e.g === "release" && (e.released > 0 || e.round === 1))
-      say("", e.released > 0 ? `${lit(e.released)} L of unclaimed shares released.` : "Release time. Nothing was left unclaimed.", e.released > 0 ? `They go to the ${e.to} kitchens on the waiting list, by contract share.` : "Every share had been taken.");
+      say("", e.released > 0 ? `${lit(e.released)} L of unclaimed shares released.` : "Release time. Nothing was left unclaimed.", e.released > 0 ? `They go to the ${e.to} kitchens on the waiting list, by contract share.` : "Every share had been taken.",
+        () => e.released > 0 ? `${lit(e.released)} l lunastamattomia osuuksia vapautettiin.` : "Vapautusaika. Lunastamatonta ei jäänyt.", e.released > 0 ? `Ne menevät jonossa oleville ${e.to} keittiölle sopimusosuuksin.` : "Kaikki osuudet oli otettu.");
     return;
   }
   const c = RU.cells[e.a];
@@ -472,17 +700,27 @@ function rushApply(e) {
   else if (e.s === "offer") { c.offered = e.l; c.st = e.rest > 0 ? "share" : "offer"; }
   else if (e.s === "sub") { if (c.st !== "person") c.st = "sub"; c.what = e.what; }
   else if (e.s === "later") c.wait = e.l;
-  else if (e.s === "person") { c.st = "person"; c.person = "asked"; c.rules = e.rules || []; c.why = e.why; say("human", `${c.name}: sent to a person (rule ${rules}).`, e.why); }
-  else if (e.s === "approved") { c.person = "approved"; c.by = e.by; say("human", `${c.name}: approved.`, `${e.by || "The approver"} (simulated) said yes.`); }
-  else if (e.s === "rejected") { c.person = "rejected"; c.st = "rejected"; c.by = e.by; say("human", `${c.name}: a person said no.`, `${e.by || "The approver"} (simulated) turned the substitute down. The agent orders the share alone.`); }
-  else if (e.s === "refused") { c.st = "refused"; c.refused = e.rules || []; c.over = !!e.p; c.why = e.why; say("deny", `${c.name}: refused by rule ${rules}.`, `${e.why}${e.p ? "" : " No person can override this."}`); }
-  else if (e.s === "late") { c.st = "error"; c.err = e.why || "The model agent was late."; say("deny", `${c.name}: model agent was late.`, c.err); }
+  else if (e.s === "person") { c.st = "person"; c.person = "asked"; c.rules = e.rules || []; c.why = e.why; say("human", `${c.name}: sent to a person (rule ${rules}).`, e.why, `${c.name}: hyväksyjälle.`, () => whyFi(e.rules, e.why, false)); }
+  else if (e.s === "approved") { c.person = "approved"; c.by = e.by; say("human", `${c.name}: approved.`, `${e.by || "The approver"} (simulated) said yes.`, `${c.name}: hyväksytty.`, `${roleFi(e.by)} (simuloitu) sanoi kyllä.`); }
+  else if (e.s === "rejected") { c.person = "rejected"; c.st = "rejected"; c.by = e.by; say("human", `${c.name}: a person said no.`, `${e.by || "The approver"} (simulated) turned the substitute down. The agent orders the share alone.`, `${c.name}: hyväksyjä sanoi ei.`, `${roleFi(e.by)} (simuloitu) hylkäsi korvaavan tuotteen. Apuri tilaa pelkän osuutensa.`); }
+  else if (e.s === "refused") { c.st = "refused"; c.refused = e.rules || []; c.over = !!e.p; c.why = e.why; say("deny", `${c.name}: refused by rule ${rules}.`, `${e.why}${e.p ? "" : " No person can override this."}`, `${c.name}: säännöt hylkäsivät.`, () => `${whyFi(e.rules, e.why, true)}${e.p ? "" : " Kukaan ei voi ohittaa tätä."}`); }
+  else if (e.s === "late") { c.st = "error"; c.err = e.why || "The model agent was late."; say("deny", `${c.name}: model agent was late.`, c.err, `${c.name}: tekoälyapuri myöhästyi.`, "Se ei vastannut ajoissa."); }
   else if (e.s === "ordered" || e.s === "more") { c.st = "ordered"; c.orders++; c.got += e.l; if (e.s === "more") { c.extra += e.l; c.wait = 0; } if (e.sub) c.sub += e.sub; }
   else if (e.s === "error") c.err = e.why;
   c.pop = true;
 }
 
 function cellStory(c) {
+  if (FI()) {
+    const out = [`Tavallinen maanantaitilaus ${lit(c.usual)} l (simuloitu historia). Pyysi ${lit(c.ask)} l.`, `Mitä apuri tekee: ${DOES_FI[c.does] || c.does}.`];
+    if (c.offered != null) out.push(c.offered < c.ask ? `Sai tarjolle ${lit(c.offered)} l, sopimusosuutensa${c.care ? ", johon sisältyy hoivakeittiön taattu vähimmäismäärä" : ""}.` : `Sai tarjolle kaikki ${lit(c.offered)} l: sopimusosuuden sisällä.`);
+    if (c.refused) out.push(`Säännöt hylkäsivät: ${whyFi(c.refused, c.why, true)}${c.over ? "" : " Kukaan ei voi ohittaa tätä."}`);
+    if (c.person) out.push(`Lähetettiin hyväksyjälle: ${whyFi(c.rules, c.why, false)}${c.person === "approved" ? ` ${roleFi(c.by)} (simuloitu) hyväksyi.` : c.person === "rejected" ? ` ${roleFi(c.by)} (simuloitu) sanoi ei.` : " Odottaa vastausta."}`);
+    if (c.orders) out.push(`Tilasi ${lit(c.got)} l maitoa${c.extra ? `, josta ${lit(c.extra)} l vapautetuista osuuksista` : ""}${c.sub ? `, lisäksi ${lit(c.sub)} l korvaavaa tuotetta ${fiName(c.what) || ""}`.trimEnd() : ""}.`);
+    if (c.wait && c.st === "ordered") out.push(`Jonossa ${lit(c.wait)} l lisää.`);
+    if (c.err) out.push("Apurin kysely epäonnistui.");
+    return out;
+  }
   const out = [`Usual Monday order ${lit(c.usual)} L (seeded history). Asked for ${lit(c.ask)} L.`, `What this agent does: ${c.does}.`];
   if (c.offered != null) out.push(c.offered < c.ask ? `Offered ${lit(c.offered)} L, its contract share${c.care ? ", which includes the guaranteed minimum for a care kitchen" : ""}.` : `Offered all ${lit(c.offered)} L: inside its contract share.`);
   if (c.refused) out.push(`Refused by rule ${c.refused.join(", ")}: ${c.why}${c.over ? "" : " No person can override this."}`);
@@ -494,30 +732,36 @@ function cellStory(c) {
 }
 
 function cellPaint(c) {
-  let w = { idle: ["ready", "ready"], asked: ["asking", "asking"], share: ["share offered", "share"], offer: ["offered in full", "in full"], sub: ["adds a substitute", "+ subst."], person: ["needs a person", "person?"],
-            rejected: ["person said no", "said no"], refused: ["refused", "refused"] }[c.st];
-  if (c.st === "ordered") w = c.got >= c.ask ? ["got all", "got all"] : c.sub ? [`+ ${lit(c.sub)} L substitute`, `+${lit(c.sub)} L sub`] : c.wait ? ["on waiting list", "waiting"] : c.extra ? [`${lit(c.extra)} L released`, `+${lit(c.extra)} rel.`] : ["share only", "share only"];
-  if (c.err) w = ["error", "error"];
-  const num = c.orders ? c.got : c.offered, tag = c.refused ? c.refused.join(" ") : c.person ? c.rules.join(" ") : "";
+  const fi = FI();
+  let w = (fi ? { idle: ["valmis", "valmis"], asked: ["kysyy", "kysyy"], share: ["osuus tarjolla", "osuus"], offer: ["kaikki tarjolla", "kaikki"], sub: ["lisää korvaavan", "+ korv."], person: ["hyväksyjälle", "hyväksyjä"],
+            rejected: ["hyväksyjä: ei", "ei"], refused: ["hylätty", "hylätty"] }
+    : { idle: ["ready", "ready"], asked: ["asking", "asking"], share: ["share offered", "share"], offer: ["offered in full", "in full"], sub: ["adds a substitute", "+ subst."], person: ["needs a person", "person?"],
+            rejected: ["person said no", "said no"], refused: ["refused", "refused"] })[c.st];
+  if (c.st === "ordered") w = fi
+    ? (c.got >= c.ask ? ["sai kaikki", "kaikki"] : c.sub ? [`+ ${lit(c.sub)} l korvaavaa`, `+${lit(c.sub)} korv.`] : c.wait ? ["jonossa", "jonossa"] : c.extra ? [`${lit(c.extra)} l vapautettu`, `+${lit(c.extra)} vap.`] : ["vain osuus", "osuus"])
+    : (c.got >= c.ask ? ["got all", "got all"] : c.sub ? [`+ ${lit(c.sub)} L substitute`, `+${lit(c.sub)} L sub`] : c.wait ? ["on waiting list", "waiting"] : c.extra ? [`${lit(c.extra)} L released`, `+${lit(c.extra)} rel.`] : ["share only", "share only"]);
+  if (c.err) w = fi ? ["virhe", "virhe"] : ["error", "error"];
+  const num = c.orders ? c.got : c.offered, tag = fi ? "" : c.refused ? c.refused.join(" ") : c.person ? c.rules.join(" ") : "";
   const cls = `cell s-${c.st}${c.care ? " care" : ""}${c.kind === "model" ? " m" : ""}${c.refused ? " t-deny" : c.person ? " t-human" : ""}${RU.sel === c.i ? " sel" : ""}`;
-  const html = `<span class="cn">${esc(c.name.split(" ")[0])}</span><span class="cq"><b>${num == null ? "·" : lit(num)}</b>/${lit(c.ask)} L</span><span class="cs"><span class="wl">${esc(w[0])}</span><span class="ws">${esc(w[1])}</span></span>${tag ? `<span class="ct">${esc(tag)}</span>` : ""}`;
+  const html = `<span class="cn">${esc(c.name.split(" ")[0])}</span><span class="cq"><b>${num == null ? "·" : lit(num)}</b>/${lit(c.ask)} ${L_()}</span><span class="cs"><span class="wl">${esc(w[0])}</span><span class="ws">${esc(w[1])}</span></span>${tag ? `<span class="ct">${esc(tag)}</span>` : ""}`;
   if (cls + html !== c.sig) {
     c.sig = cls + html;
     c.el.className = cls + (c.pop && RU.gun ? " pop" : "");
     c.el.innerHTML = html;
-    c.el.title = `${c.name}, ${SEG[c.segment] || c.segment}, ${KIND[c.kind] || c.kind}${c.model ? " " + c.model : ""}. ${cellStory(c).slice(2).join(" ")}`;
+    c.el.title = `${c.name}, ${segW(c.segment)}, ${kindW(c.kind)}${c.model ? " " + c.model : ""}. ${cellStory(c).slice(2).join(" ")}`;
   }
   c.pop = false;
 }
 
 function rushMode() {
-  const r = RU.run, box = $("#rmode");
+  const r = RU.run, box = $("#rmode"), fi = FI();
+  const sp = x => x === 1 ? tr("real time", "reaaliaika") : x + "x";
   if (RU.mode === "replay")
-    box.innerHTML = `<span>Recorded ${esc(when(r.when))}${RU.ended ? "" : `, playing at ${RU.speed === 1 ? "real time" : RU.speed + "x"}`}</span>`
-      + (RU.ended ? "" : `<select id="rspeed" aria-label="Replay speed">${[1, 2, 4].map(x => `<option value="${x}" ${x === RU.speed ? "selected" : ""}>${x === 1 ? "real time" : x + "x"}</option>`).join("")}</select>`)
-      + `<button class="btn small${RU.ended ? " primary" : ""}" id="rplay" type="button">${ICON.play}<span>${RU.ended ? "Replay" : "From the start"}</span></button>`;
-  else if (RU.mode === "live") box.innerHTML = `<span class="pill live">Live now</span><span class="note" id="rnote"></span>`;
-  else if (RU.mode === "done") box.innerHTML = `<span class="pill">${esc(RU.status.note || "Finished")} just now. Live run, not a replay.</span>`;
+    box.innerHTML = `<span>${fi ? `Tallennettu ${esc(whenFi(r.when))}${RU.ended ? "" : `, nopeus ${sp(RU.speed)}`}` : `Recorded ${esc(when(r.when))}${RU.ended ? "" : `, playing at ${RU.speed === 1 ? "real time" : RU.speed + "x"}`}`}</span>`
+      + (RU.ended ? "" : `<select id="rspeed" aria-label="${tr("Replay speed", "Toistonopeus")}">${[1, 2, 4].map(x => `<option value="${x}" ${x === RU.speed ? "selected" : ""}>${sp(x)}</option>`).join("")}</select>`)
+      + `<button class="btn small${RU.ended ? " primary" : ""}" id="rplay" type="button">${ICON.play}<span>${RU.ended ? tr("Replay", "Toista uudelleen") : tr("From the start", "Alusta")}</span></button>`;
+  else if (RU.mode === "live") box.innerHTML = `<span class="pill live">${tr("Live now", "Käynnissä nyt")}</span><span class="note" id="rnote"></span>`;
+  else if (RU.mode === "done") box.innerHTML = fi ? `<span class="pill">${esc(noteFi(RU.status.note) || "Valmis")} juuri nyt. Oikea ajo, ei toisto.</span>` : `<span class="pill">${esc(RU.status.note || "Finished")} just now. Live run, not a replay.</span>`;
   else box.innerHTML = "";
 }
 
@@ -533,51 +777,80 @@ function rushSum(r, m) {
     + `Promised twice: <b>${n0(st.promised_twice || 0)}</b>. Got all ${o.got_all}, share only ${o.share_only}, share plus substitute ${o.share_plus_substitute}, needed a person ${o.needed_a_person} (${p.approved} approved, ${p.said_no} said no)${people ? `: ${people}` : ""}. ${o.refused ? `Refused by a rule ${o.refused}${ref ? ` (${ref})` : ""}${refused ? `: ${refused}` : ""}.` : "Nobody was refused by a rule."}${o.no_order ? ` No order ${o.no_order}.` : ""} `
     + `${r.placed_alone} placed with nobody involved. ${n0(r.ledger.entries_written)} ledger entries, chain ${r.ledger.chain_intact ? "intact" : "broken"}. ${r.errors} errors.${ledger}<br>${mix}`;
 }
+// In Finnish the measured detail sits behind one fold, in English as it is; the fold stays open across repaints.
+function rushSumShow(html) {
+  const box = $("#rsum");
+  if (!FI()) { if (box.dataset.fold) { delete box.dataset.fold; box.innerHTML = ""; } if (box.innerHTML !== html) box.innerHTML = html; return; }
+  if (!box.dataset.fold) { box.dataset.fold = "1"; box.innerHTML = '<details><summary>Näytä tekniset tiedot</summary><div id="rsumi" style="margin-top:8px"></div></details>'; }
+  const i = $("#rsumi");
+  box.hidden = !html;
+  if (i.innerHTML !== html) i.innerHTML = html;
+}
 
 function rushTable() {
-  const by = Object.fromEntries(RU.cells.map(c => [c.name, c])), live = RU.mode !== "replay";
-  $("#rtable").innerHTML = `<tr><th>Kitchen</th><th>Usual Monday order, seeded</th><th>Contract share</th><th>Released later</th><th>Asked for</th><th>Ordered</th></tr>`
-    + (RU.split || []).map(x => { const c = by[x.name] || {}; return `<tr><td>${esc(x.name)} <small>${esc(SEG[x.segment] || "")}${x.care ? `, guaranteed ${lit(x.floor)} L` : ""}</small></td><td>${lit(x.usual)} L</td><td><b>${lit(x.share)} L</b></td><td>${x.extra ? lit(live ? x.extra : c.extra) + " L" : ""}</td><td>${c.st && c.st !== "idle" ? lit(c.ask) + " L" : ""}</td><td>${lit(live ? x.ordered : c.got)} L</td></tr>`; }).join("")
-    || `<tr><td>The split shows here as soon as the milk goes on allocation.</td></tr>`;
+  const by = Object.fromEntries(RU.cells.map(c => [c.name, c])), live = RU.mode !== "replay", fi = FI(), l = L_();
+  $("#rtable").innerHTML = (fi ? `<tr><th>Keittiö</th><th>Tavallinen maanantaitilaus, simuloitu</th><th>Sopimusosuus</th><th>Vapautettu myöhemmin</th><th>Pyysi</th><th>Tilasi</th></tr>`
+    : `<tr><th>Kitchen</th><th>Usual Monday order, seeded</th><th>Contract share</th><th>Released later</th><th>Asked for</th><th>Ordered</th></tr>`)
+    + (RU.split || []).map(x => { const c = by[x.name] || {}; return `<tr><td>${esc(x.name)} <small>${esc(x.segment ? segW(x.segment) : "")}${x.care ? (fi ? `, taattu ${lit(x.floor)} l` : `, guaranteed ${lit(x.floor)} L`) : ""}</small></td><td>${lit(x.usual)} ${l}</td><td><b>${lit(x.share)} ${l}</b></td><td>${x.extra ? lit(live ? x.extra : c.extra) + " " + l : ""}</td><td>${c.st && c.st !== "idle" ? lit(c.ask) + " " + l : ""}</td><td>${lit(live ? x.ordered : c.got)} ${l}</td></tr>`; }).join("")
+    || (fi ? `<tr><td>Jako näkyy tässä heti, kun maito jaetaan sopimusosuuksin.</td></tr>` : `<tr><td>The split shows here as soon as the milk goes on allocation.</td></tr>`);
 }
 
 function rushPaint() {
   if (!RU.cells.length || !RU.dirty) return;
   RU.dirty = false;
-  const cs = RU.cells, n = cs.length, asked = cs.reduce((a, c) => a + c.ask, 0);
+  const cs = RU.cells, n = cs.length, asked = cs.reduce((a, c) => a + c.ask, 0), fi = FI();
   const ans = cs.filter(c => c.st !== "idle" && c.st !== "asked").length, alone = cs.filter(c => c.orders && c.person !== "approved").length, person = cs.filter(c => c.person).length, ref = cs.filter(c => c.refused).length;
   $("#rsay").innerHTML = rushSay(n, asked);
   $("#rprog").style.width = RU.mode === "replay" && RU.end ? Math.min(100, 100 * RU.T / RU.end) + "%" : "0";
-  $("#rnum").innerHTML = [["c", RU.ended && RU.run.seconds ? lit(RU.run.seconds.first_request_to_last_order) + " s" : RU.gun ? RU.T.toFixed(1) + " s" : "0.0 s", RU.ended ? "first request to last order" : RU.gun ? "since the first request" : "not started yet"], ["", `${ans}/${n}`, "agents answered"], ["a", alone, "placed with nobody involved"], ["p", person, "needed a person"], ["r", ref, "refused by a rule"]]
+  const secs = RU.ended && RU.run.seconds ? lit(RU.run.seconds.first_request_to_last_order) + " s" : RU.gun ? (fi ? RU.T.toFixed(1).replace(".", ",") : RU.T.toFixed(1)) + " s" : fi ? "0,0 s" : "0.0 s";
+  $("#rnum").innerHTML = (fi
+    ? [["c", secs, RU.ended ? "ensimmäisestä pyynnöstä viimeiseen tilaukseen" : RU.gun ? "ensimmäisestä pyynnöstä" : "ei vielä alkanut"], ["", `${ans}/${n}`, "apuria sai vastauksen"], ["a", alone, "tilasi itse, ilman ihmistä"], ["p", person, "tarvitsi hyväksyjän"], ["r", ref, "säännöt hylkäsivät"]]
+    : [["c", secs, RU.ended ? "first request to last order" : RU.gun ? "since the first request" : "not started yet"], ["", `${ans}/${n}`, "agents answered"], ["a", alone, "placed with nobody involved"], ["p", person, "needed a person"], ["r", ref, "refused by a rule"]])
     .map(([k, b, s]) => `<div class="${k}"><b>${b}</b><span>${s}</span></div>`).join("");
   const S = RU.S || 1, free = Math.max(0, RU.S - RU.o - RU.h);
-  $("#rmilk").innerHTML = `<div class="row"><span><b>${esc(RU.title || "The short milk")}</b>, for Monday</span><span><b>${RU.S ? lit(RU.S) + " L" : "Stock"}</b> at Valio Aimo${RU.onAlloc ? ", split by contract share" : ""}</span></div>
+  $("#rmilk").innerHTML = fi
+    ? `<div class="row"><span><b>${esc(fiName(RU.title) || "Niukka maito")}</b>, maanantaiksi</span><span><b>${RU.S ? lit(RU.S) + " l" : "Saldo"}</b> Valio Aimolla${RU.onAlloc ? ", jaetaan sopimusosuuksin" : ""}</span></div>
+    <div class="bar"><i class="o" style="width:${100 * RU.o / S}%"></i><i class="h" style="width:${100 * RU.h / S}%"></i></div>
+    <div class="row"><span><b>${lit(RU.o)} l</b> tilattu · <b>${lit(RU.h)} l</b> ostoskoreissa varattuna · <b>${lit(free)} l</b> lunastamatta</span><span>${RU.exp ? `${lit(RU.exp)} l odotettu tilaushistorian perusteella (simuloitu)` : ""}</span></div>`
+    : `<div class="row"><span><b>${esc(RU.title || "The short milk")}</b>, for Monday</span><span><b>${RU.S ? lit(RU.S) + " L" : "Stock"}</b> at Valio Aimo${RU.onAlloc ? ", split by contract share" : ""}</span></div>
     <div class="bar"><i class="o" style="width:${100 * RU.o / S}%"></i><i class="h" style="width:${100 * RU.h / S}%"></i></div>
     <div class="row"><span><b>${lit(RU.o)} L</b> ordered · <b>${lit(RU.h)} L</b> held by signed offers · <b>${lit(free)} L</b> not claimed</span><span>${RU.exp ? `${lit(RU.exp)} L expected from order history (seeded)` : ""}</span></div>`;
   cs.forEach(cellPaint);
   const c = RU.sel == null ? null : cs[RU.sel];
-  $("#rone").innerHTML = c ? `<b>${esc(c.name)}</b><span class="muted">${esc(SEG[c.segment] || c.segment)}${c.care ? ", care kitchen" : ""} · ${esc(KIND[c.kind] || c.kind)}${c.model ? " " + esc(c.model) : ""}</span><br>${cellStory(c).map(esc).join(" ")}`
+  $("#rone").innerHTML = c ? `<b>${esc(c.name)}</b><span class="muted">${esc(segW(c.segment))}${c.care ? tr(", care kitchen", ", hoivakeittiö") : ""} · ${esc(kindW(c.kind))}${c.model ? " " + esc(c.model) : ""}</span><br>${cellStory(c).map(esc).join(" ")}`
+    : fi ? `<b>Yksi ruutu on yhden keittiön apuri.</b>Luku kertoo, montako litraa maitoa sillä on pyytämistään litroista. Napauta ruutua, niin näet sen tarinan. Apuri kuulee vain oman osuutensa, ei koskaan saldoa eikä muiden pyyntöjä.`
     : `<b>One cell is one kitchen's agent.</b>The number is the litres of milk it has, of the litres it asked for. Click a cell for its story. An agent is told its own share only, never the stock or what the others asked for.`;
-  $("#rlines").innerHTML = RU.log.slice(0, 6).map(l => `<div class="ln ${l.k}"><span class="t">${l.t.toFixed(1)} s</span><span><b>${esc(l.b)}</b> ${esc(l.x)}</span></div>`).join("")
-    || `<div class="ln"><span class="t"></span><span>Refusals, orders sent to a person and released shares are listed here as they happen.</span></div>`;
+  const lt = x => typeof x === "function" ? x() : x;
+  $("#rlines").innerHTML = RU.log.slice(0, 6).map(l => `<div class="ln ${l.k}"><span class="t">${fi ? l.t.toFixed(1).replace(".", ",") : l.t.toFixed(1)} s</span><span><b>${esc(fi ? lt(l.bf) : l.b)}</b> ${esc(fi ? lt(l.xf) : l.x)}</span></div>`).join("")
+    || (fi ? `<div class="ln"><span class="t"></span><span>Hylkäykset, hyväksyjälle lähetetyt tilaukset ja vapautetut osuudet näkyvät tässä sitä mukaa kuin niitä tulee.</span></div>`
+      : `<div class="ln"><span class="t"></span><span>Refusals, orders sent to a person and released shares are listed here as they happen.</span></div>`);
   if ($("#rsplit").open && performance.now() - RU.table > 500) { RU.table = performance.now(); rushTable(); }
   const note = $("#rnote");
-  if (note) note.textContent = RU.status.note && RU.status.note !== "Running" ? RU.status.note + "." : "";
-  $("#rsum").innerHTML = RU.mode === "replay" ? rushSum(RU.run, RU.run.mix) : rushSum(RU.status.summary, (RU.status.summary || {}).mix || RU.status.mix);
+  if (note) note.textContent = RU.status.note && RU.status.note !== "Running" ? (fi ? noteFi(RU.status.note) : RU.status.note) + "." : "";
+  rushSumShow(RU.mode === "replay" ? rushSum(RU.run, RU.run.mix) : rushSum(RU.status.summary, (RU.status.summary || {}).mix || RU.status.mix));
 }
 
 function rushShow() {
   const none = RU.mode === "none" || RU.mode === "error";
   $("#rbody").hidden = none;
   $("#rempty").hidden = !none;
-  if (RU.mode === "none") { $("#rsay").textContent = "No Monday rush has been recorded on this server yet."; $("#rempty").textContent = "The recorded run shows 60 kitchens. Any visitor can also start a separate 12-agent live rush."; }
-  if (RU.mode === "error") { $("#rsay").textContent = "The recorded Monday rush did not load."; $("#rempty").innerHTML = '<span class="error-state"><span class="spin"></span>Trying again in a few seconds.</span>'; }
+  if (RU.mode === "none") { $("#rsay").textContent = tr("No Monday rush has been recorded on this server yet.", "Tällä palvelimella ei ole vielä tallennettua maanantairuuhkaa."); $("#rempty").textContent = tr("The recorded run shows 60 kitchens. Any visitor can also start a separate 12-agent live rush.", "Tallennetussa ajossa on 60 keittiötä. Kuka tahansa kävijä voi myös käynnistää erillisen 12 apurin ruuhkan."); }
+  if (RU.mode === "error") { $("#rsay").textContent = tr("The recorded Monday rush did not load.", "Tallennettu maanantairuuhka ei latautunut."); $("#rempty").innerHTML = `<span class="error-state"><span class="spin"></span>${tr("Trying again in a few seconds.", "Yritetään uudelleen muutaman sekunnin päästä.")}</span>`; }
   return !none;
 }
 
 // The headline: the whole run in one sentence, readable before the replay has played a second.
 function rushSay(n, asked) {
   const r = RU.mode === "replay" ? RU.run : (RU.status.summary || null), st = r && r.stock, o = r && r.outcomes;
+  if (FI()) {
+    if (st && o) {
+      const sec = r.seconds && r.seconds.first_request_to_last_order;
+      return `<b>${n0(r.agents_total || n)}</b> keittiön apuria pyysi samalla hetkellä yhteensä <b>${lit(st.litres_asked || asked)}&nbsp;l</b> samaa laktoositonta maitoa maanantaiksi. Valio Aimolla oli <b>${lit(st.litres_in_stock)}&nbsp;l</b>. `
+        + `${sec != null ? `<b>${lit(sec)}&nbsp;sekunnissa</b>` : "Lopulta"} ${st.over_allocated ? `<b class="r">maitoa luvattiin yli saldon</b>` : `jokainen litra jaettiin sopimusosuuksin <b>eikä mitään luvattu yli saldon</b>`}: `
+        + `<b class="a">${n0(r.placed_alone)}</b> tilasi ilman ihmistä, <b class="p">${n0(o.needed_a_person)}</b> tarvitsi hyväksyjän ja <b class="r">${n0(o.refused)}</b> sai säännöiltä kieltävän vastauksen${r.refused_then_ordered_share ? ` (heistä ${n0(r.refused_then_ordered_share)} tilasi sitten osuutensa, joten ruutu päättyy vihreänä)` : ""}.`;
+    }
+    return `<b>${n0(n)}</b> keittiön apuria pyytää samalla sekunnilla yhteensä <b>${lit(asked)}&nbsp;l</b> samaa laktoositonta maitoa maanantaiksi. Valio Aimolla on <b>${RU.S ? lit(RU.S) + "&nbsp;l" : "vähemmän"}</b>.`;
+  }
   if (st && o) {
     const sec = r.seconds && r.seconds.first_request_to_last_order;
     return `<b>${n0(r.agents_total || n)}</b> kitchens' agents asked for <b>${lit(st.litres_asked || asked)}&nbsp;L</b> of the same lactose-free milk for Monday, at the same moment. Valio Aimo had <b>${lit(st.litres_in_stock)}&nbsp;L</b>. `
@@ -663,20 +936,46 @@ function rushTick() {
     }
   } else if (RU.mode === "live") {
     if (RU.gunAt) { RU.T = (Date.now() - RU.gunAt) / 1000; RU.dirty = true; }
-    if (!RU.cells.length) { $("#rbody").hidden = true; $("#rempty").hidden = false; $("#rempty").innerHTML = `<span class="spin" style="margin-right:8px"></span>A live Monday rush is starting: ${esc(RU.status.note || "setting up the 60 accounts")}. The 60 cells appear here in a moment.`; return; }
+    if (!RU.cells.length) { $("#rbody").hidden = true; $("#rempty").hidden = false; $("#rempty").innerHTML = FI() ? `<span class="spin" style="margin-right:8px"></span>Maanantairuuhka käynnistyy: ${esc(noteFi(RU.status.note) || "valmistellaan asiakkaita")}. Ruudut ilmestyvät tähän hetken päästä.` : `<span class="spin" style="margin-right:8px"></span>A live Monday rush is starting: ${esc(RU.status.note || "setting up the 60 accounts")}. The 60 cells appear here in a moment.`; return; }
   }
   rushPaint();
 }
 
+let SELL = null;
 async function seller() {
-  const s = await get("/api/seller/summary"), box = $("#seller");
+  SELL = await get("/api/seller/summary");
+  sellerShow();
+}
+function sellerShow() {
+  const s = SELL, box = $("#seller");
   if (!s || !s.total) { box.hidden = true; return; }   // no selling agent on this server: no card
   const t = s.total, took = (t.accepted_alone || 0) + (t.approved_by_person || 0);
   box.hidden = false;
-  box.innerHTML = `<h2>Valio Aimo's agent</h2><span class="fig">${t.made
+  box.innerHTML = FI()
+    ? `<h2>Valio Aimon myyntiapuri</h2><span class="fig">${t.made
+      ? `<b>${n0(t.made)} ${t.made === 1 ? "ehdotus" : "ehdotusta"}</b> keittiöille: ${n0(t.open)} avoinna, ${n0(took)} hyväksytty (${n0(t.accepted_alone)} apurin itse, ${n0(t.approved_by_person)} hyväksyjän luvalla), ${n0(t.declined)} hylätty, ${n0(t.refused_before_leaving)} sääntöjen pysäyttämä ennen lähtöä. ${eurW(t.euros_added_ex_vat)} (alv 0 %) tilattu niiden kautta.`
+      : "Valio Aimon oma apuri ehdottaa keittiöille tilauksia. Mitä se ehdotti ja mitä keittiöt vastasivat, on sen omalla sivulla."}</span><a href="/seller">Avaa myyntiapuri</a>`
+    : `<h2>Valio Aimo's agent</h2><span class="fig">${t.made
     ? `<b>${plural(t.made, "proposal")}</b> made to kitchens: ${n0(t.open)} open, ${n0(took)} accepted (${n0(t.accepted_alone)} by an agent alone, ${n0(t.approved_by_person)} after a person approved), ${n0(t.declined)} declined, ${n0(t.refused_before_leaving)} stopped by the rules before leaving. ${eur0(t.euros_added_ex_vat)} ex VAT ordered from them.`
     : "Valio Aimo's own agent proposes orders to kitchens. What it proposed and what the kitchens answered is on its page."}</span><a href="/seller">Open Valio Aimo's agent</a>`;
 }
+
+// ---- The language switch: the same key and pill as /shop. Everything on the page is drawn again in the chosen language.
+function paint() {
+  document.documentElement.lang = lang;
+  for (const b of document.querySelectorAll("[data-lang]")) b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
+  for (const el of document.querySelectorAll("[data-fi-aria]")) { if (!el.dataset.enAria) el.dataset.enAria = el.getAttribute("aria-label"); el.setAttribute("aria-label", FI() ? el.dataset.fiAria : el.dataset.enAria); }
+  for (const el of document.querySelectorAll("[data-fi-title]")) { if (!el.dataset.enTitle) el.dataset.enTitle = el.getAttribute("title"); el.setAttribute("title", FI() ? el.dataset.fiTitle : el.dataset.enTitle); }
+  document.title = FI() ? "Valvomo · Aimo Agent Gateway" : "Control tower · Aimo Agent Gateway";
+}
+function redraw() {
+  if (D) render(D);
+  sellerShow();
+  if (RU.cells.length) { rushKey(); for (const c of RU.cells) c.sig = ""; }
+  if (RU.mode) { rushMode(); rushShow(); }
+  RU.table = 0; RU.dirty = true; rushPaint();
+}
+paint();
 
 RU.at = performance.now();
 rushBoot();

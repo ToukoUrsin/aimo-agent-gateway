@@ -4,5 +4,8 @@
   },
   "model test 20261114T081651Z (the second instance the test ran on)": {
     "seller": {"kty": "EC", "crv": "P-256", "x": "1Z2Pbsuup2SdC4BK12UQInb3401lKOnw9BBGNuwNHDo", "y": "rYFd54e7OGdeOY_UdWDLJX0wyhPMc-88LZI-TK0AB_U", "kid": "KGOi537PcFdmC0G-KW-tiGrjMPKULM8QlXtA_sXggGw", "alg": "ES256", "use": "sig"}
+  },
+  "model test 20261114T103541Z (the second instance the test ran on)": {
+    "seller": {"kty": "EC", "crv": "P-256", "x": "O7Hl27d8xMILS_iMWDtxw5AFKkvyVl7XyPelNGw6cLs", "y": "dVDp8qes4JCcB6AX1FDWipCH3_PAeWbmbW_7beX5tCc", "kid": "rfu1SqIU-WQpRqCOkwTrpvHKiHmNd_crsZdqhNR8QFE", "alg": "ES256", "use": "sig"}
   }
 }

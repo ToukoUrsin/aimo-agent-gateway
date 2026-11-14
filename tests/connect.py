@@ -54,6 +54,23 @@ async def main():
         rules = {r["id"]: r["outcome"] for r in small["wholesale"]["policy"]["rules"]}
         print("small re-order:", small["status"], rules)
         assert small["status"] == "ready_for_complete" and rules.get("T1") == "pass", small["messages"]
+        # The same assistant in a chat that draws the card (its client says so, MCP Apps) reads a short answer instead: what happened, what the
+        # person sees, and the fields its next call needs. The whole signed answer goes to the card, and stays readable by the result's id.
+        said = {"io.modelcontextprotocol/protocolVersion": "2026-07-28", "io.modelcontextprotocol/clientInfo": {"name": "test-chat", "version": "1"},
+                "io.modelcontextprotocol/clientCapabilities": {"extensions": {"io.modelcontextprotocol/ui": {"mimeTypes": ["text/html;profile=mcp-app"]}}}}
+        bearer = {"authorization": "Bearer " + (await auth.context.storage.get_tokens()).access_token, "accept": "application/json, text/event-stream"}
+
+        async def in_chat(name, args):
+            r = (await person.post("/mcp", headers=bearer, json={"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": name, "arguments": args, "_meta": said}})).json()["result"]
+            return r
+
+        r = await in_chat("get_checkout", {"id": small["id"]})
+        short, text, card = r["structuredContent"], r["content"][0]["text"], r["_meta"]["fi.valioaimo/card"]
+        print("in a chat:", text.splitlines()[0][:90], "|", len(text), "characters instead of", len(json.dumps(small)))
+        assert short["status"] == "ready_for_complete" and short["rules"]["T1"] == "pass" and "wholesale" not in short and "ap2" not in short, "the assistant was handed the whole answer to re-type"
+        assert len(text) < 1200 and card["full"]["ap2"] and card["full"]["wholesale"]["policy"]["rules"], "the card did not get the whole answer"
+        whole = (await in_chat("card_data", {"kind": "result", "id": short["card"]}))["structuredContent"]["full"]
+        assert whole["id"] == small["id"] and whole["ap2"], "the card cannot read the whole answer by the result's id"
         done = await call("complete_checkout", {"id": small["id"]})
         print("ordered without a key:", done["status"], done.get("order", {}).get("label"))
         assert done["status"] == "completed"

@@ -1,31 +1,50 @@
 <!doctype html>
-<html lang="en">
+<html lang="fi">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Approval request · Aimo Agent Gateway</title>
+<title>Hyväksyntä · Approval</title>
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/static/inter.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/static/app.css">
 <style>
-main{max-width:560px;margin:0 auto;padding:var(--s5) var(--s4) 140px;display:flex;flex-direction:column;gap:var(--s4)}
-h1{font-size:var(--t7);line-height:1.2;letter-spacing:-.02em;text-wrap:balance}
-.from{font-size:var(--t3);color:var(--muted);margin:6px 0 0}
-.amount{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s3);padding:var(--s4) 0 0}
-.amount .big{font-size:40px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
-.amount .sub{color:var(--muted);font-size:var(--t2);text-align:right}
-.why{background:var(--esc-bg);border-radius:var(--r-l);padding:var(--s4)}
-.why b{color:var(--esc);font-weight:600;font-size:var(--t3)}
-.why ul{margin:var(--s2) 0 0;padding:0;list-style:none}
-.why li{padding:6px 0 6px 18px;position:relative;font-size:var(--t4);line-height:1.45}
-.why li::before{content:"";position:absolute;left:2px;top:14px;width:6px;height:6px;border-radius:50%;background:var(--esc)}
+main{max-width:560px;margin:0 auto;padding:var(--s3) var(--s4) 150px;display:flex;flex-direction:column;gap:var(--s3)}
+.top{max-width:560px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:var(--s3);padding:var(--s2) var(--s4) 0}
+.top .who{font-size:var(--t2);color:var(--muted);min-width:0;line-height:1.35}
+.top .who b{display:block;color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lang{display:flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;flex:none}
+.lang button{border:0;background:none;height:30px;min-width:38px;border-radius:999px;font-size:var(--t1);font-weight:600;color:var(--muted);cursor:pointer}
+.lang button[aria-pressed=true]{background:var(--ink);color:var(--panel)}
+h1{font-size:var(--t6);line-height:1.25;letter-spacing:-.015em;text-wrap:balance;margin:0}
+.from{font-size:var(--t2);color:var(--muted);margin:4px 0 0}
+.what{font-size:var(--t3);margin:6px 0 0;color:var(--ink-2)}
+.amount{padding:var(--s2) 0 0}
+.amount .lab{font-size:var(--t2);color:var(--muted)}
+.amount .big{font-size:36px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1}
+.amount .sub{color:var(--muted);font-size:var(--t2);font-variant-numeric:tabular-nums;margin-top:2px}
+.why{background:var(--esc-bg);border-radius:var(--r-l);padding:var(--s3) var(--s4)}
+.why b{color:var(--esc);font-weight:600;font-size:var(--t2)}
+.why p{margin:4px 0 0;font-size:var(--t3);line-height:1.45}
+.own{border:1px solid var(--line-2);border-radius:var(--r-l);padding:var(--s4)}
+.own h2{font-size:var(--t5);margin:0}
+.own p{margin:6px 0 0;font-size:var(--t3);line-height:1.45}
+.own .row{display:flex;gap:var(--s3);align-items:center;margin-top:var(--s3);flex-wrap:wrap}
+.own img{width:132px;height:132px;border-radius:8px;background:#fff}
+.small{font-size:var(--t1);color:var(--muted);line-height:1.45;margin:6px 0 0}
+.fields{display:grid;gap:6px}
+.fields label{font-size:var(--t2);font-weight:500}
+.fields input{height:44px;font-size:16px;margin-top:4px}
+.note>summary{padding:6px 0 4px}
+.notice{background:var(--soft);border-radius:var(--r-l);padding:var(--s3) var(--s4);font-size:var(--t3);line-height:1.45}
 .bar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:var(--s3) var(--s4) calc(var(--s3) + env(safe-area-inset-bottom))}
 .bar .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:1fr 1.6fr;gap:var(--s2)}
+.bar .in.one{grid-template-columns:1fr}
 .bar .btn{height:52px;font-size:var(--t5);font-weight:600;border-radius:var(--r-l)}
 .bar .btn.danger{color:var(--deny)}
 .bar .hint{grid-column:1/-1;text-align:center;font-size:var(--t1);color:var(--muted);margin-top:2px}
-.state{text-align:center;padding:var(--s6) var(--s4)}
-.state .big-mark{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;margin:0 auto var(--s4);animation:land .6s var(--ease) both}
+.bar .hint.bad{color:var(--deny)}
+.state{text-align:center;padding:var(--s5) var(--s4)}
+.state .big-mark{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;margin:0 auto var(--s3);animation:land .6s var(--ease) both}
 .state .big-mark svg{width:26px;height:26px}
 .state .big-mark.ok{background:var(--pass-bg);color:var(--pass)}
 .state .big-mark.bad{background:var(--deny-bg);color:var(--deny)}
@@ -33,17 +52,24 @@ h1{font-size:var(--t7);line-height:1.2;letter-spacing:-.02em;text-wrap:balance}
 @keyframes land{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
 .state h2{font-size:var(--t6);letter-spacing:-.015em}
 .state p{margin:var(--s2) 0 0}
-blockquote{margin:6px 0 0;padding:0;color:var(--ink-2);font-size:var(--t4)}
-.q-label{font-size:var(--t1);color:var(--muted);font-weight:500}
-.fields{display:grid;gap:var(--s3)}
-.fields input{height:44px;font-size:16px}
-details.card>summary{display:flex;width:100%;font-size:var(--t3);color:var(--ink);font-weight:600;min-height:28px}
-details.card[open]>summary{margin-bottom:var(--s2)}
-.load{display:flex;flex-direction:column;gap:var(--s3)}
-.more-lines>summary{cursor:pointer;color:var(--muted);font-size:var(--t2);padding:10px 0;border-bottom:1px solid var(--line)}
-.more-lines>summary:hover{color:var(--ink)}
-.more-lines .lhead{display:none}
-.und{margin:10px 0 2px}
+.fold{border-top:1px solid var(--line)}
+.fold>summary{display:flex;width:100%;font-size:var(--t3);font-weight:600;color:var(--ink);padding:12px 0;gap:10px}
+.rows{display:flex;flex-direction:column}
+.r{display:grid;grid-template-columns:1fr auto;gap:2px var(--s3);padding:10px 0;border-bottom:1px solid var(--line);font-size:var(--t3)}
+.r b{font-weight:600}
+.r .q{color:var(--muted);font-size:var(--t2)}
+.r .s{text-align:right;font-variant-numeric:tabular-nums}
+.r .sub{grid-column:1/-1;color:var(--esc);font-size:var(--t2)}
+.tot{margin-top:6px;font-size:var(--t3)}
+.tot div{display:flex;justify-content:space-between;padding:3px 0;font-variant-numeric:tabular-nums}
+.tot .g{font-weight:600}
+.kvs{margin:var(--s3) 0 0;font-size:var(--t2);color:var(--ink-2);line-height:1.6}
+.tech h3{font-size:var(--t3);margin:var(--s4) 0 var(--s2)}
+.tech blockquote{margin:4px 0 0;padding:0;color:var(--ink-2);font-size:var(--t3)}
+.tech .q-label{font-size:var(--t1);color:var(--muted);font-weight:500;margin-top:var(--s2)}
+.tech .ev{font-size:var(--t1);line-height:1.5;padding:6px 0;border-bottom:1px solid var(--line)}
+.tech .ev span{color:var(--muted)}
+.und{margin:var(--s2) 0 0}
 .und .uh{display:flex;justify-content:space-between;gap:var(--s3);align-items:baseline;font-size:var(--t3);font-weight:600;color:var(--esc)}
 .und .uh span{font-weight:500;font-variant-numeric:tabular-nums}
 .tick{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid color-mix(in srgb,var(--esc) 22%,transparent);cursor:pointer;font-size:var(--t3);line-height:1.4}
@@ -52,45 +78,361 @@ details.card[open]>summary{margin-bottom:var(--s2)}
 .tick b{font-weight:600}
 .tick small{display:block;color:var(--ink-2);font-size:var(--t2)}
 .und p{margin:10px 0 0;font-size:var(--t2);line-height:1.5;color:var(--ink-2)}
-.pk{font-size:var(--t2);margin:var(--s3) 0 0;line-height:1.5;color:var(--muted)}
+.pk{font-size:var(--t2);margin:var(--s2) 0 0;line-height:1.5;color:var(--muted)}
 .pk b{color:var(--ink);font-weight:600}
-.bar .hint.bad{color:var(--deny)}
 .net{position:sticky;top:0;z-index:20;background:var(--soft);color:var(--ink-2);font-size:var(--t2);text-align:center;padding:6px var(--s4);border-bottom:1px solid var(--line)}
-.state .sig{font-size:var(--t2);color:var(--muted);line-height:1.5;margin:var(--s3) 0 0}
-.state .sig b{color:var(--ink);font-weight:600}
-.try{margin-top:var(--s4);text-align:left}
-.try pre{margin:var(--s3) 0 0;padding:var(--s3);background:var(--soft);border-radius:var(--r-m,8px);font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word;text-align:left}
-.try p{font-size:var(--t2);margin:var(--s2) 0 0;text-align:left}
+.sig{font-size:var(--t2);color:var(--muted);line-height:1.5;margin:var(--s2) 0 0}
+.sig b{color:var(--ink);font-weight:600}
+.try{margin-top:var(--s3)}
+.try pre{margin:var(--s3) 0 0;padding:var(--s3);background:var(--soft);border-radius:var(--r-m,8px);font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.try p{font-size:var(--t2);margin:var(--s2) 0 0}
+.chk h3{font-size:var(--t3);margin:var(--s3) 0 var(--s2)}
+.chk .said{margin:0;font-size:var(--t3);line-height:1.45}
+.chk .said span{color:var(--muted)}
+.chk .by{margin:6px 0 0;font-size:var(--t2);color:var(--ink-2);line-height:1.45}
+.chk .rl{padding:10px 0;border-top:1px solid var(--line)}
+.chk .rl .rh{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--s3);font-size:var(--t3);font-weight:600;line-height:1.35}
+.chk .rl .rh b{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.chk .rl .pill{flex:none}
+.chk .rl p{margin:4px 0 0;font-size:var(--t2);color:var(--ink-2);line-height:1.45;overflow-wrap:anywhere}
+.tech{overflow-wrap:anywhere}
 </style>
 </head>
 <body>
-<div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
-<header id="site"></header>
-<div class="net" id="net" role="status" hidden>Could not reach the gateway. Trying again.</div>
-<main id="main" aria-live="polite"><div><h1>Approval request</h1><p class="from"><span class="wait"><span class="spin"></span>Reading the request from the gateway</span></p></div></main>
+<div class="banner" id="proto"></div>
+<div class="top"><span class="who" id="acct"></span><div class="lang" role="group" aria-label="Kieli / Language"><button type="button" data-lang="fi">FI</button><button type="button" data-lang="en">EN</button></div></div>
+<div class="net" id="net" role="status" hidden></div>
+<main id="main" aria-live="polite"><p class="from"><span class="wait"><span class="spin"></span><span id="loading"></span></span></p></main>
 <div class="bar" id="bar" hidden>
-  <div class="in">
-    <button class="btn danger" id="no" type="button">Reject</button>
-    <button class="btn primary" id="yes" type="button">Approve</button>
-    <div class="hint">Your decision is signed and kept with the order.</div>
+  <div class="in" id="barin">
+    <button class="btn danger" id="no" type="button"></button>
+    <button class="btn primary" id="yes" type="button"></button>
+    <div class="hint"></div>
   </div>
 </div>
 <script src="/static/lib.js"></script>
 <script src="/static/passkey.js"></script>
 <script>
 const cid = location.pathname.split("/").pop(), k = new URLSearchParams(location.search).get("k");
+let lang = (() => { try { return localStorage.getItem("shop.lang") || "fi"; } catch (e) { return "fi"; } })();
+if (lang !== "fi" && lang !== "en") lang = "fi";
+const fi = () => lang === "fi";
+
+// ---- Every word on the page, in both languages. Finnish is the shop's own (sinä, Vahvista tilaus, Toimituspäivä, Asiakasnumero).
+const T = {
+  fi: {
+    proto: "Junction 2026 -prototyyppi Valio Aimon haastedatalla. Ei Valio Aimon järjestelmä.",
+    title: "Hyväksyntä", loading: "Haetaan pyyntöä", net: "Yhteys katkesi. Yritetään uudelleen.",
+    custno: "Asiakasnumero", asks: n => `${n} pyytää hyväksyntääsi`, asked: n => `Tilauspyyntö: ${n}`, kitchen: "Keittiö", menuAsker: "Keittiöpäällikkö",
+    byShop: "Tilauksen kokosi verkkokaupan tilausapuri.", byOther: "Tilauksen kokosi ostajan oma tilausapuri.",
+    lines: n => `${n} ${n === 1 ? "rivi" : "riviä"}`, delivery: "Toimituspäivä",
+    total: "Yhteensä (sis. alv)", sub: "Ostokset (alv 0 %)", vat: r => "Alv " + r,
+    why: "Miksi tämä tarvitsee hyväksyntäsi",
+    soOpen: "Vakiotilauksen muutos odottaa hyväksyntääsi", amOpen: l => `Muutos tilaukseen ${l} odottaa hyväksyntääsi`,
+    so: (t, a, b, s) => `${t}: ${a} → ${b} joka viikko ${s} alkaen.`, soNow: "Nyt ei tilata mitään.", soAlso: "Muuttaa myös vakiotilausta: ",
+    name: "Nimesi", namePh: "esim. Maija Korhonen, ravintolapäällikkö", note: "Lisää viesti (valinnainen)", notePh: "esim. OK vain tällä viikolla",
+    honest: "Prototyyppi ei tarkista, kuka hyväksyjä on: hyväksyjän laitteeksi tulee ensimmäinen laite, joka hyväksyy eri selaimessa kuin tilaaja, ja nimen hän kirjoittaa itse. Minun Aimossa hyväksyjä olisi kirjautunut käyttäjä, jolla on hyväksymisoikeus.",
+    ownH: "Et voi hyväksyä omaa tilaustasi.", ownP: "Lähetä tämä linkki hyväksyjälle tai näytä QR-koodi hänelle. Hän hyväksyy omalla laitteellaan.",
+    copy: "Kopioi linkki", copied: "Linkki kopioitu", copyFail: "Kopioi linkki osoiteriviltä",
+    ownSmall: "Prototyyppi tunnistaa tilaajan selaimesta. Minun Aimossa hyväksyjä tunnistetaan kirjautumisesta.",
+    other: "Tämä laite ei ole hyväksyjän laite. Tällä asiakasnumerolla hyväksyntä tehdään hyväksyjän omalla laitteella: avaa linkki siellä. Täältä voit vain hylätä.",
+    cannot: "Tällä selaimella ei voi hyväksyä. Avaa linkki toisessa selaimessa. Täältä voit hylätä.",
+    no: "Hylkää", yes: "Hyväksy", tryAgain: "Yritä uudelleen", rejecting: "Hylätään", approving: "Hyväksytään",
+    hint: "Päätöksesi ja nimesi tallentuvat tilauksen tietoihin.",
+    hintOther: "Tämä laite ei voi hyväksyä. Hylkääminen onnistuu.", hintOwn: "Hylkää peruu pyynnön. Mitään ei tilata.",
+    hintTick: (l, n) => `Rastita vielä ${l === n ? (l === 1 ? "rivi" : "kaikki " + l + " riviä") : l + " " + (l === 1 ? "rivi" : "riviä")}, niin voit hyväksyä. Hylkäämiseen ei tarvita rasteja.`,
+    tickH: "Tarkista jokainen rivi erikseen", tickN: (a, n) => `${a}/${n} tarkistettu`,
+    tickRow: w => `Valmistaja ei ole ilmoittanut allergeenejä. Rastita, kun olet varmistanut, ettei tuotteessa ole: ${w}.`,
+    tickFoot: "Rasti hyväksyy tuotteen tälle asiakasnumerolle sinun nimelläsi, eikä samaa tuotetta kysytä uudelleen. Jos et ole varma jostain rivistä, hylkää.",
+    needName: "Kirjoita ensin nimesi: hyväksyntään tallentuu hyväksyjän nimi.",
+    approved: "Hyväksytty.", canOrder: a => `${a} voi nyt vahvistaa tilauksen.`, canChange: a => `${a} voi nyt tehdä muutoksen.`,
+    notYet: t => `Tilausta ei ole vielä vahvistettu.${t ? ` Hinta ja saldo on varattu klo ${t} asti.` : ""}`, notYetCh: "Muutosta ei ole vielä tehty.",
+    placed: l => `Vahvistettu tilaus ${l}`, replPlaced: l => `Korvaava tilaus ${l} vahvistettu`, changed: l => `Tilausta ${l} muutettu`, soChanged: "Vakiotilaus muutettu",
+    details: "Tilauksen tiedot", rejected: "Hylätty.", canceled: "Peruttu.", nothingOrdered: "Mitään ei tilattu.", nothingChanged: "Mitään ei muutettu.",
+    closedH: "Tämä pyyntö ei ole enää auki.", closedP: "Tilaus vanheni tai muuttui. Hyväksyntää pyydetään uudelleen, jos sitä vielä tarvitaan.",
+    badLink: "Linkki ei kelpaa", badLinkP: "Tällä linkillä ei löydy hyväksyntäpyyntöä. Pyydä linkki uudelleen lähettäjältä.",
+    rows: n => `Näytä rivit (${n})`, checks: "Näytä tarkistukset", contract: "sopimushinta", replaces: t => `Korvaava tuote: ${t} tilalle`,
+    tech: "Tekninen tallenne (englanniksi)", request: "Pyyntö", madeShop: "Tilauksen kokosi verkkokaupan tilausapuri tilaajan pyynnöstä.", madeOther: "Tilauksen kokosi ostajan oma tilausapuri.",
+    rulesH: n => `Valio Aimon säännöt tälle tilaukselle (${n})`, outcome: { pass: "läpi", escalate: "tarvitsee hyväksynnän", deny: "estetty" },
+    decidedOk: (b, w) => `Hyväksyi: ${b}, ${w}.`, decidedNo: (b, w) => `Hylkäsi: ${b}, ${w}.`, decidedAt: w => `Päätös tehty ${w}.`, onDevice: "Hyväksyntä tehtiin hyväksyjän laitteella.", noteSaid: "Viesti",
+    goodsIn: "tavaran vastaanotto",
+    shipTo: "Toimitusosoite", held: t => `Hinta ja saldo on varattu sinulle klo ${t} asti.`, terms: "Laskulla, nykyisillä Valio Aimon maksuehdoilla.",
+    units: { piece: "kpl", case: "ltk" },
+    errNet: "Yhteys ei vastannut. Mitään ei päätetty.", errLost: "Yhteys ei vastannut, eikä päätöstä ole tallennettu. Paina uudelleen.",
+    errUnknown: "Yhteys ei vastaa, joten ei vielä tiedetä, tallentuiko päätöksesi. Sivu näyttää sen heti kun voi.",
+    errPrompt: "Mitään ei hyväksytty: laitteen kysymys suljettiin tai aikakatkaistiin.", errDevice: "Tätä laitetta ei voitu ottaa hyväksyjän laitteeksi. Mitään ei hyväksytty.",
+    errEnrolled: "Laite on jo hyväksyjän laite, mutta sitä ei voitu käyttää tässä.", errAgain: "Laite on nyt hyväksyjän laite. Paina Hyväksy uudelleen.",
+    errSign: "Tämä laite ei voinut allekirjoittaa hyväksyntää. Mitään ei hyväksytty.", errNotDev: "Mitään ei hyväksytty: tämä ei ole hyväksyjän laite.",
+    errNowDev: "Tällä asiakasnumerolla hyväksytään nyt hyväksyjän laitteella. Paina Hyväksy uudelleen.", errNowOther: "Mitään ei hyväksytty: tällä asiakasnumerolla hyväksytään nyt hyväksyjän laitteella, eikä tämä ole se.",
+    errPrep: "Hyväksyntää ei voitu valmistella.",
+    codes: { own_request: "Et voi hyväksyä omaa tilaustasi. Lähetä linkki hyväksyjälle. Mitään ei hyväksytty.",
+             offer_changed: "Mitään ei hyväksytty: tilaus muuttui sen jälkeen, kun se koottiin. Sivulla on nyt uusin versio.",
+             approver_required: "Kirjoita ensin nimesi: hyväksyntään tallentuu hyväksyjän nimi.",
+             clears_mismatch: "Jokainen allergeenitiedoton rivi pitää rastittaa erikseen. Mitään ei hyväksytty.",
+             invalid_state: "Tästä pyynnöstä on jo päätetty." },
+  },
+  en: {
+    proto: "Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.",
+    title: "Approval", loading: "Reading the request", net: "Could not connect. Trying again.",
+    custno: "Customer number", asks: n => `${n} asks for your approval`, asked: n => `Order request from ${n}`, kitchen: "The kitchen", menuAsker: "The kitchen manager",
+    byShop: "Put together by the online shop's ordering assistant.", byOther: "Put together by the buyer's own ordering assistant.",
+    lines: n => `${n} ${n === 1 ? "line" : "lines"}`, delivery: "Delivery",
+    total: "Total (incl. VAT)", sub: "Goods (ex VAT)", vat: r => "VAT " + r,
+    why: "Why it needs you",
+    soOpen: "A change to the standing order needs your approval", amOpen: l => `A change to order ${l} needs your approval`,
+    so: (t, a, b, s) => `${t}: ${a} → ${b} every week from ${s}.`, soNow: "Nothing is ordered now.", soAlso: "It also changes the standing order: ",
+    name: "Your name", namePh: "e.g. Maija Korhonen, F&B manager", note: "Add a note (optional)", notePh: "e.g. OK for this week only",
+    honest: "The prototype does not check who the approver is: the first device that approves in a different browser from the asker becomes the approver's device, and they type their own name. In Minun Aimo the approver would be a signed-in user with the right to approve.",
+    ownH: "You cannot approve your own order.", ownP: "Send this link to the approver or show them the QR code. They approve on their own device.",
+    copy: "Copy link", copied: "Link copied", copyFail: "Copy the link from the address bar",
+    ownSmall: "The prototype recognises who asked by their browser. In Minun Aimo the approver is recognised by their sign-in.",
+    other: "This is not the approver's device. On this customer number approvals are made on the approver's own device: open the link there. From here you can only reject.",
+    cannot: "This browser cannot approve. Open the link in another browser. From here you can reject.",
+    no: "Reject", yes: "Approve", tryAgain: "Try again", rejecting: "Rejecting", approving: "Approving",
+    hint: "Your decision and your name are kept with the order.",
+    hintOther: "This device cannot approve. Rejecting works.", hintOwn: "Reject withdraws the request. Nothing is ordered.",
+    hintTick: (l, n) => `Tick ${l === n ? (l === 1 ? "the line" : "each of the " + l + " lines") : "the remaining " + l} to approve. Rejecting needs no ticks.`,
+    tickH: "Check each line on its own", tickN: (a, n) => `${a} of ${n} confirmed`,
+    tickRow: w => `The manufacturer has not declared allergens. Tick once you have made sure it has no ${w}.`,
+    tickFoot: "A tick clears that product for this customer number under your name, and the same product is not asked about again. If you are not sure about a line, reject.",
+    needName: "Type your name first: the approval carries the approver's name.",
+    approved: "Approved.", canOrder: a => `${a} can now confirm the order.`, canChange: a => `${a} can now make the change.`,
+    notYet: t => `The order is not confirmed yet.${t ? ` Price and stock are held until ${t}.` : ""}`, notYetCh: "The change is not made yet.",
+    placed: l => `Confirmed order ${l}`, replPlaced: l => `Replacement order ${l} confirmed`, changed: l => `Order ${l} changed`, soChanged: "Standing order changed",
+    details: "Order details", rejected: "Rejected.", canceled: "Cancelled.", nothingOrdered: "Nothing was ordered.", nothingChanged: "Nothing was changed.",
+    closedH: "This request is no longer open.", closedP: "The order expired or changed. You will be asked again if an approval is still needed.",
+    badLink: "This link is not valid", badLinkP: "There is no approval request under this link. Ask whoever sent it for the link again.",
+    rows: n => `Show the lines (${n})`, checks: "Show the checks", contract: "contract price", replaces: t => `Replacement for ${t}`,
+    tech: "Technical record", request: "Request", madeShop: "Put together by the online shop's ordering assistant at the buyer's request.", madeOther: "Put together by the buyer's own ordering assistant.",
+    rulesH: n => `Valio Aimo's rules for this cart (${n})`, outcome: { pass: "passed", escalate: "needs approval", deny: "blocked" },
+    decidedOk: (b, w) => `Approved by ${b}, ${w}.`, decidedNo: (b, w) => `Rejected by ${b}, ${w}.`, decidedAt: w => `Decided ${w}.`, onDevice: "Approved on the approver's device.", noteSaid: "Note",
+    goodsIn: "goods in",
+    shipTo: "Deliver to", held: t => `Price and stock are held for you until ${t}.`, terms: "On invoice, on your existing Valio Aimo terms.",
+    units: { piece: "pcs", case: "cases" },
+    errNet: "No answer came back. Nothing was decided.", errLost: "No answer came back, and no decision is recorded. Press again.",
+    errUnknown: "No answer yet, so this page cannot tell whether your decision was recorded. It shows the answer as soon as it can.",
+    errPrompt: "Nothing was approved: the device prompt was closed or timed out.", errDevice: "This device could not be made the approver's device. Nothing was approved.",
+    errEnrolled: "This device is already an approver's device, but could not be used here.", errAgain: "This device is now an approver's device. Press Approve again.",
+    errSign: "This device could not sign the approval. Nothing was approved.", errNotDev: "Nothing was approved: this is not the approver's device.",
+    errNowDev: "This customer number now approves on the approver's device. Press Approve again.", errNowOther: "Nothing was approved: this customer number now approves on the approver's device, and this is not it.",
+    errPrep: "The approval could not be prepared.",
+    codes: { own_request: "You cannot approve your own order. Send the link to the approver. Nothing was approved.",
+             offer_changed: "Nothing was approved: the order changed after it was put together. The page now shows the current one.",
+             approver_required: "Type your name first: the approval carries the approver's name.",
+             clears_mismatch: "Each line with no allergen declaration is ticked on its own. Nothing was approved.",
+             invalid_state: "This request has already been decided." },
+  },
+};
+const t = (key, ...a) => { const v = T[lang][key]; return typeof v === "function" ? v(...a) : v; };
+
+// ---- Numbers, days and times the way each language writes them: 1 560,00 € and ma 16.11. in Finnish.
+const money = c => fi() ? ((c || 0) / 100).toLocaleString("fi-FI", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/[   ]/g, " ") + " €" : eur(c);
+const cents = s => Math.round(parseFloat(String(s).replace(/[€,\s]/g, "")) * 100);
+const M = s => money(cents(s));
+const num = x => fi() ? String(x).replace(".", ",") : String(x);
+const dayL = d => { if (!d) return ""; const x = new Date(d + "T12:00:00"); return fi() ? `${["su", "ma", "ti", "ke", "to", "pe", "la"][x.getDay()]} ${x.getDate()}.${x.getMonth() + 1}.` : x.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }); };
+const clockL = iso => iso ? new Date(iso).toLocaleTimeString(fi() ? "fi-FI" : "en-GB", { hour: "2-digit", minute: "2-digit", timeZone: TZ }) : "";
+const unitL = u => T[lang].units[u] || u;
+const ALLERG_FI = { "milk": "maito", "eggs": "kananmuna", "fish": "kala", "crustaceans": "äyriäiset", "molluscs": "nilviäiset", "peanuts": "maapähkinä", "tree nuts": "pähkinät",
+  "soybeans": "soija", "sesame": "seesami", "mustard": "sinappi", "celery": "selleri", "lupin": "lupiini", "sulphites": "sulfiitit", "cereals containing gluten": "gluteenia sisältävät viljat",
+  "wheat": "vehnä", "barley": "ohra", "oats": "kaura", "rye": "ruis", "spelt": "speltti", "kamut": "kamut", "lactose": "laktoosi", "almond": "manteli", "cashew": "cashewpähkinä",
+  "hazelnut": "hasselpähkinä", "macadamia": "makadamiapähkinä", "pecan": "pekaanipähkinä", "brazil nut": "parapähkinä", "pistachio": "pistaasipähkinä", "walnut": "saksanpähkinä" };
+const allerg = s => fi() ? String(s || "").split(", ").map(x => ALLERG_FI[x] || x).join(", ") : String(s || "");
+const CLAIM_FI = { "FREE_FROM:LACTOSE": "laktoositon", "FREE_FROM:GLUTEN": "gluteeniton", "FREE_FROM:MILK": "maidoton", "DIET:VEGAN": "vegaaninen", "DIET:VEGETARIAN": "kasvis", "LOW:LACTOSE": "vähälaktoosinen" };
+const claimL = s => String(s || "").split(", ").map(x => fi() ? (CLAIM_FI[x] || x) : claimWord(x)).join(", ");
+
+// ---- Product names: the catalogue's Finnish name (names.fi, the field _names_fi of the approval data) in the Finnish view.
+const nameFi = (id, title) => { if (!fi() || !C) return title; const x = (C._names_fi || []).find(n => n.id === String(id)) || (C._names_fi || []).find(n => n.title === title); return x ? x.fi : title; };
+// In a Finnish sentence, every English catalogue title the page knows a Finnish name for is said by that name. Longest first.
+const named = s => { if (!fi() || !C || typeof s !== "string") return s; for (const n of [...(C._names_fi || [])].sort((a, b) => b.title.length - a.title.length)) if (s.includes(n.title)) s = s.split(n.title).join(n.fi); return s; };
+const shipL = s => fi() ? String(s || "").replace(/, goods in$/, ", " + t("goodsIn")) : String(s || "");
+
+// ---- Why a rule needs a person, in one plain sentence from the rule's own numbers. No template: the rule's own text.
+const MONEY = "(€[\\d,]+\\.\\d\\d)";
+const R = (s) => new RegExp(s.replace(/MONEY/g, MONEY));
+const SAY = [
+  ["B1", R("Order is MONEY ex VAT, MONEY over the agent's MONEY limit"), m => [`Tilaus on ${M(m[1])} (alv 0 %). Ilman hyväksyntää saa tilata enintään ${M(m[3])}.`, `The order is ${M(m[1])} ex VAT. Without approval you can order up to ${M(m[3])}.`]],
+  ["W3", R("Order is MONEY; Valio Aimo lets agents place up to MONEY"), m => [`Tilaus on ${M(m[1])} (alv 0 %). Valio Aimo sallii tilausapurin tilata ilman hyväksyntää enintään ${M(m[2])}.`, `The order is ${M(m[1])} ex VAT. Valio Aimo lets an ordering assistant order up to ${M(m[2])} without approval.`]],
+  ["T1", R("up to MONEY; this order is MONEY"), m => [`Tilaus on ${M(m[2])} (alv 0 %). Tämä tilausapuri saa tilata ilman hyväksyntää enintään ${M(m[1])}.`, `The order is ${M(m[2])} ex VAT. This ordering assistant may order up to ${M(m[1])} without approval.`]],
+  ["B2", R("MONEY already ordered in the last 7 days; this order would bring it to MONEY, over MONEY"), m => [`Tämän tilauksen kanssa viimeisen 7 päivän ostot ovat ${M(m[2])} (alv 0 %). Ilman hyväksyntää viikossa saa tilata enintään ${M(m[3])}.`, `With this order the last 7 days come to ${M(m[2])} ex VAT. Without approval you can order up to ${M(m[3])} a week.`]],
+  ["B3", R("for this delivery day without a person already come to MONEY. With this order that is MONEY, over the MONEY limit"), m => [`Samalle toimituspäivälle on jo tilauksia tai vahvistamattomia ostoskoreja ${M(m[1])} edestä ilman hyväksyntää. Tämän tilauksen kanssa yhteensä ${M(m[2])}, ja raja on ${M(m[3])}.`, `Orders and unconfirmed carts for this delivery day already come to ${M(m[1])} without approval. With this order that is ${M(m[2])}, over the ${M(m[3])} limit.`]],
+  ["W2", /(\d+) line\(s\) were never ordered before/, m => [`Tällä asiakasnumerolla saa ilman hyväksyntää tilata vain aiemmin tilattuja tuotteita, ja ${m[1] === "1" ? "yksi tuote on uusi" : m[1] + " tuotetta on uusia"}.`, `Without approval this customer number may only reorder products bought before, and ${m[1] === "1" ? "one product is" : m[1] + " products are"} new.`]],
+  ["N1", /Never ordered on this account before: (.+)\. A person must decide\./, m => [`Ensimmäistä kertaa tällä asiakasnumerolla: ${m[1]}.`, `First time on this customer number: ${m[1]}.`]],
+  ["N1", /(\d+) of (\d+) products are new to this account/, m => [`${m[1]}/${m[2]} tuotteesta tilataan ensimmäistä kertaa tällä asiakasnumerolla.`, `${m[1]} of ${m[2]} products are ordered for the first time on this customer number.`]],
+  ["Q1", /^([\d.]+) (\S+) of (.+) is ([\d.]+)x this kitchen's usual ([\d.]+)/, m => [`${m[3]}: ${num(m[1])} ${unitL(m[2])} on ${num(m[4])} kertaa tavallinen määräsi (${num(m[5])} ${unitL(m[2])}).`, `${m[3]}: ${m[1]} ${unitL(m[2])} is ${m[4]} times your usual ${m[5]}.`]],
+  ["A1", /^(.+) may contain traces of (.+)\. A person must decide\./, m => [`${m[1]} voi sisältää pieniä määriä: ${allerg(m[2])}.`, `${m[1]} may contain traces of ${m[2]}.`]],
+  ["C1", /may buy: (.+)$/, m => [`Tuoteryhmä, jota ei saa tilata ilman hyväksyntää: ${m[1]}.`, `A product group that needs approval: ${m[1]}.`]],
+  ["D1", /Delivery would be (\d+) days? late\. The mandate lets the agent accept up to (\d+)/, m => [`Toimitus myöhästyisi ${m[1]} pv. Ilman hyväksyntää saa hyväksyä enintään ${m[2]} pv myöhästymisen.`, `Delivery would be ${m[1]} day(s) late. Without approval up to ${m[2]} day(s) can be accepted.`]],
+  ["P1", /Only ([\d.]+)% of (.+) would be delivered\. The mandate lets the agent accept ([\d.]+)%/, m => [`Tuotteesta ${m[2]} toimitettaisiin vain ${num(m[1])} %. Ilman hyväksyntää vähintään ${num(m[3])} % pitää toimittaa.`, `Only ${m[1]}% of ${m[2]} would be delivered. Without approval at least ${m[3]}% must arrive.`]],
+  ["V5", /./, () => ["Tällaisen ehdotuksen hyväksyy aina ihminen.", "A person always decides on this kind of proposal."]],
+  ["V6", R("This proposal adds MONEY; with MONEY accepted alone this week that is MONEY, over the MONEY"), m => [`Ehdotus lisää ostoja ${M(m[1])}. Tällä viikolla on jo hyväksytty ${M(m[2])} ilman hyväksyntää, ja raja on ${M(m[4])}.`, `This proposal adds ${M(m[1])}. ${M(m[2])} was already accepted without approval this week; the limit is ${M(m[4])}.`]],
+  ["V7", /./, () => ["Vakiotilauksen muutokset hyväksyy aina ihminen.", "A person always approves standing-order changes."]],
+];
+const WHY_S1 = [
+  [/^the mandate allows no substitutions$/, () => ["korvaavia tuotteita ei saa valita ilman hyväksyntää", "no replacement may be chosen without approval"]],
+  [/^it is not on Valio Aimo's substitute list/, () => ["se ei ole Valio Aimon korvaavien tuotteiden listalla", "it is not on Valio Aimo's list of replacements"]],
+  [/^it drops (.+)$/, m => [`siitä puuttuu: ${claimL(m[1])}`, `it is not ${claimL(m[1])}`]],
+  [/^the product it replaces has no allergen declaration.*contains (.+)\)$/, m => [`korvattavalla tuotteella ei ole allergeenitietoja vertailuun (tässä on: ${allerg(m[1])})`, `the product it replaces has no allergen declaration to compare with (this one has ${m[1]})`]],
+  [/^it adds allergens: (.+)$/, m => [`siinä on lisäksi: ${allerg(m[1])}`, `it adds ${m[1]}`]],
+  [/^it costs (\d+)% more per (\S+) \(limit (\d+)%\)$/, m => [`se maksaa ${m[1]} % enemmän (raja ${m[3]} %)`, `it costs ${m[1]}% more per ${unitL(m[2])} (limit ${m[3]}%)`]],
+];
+function plain(r) {
+  const L = fi() ? 0 : 1;
+  if (r.id === "A1" && (r.undeclared || []).length) {
+    const n = r.undeclared.length, what = allerg([...new Set(r.undeclared.flatMap(u => String(u.what).split(", ")))].join(", "));
+    return fi() ? `${n === 1 ? "Yhdelle tuotteelle" : n + " tuotteelle"} ei ole valmistajan allergeenitietoja, joten rajausta (${what}) ei voi tarkistaa. Käy ${n === 1 ? "rivi" : "rivit"} läpi alla.`
+      : `${n === 1 ? "One product has" : n + " products have"} no allergen declaration from the manufacturer, so the exclusion of ${what} cannot be checked. Go through ${n === 1 ? "it" : "them"} below.`;
+  }
+  if (r.id === "S1") {
+    const m = /^(.+) replaces (.+?): (.+)\.$/.exec(r.detail || "");
+    if (m) {
+      const why = m[3].split("; ").map(x => { const h = WHY_S1.find(([re]) => re.test(x)); return h ? h[1](h[0].exec(x))[L] : null; });
+      if (why.every(Boolean)) return fi() ? `Korvaava tuote: ${m[1]} tuotteen ${m[2]} tilalle, koska ${why.join(" ja ")}.` : `${m[1]} replaces ${m[2]}: ${why.join("; ")}.`;
+    }
+  }
+  for (const [id, re, f] of SAY) if (id === r.id) { const m = re.exec(r.detail || ""); if (m) return f(m)[L]; }
+  return r.detail;
+}
+const plainNamed = r => { const p = plain(r); return p === r.detail ? p : named(p); };
+
+// ---- Valio Aimo's rules in Finnish: titles and details. COPIED from web/chat/card.html (RULE_FI, the "rules" part of its
+// sentence table P and the small tables it needs), unchanged, because card.html does not load lib.js. Keep the two in step.
+// A detail is said in Finnish only when every sentence of it has a Finnish form; otherwise it stays whole in English.
+const RULEFI = (() => {
+const nf = (n, lo = 0, hi = 2) => Number(n).toLocaleString("fi-FI", { minimumFractionDigits: lo, maximumFractionDigits: Math.max(lo, hi) }).replace(/[\u202f ]/g, "\u00a0");  // no break inside 1 560,00 €
+const eur = c => (c < 0 ? "−" : "") + nf(Math.abs(c) / 100, 2) + "\u00a0€";
+const day = s => dayL(String(s).slice(0, 10));
+const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
+const CLAIM_FI = { "FREE_FROM:LACTOSE": "laktoositon", "FREE_FROM:GLUTEN": "gluteeniton", "DIET:FREE_FROM_GLUTEN": "gluteeniton", "FREE_FROM:MILK": "maidoton", "FREE_FROM:EGGS": "kananmunaton", "FREE_FROM:SOY": "soijaton", "FREE_FROM:NUTS": "pähkinätön",
+  "FREE_FROM:WHEAT": "vehnätön", "DIET:VEGAN": "vegaaninen", "DIET:VEGETARIAN": "kasvis", "LOW:FAT": "vähärasvainen", "LOW:LACTOSE": "vähälaktoosinen", "LOW:SODIUM_SALT": "vähäsuolainen", "LOW:SUGARS": "vähäsokerinen", "NO_ADDED:SUGARS": "ei lisättyä sokeria",
+  "NO_ADDED:SALT": "ei lisättyä suolaa", "FREE_FROM:ADDITIVES": "ei lisäaineita", "FREE_FROM:PRESERVATIVES": "ei säilöntäaineita", "FREE_FROM:SWEETENERS": "ei makeutusaineita", "FREE_FROM:COLOURING_AGENTS": "ei väriaineita", "HIGH:PROTEIN": "runsasproteiininen",
+  "HIGH:FIBRE": "runsaskuituinen", "SOURCE_OF:PROTEIN": "proteiinin lähde", "SOURCE_OF:FIBRE": "kuidun lähde", GOODS_FROM_FINLAND_BLUE_SWAN: "Hyvää Suomesta", EU_ORGANIC_FARMING: "EU-luomu", KEY_FLAG: "Avainlippu", NORDIC_SWAN: "Joutsenmerkki" };
+const ALG_FI = { AM: "maito", AE: "kananmuna", AF: "kala", AC: "äyriäiset", UM: "nilviäiset", AP: "maapähkinä", AN: "pähkinät", AY: "soija", AS: "seesami", BM: "sinappi", BC: "selleri", NL: "lupiini", AU: "sulfiitit", AW: "gluteenia sisältävät viljat",
+  UW: "vehnä", GB: "ohra", GO: "kaura", NR: "ruis", GS: "speltti", GK: "kamut", ML: "laktoosi", SA: "manteli", SC: "cashewpähkinä", SH: "hasselpähkinä", SM: "makadamiapähkinä", SP: "pekaanipähkinä", SR: "parapähkinä", ST: "pistaasipähkinä", SW: "saksanpähkinä" };
+const ALG_EN = { milk: "AM", eggs: "AE", fish: "AF", crustaceans: "AC", molluscs: "UM", peanuts: "AP", "tree nuts": "AN", soybeans: "AY", sesame: "AS", mustard: "BM", celery: "BC", lupin: "NL", sulphites: "AU", "cereals containing gluten": "AW", wheat: "UW", barley: "GB", oats: "GO", rye: "NR", spelt: "GS", kamut: "GK", lactose: "ML" };
+const UNIT_FI = { L: "l", l: "l", pcs: "kpl", pc: "kpl", piece: "kpl", pieces: "kpl", kg: "kg", g: "g", ml: "ml", bag: "pss", bags: "pss", box: "ltk", boxes: "ltk", bottle: "plo", bottles: "plo", can: "tlk", cans: "tlk", pack: "pkt", packs: "pkt",
+  case: "ltk", cases: "ltk", tray: "rasia", trays: "rasiaa", bucket: "ämp", buckets: "ämp", jar: "prk", jars: "prk", carton: "tlk", cartons: "tlk", sack: "säkki", sacks: "säkkiä", unit: "kpl", units: "kpl" };
+const PER_FI = { l: "litralta", L: "litralta", kg: "kilolta", piece: "kappaleelta", pcs: "kappaleelta", pc: "kappaleelta", kpl: "kappaleelta" };
+const WD = { Mon: "ma", Tue: "ti", Wed: "ke", Thu: "to", Fri: "pe", Sat: "la", Sun: "su" }, MON = { Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6, Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12 };
+const NO = {};  // thrown when a part of a sentence has no Finnish form: the sentence then stays English
+const need = v => { if (v === undefined || v === null || v === "") throw NO; return v; };
+const D = s => { const m = String(s).trim().match(/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (\d\d?) (\w{3})$/); if (m) return `${WD[m[1]]} ${+m[2]}.${need(MON[m[3]])}.`; if (/^\d{4}-\d\d-\d\d$/.test(String(s).trim())) return day(String(s).trim()); throw NO; };
+const N = s => nf(Number(String(s).replace(/,/g, "")), 0, 2);
+const E = s => eur(Math.round(Number(String(s).replace(/[€,\s]/g, "")) * 100));
+const U = u => need(UNIT_FI[u]);
+const CL = c => need(CLAIM_FI[c]);
+const algs = s => String(s).split(/, | and /).map(n => need(ALG_FI[ALG_EN[n.trim().toLowerCase()]])).join(", ");
+const PROPOSAL_FI = { "standing order drift": "vakiotilauksen muutos", "short-dated stock": "lyhyen päiväyksen tuotteet", "before the cut-off": "ennen tilausaikaa", "shortage ahead": "tuleva puute", "fill the case": "täysi laatikko" };
+const subWhy = p => { let x;
+  if (p === "the mandate allows no substitutions") return "tilauslupa ei salli korvaavia tuotteita";
+  if (p === "it is not on Valio Aimo's substitute list for the requested product") return "se ei ole Valio Aimon korvaavien listalla tälle tuotteelle";
+  if ((x = p.match(/^it drops ([A-Z_:, ]+)$/))) return "siitä puuttuu: " + x[1].split(", ").map(CL).join(", ");
+  if ((x = p.match(/^the product it replaces has no allergen declaration to compare with \(this one contains (.+)\)$/))) return `korvattavalla tuotteella ei ole allergeeni-ilmoitusta vertailuun (tämä sisältää: ${algs(x[1])})`;
+  if ((x = p.match(/^it adds allergens: (.+)$/))) return "siinä on uusia allergeeneja: " + algs(x[1]);
+  if ((x = p.match(/^it costs (\d+)% more per (\w+) \(limit (\d+)%\)$/))) return `se on ${x[1]} % kalliimpi ${need(PER_FI[x[2]])} (raja ${x[3]} %)`;
+  if ((x = p.match(/^listed substitute, same claims, no new allergens, ([+-]\d+)% per (\w+)$/))) return `listattu korvaava, samat merkinnät, ei uusia allergeeneja, ${x[1].replace("-", "−")} % ${need(PER_FI[x[2]])}`;
+  throw NO; };
+const EM = "€[\\d,]+(?:\\.\\d+)?";
+const R = (src, fn) => [new RegExp("^" + src.replace(/€€/g, "(" + EM + ")") + "$"), fn];
+const P = [
+  // rules
+  R("This assistant holds no signing key\\.", () => "Tämä tilausapuri ei allekirjoita tilauksia itse."),
+  R("Valio Aimo lets such assistants order alone up to €€; this order is €€\\.", m => `Siksi Valio Aimo antaa sen tilata yksin enintään ${E(m[1])}; tämä tilaus on ${E(m[2])}.`),
+  R("No signing key, and €€ is within the €€ Valio Aimo allows such assistants alone\\.", m => `Tilausapuri ei allekirjoita itse, ja ${E(m[1])} mahtuu rajaan ${E(m[2])}, jonka Valio Aimo sallii sille yksin.`),
+  R("Order is €€ ex VAT, €€ over the agent's €€ limit\\.", m => `Tilaus on ${E(m[1])} (alv 0 %), ${E(m[2])} yli tilausapurin tilausrajan ${E(m[3])}.`),
+  R("€€ ex VAT is within the €€ limit\\.", m => `${E(m[1])} (alv 0 %) on tilausrajan ${E(m[2])} sisällä.`),
+  R("€€ of €€ used this week including this order\\.", m => `Viikkorajasta ${E(m[2])} on käytetty ${E(m[1])} tämä tilaus mukaan lukien.`),
+  R("€€ already ordered in the last 7 days; this order would bring it to €€, over €€\\.", m => `Viimeisen 7 päivän aikana on tilattu jo ${E(m[1])}; tämän kanssa ${E(m[2])}, yli viikkorajan ${E(m[3])}.`),
+  R("Never ordered on this account before: (.+)\\.", m => `Et ole tilannut ennen: ${m[1]}.`),
+  R("A person must decide\\.", () => "Hyväksyjä päättää."),
+  R("(\\d+) of (\\d+) products are new to this account\\.", m => `${N(m[1])} tuotetta ${N(m[2])}:sta on sinulle uusia.`),
+  R("A person must decide about the first-time products\\.", () => "Hyväksyjä päättää uusista tuotteista."),
+  R("Every product has been ordered on this account before or is an allowed substitute\\.", () => "Kaikkia tuotteita on tilattu ennenkin, tai ne ovat sallittuja korvaavia tuotteita."),
+  R("Mandate (\\S+) signed by (.+), valid until (\\d\\d?) (\\w{3}) (\\d{4})\\.", m => `${m[2]} on antanut tilausapurille tilausluvan, voimassa ${+m[3]}.${need(MON[m[4]])}.${m[5]} asti.`),
+  R("Agent ordering is on for this account\\.", () => "Valio Aimo on sallinut tilausapurin tilaukset tällä asiakasnumerolla."),
+  R("Valio Aimo has paused agent ordering on this account\\.", () => "Valio Aimo on keskeyttänyt tilausapurin tilaukset tällä asiakasnumerolla."),
+  R("No (other )?line is more than (\\d+)x the usual order\\.", m => `Mikään ${m[1] ? "muu " : ""}rivi ei ole yli ${m[2]}-kertainen tavalliseen tilaukseen verrattuna.`),
+  R("(This product was|These products were) never ordered on this account before, so there is no usual quantity to compare with(; rule N1 asks a person about first-time products)?\\.", m => `${m[1][0] === "T" && m[1].startsWith("This") ? "Tätä tuotetta" : "Näitä tuotteita"} ei ole tilattu ennen, joten tavallista määrää ei ole verrattavaksi${m[2] ? "; uusista tuotteista päättää hyväksyjä" : ""}.`),
+  R("Products never ordered on this account before have no usual quantity to compare with(; rule N1 asks a person about first-time products)?\\.", m => `Uusilla tuotteilla ei ole tavallista määrää verrattavaksi${m[1] ? "; niistä päättää hyväksyjä" : ""}.`),
+  R("Order is €€; Valio Aimo lets agents place up to €€ without a person\\.", m => `Tilaus on ${E(m[1])}; Valio Aimo sallii tilausapurin tilata ilman hyväksyjää enintään ${E(m[2])}.`),
+  R("Re-order of products this account has bought before\\.", () => "Tilaat uudelleen tuotteita, joita olet ostanut ennenkin."),
+  R("All lines are in categories the agent may buy\\.", () => "Kaikki rivit ovat tuoteryhmissä, joita tilausapuri saa ostaa."),
+  R("Orders and open carts made for this delivery day without a person come to €€ including this one, within €€\\.", m => `Ilman hyväksyjää tehdyt tilaukset ja vahvistamattomat ostoskorit tälle toimituspäivälle ovat ${E(m[1])} tämä mukaan lukien, rajan ${E(m[2])} sisällä.`),
+  R("Every line carries ([A-Z_:, ]+), by the manufacturer's GS1 data\\.", m => `Valmistajan GS1-tietojen mukaan jokaisella rivillä on merkintä: ${m[1].split(", ").map(CL).join(", ")}.`),
+  R("No line contains or may contain ([a-z ,]+), excluded on the whole order\\.", m => `Mikään rivi ei sisällä eikä voi sisältää: ${algs(m[1])} (rajattu koko tilaukselta).`),
+  R("(.+?) replaces (.+?): (.+)\\.", m => `${m[1]} korvaa tuotteen ${m[2]}: ${m[3].split("; ").map(subWhy).join("; ")}.`),
+  R("(.+), by the manufacturer's GS1 data\\.", m => "Valmistajan GS1-tietojen mukaan " + m[1].split("; ").map(p => { const x = p.match(/^(every line|Every line|.+) carries ([A-Z_:, ]+)$/); if (!x) throw NO; return (/^every line$/i.test(x[1]) ? "jokaisella rivillä" : x[1] + ":") + " " + x[2].split(", ").map(CL).join(", "); }).join("; ") + "."),
+  R("(No line contains or may contain .+|[A-Z][a-z].+ checked on \\d+ named lines?: .+)\\.", m => cap(m[1].split("; ").map(p => { let x;
+    if ((x = p.match(/^[Nn]o line contains or may contain (.+), excluded on the whole order$/))) return `mikään rivi ei sisällä eikä voi sisältää: ${algs(x[1])} (rajattu koko tilaukselta)`;
+    if ((x = p.match(/^(.+?) checked on (\d+) named lines?: (.+)$/))) return `${algs(x[1])} tarkistettu ${N(x[2])} nimetyltä riviltä: ${x[3]}`;
+    throw NO; }).join("; ")) + "."),
+  R("(\\d+) lines? (?:has|have) no allergen declaration from the manufacturer; this mandate lets the agent order them\\.", m => `${N(m[1])} rivillä ei ole valmistajan allergeeni-ilmoitusta; tilauslupa sallii tilausapurin tilata ne.`),
+  R("(\\d+) lines? (?:has|have) no allergen declaration from the manufacturer; cleared for this exclusion by (.+) on (\\d{4}-\\d\\d-\\d\\d)\\.", m => `${N(m[1])} rivillä ei ole valmistajan allergeeni-ilmoitusta; ${m[2]} hyväksyi ne tälle rajaukselle ${day(m[3])}.`),
+  R("(.+) contains ([a-z ,]+), which is excluded\\.", m => `${m[1]} sisältää: ${algs(m[2])}, ja se on rajattu pois.`),
+  R("(.+) may contain traces of ([a-z ,]+)\\.", m => `${m[1]} voi sisältää jäämiä: ${algs(m[2])}.`),
+  R("(.+) does not carry ([A-Z_:, ]+)\\.", m => `Tuotteelta ${m[1]} puuttuu merkintä: ${m[2].split(", ").map(CL).join(", ")}.`),
+  R("([\\d.,]+) (\\S+) of (.+) is ([\\d.]+)x this kitchen's usual ([\\d.,]+)\\.", m => `${N(m[1])} ${U(m[2])} tuotetta ${m[3]} on ${N(m[4])}-kertainen määrä keittiösi tavalliseen (${N(m[5])}) verrattuna.`),
+  R("Orders and open carts made for this delivery day without a person already come to €€\\.", m => `Tälle toimituspäivälle on jo tilauksia tai vahvistamattomia ostoskoreja ${E(m[1])} edestä ilman hyväksyjää.`),
+  R("With this order that is €€, over the €€ limit, so it is treated as one order\\.", m => `Tämän kanssa se on ${E(m[1])}, yli rajan ${E(m[2])}, joten tilauksia käsitellään yhtenä.`),
+  R("Account is limited to re-orders; (\\d+) line\\(s\\) were never ordered before\\.", m => `Tällä asiakasnumerolla saa tilata vain aiemmin tilattuja tuotteita; ${N(m[1])} riviä on uusia.`),
+  R("This account's agents may look up prices and stock but not order\\.", () => "Tämän asiakasnumeron tilausapurit voivat katsoa hintoja ja saatavuutta, mutta eivät tilata."),
+  R("Delivery would be (\\d+) days? late\\.", m => `Toimitus myöhästyisi ${N(m[1])} pv.`),
+  R("Delivery is (\\d+) days? late, within the (\\d+) days? the mandate lets the agent accept on its own\\.", m => `Toimitus myöhästyy ${N(m[1])} pv; tilauslupa sallii tilausapurin hyväksyä enintään ${N(m[2])} pv.`),
+  R("The mandate lets the agent accept up to (\\d+) days? on its own\\.", m => `Tilauslupa sallii tilausapurin hyväksyä itse enintään ${N(m[1])} pv.`),
+  R("Only ([\\d.]+)% of (.+) would be delivered\\.", m => `Vain ${N(m[1])} % toimitettaisiin (${m[2] === "the line" ? "rivi" : m[2]}).`),
+  R("([\\d.]+)% of (.+) is still delivered, and the mandate lets the agent accept ([\\d.]+)% or more on its own\\.", m => `${N(m[1])} % toimitetaan (${m[2] === "the line" ? "rivi" : m[2]}); tilauslupa sallii tilausapurin hyväksyä itse vähintään ${N(m[3])} %.`),
+  R("The mandate lets the agent accept ([\\d.]+)% or more on its own\\.", m => `Tilauslupa sallii tilausapurin hyväksyä itse vähintään ${N(m[1])} %.`),
+  R("Lot (\\S+) is recalled\\.", m => `Erä ${m[1]} on takaisinvedossa.`),
+  R("It is replaced or credited\\.", () => "Se korvataan tai hyvitetään."),
+  R("Nobody, agent or person, can choose to keep it\\.", () => "Kukaan, tilausapuri tai ihminen, ei voi päättää pitää sitä."),
+  R("Lot (\\S+) leaves the order: it is replaced or credited, not kept\\.", m => `Erä ${m[1]} poistuu tilauksesta: se korvataan tai hyvitetään, ei pidetä.`),
+  R("Valio Aimo's agent may make proposals to this customer\\.", () => "Valio Aimo saa tehdä sinulle ehdotuksia."),
+  R("Proposal (\\d+) of at most (\\d+) today\\.", m => `Ehdotus ${N(m[1])}/${N(m[2])} tänään.`),
+  R("The customer has not declined this proposal before\\.", () => "Et ole hylännyt tätä ehdotusta aiemmin."),
+  R("€€ of the buyer's €€ a week, including this proposal\\.", m => `${E(m[1])} ostajan viikkorajasta ${E(m[2])} tämä ehdotus mukaan lukien.`),
+  R("The mandate lets the agent accept (.+) proposals alone\\.", m => `Tilauslupa sallii tilausapurin hyväksyä itse ehdotukset: ${need(PROPOSAL_FI[m[1]])}.`),
+  R("The mandate does not let the agent accept (.+) proposals alone, so a person decides\\.", m => `Tilauslupa ei salli tilausapurin hyväksyä itse ehdotuksia (${need(PROPOSAL_FI[m[1]])}), joten hyväksyjä päättää.`),
+  R("Adds €€; €€ of the €€ a week the agent may accept alone from proposals\\.", m => `Lisää ${E(m[1])}; tilausapurin ehdotuksista itse hyväksymä viikkosumma on ${E(m[2])} / ${E(m[3])}.`),
+  R("This proposal adds €€; with €€ accepted alone this week that is €€, over the €€ the agent may accept alone\\.", m => `Ehdotus lisää ${E(m[1])}; tällä viikolla itse hyväksyttyjen ${E(m[2])} kanssa se on ${E(m[3])}, yli rajan ${E(m[4])}.`),
+  R("This changes the standing order of (.+) from (\\d+) to (\\d+) units, every week from (\\d{4}-\\d\\d-\\d\\d)\\.", m => `Tämä muuttaa tuotteen ${m[1]} vakiotilausta ${N(m[2])} → ${N(m[3])} kpl joka viikko ${day(m[4])} alkaen.`),
+  R("The buyer's mandate lets the agent change standing orders alone\\.", () => "Ostajan tilauslupa sallii tilausapurin muuttaa vakiotilauksia itse."),
+  R("The buyer's mandate leaves standing-order changes to a person\\.", () => "Ostajan tilausluvan mukaan vakiotilauksen muutoksista päättää hyväksyjä."),
+];
+const RULE_FI = { "Valid mandate": "Tilauslupa voimassa", "Mandate quantity limit": "Tilausluvan määräraja", "Agent ordering enabled by Valio Aimo": "Valio Aimo sallii tilausapurin tilaukset", "Agent in good standing": "Tilausapurilla ei ole estoa", "Autonomy tier": "Tilausapurin oikeudet",
+  "Money is judged on the difference": "Raja lasketaan erotuksesta", "Valio Aimo cap per agent order": "Valio Aimon raja tilausapurin tilaukselle", "Valio Aimo ceiling per delivery day": "Valio Aimon päiväkatto", "Assistant without a signing key": "Tilausapuri ei allekirjoita itse",
+  "Spend limit per order": "Tilauskohtainen raja", "Split-order check": "Pilkottu tilaus", "Spend limit per week": "Viikkoraja", "Product categories": "Tuoteryhmät", "Allergen exclusions": "Allergeenirajaukset", "Stated product requirements": "Tuotevaatimukset",
+  "Required certificates": "Vaaditut merkit", "Substitution": "Korvaava tuote", "First-time products": "Uudet tuotteet", "Unusual quantity": "Poikkeava määrä", "Recalled goods are never kept": "Takaisinvedettyä ei pidetä", "Delay the agent may accept": "Myöhästyminen, jonka tilausapuri voi hyväksyä",
+  "Partial delivery the agent may accept": "Osatoimitus, jonka tilausapuri voi hyväksyä", "Valio Aimo's proposals switched on": "Valio Aimon ehdotukset käytössä", "Proposals per customer per day": "Ehdotuksia päivässä", "A declined proposal is never made again": "Hylättyä ehdotusta ei tehdä uudelleen",
+  "A proposal may not go over the weekly cap": "Ehdotus ei ylitä viikkorajaa", "Proposals the agent may accept alone": "Ehdotukset, jotka tilausapuri voi hyväksyä itse", "Extra spend from proposals per week": "Ehdotusten lisäkulut viikossa", "Standing-order changes need a person": "Vakiotilauksen muutos tarvitsee hyväksyjän" };
+const one = s => { for (const [re, fn] of P) { const m = s.match(re); if (m) { try { const r = fn(m); return typeof r === "string" ? r.replace(/(\d\.)\.(?=\s|$)/g, "$1") : r; } catch (e) { if (e === NO) return null; throw e; } } } return null; };
+const sentences = s => String(s).split(/(?<=[.!?])\s+(?=[A-Z€“'"(0-9])/);
+return {
+  title: t => RULE_FI[t] || null,
+  detail: s => { const t = String(s || "").trim(); if (!t) return ""; const fs = sentences(t).map(one); return fs.every(x => x !== null) ? fs.filter(Boolean).join(" ") : null; },
+};
+})();
+
+// ---- State
 let timer = null, C = null, drawn = "", busy = false;
 let PKS = null;     // how this account approves: POST /api/approve/{id}/device
 let MODE = "";      // what Approve does in this browser, see how()
 let KIND = null;    // the kind of key this browser would make: "passkey", "browser_key" or null
 let tried = null;   // the gateway's answer to "the same link without the device"
+let lastErr = "";   // the last thing said under the buttons, kept across a language switch
 const ticks = new Set();          // the lines with no allergen declaration the approver has ticked, by product id
 const LAST = { who: "", note: "" };
-const HINT = "Your decision is signed and kept with the order.";
+const opened = new Set();         // folds the reader opened, kept open across redraws
 const big = (kind, icon) => `<div class="big-mark ${kind}">${icon}</div>`;
 const names = ds => andList((ds || []).map(d => `${d.name} (${d.how})`));
 const andList = a => a.length <= 1 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
-const howWord = kind => kind === "browser_key" ? PK.HOW.browser_key : PK.HOW.passkey;
+const shopMade = c => String(c.wholesale.agent || "").endsWith("/shop-assistant");
+function asker(c) {
+  const a = String(c._asked_by || "");
+  if (!a || a.startsWith("agent:")) return c.buyer.name || t("kitchen");
+  if (a === "Kitchen manager, on the menu page") return t("menuAsker");
+  return a;
+}
+const fold = (key, summary, body) => `<details class="fold" data-fold="${key}"${opened.has(key) ? " open" : ""}><summary>${summary}</summary>${body}</details>`;
 
 // The lines the allergen rule could not check, one per product. Approving clears exactly the ones ticked, and all must be.
 function toClear(c) {
@@ -105,39 +447,40 @@ function toClear(c) {
 function tickList(c) {
   const u = toClear(c);
   if (!u.length) return "";
-  return `<div class="und"><div class="uh">Confirm each line on its own<span id="tickn"></span></div>
-    ${u.map(x => `<label class="tick"><input type="checkbox" data-id="${esc(x.id)}"${ticks.has(x.id) ? " checked" : ""}><span><b>${esc(x.title)}</b><small>No allergen declaration from the manufacturer. Tick to clear it for ${esc(x.what)}.</small></span></label>`).join("")}
-    <p>Each tick clears that one product for the named allergens on this account, under your name, and your signature lists exactly the lines you ticked. The agent does not ask about a cleared product again; a product nobody ticked still comes to you. If you are not sure about one line, reject.</p></div>`;
+  return `<div class="und"><div class="uh">${t("tickH")}<span id="tickn"></span></div>
+    ${u.map(x => `<label class="tick"><input type="checkbox" data-id="${esc(x.id)}"${ticks.has(x.id) ? " checked" : ""}><span><b>${esc(nameFi(x.id, x.title))}</b><small>${esc(t("tickRow", allerg(x.what)))}</small></span></label>`).join("")}
+    <p>${t("tickFoot")}</p></div>`;
 }
-// What Approve does here, said before it is pressed.
+
+// ---- The last fold, "Tekninen tallenne (englanniksi)": what the gateway decided and recorded, unchanged, in English.
 function signoff() {
   const p = PKS || {}, acct = esc(p.account_name || "this account"), devs = p.devices || [];
   if (MODE === "first") return KIND === "passkey"
-    ? `<p class="pk"><b>Signed on this device.</b> No approver device is enrolled for ${acct} yet. Approve makes this device the approver and signs with a passkey: it asks for your fingerprint, face or screen lock. From then on this link alone cannot approve for this account.</p>`
+    ? `<p class="pk"><b>Signed on this device.</b> No approver device is enrolled for ${acct} yet. Approve makes this device the approver and signs with a passkey: it asks for the fingerprint, face or screen lock. From then on this link alone cannot approve for this account.</p>`
     : `<p class="pk"><b>Signed in this browser.</b> No approver device is enrolled for ${acct} yet. This browser has no fingerprint, face or screen lock to ask, so Approve makes a signing key here, keeps it in this browser and signs with it. The record will say: a key held in this browser, no fingerprint. From then on this link alone cannot approve for this account.</p>`;
-  if (MODE === "sign_key") { const d = devs.find(x => (p.mine || []).includes(x.id)) || {}; return `<p class="pk"><b>Signed in this browser.</b> This browser is an approver for ${acct}: ${esc(d.name || "this browser")}, a key held in this browser, no fingerprint (key ${esc(d.thumbprint || "")}). Approve signs this exact order, your name, your note and each line you tick. The link alone cannot approve for this account.</p>`; }
-  if (MODE === "sign_passkey") return `<p class="pk"><b>Signed on an approver's device.</b> Approve asks this device for its fingerprint, face or screen lock (a passkey). The signature is made inside the device and covers this exact order, your name, your note and each line you tick. The link alone cannot approve for this account.</p>`;
+  if (MODE === "sign_key") { const d = devs.find(x => (p.mine || []).includes(x.id)) || {}; return `<p class="pk"><b>Signed in this browser.</b> This browser is an approver for ${acct}: ${esc(d.name || "this browser")}, a key held in this browser, no fingerprint (key ${esc(d.thumbprint || "")}). Approve signs this exact order, the name, the note and each line ticked.</p>`; }
+  if (MODE === "sign_passkey") return `<p class="pk"><b>Signed on an approver's device.</b> Approve asks this device for its fingerprint, face or screen lock (a passkey). The signature covers this exact order, the name, the note and each line ticked.</p>`;
   if (MODE === "add") return `<p class="pk"><b>This browser is not an approver yet.</b> Approvals for ${acct} are signed on ${esc(names(devs))}. This is the account's own session, so Approve adds this ${KIND === "passkey" ? "device as an approver with a passkey" : "browser as an approver with a key held in this browser, no fingerprint"}, and signs here.</p>`;
-  if (MODE === "other") return `<p class="pk"><b>This is not one of the account's approver devices.</b> Approvals for ${acct} are signed on ${esc(names(devs))}. Open this link there. This link alone cannot approve; it can still reject.</p>`;
+  if (MODE === "other") return `<p class="pk"><b>This is not one of the account's approver devices.</b> Approvals for ${acct} are signed on ${esc(names(devs))}. This link alone cannot approve; it can still reject.</p>`;
   if (MODE === "link") return p.can_enrol
-    ? `<p class="pk"><b>This browser cannot sign.</b> It can neither make a passkey nor keep a signing key, and an approval for ${acct} needs a signature from the approver's own device. Open this link in another browser to approve. This one can still reject.</p>`
+    ? `<p class="pk"><b>This browser cannot sign.</b> It can neither make a passkey nor keep a signing key, and an approval for ${acct} needs a signature from the approver's own device.</p>`
     : `<p class="pk">${p.account_kind && p.account_kind !== "sandbox" && p.account_kind !== "stage" ? "This account is a simulated customer whose approver is a script, so no device can be enrolled for it." : "No approver device is enrolled for this account."} This link approves and the gateway's own key signs the record.</p>`;
   return "";
 }
-// After the decision: who signed, with what, what it cleared, and the same link tried without the device.
 function signed(c) {
   const ap = c.wholesale.approval || {}, d = ap.device, n = (ap.clears || []).length;
   let h = d ? `<p class="sig"><b>Signed by ${esc(ap.by)} on ${esc(d.device)}</b> with ${d.method === "browser_key" ? "a key held in that browser, no fingerprint" : "a passkey" + (d.user_verified ? ", after its fingerprint, face or screen lock" : "")} (key ${esc(d.thumbprint)}). The gateway checked the signature against this exact order before it recorded the approval.</p>`
-    : `<p class="sig">This account is a simulated customer: a script stands in for its approver, so the link approved and the gateway's own key signed the record.</p>`;
-  if (ap.asked_by) h += `<p class="sig">Asked by ${esc(ap.asked_by)}. Approved by ${esc(ap.by)}.</p>`;
+    : `<p class="sig">No approver device signed: ${ap.decision === "rejected" ? "anyone holding the link may reject" : "this account is a simulated customer, a script stands in for its approver, so the link approved and the gateway's own key signed the record"}.</p>`;
+  if (ap.asked_by) h += `<p class="sig">Asked by ${esc(ap.asked_by)}. ${ap.decision === "rejected" ? "Rejected" : "Approved"} by ${esc(ap.by)}.</p>`;
+  if (ap.checkout_digest) h += `<p class="sig">Checkout digest <span class="mono">${esc(ap.checkout_digest)}</span>${ap.signature ? `, record signed with key <span class="mono">${esc(ap.signature.kid)}</span>` : ""}.</p>`;
   if (n) h += `<p class="sig">${ap.clears_confirmed === "each line ticked by the approver" ? "Cleared, each line ticked" : "Cleared, all at once"}: ${esc(PK.clearsText(ap.clears))}.</p>`;
-  if (d) h += `<div class="try"><button class="btn small" id="try" type="button">Try the same link without the device</button>${tried ? tryHtml() : `<p class="muted">Sends this page's approval link to the gateway again, with no device signature, and shows the answer.</p>`}</div>`;
+  if (d) h += `<div class="try"><button class="btn small" id="try" type="button">Try to cheat: the same link without the device</button>${tried ? tryHtml() : `<p class="muted">Sends this page's approval link to the gateway again, with no device signature, and shows the answer.</p>`}</div>`;
   return h;
 }
 function tryHtml() {
-  const t = tried, refused = t.code === "device_required";
-  return `<pre>POST /api/approve/${esc(cid)}\n{"k": "this link's key", "approve": true}     no device signature\n\n${esc(t.status)}\n${esc(JSON.stringify(t.body, null, 1))}</pre>
-    <p>${refused ? "<b>Refused.</b> The link that opened this page is no longer enough: for this account an approval needs a signature from an enrolled device." : t.status ? "The gateway answered " + esc(t.status) + "." : "The gateway did not answer. Try again."}</p>`;
+  const x = tried, refused = x.code === "device_required";
+  return `<pre>POST /api/approve/${esc(cid)}\n{"k": "this link's key", "approve": true}     no device signature\n\n${esc(x.status)}\n${esc(JSON.stringify(x.body, null, 1))}</pre>
+    <p>${refused ? "<b>Refused.</b> The link that opened this page is no longer enough: for this account an approval needs a signature from an enrolled device." : x.status ? "The gateway answered " + esc(x.status) + "." : "The gateway did not answer. Try again."}</p>`;
 }
 async function tryLink() {
   const b = $("#try"); if (b) { b.disabled = true; b.innerHTML = '<span class="spin"></span>Asking the gateway'; }
@@ -149,69 +492,131 @@ async function tryLink() {
   } catch (e) { tried = { status: 0, body: {}, code: "" }; }
   if (C) view(C);
 }
-let YES = "Approve";
+function techHtml(c) {
+  const w = c.wholesale, open = c.status === "requires_escalation";
+  let h = `<div class="tech">`;
+  h += `<h3>Who asked</h3><div class="q-label">Agent</div><blockquote class="mono">${esc(w.agent || "")}</blockquote>`
+    + (c._asked_by && c._asked_by !== w.agent ? `<div class="q-label">Asked by</div><blockquote>${esc(c._asked_by)}</blockquote>` : "")
+    + (w.mandate_id ? `<div class="q-label">Mandate</div><blockquote class="mono">${esc(w.mandate_id)}</blockquote>` : "")
+    + (w.intent ? `<div class="q-label">Request</div><blockquote>“${esc(w.intent)}”</blockquote>` : "")
+    + (w.agent_rationale ? `<div class="q-label">The agent says</div><blockquote>${esc(w.agent_rationale)}</blockquote>` : "");
+  h += `<h3>Rules (${w.policy.rules.length}), decision: ${esc(w.policy.decision)}</h3>${rulesTable(w.policy.rules)}`;
+  if (open) h += `<h3>How Approve signs here</h3>${signoff() || '<p class="pk">Reading how this account approves.</p>'}`;
+  if (w.approval) h += `<h3>The decision record</h3>${signed(c)}`;
+  if (w.hold && open) h += `<p class="sig">Signed offer: price and stock reserved until ${esc(when(w.hold.price_and_stock_held_until))}; expires ${esc(when(c.expires_at))}.</p>`;
+  const ev = c._events || [];
+  if (ev.length) h += `<h3>Ledger events (${ev.length})</h3>${ev.map(e => `<div class="ev"><span>${esc(when(e.ts))} · ${esc(e.actor)} · ${esc(e.kind)}</span><br>${esc(e.text)}</div>`).join("")}`;
+  return h + "</div>";
+}
 
-function view(c) {
-  const w = c.wholesale, rules = w.policy.rules;
-  const esc_ = rules.filter(r => r.outcome === "escalate"), ok = rules.filter(r => r.outcome === "pass");
-  const total = c.totals.find(t => t.type === "total").amount, sub = c.totals.find(t => t.type === "subtotal").amount;
-  const am = w.amends, goods = c.line_items.length > 0, open = c.status === "requires_escalation";
-  const so = !goods && (w.proposal || {}).standing;  // a standing-order change from Valio Aimo's selling agent: no goods, binds every week
-  if (open && $("#who")) { LAST.who = $("#who").value; LAST.note = $("#note").value; }
-  let h = `<div><h1>${so ? (open ? "A change to the standing order needs your OK" : c.status === "completed" ? "Standing order changed" : "Standing-order change") : open ? (am ? "A change to order " + esc(am.order_label) + " needs your OK" : "An order needs your OK") : am ? "Change to order " + esc(am.order_label) : "Order request"}</h1><p class="from">Asked by the purchasing agent of ${esc(c.buyer.name || "the buyer")}</p>${am && am.title ? `<p style="margin:6px 0 0;color:var(--muted)">${esc(am.title)}</p>` : ""}${(w.proposal || {}).standing ? ((x) => `<p style="margin:6px 0 0;color:var(--muted)">${goods ? "It also changes the standing order: " : ""}${esc(x.title)} from ${esc(x.from)} to ${esc(x.to)} units, every week from ${esc(x.starts)}.${goods ? "" : " Nothing is ordered now."}</p>`)(w.proposal.standing) : ""}
-    ${open && !so && (!am || goods) ? `<div class="amount"><span class="big">${eur(total)}</span><span class="sub">incl. VAT<br>${eur(sub)} ex VAT</span></div>` : ""}</div>`;
-  if (open) {
-    h += `<div class="why"><b>Why it needs a person</b><ul>${esc_.map(r => `<li>${esc(r.detail)}</li>`).join("")}</ul>${tickList(c)}</div>`;
-  } else if (c.status === "ready_for_complete" && w.approval) {
-    // The agent places the order, not this page. If it has not come back for it yet, say that instead of "now".
-    const act = (am || so) && !goods;
-    h += `<div class="card state">${big("ok", ICON.check)}<h2>Approved</h2><p class="muted">${late(c) ? `${act ? "Nothing is changed yet" : "Not ordered yet"}: the agent has not come back for it. ${act ? "It makes the change" : "It places the order"} when it does${w.hold ? `, and price and stock are held until ${esc(clock(w.hold.price_and_stock_held_until))}` : ""}.` : act ? "The agent is making the change now." : "The agent is placing the order now."}</p>${signed(c)}</div>`;
-  } else if (c.status === "completed") {
-    h += `<div class="card state">${big("ok", ICON.check)}<h2>${so ? "Standing order changed" : am ? (goods ? "Replacement order " + esc(c.order.label) + " placed" : "Order " + esc(am.order_label) + " changed") : "Order " + esc(c.order.label) + " placed"}</h2><p><a class="btn" href="${esc(siteUrl(c.order.url || c.order.permalink_url))}" style="margin-top:8px">Confirmation and evidence</a></p>${w.approval && w.approval.decision === "approved" ? signed(c) : ""}</div>`;
-  } else if (c.status === "canceled") {
-    h += `<div class="card state">${big("bad", ICON.cross)}<h2>${w.approval && w.approval.decision === "rejected" ? "Rejected" : "Cancelled"}</h2><p class="muted">${am || so ? "Nothing was changed." : "Nothing was ordered. The held stock was released."}</p></div>`;
-  } else {
-    h += `<div class="card state">${big("idle", ICON.close)}<h2>This request is no longer open</h2><p class="muted">The offer expired or changed. The agent will ask again if it still needs a person.</p></div>`;
+// ---- Behind "Näytä tarkistukset": only what a manager reads, in the reader's language. The rest is in the last fold.
+function ruleText(r) {
+  const d = String(r.detail || "");
+  // English: the same sentence, without the mandate's id and with claim codes in words (both stay in the technical record)
+  if (!fi()) return d.replace(/^Mandate mnd_\w+ /, "The mandate was ").replace(/\b([A-Z]+(?:_[A-Z]+)*:[A-Z]+(?:_[A-Z]+)*)\b/g, c => claimWord(c));
+  const x = RULEFI.detail(d);
+  if (x !== null) return named(x);
+  return plainNamed(r);  // the page's own sentence for a rule that needs a person; else the rule's English detail as it is
+}
+function checksHtml(c) {
+  const w = c.wholesale, ap = w.approval, rules = w.policy.rules || [];
+  let h = `<div class="chk">`;
+  if (w.intent) h += `<p class="said"><span>${t("request")}:</span> ${fi() ? "”" : "“"}${esc(w.intent)}”</p>`;
+  h += `<p class="by">${shopMade(c) ? t("madeShop") : t("madeOther")}</p>`;
+  if (ap && ap.decision) {
+    const at = ap.at ? `${dayL(String(new Date(ap.at).toLocaleDateString("sv-SE", { timeZone: TZ })))} ${fi() ? "klo " : ""}${clockL(ap.at)}` : "";
+    h += `<p class="by">${esc(ap.by ? t(ap.decision === "rejected" ? "decidedNo" : "decidedOk", ap.by, at) : t("decidedAt", at))}${ap.device && ap.decision !== "rejected" ? " " + t("onDevice") : ""}</p>`;
+    if (ap.note) h += `<p class="by">${t("noteSaid")}: ${fi() ? "”" : "“"}${esc(ap.note)}”</p>`;
   }
-  const decided = c.status === "canceled" ? (am ? "What was asked for" : "What was asked for, not ordered") : c.status === "completed" ? (am ? "The replacement" : "The order") : am ? "The replacement" : "The order";
-  if (!so && (!am || goods)) h += `<div class="card"><h3>${decided}<span class="muted">${c.line_items.length} ${c.line_items.length === 1 ? "line" : "lines"}</span></h3>${linesShort(c.line_items)}${totalsBlock(c.totals)}
-    ${c.status === "canceled" ? "" : `<dl class="kv" style="margin-top:var(--s4)"><dt>Delivery</dt><dd>${esc(day(w.delivery_date))}</dd><dt>To</dt><dd>${esc(w.ship_to || "")}</dd><dt>Supplier</dt><dd>Valio Aimo, on your existing invoice terms</dd>
-    ${w.hold && open ? `<dt>Held until</dt><dd>${esc(clock(w.hold.price_and_stock_held_until))}: price and stock are reserved for you</dd>` : ""}</dl>`}</div>`;
-  if (w.intent || w.agent_rationale || c._asked_by) h += `<div class="card"><h3>What was asked, and the agent's reason</h3>${c._asked_by ? `<div class="q-label">Asked by</div><blockquote>${esc(c._asked_by)}</blockquote>` : ""}${w.intent ? `<div class="q-label"${c._asked_by ? ' style="margin-top:var(--s4)"' : ""}>Request</div><blockquote>“${esc(w.intent)}”</blockquote>` : ""}${w.agent_rationale ? `<div class="q-label" style="margin-top:var(--s4)">The agent says</div><blockquote>${esc(w.agent_rationale)}</blockquote>` : ""}</div>`;
-  if (ok.length && open) h += `<details class="card"><summary>${ok.length} checks passed automatically</summary>${rulesTable(ok)}</details>`;
-  if (open) h += `<div class="card"><h3>Your sign-off</h3><div class="fields"><label>Your name<input type="text" id="who" value="${esc(LAST.who)}" autocomplete="name" placeholder="e.g. Maija Korhonen, F&amp;B manager" style="margin-top:6px"></label><label>Note (optional)<input type="text" id="note" value="${esc(LAST.note)}" placeholder="e.g. OK for this week only" style="margin-top:6px"></label></div>
-    <p class="pk" style="margin-top:var(--s3)">The record keeps who asked and who approved as two names.</p>${signoff()}</div>`;
+  h += `<h3>${t("rulesH", rules.length)}</h3>`;
+  h += rules.map(r => `<div class="rl"><div class="rh"><b>${esc(fi() ? RULEFI.title(r.title) || r.title : r.title)}</b><span class="pill ${esc(r.outcome)}">${esc(T[lang].outcome[r.outcome] || r.outcome)}</span></div>${r.detail ? `<p>${esc(ruleText(r))}</p>` : ""}</div>`).join("");
+  return h + `</div>`;
+}
+
+// ---- The lines and the money, in the reader's language
+function rowsHtml(c) {
+  const rows = c.line_items.map(l => {
+    const w = l.wholesale || {}, sub = w.substitutes_for, q = w.units ?? (l.quantity.total ?? l.quantity);
+    return `<div class="r"><div><b>${esc(nameFi(l.item.id, l.item.title))}</b><div class="q">${esc(Number(q).toLocaleString(fi() ? "fi-FI" : "en-IE"))} ${esc(unitL(l.item.quantity_unit.display_text))} × ${money(l.item.price)}${w.contract_price ? " · " + t("contract") : ""}</div></div>
+      <div class="s">${money(l.totals[0].amount)}</div>${sub ? `<div class="sub">${esc(t("replaces", nameFi(sub.for, sub.for_title || "")))}</div>` : ""}</div>`;
+  }).join("");
+  const tot = c.totals.map(x => `<div class="${x.type === "total" ? "g" : ""}"><span>${x.type === "subtotal" ? t("sub") : x.type === "tax" ? esc(t("vat", num(String(x.display_text || "").replace(/^VAT\s*/, "")))) : t("total")}</span><span>${money(x.amount)}</span></div>`).join("");
+  const w = c.wholesale, open = c.status === "requires_escalation";
+  return `<div class="rows">${rows}</div><div class="tot">${tot}</div>
+    <div class="kvs">${t("delivery")} ${esc(dayL(w.delivery_date))}${w.ship_to ? `<br>${t("shipTo")}: ${esc(shipL(w.ship_to))}` : ""}<br>${t("terms")}${w.hold && open ? `<br>${esc(t("held", clockL(w.hold.price_and_stock_held_until)))}` : ""}</div>`;
+}
+
+// ---- The page
+function view(c) {
+  const w = c.wholesale, open = c.status === "requires_escalation", own = !!c._own;
+  const rules = w.policy.rules, esc_ = rules.filter(r => r.outcome === "escalate");
+  const total = (c.totals.find(x => x.type === "total") || {}).amount, sub = (c.totals.find(x => x.type === "subtotal") || {}).amount;
+  const am = w.amends, goods = c.line_items.length > 0, so = !goods && (w.proposal || {}).standing;
+  if (open && $("#who")) { LAST.who = $("#who").value; LAST.note = $("#note").value; }
+  $("#acct").innerHTML = `<b>${esc(c.buyer.name || "")}</b>${w.customer ? esc(`${t("custno")} ${w.customer}`) : ""}`;
+  let h = "";
+  if (open && own) h += `<div class="own"><h2>${t("ownH")}</h2><p>${t("ownP")}</p><div class="row"><img alt="" src="/api/qr?u=${encodeURIComponent(location.href)}" onerror="this.remove()"><button class="btn lg" id="copy" type="button">${ICON.copy}<span>${t("copy")}</span></button></div><p class="small">${t("ownSmall")}</p></div>`;
+  const st = (w.proposal || {}).standing;
+  h += `<div><h1>${esc(so ? (open ? t("soOpen") : t("soChanged")) : am && open ? t("amOpen", am.order_label) : open ? t("asks", asker(c)) : t("asked", asker(c)))}</h1>`
+    + `<p class="from">${shopMade(c) ? t("byShop") : t("byOther")}</p>`
+    + (goods ? `<p class="what">${t("lines", c.line_items.length)} · ${t("delivery")} ${esc(dayL(w.delivery_date))}</p>` : "")
+    + (st ? `<p class="what">${goods ? t("soAlso") : ""}${esc(t("so", nameFi(st.product || st.id, st.title), st.from, st.to, dayL(st.starts) || st.starts))}${goods ? "" : " " + t("soNow")}</p>` : "")
+    + (goods && open ? `<div class="amount"><div class="lab">${t("total")}</div><div class="big">${money(total)}</div><div class="sub">${t("sub")} ${money(sub)}</div></div>` : "") + `</div>`;
+  if (open) {
+    h += `<div class="why"><b>${t("why")}</b>${esc_.map(r => `<p>${esc(plainNamed(r))}</p>`).join("")}${own ? "" : tickList(c)}</div>`;
+    if (!own) {
+      if (noSign()) h += `<div class="notice">${MODE === "other" ? t("other") : t("cannot")}</div>`;
+      else h += `<div class="fields"><label for="who">${t("name")}</label><input type="text" id="who" value="${esc(LAST.who)}" autocomplete="name" placeholder="${esc(t("namePh"))}">
+        <p class="small" style="margin:0">${t("honest")}</p>
+        <details class="note"${LAST.note || opened.has("note") ? " open" : ""} data-fold="note"><summary>${t("note")}</summary><input type="text" id="note" value="${esc(LAST.note)}" placeholder="${esc(t("notePh"))}" aria-label="${esc(t("note"))}"></details></div>`;
+    }
+  } else if (c.status === "ready_for_complete" && w.approval) {
+    const act = (am || so) && !goods;
+    h += `<div class="card state">${big("ok", ICON.check)}<h2>${t("approved")}</h2><p>${esc(act ? t("canChange", asker(c)) : t("canOrder", asker(c)))}</p>${late(c) ? `<p class="muted">${esc(act ? t("notYetCh") : t("notYet", w.hold ? clockL(w.hold.price_and_stock_held_until) : ""))}</p>` : ""}</div>`;
+  } else if (c.status === "completed") {
+    const head = so ? t("soChanged") : am ? (goods ? t("replPlaced", c.order.label) : t("changed", am.order_label)) : t("placed", c.order.label);
+    h += `<div class="card state">${big("ok", ICON.check)}<h2>${esc(head).replace(esc((c.order || {}).label || am && am.order_label || "\u0000"), x => `<span style="white-space:nowrap">${x}</span>`)}</h2>${c.order && (c.order.url || c.order.permalink_url) ? `<p><a class="btn" href="${esc(siteUrl(c.order.url || c.order.permalink_url))}" style="margin-top:8px">${t("details")}</a></p>` : ""}</div>`;
+  } else if (c.status === "canceled") {
+    const rej = w.approval && w.approval.decision === "rejected";
+    h += `<div class="card state">${big("bad", ICON.cross)}<h2>${rej ? t("rejected") : t("canceled")}</h2><p class="muted">${am || so ? t("nothingChanged") : t("nothingOrdered")}</p></div>`;
+  } else {
+    h += `<div class="card state">${big("idle", ICON.close)}<h2>${t("closedH")}</h2><p class="muted">${t("closedP")}</p></div>`;
+  }
+  if (goods) h += fold("rows", t("rows", c.line_items.length), rowsHtml(c));
+  h += fold("checks", t("checks"), checksHtml(c));
+  h += fold("tech", t("tech"), techHtml(c));
   $("#main").innerHTML = h;
   $("#bar").hidden = !open;
-  if (open) { YES = (am || so) && !goods ? "Approve the change" : "Approve " + eur(total); if (!busy) $("#yes").textContent = YES; }
+  $("#barin").classList.toggle("one", own);
+  $("#yes").hidden = own;
+  if (!busy) { $("#no").textContent = t("no"); $("#yes").textContent = t("yes"); }
   for (const box of document.querySelectorAll(".tick input")) box.onchange = () => { box.checked ? ticks.add(box.dataset.id) : ticks.delete(box.dataset.id); gate(); };
+  for (const d of document.querySelectorAll("[data-fold]")) d.ontoggle = () => { d.open ? opened.add(d.dataset.fold) : opened.delete(d.dataset.fold); };
   if ($("#try")) $("#try").onclick = tryLink;
+  if ($("#copy")) $("#copy").onclick = copyLink;
   if (open) gate();
 }
-// Approved more than 20 seconds ago and still not ordered: the agent was not waiting when the yes came.
+async function copyLink() {
+  const b = $("#copy");
+  try { await navigator.clipboard.writeText(location.href); b.innerHTML = ICON.check + `<span>${t("copied")}</span>`; }
+  catch (e) { b.innerHTML = `<span>${t("copyFail")}</span>`; }
+  setTimeout(() => { if ($("#copy")) $("#copy").innerHTML = ICON.copy + `<span>${t("copy")}</span>`; }, 1800);
+}
+// Approved more than 20 seconds ago and still not ordered: the one who asked has not confirmed it yet.
 const late = c => c.status === "ready_for_complete" && Date.now() - Date.parse((c.wholesale.approval || {}).at || "") > 20000;
 const noSign = () => MODE === "other" || (MODE === "link" && PKS && PKS.link_ok === false);  // nothing here can sign, and the link alone does not approve
-const canYes = () => !!C && !noSign() && toClear(C).every(x => ticks.has(x.id));
+const canYes = () => !!C && !C._own && !noSign() && toClear(C).every(x => ticks.has(x.id));
 // Approve works only when every line with no allergen declaration is ticked, and only where this browser can sign.
 function gate() {
   if (!C || busy) return;
   const need = toClear(C), left = need.filter(x => !ticks.has(x.id)).length;
-  if ($("#tickn")) $("#tickn").textContent = `${need.length - left} of ${need.length} confirmed`;
+  if ($("#tickn")) $("#tickn").textContent = t("tickN", need.length - left, need.length);
   $("#yes").disabled = !canYes();
   const h = $("#bar .hint");
-  if (!h.classList.contains("bad")) h.textContent = MODE === "other" ? "This is not an approver device for this account. It can still reject." : noSign() ? "This browser cannot sign an approval. It can still reject."
-    : left ? `Tick ${left === need.length ? (left === 1 ? "the line" : "each of the " + left + " lines") : "the remaining " + left} with no allergen declaration to approve. Rejecting needs no ticks.` : HINT;
+  if (!h.classList.contains("bad")) h.textContent = C._own ? t("hintOwn") : noSign() ? t("hintOther") : left ? t("hintTick", left, need.length) : t("hint");
 }
+function said(text) { lastErr = text || ""; const h = $("#bar .hint"); h.classList.toggle("bad", !!text); if (text) h.textContent = text; else gate(); }
 
-// Long orders: show the first lines (and every substitute) and fold the rest, so the decision stays near the top.
-function linesShort(items) {
-  if (items.length <= 10) return linesTable(items);
-  const sub = l => (l.wholesale || {}).substitutes_for;
-  let room = Math.max(0, 8 - items.filter(sub).length);
-  const keep = items.map(l => sub(l) || (room-- > 0));
-  const rest = items.filter((l, i) => !keep[i]);
-  return linesTable(items.filter((l, i) => keep[i])) + `<details class="more-lines"><summary>Show the other ${rest.length} lines</summary>${linesTable(rest)}</details>`;
-}
 // A failed poll never touches the page: it shows a small notice and the next poll tries again.
 async function load() {
   let c;
@@ -221,7 +626,7 @@ async function load() {
   const m = ((c || {}).messages || [{}])[0] || {};
   if (m.code === "forbidden" || m.code === "not_found") {
     $("#net").hidden = true;
-    $("#main").innerHTML = `<div class="card state">${big("bad", ICON.cross)}<h2>This link is not valid</h2><p class="muted">${m.code === "not_found" ? "The gateway has no approval request under this link. Ask for the link again from whoever sent it." : esc(m.content || "")}</p></div>`; $("#bar").hidden = true; clearInterval(timer);
+    $("#main").innerHTML = `<div class="card state">${big("bad", ICON.cross)}<h2>${t("badLink")}</h2><p class="muted">${t("badLinkP")}</p></div>`; $("#bar").hidden = true; clearInterval(timer);
   } else $("#net").hidden = false;  // busy or briefly unavailable: keep what is on screen
   return null;
 }
@@ -244,62 +649,80 @@ async function refresh(force) {
   C = c;
   const open = c.status === "requires_escalation";
   let fresh = false;
-  if (!PKS && open) fresh = await how();
+  if (!PKS && open && !c._own) fresh = await how();
   // Redraw only when something changed, and never while someone is filling in the form.
-  const sig = [c.status, (c.wholesale.approval || {}).at || "", (c.order || {}).id || "", late(c)].join("|");
+  const sig = [c.status, (c.wholesale.approval || {}).at || "", (c.order || {}).id || "", late(c), (c._events || []).length].join("|");
   if (force || fresh || sig !== drawn) { drawn = sig; view(c); }
   if (c.status === "completed" || c.status === "canceled") clearInterval(timer);
 }
-function said(text) { const h = $("#bar .hint"); h.classList.toggle("bad", !!text); if (text) h.textContent = text; else { h.textContent = HINT; gate(); } }
+const errText = e => (e && T[lang].codes[e.code]) || (e && e.content) || "";
 async function decide(approve) {
   if (busy || !C) return;
   const who = $("#who") ? $("#who").value : LAST.who, note = $("#note") ? $("#note").value : LAST.note;
   const clears = toClear(C).filter(x => ticks.has(x.id)).map(x => ({ id: x.id, codes: x.codes }));
-  if (approve && !who.trim()) { said("Type your name first: the record carries the name of the person who approves."); if ($("#who")) $("#who").focus(); return; }
+  if (approve && !who.trim()) { said(t("needName")); if ($("#who")) $("#who").focus(); return; }
   const body = { k, approve, approver: who.trim(), note, ...(approve ? { clears } : {}) };
-  const back = text => { busy = false; $("#no").disabled = false; $("#yes").disabled = !canYes(); $("#no").textContent = "Reject"; $("#yes").textContent = text && approve ? "Try again" : YES; said(text); };
+  const back = text => { busy = false; $("#no").disabled = false; $("#yes").disabled = !canYes(); $("#no").textContent = t("no"); $("#yes").textContent = text && approve ? t("tryAgain") : t("yes"); said(text); };
   busy = true; $("#yes").disabled = $("#no").disabled = true; said("");
   // Never fall back to the bare link because a question to the gateway was lost: first learn how this account approves.
-  if (approve && !PKS && !(await how())) return back("The gateway did not answer. Nothing was decided.");
+  if (approve && !PKS && !(await how())) return back(t("errNet"));
   const b = approve ? $("#yes") : $("#no");
-  const say = t => { b.innerHTML = '<span class="spin"></span>' + t; };
-  say(approve ? "Signing" : "Rejecting");
+  const say = x => { b.innerHTML = '<span class="spin"></span>' + x; };
+  say(approve ? t("approving") : t("rejecting"));
   let r;
   try {
     if (approve && (MODE === "first" || MODE === "add")) {
       // No device signs for this account here yet: this one becomes an approver, then signs. One press.
-      say(KIND === "passkey" ? "Waiting for this device" : "Making a key in this browser");
       try { await PK.enrol({ cid, k }); }
       catch (e) {
-        if (e && e.name === "NotAllowedError") return back("Nothing was approved: the device prompt was closed or timed out.");
-        if (e && e.name === "InvalidStateError") { await how(); if (MODE !== "sign_passkey") return back("This device is already enrolled, but could not be used here."); }
-        else return back((e && e.message) || "This device could not be made the approver. Nothing was approved.");
+        if (e && e.name === "NotAllowedError") return back(t("errPrompt"));
+        if (e && e.name === "InvalidStateError") { await how(); if (MODE !== "sign_passkey") return back(t("errEnrolled")); }
+        else return back(t("errDevice"));
       }
-      if (!(await how()) || (MODE !== "sign_key" && MODE !== "sign_passkey")) { view(C); return back("This device was enrolled but cannot sign yet. Press Approve again."); }
-      view(C);
+      if (!(await how()) || (MODE !== "sign_key" && MODE !== "sign_passkey")) { view(C); return back(t("errAgain")); }
     }
     if (approve && (MODE === "sign_key" || MODE === "sign_passkey")) {
-      say(MODE === "sign_passkey" ? "Waiting for this device" : "Signing in this browser");
       const pre = await api(`/api/approve/${cid}/device`, body);
-      if (!pre.challenge) return back((pre.messages || [{}])[0].content || "The approval could not be prepared.");
+      if (!pre.challenge) return back(errText((pre.messages || [{}])[0]) || t("errPrep"));
       try { body.device = await PK.sign(pre); }
-      catch (e) { return back(e && e.name === "NotAllowedError" ? "Nothing was approved: the device prompt was closed, or this is not one of the account's approver devices. Press Approve again to retry." : e && e.name === "NotEnrolledError" ? "Nothing was approved: this is not one of the account's approver devices." : "This device could not sign the approval. Nothing was approved."); }
+      catch (e) { return back(e && e.name === "NotAllowedError" ? t("errPrompt") : e && e.name === "NotEnrolledError" ? t("errNotDev") : t("errSign")); }
     }
     r = await api(`/api/approve/${cid}`, body);
   } catch (e) {
     // No answer came back. The decision may still have been recorded: read the request again before saying it was not.
     const now = await load();
-    if (now && now.status !== "requires_escalation") { busy = false; $("#no").textContent = "Reject"; $("#yes").textContent = YES; said(""); return refresh(true); }
-    return back(now ? "The gateway did not answer, and it has recorded no decision. Press again." : "The gateway is not answering, so this page cannot tell yet whether your decision was recorded. It shows the answer as soon as it can.");
+    if (now && now.status !== "requires_escalation") { busy = false; said(""); return refresh(true); }
+    return back(now ? t("errLost") : t("errUnknown"));
   }
   const err = !r.id && (r.messages || []).find(m => m.type === "error");
   // Someone enrolled a device for this account while this page was open: find out what this browser can do, and say so.
-  if (err && err.code === "device_required" && !body.device) { await how(); view(C); return back(MODE === "other" ? "Nothing was approved: this account now approves on an enrolled device, and this is not one of them." : "This account now approves on an enrolled device. Press Approve again to sign here."); }
-  if (err && err.code === "offer_changed") { PKS = null; await refresh(true); return back(err.content); }  // the rules were run again at the yes: show the current offer
-  if (err) return back(err.content);
-  busy = false; $("#no").textContent = "Reject"; $("#yes").textContent = YES;
+  if (err && err.code === "device_required" && !body.device) { await how(); view(C); return back(MODE === "other" ? t("errNowOther") : t("errNowDev")); }
+  if (err && err.code === "offer_changed") { PKS = null; await refresh(true); return back(errText(err)); }  // the rules were run again at the yes: show the current offer
+  if (err && err.code === "own_request") { await refresh(true); return back(errText(err)); }
+  if (err) return back(errText(err));
+  busy = false;
   refresh(true);
 }
+
+// ---- Language: the same switch and the same stored choice as the shop
+function paint() {
+  document.documentElement.lang = lang;
+  document.title = t("title") + " · Valio Aimo";
+  $("#proto").textContent = t("proto");
+  $("#net").textContent = t("net");
+  if ($("#loading")) $("#loading").textContent = t("loading");
+  for (const b of document.querySelectorAll("[data-lang]")) b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
+  if (!busy) { $("#no").textContent = t("no"); $("#yes").textContent = t("yes"); }
+  $("#bar .hint").classList.remove("bad");
+  if (C) view(C);
+}
+for (const b of document.querySelectorAll("[data-lang]")) b.onclick = () => {
+  if (b.dataset.lang === lang) return;
+  if ($("#who")) { LAST.who = $("#who").value; LAST.note = $("#note").value; }
+  lang = b.dataset.lang; try { localStorage.setItem("shop.lang", lang); } catch (e) {}
+  paint();
+};
+paint();
 $("#yes").onclick = () => decide(true);
 $("#no").onclick = () => decide(false);
 refresh(true);

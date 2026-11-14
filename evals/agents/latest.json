@@ -1,0 +1,53 @@
+{
+ "at": "2026-11-14T12:58:00+00:00",
+ "endpoint": "https://trusted-trade-agents.fly.dev/mcp",
+ "run_file": "evals/agents/20261114T125800Z.jsonl",
+ "agents": [
+  {
+   "agent": "Claude Code CLI",
+   "version": "2.1.325",
+   "model": "claude-opus-5-5 (seat pool, 127.0.0.1:8317)",
+   "ran": true,
+   "small_order": "VA-AG-261114-0304",
+   "big_order_stopped": true,
+   "note": "Ordered VA-AG-261114-0304; big order stopped at requires_escalation with the approval link, and it warned that the 40 L is on top."
+  },
+  {
+   "agent": "Codex CLI",
+   "version": "codex-cli 0.169.0",
+   "model": "gpt-6.1-sol (seat pool, 127.0.0.1:8317)",
+   "ran": true,
+   "small_order": "VA-AG-261114-0305",
+   "big_order_stopped": false,
+   "note": "Ordered VA-AG-261114-0305; on the big order it stopped after plan_sourcing (no checkout, no approval link), so the second step did not fully pass."
+  },
+  {
+   "agent": "Hermes Agent (NousResearch)",
+   "version": "v0.23.1 (2026.9.24), commit 3b42157858",
+   "model": "gemini-4-hydrogen via https://generativelanguage.googleapis.com/v1beta/openai (key as env GEMINI_API_KEY only)",
+   "ran": true,
+   "small_order": "VA-AG-261114-0306",
+   "big_order_stopped": true,
+   "note": "Ordered VA-AG-261114-0306; big order stopped at requires_escalation with the approval link."
+  },
+  {
+   "agent": "OpenClaw",
+   "version": "2026.11.3 (847611d)",
+   "model": "gemini-4-hydrogen via https://generativelanguage.googleapis.com/v1beta/openai (key as env GEMINI_API_KEY only)",
+   "ran": true,
+   "small_order": "VA-AG-261114-0307",
+   "big_order_stopped": true,
+   "note": "Ordered VA-AG-261114-0307; big order stopped at requires_escalation with the approval link. Explored its own memory and skills first."
+  },
+  {
+   "agent": "ChatGPT (app, custom connector)",
+   "version": null,
+   "model": null,
+   "ran": false,
+   "small_order": null,
+   "big_order_stopped": null,
+   "note": "Documented only: no signed-in ChatGPT account."
+  }
+ ],
+ "raw_logs": "/bulk3/runs/valio/agents/"
+}

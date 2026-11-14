@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="fi">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The same order by hand · Aimo Agent Gateway</title>
+<title>Sama tilaus käsin · prototyyppi</title>
+<script>try { document.documentElement.lang = localStorage.getItem("shop.lang") === "en" ? "en" : "fi"; } catch (e) { }</script>
 <link rel="stylesheet" href="/static/app.css">
 <style>
 main{max-width:1240px;margin:0 auto;padding:0 var(--s5) var(--s8)}
@@ -68,6 +69,11 @@ main{max-width:1240px;margin:0 auto;padding:0 var(--s5) var(--s8)}
 .checkout .btn{height:44px;padding:0 20px;font-size:var(--t4)}
 .small{font-size:var(--t2);color:var(--muted);line-height:1.5}
 .bad{color:var(--deny)}
+.lang{display:flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;flex:none}
+.lang button{border:0;background:none;height:30px;min-width:38px;border-radius:999px;font-size:var(--t1);font-weight:600;color:var(--muted);cursor:pointer}
+.lang button[aria-pressed=true]{background:var(--ink);color:var(--panel)}
+.back{display:inline-block;font-size:var(--t3);color:var(--muted);text-decoration:none;margin-bottom:var(--s2)}
+.back:hover{color:var(--ink)}
 
 /* The result */
 .res{margin-bottom:var(--s4);padding:var(--s5)}
@@ -108,17 +114,18 @@ main{max-width:1240px;margin:0 auto;padding:0 var(--s5) var(--s8)}
 </style>
 </head>
 <body>
-<div class="banner">Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.</div>
-<header id="site"></header>
+<div class="banner" data-t="banner">Junction 2026 -prototyyppi Valio Aimon haastedatalla. Ei Valio Aimon järjestelmä.</div>
+<header id="site"><div class="lang" role="group" aria-label="Kieli / Language"><button type="button" data-lang="fi">FI</button><button type="button" data-lang="en">EN</button></div></header>
 <main>
 <div class="page-head">
-  <h1>The same order by hand</h1>
-  <p class="lead">This is what the agent does in seconds, done the usual way: read the list, search the webshop, check pack size and allergens, add to the basket. The clock starts at your first key press and stops at checkout. Nothing is ordered.</p>
+  <a class="back" href="/shop" data-t="back">← Verkkokauppa</a>
+  <h1 data-t="h1">Sama tilaus käsin</h1>
+  <p class="lead" data-t="lead"></p>
 </div>
 
 <div class="watch idle" id="watch" role="timer" aria-live="off">
   <div class="clock"><span class="dot" aria-hidden="true"></span><b id="t">0:00</b></div>
-  <span id="t-note">The clock has not started. It starts when you type.</span>
+  <span id="t-note"></span>
   <div class="agent" id="agent"></div>
 </div>
 
@@ -126,94 +133,186 @@ main{max-width:1240px;margin:0 auto;padding:0 var(--s5) var(--s8)}
 
 <div class="cols" id="work">
   <div class="stack">
-    <div class="card"><h2>Shopping list <span class="muted" id="l-count"></span></h2><div class="task" id="task-head"><span class="wait"><span class="spin"></span>Reading the shopping list from the gateway</span></div><div id="list" style="margin-top:8px"></div>
-      <p class="hint">Tick an item when you have it. The ticks are only for you. Amounts are what the kitchen needs; you work out how many packs that is.</p></div>
+    <div class="card"><h2><span data-t="list_h">Ostoslista</span> <span class="muted" id="l-count"></span></h2><div class="task" id="task-head"></div><div id="list" style="margin-top:8px"></div>
+      <p class="hint" data-t="hint"></p></div>
   </div>
   <div class="stack">
-    <div class="card shop"><h2>Webshop</h2>
-      <div class="search"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.6"/><path d="m10.5 10.5 3.5 3.5"/></svg><input type="search" id="q" name="q" placeholder="Search products" autocomplete="off" aria-label="Search products"></div>
-      <div id="found" style="margin-top:8px"><div class="empty">Type a product name to search Valio Aimo's catalogue.</div></div></div>
-    <div class="card"><h2>Basket <span class="muted" id="b-count"></span></h2><div id="basket"><div class="empty">The basket is empty.</div></div>
-      <div class="checkout"><button class="btn primary" id="out" disabled>Check out and stop the clock</button><span class="small">Prices and stock are checked at checkout, like the agent's order. Nothing is ordered.</span></div></div>
+    <div class="card shop"><h2 data-t="shop_h">Verkkokauppa</h2>
+      <div class="search"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.6"/><path d="m10.5 10.5 3.5 3.5"/></svg><input type="search" id="q" name="q" autocomplete="off"></div>
+      <div id="found" style="margin-top:8px"></div></div>
+    <div class="card"><h2><span data-t="basket_h">Ostoskori</span> <span class="muted" id="b-count"></span></h2><div id="basket"></div>
+      <div class="checkout"><button class="btn primary" id="out" disabled data-t="out"></button><span class="small" data-t="out_note"></span></div></div>
   </div>
 </div>
 </main>
 <script src="/static/lib.js"></script>
 <script>
 const run = new URLSearchParams(location.search).get("run") || "";
-const B = new Map();   // product id -> {id, title, unit, units}
-let attempt = null, starting = null, t0 = 0, ticker = null, task = null, done = false, seq = 0, typing = null, agent = null;
-const n = x => Number(x).toLocaleString("en-IE", { maximumFractionDigits: 2 });
+const B = new Map();   // product id -> {id, title, title_fi, unit, units}
+let attempt = null, starting = null, t0 = 0, ticker = null, task = null, taskFail = false, done = false, seq = 0, typing = null, agent = null;
+let state = "idle", noteKey = null, found = null, R = null, last = null;
+let lang = document.documentElement.lang === "en" ? "en" : "fi";
+const FI = () => lang === "fi";
+
+// The shop's own Finnish words for allergens, dietary marks, sales units and reasons.
+const ALG = { AM: "maito", AE: "kananmuna", AF: "kala", AC: "äyriäiset", UM: "nilviäiset", AP: "maapähkinä", AN: "pähkinät", AY: "soija", AS: "seesami", BM: "sinappi", BC: "selleri", NL: "lupiini", AU: "sulfiitit", AW: "gluteenia sisältävät viljat", UW: "vehnä", GB: "ohra", GO: "kaura", NR: "ruis", GS: "speltti", GK: "kamut", ML: "laktoosi", SA: "manteli", SC: "cashewpähkinä", SH: "hasselpähkinä", SM: "makadamiapähkinä", SP: "pekaanipähkinä", SR: "parapähkinä", ST: "pistaasipähkinä", SW: "saksanpähkinä" };
+const CLAIM = { "FREE_FROM:LACTOSE": "laktoositon", "FREE_FROM:GLUTEN": "gluteeniton", "DIET:VEGAN": "vegaaninen" };
+const UNIT = { piece: "kpl", kg: "kg", case: "ltk", pack: "pkt", bag: "ps", box: "ltk", jar: "prk", bottle: "plo", sack: "säkki", carton: "tlk", roll: "rll" };
+const WHY = { stock: "ei tarpeeksi saatavuutta", cutoff_passed: "tilausaika tälle toimituspäivälle on mennyt", not_deliverable: "ei toimitettavissa millekään päivälle", sales_block: "myyntiesto", out_of_stock: "loppu varastosta",
+  later_date_only: "saatavilla vasta myöhemmälle päivälle", no_price: "tälle asiakkaalle ei ole hintaa", no_data: "saatavuustietoa ei ole", product_recalled: "erä on vedetty takaisin, joten tuotetta ei voi tilata",
+  short_at_warehouse: "Valio Aimo on ilmoittanut keräilyvajeesta tälle päivälle", allocation_share_used: "tuotteen kiintiö tälle päivälle on käytetty", delivery_delayed: "Valio Aimo on ilmoittanut toimituksen viivästyvän" };
+
+const T = {
+  fi: {
+    title: "Sama tilaus käsin · prototyyppi", banner: "Junction 2026 -prototyyppi Valio Aimon haastedatalla. Ei Valio Aimon järjestelmä.", back: "← Verkkokauppa", h1: "Sama tilaus käsin",
+    lead: "Tilausapuri tekee tämän sekunneissa. Tässä sama tehdään tavalliseen tapaan: lue lista, hae tuote, tarkista pakkauskoko ja allergeenit, lisää ostoskoriin. Kello käynnistyy ensimmäisestä näppäilystä ja pysähtyy, kun painat Valmis. Mitään ei tilata.",
+    note_idle: "Kello ei käy vielä. Se käynnistyy, kun alat kirjoittaa.", note_on: "Kello käy. Se pysähtyy, kun painat Valmis.", note_stopped: "Pysäytetty. Aika mitattiin palvelimella.", no_answer: "Tarkistus ei vastannut. Yritä uudelleen.",
+    list_h: "Ostoslista", hint: "Rastita rivi, kun tuote on korissa. Rastit ovat vain sinua varten. Määrät ovat keittiön tarve; pakkausten määrän lasket itse.",
+    reading: "Haetaan ostoslistaa", no_list: "Ostoslistaa ei saatu. Yritetään uudelleen muutaman sekunnin välein.",
+    task: (title, guests, d, from) => `<b>${title}</b>, ${guests} henkeä. Toimituspäivä ${d} Lähde: ${from}.`, notes: "Menun merkinnät. Pidä niistä kiinni:", items: k => `${k} riviä`,
+    shop_h: "Verkkokauppa", search: "Hae tuotteita", type: "Kirjoita tuotteen nimi, niin näet tuotteet valikoimasta.", none: "Ei tuloksia. Kokeile toista sanaa.",
+    sold: (u, step, pack) => `Yksikkö: ${u}${step ? ", " + step + " kerrallaan" : ""}. Pakkaus: ${pack}.`, no_pack: "pakkauskokoa ei ole tuotetiedoissa",
+    contains: x => `Sisältää: ${x}.`, may: x => `Saattaa sisältää: ${x}.`, no_alg: "Ei ilmoitettuja allergeeneja.", add: "Lisää", added: "Lisätty", remove: "Poista", qty_of: x => `Määrä: ${x}`,
+    basket_h: "Ostoskori", empty: "Ostoskori on tyhjä.", rows: k => k === 1 ? "1 rivi" : `${k} riviä`, out: "Valmis, pysäytä kello", out_note: "Hinnat ja saatavuus tarkistetaan lopuksi, kuten tilausapurin ostoskorissa. Mitään ei tilata.",
+    agent_lg: "Tilausapuri, kuvasta tarkistettuun ostoskoriin (luku ja suunnittelu, ennen kuin ihminen vahvistaa):", agent_sm: "Tilausapuri:", agent_rows: k => `${k} riviä`, measured: "mitattu",
+    agent_none: "Tällä palvelimella ei ole vielä tehty tilausta menukuvasta.",
+    your: "Aikasi", big: (min, k) => `${min} min, ${k === 1 ? "1 rivi" : k + " riviä"} käsin.`, aria: (you, ag) => `Sinulta kului käsin ${you}; tilausapurilta ${ag} kuvasta tarkistettuun ostoskoriin, ennen kuin ihminen vahvistaa.`,
+    you: "Sinä, käsin", you_sub: k => `${k === 1 ? "1 rivi" : k + " riviä"}, mitattu palvelimella`, you_for: k => `Sinä, ${k} riviä`, est: k => `arvio: tahtisi × ${k} riviä`,
+    the_agent: "Tilausapuri", agent_sub: k => `kuvasta tarkistettuun ostoskoriin, ${k} riviä, mitattu; ihmisen vahvistus tulee päälle`,
+    last: (s, k, eur, person) => `Tilausapurin viimeisin oikea tilaus menukuvasta kesti ${s} s, ${k} riviä, mallin kustannus ${eur} €${person ? `, josta ${person} s kului ihmisen hyväksyntään` : ""}.`,
+    last_none: "Tällä palvelimella ei ole vielä tehty tilausta menukuvasta, joten aikasi viereen ei ole tilausapurin aikaa.",
+    both: (a, b) => `Listalla on ${a} riviä; tilausapurin tilauksessa samasta listasta on ${b} riviä.`,
+    counted: "Tämä yritys lasketaan mukaan mitattuun aikaan.", not_counted: (a, b, c) => `Tätä yritystä ei lasketa mukaan: korissa on ${a} listan ${b} rivistä (vähintään ${c} tarvitaan).`,
+    so_far: (min, at, k) => ` Käsin tähän mennessä: ${min} min, ${at === 1 ? "yhden valmiin yrityksen aika" : at + " valmiin yrityksen mediaani"}, ${k === 1 ? "1 ihminen" : k + " ihmistä"}.`,
+    bad_h: k => k === 1 ? "1 rivi ei olisi mennyt läpi:" : `${k} riviä ei olisi mennyt läpi:`, breaks: x => `sisältää tai saattaa sisältää: ${x}, jonka tämä menu sulkee pois`,
+    all_ok: sum => `Jokainen korisi rivi on tilattavissa tälle päivälle ja noudattaa menun merkintöjä. Ostoskori ${sum} (alv 0 %).`, back_btn: "Takaisin verkkokauppaan", back_href: "/shop", again: "Ota aika uudelleen",
+  },
+  en: {
+    title: "The same order by hand · prototype", banner: "Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system.", back: "← Shop", h1: "The same order by hand",
+    lead: "This is what the assistant does in seconds, done the usual way: read the list, search the webshop, check pack size and allergens, add to the basket. The clock starts at your first key press and stops at checkout. Nothing is ordered.",
+    note_idle: "The clock has not started. It starts when you type.", note_on: "Running. It stops when you check out.", note_stopped: "Stopped at checkout. Timed on the server.", no_answer: "The checkout did not answer. Try again.",
+    list_h: "Shopping list", hint: "Tick an item when you have it. The ticks are only for you. Amounts are what the kitchen needs; you work out how many packs that is.",
+    reading: "Reading the shopping list", no_list: "The shopping list is not answering. Asking again every few seconds.",
+    task: (title, guests, d, from) => `<b>${title}</b>, ${guests} guests, delivery ${d}. From ${from}.`, notes: "Notes on the menu. Keep to them:", items: k => `${k} items`,
+    shop_h: "Webshop", search: "Search products", type: "Type a product name to search the range.", none: "Nothing found for that. Try another word.",
+    sold: (u, step, pack) => `Sold by the ${u}${step ? ", in steps of " + step : ""}. Pack: ${pack}.`, no_pack: "pack size not in the data",
+    contains: x => `Contains ${x}.`, may: x => `May contain ${x}.`, no_alg: "No allergens listed.", add: "Add", added: "Added", remove: "Remove", qty_of: x => `Quantity of ${x}`,
+    basket_h: "Basket", empty: "The basket is empty.", rows: k => k === 1 ? "1 line" : `${k} lines`, out: "Check out and stop the clock", out_note: "Prices and stock are checked at checkout, like the assistant's cart. Nothing is ordered.",
+    agent_lg: "The assistant, photo to a checked cart (reading and planning, before a person confirms):", agent_sm: "The assistant:", agent_rows: k => `for ${k} lines`, measured: "measured",
+    agent_none: "No menu photo has become an order on this server yet.",
+    your: "Your time", big: (min, k) => `${min} min for ${k} line${k === 1 ? "" : "s"}, by hand.`, aria: (you, ag) => `You took ${you} by hand; the assistant took ${ag} from photo to a checked cart, before a person confirms.`,
+    you: "You, by hand", you_sub: k => `${k} line${k === 1 ? "" : "s"}, timed on the server`, you_for: k => `You, for ${k} lines`, est: k => `estimate: your pace × ${k} lines`,
+    the_agent: "The assistant", agent_sub: k => `photo to a checked cart, ${k} lines, measured; a person's confirmation comes on top`,
+    last: (s, k, eur, person) => `The assistant's last real order from a menu photo took ${s} s for ${k} lines, model cost €${eur}${person ? `, including ${person} s for a person to approve it` : ""}.`,
+    last_none: "No menu photo has become an order on this server yet, so there is no assistant time to put next to yours.",
+    both: (a, b) => `The list has ${a} items; the assistant's order for it has ${b} lines.`,
+    counted: "This attempt counts in the measured time.", not_counted: (a, b, c) => `This attempt is not counted: the basket has ${a} of ${b} items on the list (at least ${c} are needed).`,
+    so_far: (min, at, k) => ` By hand so far: ${min} min, the middle of ${at} finished attempt${at === 1 ? "" : "s"} by ${k} ${k === 1 ? "person" : "people"}.`,
+    bad_h: k => `${k} line${k === 1 ? "" : "s"} would not have gone through:`, breaks: x => `contains or may contain ${x}, which this menu rules out`,
+    all_ok: sum => `Every line in your basket can be ordered for that day and keeps to the notes on the menu. Basket ${sum} ex VAT.`, back_btn: "Back to the menu page", back_href: "/menu", again: "Time it again",
+  },
+};
+const L = () => T[lang];
+const n = x => Number(x).toLocaleString(FI() ? "fi-FI" : "en-IE", { maximumFractionDigits: 2 });
+const money = c => FI() ? ((c || 0) / 100).toLocaleString("fi-FI", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €" : eur(c);
+const dayOf = d => !d ? "" : FI() ? (t => ["su", "ma", "ti", "ke", "to", "pe", "la"][t.getDay()] + " " + t.getDate() + "." + (t.getMonth() + 1) + ".")(new Date(d + "T12:00:00")) : day(d);
+const comma = s => FI() ? String(s).replace(/(\d)\.(\d)/g, "$1,$2") : String(s);
+const nameOf = x => FI() && x.title_fi || x.title;
+const unitOf = u => FI() ? UNIT[u] || u : u;
+const words = (codes, en) => FI() && codes ? codes.map((c, i) => ALG[c] || en[i] || c) : en;
 const mmss = s => Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0");
 const errOf = r => r && r.messages && r.messages.find(m => m.type === "error");
 const secs = s => s < 60 ? `${n(Math.round(s * 10) / 10)} s` : mmss(s);
-const watch = st => { $("#watch").classList.remove("idle", "on", "stopped"); $("#watch").classList.add(st); };
+const watch = st => { state = st; noteKey = null; $("#watch").classList.remove("idle", "on", "stopped"); $("#watch").classList.add(st); $("#t-note").textContent = L()["note_" + st]; };
 
 function start() {
   if (starting || done) return;
   t0 = performance.now();
   ticker = setInterval(() => { $("#t").textContent = mmss((performance.now() - t0) / 1000); }, 250);
   watch("on");
-  $("#t-note").textContent = "Running. It stops when you check out.";
   starting = api("/api/byhand/start", { run }).then(r => { attempt = r.attempt; });
 }
 document.addEventListener("keydown", start);
 
-// The agent's time for the same kind of job: this run if it is yours, else the last real one on the server.
+// The assistant's time for the same kind of job: this run if it is yours, else the last real one on the server.
 async function loadAgent() {
   try {
     if (run) {
       const r = await api("/api/menu/run/" + encodeURIComponent(run));
       const s = r && r.seconds;
-      if (s && s.read != null && s.plan != null) agent = { checked: s.read + s.plan, total: s.total, lines: r.plan && r.plan.totals ? r.plan.totals.lines : null, eur: r.usage ? r.usage.eur : null, ordered: !!r.order, of: "this menu" };
+      if (s && s.read != null && s.plan != null) agent = { checked: s.read + s.plan, total: s.total, lines: r.plan && r.plan.totals ? r.plan.totals.lines : null, eur: r.usage ? r.usage.eur : null, ordered: !!r.order };
     }
     if (!agent) {
       const l = await api("/api/menu/latest");
-      if (l.real) agent = { checked: l.phases && l.phases.read != null ? l.phases.read + l.phases.plan : null, total: l.seconds, lines: l.line_count, eur: l.cost ? l.cost.eur : null, ordered: true, of: "the last menu ordered here" };
+      if (l.real) agent = { checked: l.phases && l.phases.read != null ? l.phases.read + l.phases.plan : null, total: l.seconds, lines: l.line_count, eur: l.cost ? l.cost.eur : null, ordered: true };
     }
   } catch (e) { agent = null; }
-  $("#agent").innerHTML = agent && agent.checked != null ? `<span class="lg">The agent, photo to checked order:</span><span class="sm">The agent:</span><b>${esc(secs(agent.checked))}</b><span>for ${esc(agent.lines)} lines</span><span class="bs">measured</span>`
-    : '<span>No menu photo has become an order on this server yet.</span>';
+  showAgent();
+}
+function showAgent() {
+  const l = L();
+  $("#agent").innerHTML = agent && agent.checked != null ? `<span class="lg">${esc(l.agent_lg)}</span><span class="sm">${esc(l.agent_sm)}</span><b>${esc(secs(agent.checked))}</b><span>${esc(l.agent_rows(agent.lines))}</span><span class="bs">${esc(l.measured)}</span>`
+    : `<span>${esc(l.agent_none)}</span>`;
 }
 
 async function loadTask() {
   task = await api("/api/byhand/task" + (run ? "?run=" + encodeURIComponent(run) : ""));
-  const title = /[a-z]/.test(task.title) ? task.title : String(task.title).charAt(0) + String(task.title).slice(1).toLowerCase();
-  $("#task-head").innerHTML = `<b>${esc(title)}</b>, ${n(task.guests)} guests, delivery ${esc(day(task.delivery_date))}. From ${esc(task.from)}.` +
-    (task.notes.length ? `<div style="margin-top:6px">Notes on the menu. Keep to them:</div><div class="notes">${task.notes.map(x => `<span>${esc(x)}</span>`).join("")}</div>` : "");
-  $("#l-count").textContent = task.list.length + " items";
-  $("#list").innerHTML = task.list.map((x, i) => `<label class="need" for="n${i}"><input type="checkbox" id="n${i}" name="have"><b>${esc(x.item.charAt(0).toUpperCase() + x.item.slice(1))}</b><span class="tnum">${esc(x.amount)}</span><small>${x.dishes.map(esc).join(", ")}</small></label>`).join("");
+  showTask();
+}
+function showTask() {
+  const l = L();
+  if (!task) { $("#task-head").innerHTML = waitHtml(taskFail ? l.no_list : l.reading); return; }
+  const raw = String(FI() && task.title_fi || task.title);
+  const title = /[a-zåäö]/.test(raw) ? raw : raw.charAt(0) + raw.slice(1).toLowerCase();
+  const notes = FI() && task.notes_fi || task.notes;
+  $("#task-head").innerHTML = l.task(esc(title), n(task.guests), esc(dayOf(task.delivery_date)), esc(FI() && task.from_fi || task.from)) +
+    (notes.length ? `<div style="margin-top:6px">${esc(l.notes)}</div><div class="notes">${notes.map(x => `<span>${esc(x)}</span>`).join("")}</div>` : "");
+  $("#l-count").textContent = l.items(task.list.length);
+  const had = [...document.querySelectorAll(".need input")].map(c => c.checked);
+  $("#list").innerHTML = task.list.map((x, i) => {
+    const nm = String(FI() && x.fi || x.item);
+    return `<label class="need${had[i] ? " done" : ""}" for="n${i}"><input type="checkbox" id="n${i}" name="have"${had[i] ? " checked" : ""}><b>${esc(nm.charAt(0).toUpperCase() + nm.slice(1))}</b><span class="tnum">${esc(comma(x.amount))}</span><small>${(FI() && x.dishes_fi || x.dishes).map(esc).join(", ")}</small></label>`;
+  }).join("");
   document.querySelectorAll(".need input").forEach(c => c.onchange = () => c.parentElement.classList.toggle("done", c.checked));
 }
 
 function search() {
   const q = $("#q").value.trim(), mine = ++seq;
-  if (!q) { $("#found").innerHTML = '<div class="empty">Type a product name to search Valio Aimo\'s catalogue.</div>'; return; }
+  if (!q) { found = null; showFound(); return; }
   api("/api/byhand/search?q=" + encodeURIComponent(q)).then(r => {
     if (mine !== seq) return;
-    const ps = r.products || [];
-    $("#found").innerHTML = ps.length ? ps.map(p => `<div class="prod"><div><b>${esc(p.title)}</b>
-        <small>Sold by the ${esc(p.unit)}${p.step !== 1 ? ", in steps of " + n(p.step) : ""}. Pack: ${esc(p.pack)}.</small>
-        <small class="al">${p.contains.length ? "Contains " + p.contains.map(esc).join(", ") + "." : "No allergens listed."}${p.may_contain.length ? " May contain " + p.may_contain.map(esc).join(", ") + "." : ""}${p.claims.length ? " " + p.claims.map(esc).join(", ") + "." : ""}</small></div>
-      <div class="qty"><input type="number" name="qty" min="${p.step}" max="9999" step="${p.step}" value="${p.step}" aria-label="Quantity of ${esc(p.title)}"><button class="btn small" data-id="${esc(p.id)}" data-title="${esc(p.title)}" data-unit="${esc(p.unit)}">Add</button></div></div>`).join("")
-      : '<div class="empty">Nothing found for that. Try another word.</div>';
-    document.querySelectorAll("#found .btn").forEach(b => b.onclick = () => {
-      start();
-      const u = parseFloat(b.previousElementSibling.value) || 0;
-      if (u <= 0) return;
-      const cur = B.get(b.dataset.id);
-      B.set(b.dataset.id, { id: b.dataset.id, title: b.dataset.title, unit: b.dataset.unit, units: (cur ? cur.units : 0) + u });
-      b.textContent = "Added"; setTimeout(() => { b.textContent = "Add"; }, 800);
-      basket();
-    });
+    found = r.products || [];
+    showFound();
+  });
+}
+function showFound() {
+  const l = L();
+  if (!found) { $("#found").innerHTML = `<div class="empty">${esc(l.type)}</div>`; return; }
+  $("#found").innerHTML = found.length ? found.map((p, i) => {
+    const has = words(p.al, p.contains), may = words(p.may, p.may_contain), cl = FI() && p.cl ? p.cl.map(c => CLAIM[c] || c) : p.claims;
+    const pack = p.pack === "pack size not in the data" ? l.no_pack : comma(p.pack);
+    return `<div class="prod"><div><b>${esc(nameOf(p))}</b>
+        <small>${esc(l.sold(unitOf(p.unit), p.step !== 1 ? n(p.step) : "", pack))}</small>
+        <small class="al">${has.length ? esc(l.contains(has.join(", "))) : esc(l.no_alg)}${may.length ? " " + esc(l.may(may.join(", "))) : ""}${cl.length ? " " + cl.map(esc).join(", ") + "." : ""}</small></div>
+      <div class="qty"><input type="number" name="qty" min="${p.step}" max="9999" step="${p.step}" value="${p.step}" aria-label="${esc(l.qty_of(nameOf(p)))}"><button class="btn small" data-i="${i}">${esc(l.add)}</button></div></div>`;
+  }).join("") : `<div class="empty">${esc(l.none)}</div>`;
+  document.querySelectorAll("#found .btn").forEach(b => b.onclick = () => {
+    start();
+    const p = found[+b.dataset.i], u = parseFloat(b.previousElementSibling.value) || 0;
+    if (!p || u <= 0) return;
+    const cur = B.get(p.id);
+    B.set(p.id, { id: p.id, title: p.title, title_fi: p.title_fi, unit: p.unit, units: (cur ? cur.units : 0) + u });
+    b.textContent = L().added; setTimeout(() => { b.textContent = L().add; }, 800);
+    basket();
   });
 }
 $("#q").oninput = () => { clearTimeout(typing); typing = setTimeout(search, 180); };
 
 function basket() {
-  $("#b-count").textContent = B.size ? B.size + (B.size === 1 ? " line" : " lines") : "";
+  const l = L();
+  $("#b-count").textContent = B.size ? l.rows(B.size) : "";
   $("#out").disabled = !B.size || done;
-  $("#basket").innerHTML = B.size ? [...B.values()].map(x => `<div class="brow"><span>${esc(x.title)}</span><span><input type="number" name="units" min="0" max="9999" step="any" value="${x.units}" data-id="${esc(x.id)}" aria-label="Quantity of ${esc(x.title)}"> <span class="u">${esc(x.unit)}</span></span><button class="btn small ghost" data-rm="${esc(x.id)}">Remove</button></div>`).join("") : '<div class="empty">The basket is empty.</div>';
+  $("#basket").innerHTML = B.size ? [...B.values()].map(x => `<div class="brow"><span>${esc(nameOf(x))}</span><span><input type="number" name="units" min="0" max="9999" step="any" value="${x.units}" data-id="${esc(x.id)}" aria-label="${esc(l.qty_of(nameOf(x)))}"> <span class="u">${esc(unitOf(x.unit))}</span></span><button class="btn small ghost" data-rm="${esc(x.id)}">${esc(l.remove)}</button></div>`).join("") : `<div class="empty">${esc(l.empty)}</div>`;
   document.querySelectorAll("#basket input").forEach(i => i.onchange = () => { const u = parseFloat(i.value) || 0; if (u > 0) B.get(i.dataset.id).units = u; else B.delete(i.dataset.id); basket(); });
   document.querySelectorAll("#basket [data-rm]").forEach(b => b.onclick = () => { B.delete(b.dataset.rm); basket(); });
 }
@@ -224,33 +323,60 @@ $("#out").onclick = async () => {
   $("#out").disabled = true;
   await starting;
   const r = await api("/api/byhand/checkout", { attempt, basket: [...B.values()].map(x => ({ id: x.id, units: x.units })) });
-  if (errOf(r) || r.seconds == null) { $("#out").disabled = false; $("#t-note").textContent = (errOf(r) || {}).content || "The checkout did not answer. Try again."; return; }
+  if (errOf(r) || r.seconds == null) { $("#out").disabled = false; noteKey = "no_answer"; $("#t-note").textContent = L().no_answer; return; }
   done = true; clearInterval(ticker);
   watch("stopped");
   $("#t").textContent = mmss(r.seconds);
-  $("#t-note").textContent = "Stopped at checkout. Timed on the server.";
-  const last = await api("/api/menu/latest");
+  try { last = await api("/api/menu/latest"); } catch (e) { last = {}; }
+  R = r;
+  showResult();
+  $("#result").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth", block: "start" });
+  basket();
+};
+
+function showResult() {
+  if (!R) return;
+  const r = R, l = L();
   const bad = r.rows.filter(x => x.breaks || !x.orderable);
   const bh = r.by_hand || {};
   const a = agent && agent.checked != null ? agent : null;
   const pace = a && a.lines && r.lines && r.lines < a.lines * 0.8 ? r.seconds / r.lines * a.lines : null;  // only when the basket is far from complete
   const top = Math.max(r.seconds, pace || 0), pc = v => Math.max(0.4, v / top * 100).toFixed(2);
-  $("#result").innerHTML = `<section class="card res"><p class="lbl">Your time</p>
-    <div class="big">${n(r.minutes)} min for ${r.lines} line${r.lines === 1 ? "" : "s"}, by hand.</div>
-    ${a ? `<div class="cmp" role="img" aria-label="You took ${esc(mmss(r.seconds))} by hand; the agent took ${esc(secs(a.checked))} from photo to checked order.">
-      <div class="cr"><span class="who">You, by hand<small>${r.lines} line${r.lines === 1 ? "" : "s"}, timed on the server</small></span><div class="bar"><i style="width:${pc(r.seconds)}%"></i></div><b>${esc(mmss(r.seconds))}</b></div>
-      ${pace ? `<div class="cr est"><span class="who">You, for ${esc(a.lines)} lines<small>estimate: your pace × ${esc(a.lines)} lines</small></span><div class="bar"><i style="width:${pc(pace)}%"></i></div><b>${esc(mmss(pace))}</b></div>` : ""}
-      <div class="cr"><span class="who">The agent<small>photo to checked order, ${esc(a.lines)} lines, measured</small></span><div class="bar"><i style="width:${pc(a.checked)}%"></i></div><b>${esc(secs(a.checked))}</b></div>
+  const why = x => [x.breaks ? (FI() && x.hits && x.hits.length ? l.breaks(x.hits.map(c => ALG[c] || c).join(", ")) : x.breaks) : null, x.orderable ? null : FI() ? WHY[x.why_code] || x.why : x.why].filter(Boolean).join("; ");
+  const counts = FI() ? (r.finished ? l.counted : l.not_counted(r.lines, r.list_lines, r.needed || Math.ceil(0.8 * r.list_lines))) : r.counts;
+  $("#result").innerHTML = `<section class="card res"><p class="lbl">${esc(l.your)}</p>
+    <div class="big">${esc(l.big(n(r.minutes), r.lines))}</div>
+    ${a ? `<div class="cmp" role="img" aria-label="${esc(l.aria(mmss(r.seconds), secs(a.checked)))}">
+      <div class="cr"><span class="who">${esc(l.you)}<small>${esc(l.you_sub(r.lines))}</small></span><div class="bar"><i style="width:${pc(r.seconds)}%"></i></div><b>${esc(mmss(r.seconds))}</b></div>
+      ${pace ? `<div class="cr est"><span class="who">${esc(l.you_for(a.lines))}<small>${esc(l.est(a.lines))}</small></span><div class="bar"><i style="width:${pc(pace)}%"></i></div><b>${esc(mmss(pace))}</b></div>` : ""}
+      <div class="cr"><span class="who">${esc(l.the_agent)}<small>${esc(l.agent_sub(a.lines))}</small></span><div class="bar"><i style="width:${pc(a.checked)}%"></i></div><b>${esc(secs(a.checked))}</b></div>
     </div>` : ""}
-    <p>${last.real ? `The agent's last real order from a menu photo took ${n(last.seconds)} s for ${last.line_count} lines, model cost €${last.cost.eur.toFixed(4)}${last.phases && last.phases.person ? `, including ${n(last.phases.person)} s for a person to approve it` : ""}.` : "No menu photo has become an order on this server yet, so there is no agent time to put next to yours."} The list has ${r.list_lines} items; the agent's order for it has ${r.agent_lines} lines.</p>
-    <p>${esc(r.counts)}${bh.basis === "measured" ? ` By hand so far: ${n(bh.minutes)} min, the middle of ${bh.attempts} finished attempt${bh.attempts === 1 ? "" : "s"} by ${bh.n} ${bh.n === 1 ? "person" : "people"}.` : ""}</p>
-    ${bad.length ? `<p><b>${bad.length} line${bad.length === 1 ? "" : "s"} would not have gone through:</b></p>${bad.map(x => `<div class="small bad">${esc(x.title)}: ${esc([x.breaks, x.orderable ? null : x.why].filter(Boolean).join("; "))}</div>`).join("")}` : `<p>Every line in your basket can be ordered for that day and keeps to the notes on the menu. Basket ${eur(r.subtotal)} ex VAT.</p>`}
-    <div class="acts"><a class="btn" href="/menu">Back to the menu page</a><a class="btn ghost" href="${location.pathname + location.search}">Time it again</a></div></section>`;
-  $("#result").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth", block: "start" });
-  basket();
-};
+    <p>${esc(last && last.real ? l.last(n(last.seconds), last.line_count, comma(last.cost.eur.toFixed(4)), last.phases && last.phases.person ? n(last.phases.person) : "") : l.last_none)} ${esc(l.both(r.list_lines, r.agent_lines))}</p>
+    <p>${esc(counts)}${bh.basis === "measured" ? esc(l.so_far(n(bh.minutes), bh.attempts, bh.n)) : ""}</p>
+    ${bad.length ? `<p><b>${esc(l.bad_h(bad.length))}</b></p>${bad.map(x => `<div class="small bad">${esc(nameOf(x))}: ${esc(why(x))}</div>`).join("")}` : `<p>${esc(l.all_ok(money(r.subtotal)))}</p>`}
+    <div class="acts"><a class="btn" href="${l.back_href}">${esc(l.back_btn)}</a><a class="btn ghost" href="${esc(location.pathname + location.search)}">${esc(l.again)}</a></div></section>`;
+}
 
-(function tryTask() { loadTask().catch(() => { $("#task-head").innerHTML = waitHtml("The gateway is not answering with the shopping list. Asking again every few seconds."); setTimeout(tryTask, 4000); }); })();
+// ---- The language switch: the same key and pill as /shop.
+function paint() {
+  const l = L();
+  document.documentElement.lang = lang;
+  document.title = l.title;
+  for (const b of document.querySelectorAll("[data-lang]")) b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
+  for (const el of document.querySelectorAll("[data-t]")) el.textContent = l[el.dataset.t];
+  $("#q").placeholder = l.search; $("#q").setAttribute("aria-label", l.search);
+  $("#t-note").textContent = l[noteKey || "note_" + state];
+  showAgent(); showTask(); showFound(); basket(); showResult();
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-lang]");
+  if (!b || b.dataset.lang === lang) return;
+  lang = b.dataset.lang; try { localStorage.setItem("shop.lang", lang); } catch (err) { }
+  paint();
+});
+paint();
+
+(function tryTask() { loadTask().catch(() => { taskFail = true; showTask(); setTimeout(tryTask, 4000); }); })();
 loadAgent();
 </script>
 </body>

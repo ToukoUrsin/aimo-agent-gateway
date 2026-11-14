@@ -1,5 +1,5 @@
 {
- "at": "2026-11-14T10:18:52Z",
+ "at": "2026-11-14T12:42:09Z",
  "suites": [
   {
    "id": "flow",
@@ -8,9 +8,9 @@
    "passed": 10,
    "failed": 0,
    "exit": 0,
-   "seconds": 40.2,
+   "seconds": 9.3,
    "command": "uv run -q python -m tests.flow",
-   "at": "2026-11-14T10:12:01Z"
+   "at": "2026-11-14T12:38:20Z"
   },
   {
    "id": "need",
@@ -19,9 +19,9 @@
    "passed": 37,
    "failed": 0,
    "exit": 0,
-   "seconds": 16.4,
+   "seconds": 12.6,
    "command": "uv run -q python -m tests.need",
-   "at": "2026-11-14T09:55:37Z"
+   "at": "2026-11-14T12:38:33Z"
   },
   {
    "id": "controls",
@@ -30,9 +30,9 @@
    "passed": 46,
    "failed": 0,
    "exit": 0,
-   "seconds": 56.5,
+   "seconds": 7.4,
    "command": "uv run -q python -m tests.controls",
-   "at": "2026-11-14T10:12:57Z"
+   "at": "2026-11-14T12:38:40Z"
   },
   {
    "id": "after",
@@ -41,9 +41,9 @@
    "passed": 58,
    "failed": 0,
    "exit": 0,
-   "seconds": 14.4,
+   "seconds": 9.1,
    "command": "uv run -q python -m tests.after",
-   "at": "2026-11-14T09:56:01Z"
+   "at": "2026-11-14T12:38:49Z"
   },
   {
    "id": "menu",
@@ -52,9 +52,9 @@
    "passed": 154,
    "failed": 0,
    "exit": 0,
-   "seconds": 144.1,
+   "seconds": 111.1,
    "command": "uv run -q python -m tests.menu",
-   "at": "2026-11-14T09:58:25Z"
+   "at": "2026-11-14T12:40:40Z"
   },
   {
    "id": "seller",
@@ -63,9 +63,9 @@
    "passed": 58,
    "failed": 0,
    "exit": 0,
-   "seconds": 20.0,
+   "seconds": 9.2,
    "command": "uv run -q python -m tests.seller",
-   "at": "2026-11-14T09:58:45Z"
+   "at": "2026-11-14T12:40:50Z"
   },
   {
    "id": "rush",
@@ -74,9 +74,9 @@
    "passed": 38,
    "failed": 0,
    "exit": 0,
-   "seconds": 21.1,
+   "seconds": 12.9,
    "command": "uv run -q python -m tests.rush",
-   "at": "2026-11-14T09:59:06Z"
+   "at": "2026-11-14T12:41:02Z"
   },
   {
    "id": "attack",
@@ -85,9 +85,9 @@
    "passed": 105,
    "failed": 0,
    "exit": 0,
-   "seconds": 5.8,
+   "seconds": 4.0,
    "command": "uv run -q python -m tests.attack",
-   "at": "2026-11-14T10:17:46Z"
+   "at": "2026-11-14T12:41:14Z"
   },
   {
    "id": "passkey",
@@ -96,9 +96,9 @@
    "passed": 90,
    "failed": 0,
    "exit": 0,
-   "seconds": 54.3,
+   "seconds": 36.8,
    "command": "node tests/passkey.mjs",
-   "at": "2026-11-14T10:18:52Z"
+   "at": "2026-11-14T12:41:58Z"
   },
   {
    "id": "peppol",
@@ -107,9 +107,9 @@
    "passed": 5,
    "failed": 0,
    "exit": 0,
-   "seconds": 20.1,
+   "seconds": 11.7,
    "command": "uv run -q python -m tests.peppol",
-   "at": "2026-11-14T10:00:34Z"
+   "at": "2026-11-14T12:42:09Z"
   }
  ],
  "checks": 601,

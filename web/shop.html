@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Verkkokauppa · tilausapurin prototyyppi</title>
+<meta name="description" content="How an order assistant would sit inside a wholesaler's own web shop: the signed-in cook says what they will serve and gets one cart, checked in code, that they confirm themselves.">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+html,body{height:100%}
+body{overflow:hidden;background:var(--panel)}
+.app{height:100dvh;display:flex;flex-direction:column}
+.banner{flex:none;padding:4px 16px}
+
+/* the shop's own header */
+.top{flex:none;border-bottom:1px solid var(--line);background:var(--panel)}
+.bar1{display:flex;align-items:center;gap:var(--s4);height:60px;padding:0 var(--s5)}
+.logo{display:flex;align-items:center;gap:10px;flex:none;text-decoration:none;color:var(--ink);min-width:0}
+.logo i{width:26px;height:26px;border-radius:7px;background:var(--ink);flex:none;display:grid;place-items:center}
+.logo i::after{content:"";width:9px;height:9px;border:2px solid var(--panel);border-radius:2px}
+.logo b{display:block;font-size:var(--t4);font-weight:600;letter-spacing:-.01em;line-height:1.2;white-space:nowrap}
+.logo span{display:block;font-size:var(--t1);color:var(--muted);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search{flex:1;max-width:420px;margin-left:var(--s4);position:relative}
+.search input{width:100%;height:40px;border:1px solid var(--line-2);border-radius:999px;padding:0 16px 0 38px;background:var(--bg);font-size:var(--t3);outline:none}
+.search input:focus{border-color:var(--ink);background:var(--panel)}
+.search svg{position:absolute;left:13px;top:12px;width:16px;height:16px;color:var(--muted)}
+.acct{margin-left:auto;text-align:right;min-width:0;line-height:1.3}
+.acct b{display:block;font-size:var(--t3);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acct span{display:block;font-size:var(--t1);color:var(--muted);white-space:nowrap}
+.lang{display:flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;flex:none}
+.lang button{border:0;background:none;height:30px;min-width:38px;border-radius:999px;font-size:var(--t1);font-weight:600;color:var(--muted);cursor:pointer}
+.lang button[aria-pressed=true]{background:var(--ink);color:var(--panel)}
+.tabs{display:flex;gap:2px;padding:0 var(--s4);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{position:relative;flex:none;border:0;background:none;height:44px;padding:0 12px;font-size:var(--t3);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-current=true]{color:var(--ink);font-weight:600}
+.tabs button[aria-current=true]::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:2px;background:var(--ink)}
+.tabs .n{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--ink);color:var(--panel);font-size:11px;font-weight:600;display:inline-grid;place-items:center;font-variant-numeric:tabular-nums}
+.tabs .only-phone{display:none}
+
+/* body: shop on the left, the assistant on the right */
+.main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 480px}
+.shop,.panel{overflow-y:auto;background:var(--bg);padding:var(--s6) var(--s6) var(--s7)}
+.panel{display:none}
+.main[data-view=orders] .panel,.main[data-view=approvals] .panel{display:block}
+.main[data-view=orders] .shop,.main[data-view=approvals] .shop{display:none}
+.shop .in,.panel .in{max-width:760px}
+.shop h1,.panel h1{font-size:var(--t7);letter-spacing:-.02em}
+.shop .lede,.panel .lede{margin:var(--s2) 0 0;color:var(--muted);font-size:var(--t4);max-width:52ch}
+.shop .search.inline{display:none}
+.shelfh{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s3);margin:var(--s6) 0 var(--s3)}
+.shelfh h2{font-size:var(--t4);font-weight:600}
+.shelfh span{font-size:var(--t2);color:var(--muted);text-align:right}
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--s3)}
+.tile{display:flex;flex-direction:column;text-align:left;border:1px solid var(--line);border-radius:var(--r-l);background:var(--panel);padding:var(--s3);cursor:pointer;min-width:0;transition:border-color .15s,transform .1s}
+.tile:hover{border-color:var(--line-2)}
+.tile:active{transform:translateY(1px)}
+.tile .im{height:96px;border-radius:var(--r);background:#fff;display:grid;place-items:center;overflow:hidden;margin-bottom:var(--s3)}
+.tile .im img{width:100%;height:100%;object-fit:contain}
+.tile .im.none{background:var(--soft);color:var(--faint)}
+.tile .im.none svg{width:30px;height:30px}
+.tile b{font-size:var(--t2);font-weight:500;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.7em}
+.tile .pr{margin-top:6px;font-size:var(--t2);color:var(--muted);font-variant-numeric:tabular-nums}
+.tile .go{margin-top:var(--s2);font-size:var(--t1);font-weight:600;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:3px}
+.tile.sk .im,.tile.sk b,.tile.sk .pr{background:var(--soft);color:transparent;border-radius:6px}
+.links{display:flex;flex-direction:column;gap:2px;margin-top:var(--s6);border-top:1px solid var(--line);padding-top:var(--s3)}
+.links a{display:flex;align-items:center;justify-content:space-between;min-height:44px;font-size:var(--t3);text-decoration:none;color:var(--ink-2);border-bottom:1px solid var(--line)}
+.links a::after{content:"→";color:var(--faint)}
+.links a:hover{color:var(--ink)}
+.fine{margin-top:var(--s5);font-size:var(--t1);color:var(--faint);line-height:1.5}
+
+/* Tilaukset and Hyväksynnät */
+.panel h2{font-size:var(--t4);font-weight:600;margin:var(--s6) 0 var(--s3)}
+.panel .empty{font-size:var(--t3);color:var(--muted);margin:var(--s4) 0 0}
+.ol{display:flex;flex-direction:column;gap:var(--s3)}
+.oc{border:1px solid var(--line);border-radius:var(--r-l);background:var(--panel);padding:var(--s4);display:flex;flex-direction:column;gap:var(--s2);min-width:0}
+.oc .h{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s3)}
+.oc .h b{font-size:var(--t4);font-weight:600}
+.oc .h span{font-size:var(--t3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.oc .m{font-size:var(--t2);color:var(--muted);line-height:1.5}
+.oc .q{font-size:var(--t2);color:var(--ink-2);margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.oc .acts{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:2px}
+.oc ul{margin:0;padding:0;list-style:none;font-size:var(--t2);color:var(--ink-2);line-height:1.6}
+.tag{display:inline-block;font-size:11px;font-weight:600;border-radius:999px;padding:2px 8px;background:var(--esc-bg);color:var(--esc);white-space:nowrap}
+.tag.ok{background:var(--pass-bg);color:var(--pass)}
+
+/* the assistant */
+.chat{display:flex;flex-direction:column;min-height:0;min-width:0;border-left:1px solid var(--line);background:var(--panel)}
+.chath{flex:none;display:flex;align-items:center;justify-content:space-between;gap:var(--s3);height:52px;padding:0 var(--s4);border-bottom:1px solid var(--line)}
+.chath b{font-size:var(--t3);font-weight:600;display:flex;align-items:center;gap:8px}
+.chath b::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--pass)}
+.lnkbtn{border:0;background:none;color:var(--muted);font-size:var(--t2);cursor:pointer;min-height:44px;padding:0 4px;text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:3px}
+.lnkbtn:hover{color:var(--ink)}
+.log{position:relative;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:var(--s4) var(--s4) var(--s5);display:flex;flex-direction:column;gap:var(--s3)}
+.msg{max-width:100%;font-size:var(--t4);line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.bot{color:var(--ink);padding-right:var(--s4)}
+.msg.bot p{margin:0}
+.msg.bot p+p{margin-top:var(--s2)}
+.msg.me{align-self:flex-end;max-width:86%;background:var(--ink);color:var(--panel);border-radius:18px 18px 4px 18px;padding:9px 14px}
+.msg.me img{display:block;max-width:180px;max-height:180px;border-radius:10px;margin:2px 0 6px}
+.msg.me .ph{display:block;font-size:var(--t1);opacity:.7}
+.chips{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s1)}
+.chips button{border:1px solid var(--line-2);background:var(--panel);border-radius:999px;min-height:40px;padding:8px 14px;font-size:var(--t2);line-height:1.3;text-align:left;cursor:pointer;color:var(--ink)}
+.chips button:hover{background:var(--hover)}
+.tool{display:flex;flex-direction:column;gap:4px;min-width:0}
+.tool .cap{font-size:var(--t1);color:var(--faint)}
+.tool iframe{display:block;width:100%;height:160px;border:0;background:transparent;color-scheme:normal}
+.status{display:flex;align-items:center;gap:10px;font-size:var(--t2);color:var(--muted)}
+.dots{display:inline-flex;gap:3px}
+.dots i{width:5px;height:5px;border-radius:50%;background:var(--muted);animation:bl 1.2s infinite ease-in-out}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes bl{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.err{font-size:var(--t3);color:var(--deny);display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center}
+.err .btn{height:36px}
+.note{font-size:var(--t1);color:var(--faint);text-align:center}
+
+/* the cart: the answer first (what, how much, delivery day, total, one button); the lines and the checks behind a tap */
+.cart{border:1px solid var(--line-2);border-radius:var(--r-l);background:var(--panel);padding:var(--s4);display:flex;flex-direction:column;gap:var(--s3);min-width:0;box-shadow:0 1px 2px rgba(20,20,22,.04)}
+.cart.done{border-color:var(--pass)}
+.cart.off{opacity:.6}
+.cart .hd{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s3)}
+.cart .hd b{font-size:var(--t5);font-weight:600;letter-spacing:-.01em;line-height:1.25}
+.cart .hd span{font-size:var(--t2);color:var(--muted);white-space:nowrap}
+.cart .made{margin:0;font-size:var(--t2);font-weight:600;line-height:1.4}
+.chips.try{align-items:center}.chips.try span{font-size:var(--t2);color:var(--muted)}
+.cart .ask{margin:-6px 0 0;font-size:var(--t2);color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.nt{border-left:3px solid var(--esc);background:var(--esc-bg);border-radius:0 var(--r) var(--r) 0;padding:8px 10px;font-size:var(--t2);line-height:1.45;color:var(--ink);overflow-wrap:anywhere}
+.nt b{font-weight:600}
+.nt.info{border-left-color:var(--line-2);background:var(--soft)}
+.nt.bad{border-left-color:var(--deny);background:var(--deny-bg)}
+.nt .mu{color:var(--muted)}
+.nt .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.sm{border:1px solid var(--line-2);background:var(--panel);border-radius:999px;min-height:36px;padding:6px 12px;font-size:var(--t2);line-height:1.25;cursor:pointer;color:var(--ink);text-align:left}
+.sm:hover{background:var(--hover)}
+.sm.pri{background:var(--ink);border-color:var(--ink);color:var(--panel);font-weight:600}
+.sm:disabled{opacity:.5;cursor:default}
+.alts{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.alts .sm{border-radius:var(--r);display:flex;justify-content:space-between;gap:var(--s3);align-items:baseline}
+.alts .sm span:last-child{white-space:nowrap;font-variant-numeric:tabular-nums}
+.alts .sm[aria-current=true]{border-color:var(--ink);font-weight:600}
+.sum{display:grid;grid-template-columns:1fr auto;gap:5px var(--s3);font-size:var(--t3);margin:0}
+.sum dt{color:var(--muted)}
+.sum dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.sum .tot{font-weight:600;font-size:var(--t4);color:var(--ink)}
+.cta{height:48px;border-radius:999px;border:0;background:var(--ink);color:var(--panel);font-size:var(--t4);font-weight:600;cursor:pointer;width:100%}
+.cta:hover{opacity:.9}
+.cta:disabled{opacity:.45;cursor:default}
+a.cta{display:grid;place-items:center;text-decoration:none;background:var(--panel);color:var(--ink);border:1px solid var(--line-2)}
+.appr{border:1px solid var(--line);border-radius:var(--r);padding:var(--s3);display:grid;grid-template-columns:minmax(0,1fr) 108px;gap:var(--s2) var(--s3);align-items:start;font-size:var(--t2);line-height:1.45}
+.appr .rest{grid-column:1/-1}
+.appr b{display:block;font-size:var(--t3);font-weight:600;margin-bottom:2px}
+.appr p{margin:0 0 6px}
+.appr .mu{color:var(--muted)}
+.appr .qr{width:108px;height:108px;background:#fff;border-radius:6px;overflow:hidden}
+.appr .qr svg{display:block;width:100%;height:100%}
+.okline{font-size:var(--t3);color:var(--pass);font-weight:600}
+.folds{display:flex;flex-wrap:wrap;gap:0 var(--s4);margin:-4px 0 -8px}
+.folds .lnkbtn{min-height:40px;color:var(--ink-2)}
+.rows{margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rows li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px var(--s3);padding:8px 0;border-bottom:1px solid var(--line);font-size:var(--t2);line-height:1.4}
+.rows li b{font-weight:500}
+.rows li .a{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rows li .s{grid-column:1/-1;color:var(--muted);font-size:var(--t1)}
+.chk{margin:0;padding:0;list-style:none;font-size:var(--t1);line-height:1.5;color:var(--ink-2);border-top:1px solid var(--line)}
+.chk li{padding:6px 0;border-bottom:1px solid var(--line)}
+.chk li b{font-weight:600;color:var(--ink)}
+.chk .p{color:var(--pass)}.chk .e{color:var(--esc)}.chk .d{color:var(--deny)}
+.chk .mono{font-family:var(--mono);word-break:break-all}
+
+.quick{display:flex;gap:var(--s2);min-width:0;overflow-x:auto;scrollbar-width:none;margin:0 calc(-1 * var(--s3)) var(--s2);padding:2px var(--s3)}
+.quick::-webkit-scrollbar{display:none}
+.quick button{flex:none;border:1px solid var(--line-2);background:var(--panel);border-radius:999px;height:36px;padding:0 13px;font-size:var(--t2);white-space:nowrap;cursor:pointer;color:var(--ink)}
+.quick button:hover{background:var(--hover)}
+.quick button.new{border-style:dashed;color:var(--muted)}
+.compose{flex:none;border-top:1px solid var(--line);padding:var(--s2) var(--s3) calc(var(--s2) + env(safe-area-inset-bottom));background:var(--panel)}
+.att{display:flex;align-items:center;gap:var(--s2);margin:2px 0 var(--s2);font-size:var(--t2);color:var(--muted)}
+.att img{width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.row{display:flex;align-items:flex-end;gap:var(--s2)}
+.row textarea{flex:1;min-width:0;resize:none;border:1px solid var(--line-2);border-radius:22px;padding:11px 16px;min-height:44px;max-height:140px;font-size:16px;line-height:1.35;background:var(--bg);outline:none}
+.row textarea:focus{border-color:var(--ink);background:var(--panel)}
+.ib{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line-2);background:var(--panel);display:grid;place-items:center;cursor:pointer;color:var(--ink)}
+.ib svg{width:20px;height:20px}
+.ib.send{background:var(--ink);border-color:var(--ink);color:var(--panel)}
+.ib:disabled{opacity:.4;cursor:default}
+
+@media (max-width:900px){
+  .main{grid-template-columns:minmax(0,1fr)}
+  .chat{border-left:0}
+  .main[data-view=chat] .shop{display:none}
+  .main:not([data-view=chat]) .chat{display:none}
+  .tabs .only-phone{display:flex}
+  .bar1 .search{display:none}
+  .shop .search.inline{display:block;margin:var(--s4) 0 0;max-width:none}
+  .shop,.panel{padding:var(--s5) var(--s4) var(--s6)}
+  .chath{display:none}
+}
+@media (max-width:560px){
+  .bar1{height:54px;padding:0 var(--s4);gap:var(--s3)}
+  .logo div{display:none}
+  .banner{font-size:11px;padding:3px 12px}
+  .tabs{padding:0 var(--s2)}
+  .tabs{gap:0;justify-content:space-between}
+  .tabs button{padding:0 4px;font-size:13px;gap:3px}
+  .tabs .n{min-width:15px;height:15px;padding:0 4px;font-size:10px}
+  .tabs button[aria-current=true]::after{left:4px;right:4px}
+  .shelf{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .log{padding:var(--s3) var(--s3) var(--s4)}
+  .shop h1,.panel h1{font-size:var(--t6)}
+  .cart{padding:var(--s3)}
+  .appr{grid-template-columns:minmax(0,1fr) 92px}
+  .appr .qr{width:92px;height:92px}
+}
+@media (prefers-reduced-motion:reduce){.dots i{animation:none;opacity:.6}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="banner" data-s="banner"></div>
+  <header class="top">
+    <div class="bar1">
+      <a class="logo" href="/shop" aria-label="Verkkokauppa / Web shop"><i></i><div><b data-s="portal"></b><span data-s="minun"></span></div></a>
+      <form class="search" role="search" data-search><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input type="search" name="q" data-p="search" autocomplete="off"></form>
+      <div class="acct"><b id="acct">&nbsp;</b><span id="custno">&nbsp;</span></div>
+      <div class="lang" role="group" aria-label="Kieli / Language"><button type="button" data-lang="fi">FI</button><button type="button" data-lang="en">EN</button></div>
+    </div>
+    <nav class="tabs" aria-label="Verkkokauppa">
+      <button type="button" data-tab="order" aria-current="true" data-s="t_order"></button>
+      <button type="button" data-tab="shelf" class="only-phone" data-s="t_shelf"></button>
+      <button type="button" data-tab="orders"><span data-s="t_orders"></span><span class="n" id="ordn" hidden></span></button>
+      <button type="button" data-tab="approvals"><span data-s="t_appr"></span><span class="n" id="apprn" hidden></span></button>
+      <button type="button" data-tab="proposals"><span data-s="t_props"></span><span class="n" id="propn" hidden></span></button>
+    </nav>
+  </header>
+  <div class="main" id="main" data-view="chat">
+    <section class="shop" aria-labelledby="shoph">
+      <div class="in">
+        <h1 id="shoph" data-s="shop_h"></h1>
+        <p class="lede" data-s="shop_lede"></p>
+        <form class="search inline" role="search" data-search><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input type="search" name="q" data-p="search" autocomplete="off"></form>
+        <div class="shelfh"><h2 data-s="shelf_h"></h2><span data-s="shelf_tap"></span></div>
+        <div class="shelf" id="shelf"></div>
+        <nav class="links"><a href="/byhand" data-s="byhand"></a><a href="/access" data-s="access"></a></nav>
+        <p class="fine" data-s="fine"></p>
+      </div>
+    </section>
+    <section class="panel" id="panel" aria-live="polite"><div class="in" id="panelin"></div></section>
+    <section class="chat" aria-label="Tilausapuri">
+      <div class="chath"><b data-s="asst"></b><button type="button" class="lnkbtn" id="reset" data-s="reset"></button></div>
+      <div class="log" id="log" aria-live="polite"></div>
+      <form class="compose" id="compose">
+        <div class="quick" id="quick" hidden></div>
+        <div class="att" id="att" hidden><img alt=""><span data-s="photo_on"></span><button type="button" class="lnkbtn" id="unatt" data-s="remove"></button></div>
+        <div class="row">
+          <button type="button" class="ib" id="photo" data-a="photo"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6.5h3l1.4-2h5.2l1.4 2h3v9H3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="10" cy="10.6" r="2.9" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
+          <input type="file" id="file" accept="image/*" hidden>
+          <textarea id="text" rows="1" data-p="input" enterkeyhint="send"></textarea>
+          <button type="submit" class="ib send" id="send" data-a="send"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16V4M5 9l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </form>
+    </section>
+  </div>
+</div>
+<script>
+"use strict";
+const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const PROTO = "2026-01-26", META = "fi.valioaimo/card";
+
+// ---------------------------------------------------------------- words: Finnish as a Finnish wholesaler's web shop writes it, English behind the switch
+const T = {
+  fi: { banner: "Näin tämä toimisi Valio Aimo -verkkokaupassa. Prototyyppi Valio Aimon haastedatalla, ei Valio Aimon järjestelmä.", portal: "Verkkokauppa", minun: "Tilausapurin prototyyppi, Junction 2026", custno: "Asiakasnumero", search: "Hae tuotteita tai kysy tilausapurilta",
+    t_order: "Tilaa", t_shelf: "Tuotteet", t_orders: "Tilaukset", t_props: "Ehdotukset", t_appr: "Hyväksynnät",
+    shop_h: "Tilaa", shop_lede: "Kerro tilausapurille, mitä aiot tarjoilla. Se kokoaa ostoskorin sopimushinnoillasi ja tarkistaa saatavuuden. Mitään ei tilata ennen kuin vahvistat.",
+    shelf_h: "Usein ostetut", shelf_tap: "Tilaa uudelleen lisää tavallisen määräsi ostoskoriin", shelf_none: "Tällä asiakasnumerolla ei ole vielä tilaushistoriaa.", again: "Tilaa uudelleen", again_l: n => `Tilaa uudelleen: ${n}`,
+    byhand: "Sama tilaus käsin tuote kerrallaan", access: "Mitä Valio Aimo päättää ja näkee",
+    fine: "Junction 2026 -prototyyppi Valio Aimon haastedatalla. Ei Valio Aimon järjestelmä. Hinnat ja saatavuus tulevat haasteen testirajapinnasta.",
+    asst: "Tilausapuri", try: "Kokeile:", reset: "Uusi keskustelu", input: "Kerro mitä aiot tarjoilla…", photo: "Liitä kuva", send: "Lähetä", photo_on: "Kuva liitetään viestiin", remove: "Poista",
+    photo_only: "Tässä kuva.", photo_sent: "Kuva", retry: "Yritä uudelleen", failed: "Vastaus jäi kesken.", hello_fail: "Tilausapuriin ei saatu yhteyttä.",
+    read: "Luetaan pyyntöä…", read_img: "Luetaan kuvaa…", think: "Mietitään…", menu: "Lasketaan ostoskoria ruokalistasta…", source: "Kootaan ostoskoria…", props: "Luetaan Valio Aimon ehdotuksia…",
+    issues: "Tarkistetaan toimituksia…", place: "Vahvistetaan tilausta…", search_s: "Haetaan tuotteita…", write: "Kirjoitetaan vastausta…", orders_s: "Haetaan tilauksia…", act: "Päivitetään ostoskoria…",
+    find: q => `Hae: ${q}`,
+    did: { get_checkout: "Ostoskori luettu", list_proposals: "Valio Aimon ehdotukset", answer_proposal: "Ehdotukseen vastattu", search_catalog: "Tuotteita Valio Aimon valikoimasta", lookup_catalog: "Tuotetiedot ja hintasi",
+      get_order: "Tilaus", list_order_issues: "Toimituspoikkeamat", resolve_order_issue: "Toimituspoikkeama ratkaistu", plan_menu_order: "Ruokalistan laskelma" },
+    tabmsg: { proposals: "Onko Valio Aimolla ehdotuksia?", issues: "Onko toimituksissa poikkeamia?" },
+    c: { built: "Ostoskori koottu", placed: "Vahvistettu tilaus", canceled: "Ostoskori peruttu", replaced: "Korvattu uudella ostoskorilla", stopped: "Ostoskoria ei voi tilata", waiting: "odottaa hyväksyntää", lines: n => `${n} ${n === 1 ? "rivi" : "riviä"}`,
+      day: "Toimituspäivä", ex: "Ostokset (alv\u00a00\u00a0%)", inc: "Yhteensä (sis. alv)", confirm: "Vahvista tilaus", rows: n => `Näytä rivit (${n})`, rows_hide: "Piilota rivit", checks: "Näytä tarkistukset", checks_hide: "Piilota tarkistukset",
+      cancel: "Peru ostoskori", record: "Näytä tilausvahvistus", swap: "Vaihda", swap_hide: "Sulje", subst: "Korvaava tuote:", for_: n => `korvaa tuotteen ${n}`, contract: "sopimushinta", list: "listahinta",
+      tier: { best: "vastaavuus: paras", better: "vastaavuus: parempi", good: "vastaavuus: hyvä" }, per: (p, u) => `${p > 0 ? "+" : "−"}${Math.abs(Math.round(p))} %/${u}`,
+      short: "Ei tarpeeksi saatavuutta:", short_only: (a, b, u) => `Ei tarpeeksi saatavuutta, määrä muutettu: ${a} / ${b} ${u}.`, only: (a, u) => `Vain saatavilla oleva määrä: ${a} ${u}`,
+      why: (s) => `Sama tuotelaji, samat erityisruokavaliomerkinnät, ei uusia allergeeneja. ${s.listed ? "Valio Aimon korvaavien tuotteiden listalta" : "Valio Aimon valikoimasta"}${s.contract_price ? ", sopimushinnallasi." : ", listahinnalla: tälle ei ole sopimushintaa."}`,
+      moved: (a, b) => `Ei saatavilla haluamallesi toimituspäivälle ${a} Siirretty päivälle ${b}`, move: d => `Siirrä päivälle ${d}`, not_day: (a, d) => `${a}: ei saatavilla toimituspäivälle ${d}`, can_day: d => `Saatavilla ${d}`,
+      which: a => `${a}: mitä näistä tarkoitat?`, amount: a => `${a}: kuinka paljon? Kirjoita määrä.`, amount_usual: (a, q, u, n) => `${a}: kuinka paljon? Tavallinen määräsi on ${q} ${u} (${n}). Kirjoita määrä tai valitse tavallinen.`, usual_btn: (q, u) => `${q} ${u}, kuten yleensä`, none: a => `${a}: ei löytynyt Valio Aimon valikoimasta.`,
+      usual: (a, q, u) => `${a}: määrää ei annettu, joten korissa on tavallinen määräsi ${q} ${u}.`, drop: "Jätä pois",
+      late_ok: d => `Tilaa silti toimituspäivälle ${d}`,
+      sub_diff: (t, f, lost, added, und) => `Huomaa: korvaava tuote ${t}` + (lost.length ? ` ei ole ${lost.join(", ")}, toisin kuin ${f}` : "") + (lost.length && added.length ? ", ja se" : "") + (added.length ? ` sisältää: ${added.join(", ")} (${und ? `tuotteella ${f} ei ole allergeeni-ilmoitusta, johon verrata` : `tuotteessa ${f} näitä ei ole ilmoitettu`})` : "") + ".",
+      claim: { "FREE_FROM:LACTOSE": "laktoositon", "FREE_FROM:GLUTEN": "gluteeniton", "DIET:FREE_FROM_GLUTEN": "gluteeniton", "FREE_FROM:WHEAT": "vehnätön", "FREE_FROM:EGGS": "kananmunaton", "FREE_FROM:SOY": "soijaton", "DIET:VEGAN": "vegaaninen", "DIET:VEGETARIAN": "kasvisruokavalioon sopiva" },
+      alg: { AM: "maito", AE: "kananmuna", AF: "kala", AC: "äyriäiset", UM: "nilviäiset", AP: "maapähkinä", AN: "pähkinät", AY: "soija", AS: "seesami", BM: "sinappi", BC: "selleri", NL: "lupiini", AU: "sulfiitit", AW: "gluteenia sisältävät viljat", UW: "vehnä", GB: "ohra", GO: "kaura", NR: "ruis", GS: "speltti", GK: "kamut", ML: "laktoosi", SA: "manteli", SC: "cashewpähkinä", SH: "hasselpähkinä", SM: "makadamiapähkinä", SP: "pekaanipähkinä", SR: "parapähkinä", ST: "pistaasipähkinä", SW: "saksanpähkinä" },
+      late: (ev, d) => `Ei ehdi tilaisuuteen. Tilaisuus on ${ev} ja ensimmäinen mahdollinen toimituspäivä on ${d}`, same_day: d => `Toimitus on tilaisuuspäivänä ${d} Aiempaa toimituspäivää ei ole.`,
+      dishes: (n, g) => `${n} ${n === 1 ? "ruokalaji" : "ruokalajia"}${g ? `, ${g} henkeä` : ""}:`, diet_all: "kaikki annokset", diet_n: (n, g) => `${n} ${n === 1 ? "annos" : "annosta"}${g ? ` ${g}:stä` : ""}`,
+      diet: { gluten: "Gluteeniton", lactose: "Laktoositon", milk: "Maidoton", vegan: "Vegaaninen", vegetarian: "Kasvisruoka", nut: "Pähkinätön", peanut: "Maapähkinätön", egg: "Munaton", fish: "Kalaton", soy: "Soijaton", sesame: "Seesamiton", shellfish: "Äyriäisetön", celery: "Selleritön", mustard: "Sinapiton" },
+      menu_sub: n => `${n} ${n === 1 ? "korvaava tuote" : "korvaavaa tuotetta"} Valio Aimon valikoimasta:`, left_out: "Ei ostoskorissa, päätä itse:", pantry: "Jätetty keittiön omaan varastoon:",
+      held_n: (dish, n, diet, item, rest) => `${dish}: ${n} ${n === 1 ? "annos" : "annosta"}${diet ? ` (${diet})` : ""} on jätetty tilaamatta, koska ${item} ei sovi ruokavalioon.${rest ? ` Muut ${rest} ${rest === 1 ? "annos" : "annosta"} on tilattu.` : ""} Päätä itse, mitä näille tarjoat.`,
+      held_all: (dish, diet, item) => `${dish} on jätetty tilaamatta, koska ${item} ei sovi ruokavalioon${diet ? ` (${diet})` : ""}. Päätä itse, mitä tarjoat sen tilalla.`,
+      invented: "Näille ei ole keittiön reseptikorttia, joten määrät ovat arvio. Tarkista ne:", undeclared: "Näillä tuotteilla ei ole valmistajan allergeeni-ilmoitusta, joten niitä ei voitu tarkistaa. Tarkista ne itse ennen kuin vahvistat:", more: n => ` ja ${n} muuta (merkitty riveille)`, no_decl: "ei allergeeni-ilmoitusta",
+      made: (n, s, img) => `${img ? "Yhdestä kuvasta" : "Yhdestä viestistä"} ${n} riviä ostoskorissa, ${s} sekunnissa.`, made_again: n => `Yhdestä kuvasta ${n} riviä ostoskorissa. Sama kuva luettiin jo aiemmin tänään, joten käytössä on sama luku.`, share: "Lähetä linkki hyväksyjälle", share_text: "Tilaus odottaa hyväksyntääsi.",
+      need: "Tarvitsee hyväksynnän", need_how: "Hyväksyjä avaa linkin omalla puhelimellaan. Omaa tilaustasi et voi hyväksyä itse.", copy: "Kopioi linkki hyväksyjälle", copied: "Linkki kopioitu", approved: n => `Hyväksynyt: ${n}`, rejected: n => `Hylännyt: ${n}`,
+      cheaper: (n, e) => `Ilman hyväksyntää: ${n}, ${e}`, expired: "Hinnan ja saatavuuden varaus on vanhentunut. Vahvista tilaus, niin ne tarkistetaan uudelleen.",
+      B1: (a, m) => `Tilaus on ${a} (alv\u00a00\u00a0%). Ilman hyväksyntää saat tilata enintään\u00a0${m}.`, B2: m => `Viikon tilaukset ylittäisivät ${m}, jonka saat tilata ilman hyväksyntää.`, B3: "Samalle toimituspäivälle on jo tilauksia tai vahvistamattomia ostoskoreja, ja yhteensä ne ylittävät sen, mitä saat tilata ilman hyväksyntää.",
+      W3: "Valio Aimon päiväkohtainen raja tilausapurin tilauksille ylittyy.", A1: "Tuotteessa voi olla jäämiä allergeenista, jonka rajasit pois.", S1: "Korvaava tuote ei täytä samoja vaatimuksia kuin alkuperäinen.", other: "Tämä tilaus tarvitsee toisen henkilön hyväksynnän.",
+      deny: "Tätä ostoskoria ei voi tilata tällaisenaan. Syy näkyy tarkistuksissa.", deny_h: "Tätä ostoskoria ei voi tilata tällaisenaan.",
+      deny_why: { W1: "Valio Aimo on pysäyttänyt tilausapurin tilaukset tältä asiakasnumerolta. Tilaa verkkokaupasta tavalliseen tapaan tai ota yhteys Valio Aimoon.", W2: "Tällä asiakasnumerolla tilausapuri saa vain katsoa hintoja ja saatavuutta, ei tilata.", W4: "Valio Aimo on estänyt tilausapurin tilaukset toistaiseksi.",
+                  W: "Valio Aimon raja tilausapurin tilauksille ylittyy. Pienennä tilausta tai tilaa verkkokaupasta tavalliseen tapaan.", M2: "Määrä ylittää sen, mitä tilausapurilla saa tilata kerralla. Pienennä määrää.", M: "Oikeus tilata tilausapurilla ei ole voimassa. Kirjaudu uudelleen.",
+                  A1: "Ostoskorissa on tuote, jossa on pois rajaamaasi allergeenia tai jonka nimi viittaa siihen. Vaihda tai poista se.", A2: "Jokin tuote ei täytä pyytämääsi ominaisuutta. Vaihda tai poista se.", A3: "Jokin tuote ei täytä vaadittua merkkiä. Vaihda tai poista se.",
+                  other: "Syy näkyy tarkistuksissa." }, checks_h: "Valio Aimon säännöt tälle ostoskorille (perustelut ovat lokista, englanniksi)",
+      rule: { M1: "Oikeus tilata on voimassa", M2: "Määräraja", W1: "Tilausapuri on käytössä", W2: "Tilausapurin oikeudet", W3: "Valio Aimon raja yhdelle tilaukselle", W4: "Ei estoja", W5: "Valio Aimon raja toimituspäivälle", T1: "Tilauksen vahvistaa ihminen",
+              B0: "Raja lasketaan erotuksesta", B1: "Raja yhdelle tilaukselle", B2: "Viikkoraja", B3: "Saman toimituspäivän tilaukset yhteensä", C1: "Tuoteryhmät", A1: "Allergeenirajaukset", A2: "Pyydetyt ominaisuudet", A3: "Vaaditut merkit", S1: "Korvaava tuote",
+              N1: "Uudet tuotteet", Q1: "Poikkeava määrä", L1: "Vähissä oleva tuote jaetaan sopimusten mukaan", R1: "Takaisinvedettyä ei pidetä", D1: "Myöhästyminen", P1: "Osatoimitus", V1: "Valio Aimon ehdotukset käytössä", V2: "Ehdotuksia päivässä",
+              V3: "Hylättyä ehdotusta ei tehdä uudelleen", V4: "Ehdotus ei ylitä viikkorajaa", V5: "Ehdotukset, jotka voi hyväksyä itse", V6: "Ehdotusten lisäkulut viikossa", V7: "Vakiotilauksen muutos tarvitsee hyväksyjän" }, pass: "läpi", esc: "hyväksyntä", den: "estetty",
+      rec: "Tilauksen tallenne ja allekirjoitukset", ledger: "Mitä tilausapuri teki (loki)", asked: "Pyyntösi sanasta sanaan:", plan: "Näytä ruokalistan laskelma", sig: "Näytä allekirjoitukset ja tekninen kortti",
+      unit: { piece: "kpl", kg: "kg", case: "ltk", pack: "pkt", bag: "ps", box: "ltk", jar: "prk", bottle: "plo", sack: "säkki", carton: "tlk", roll: "rll", L: "l", KG: "kg", pcs: "kpl" },
+      opt: { usual_product: "tavallinen tuotteesi", lowest_price: "edullisin", bigger_pack: "isompi pakkaus, halvempi yhteensä", most_reliable: "varmin toimitus", finnish_origin: "kotimainen", as_requested: "pyytämäsi", needs: "tarvitsee hyväksynnän", no: "ei sallittu" } },
+    o: { h: "Tilaukset", lede: "Tilausapurilla vahvistetut tilaukset. Voit myös kysyä apurilta: missä tilaukseni on?", none: "Ei vielä tilausapurilla vahvistettuja tilauksia.", placed: "Vahvistetut tilaukset", last: "Viime viikon tilaus",
+      sample: "Esimerkkidataa: tämän prototyypin tilaushistoria on keksitty.", same: "Sama kuin viime viikolla", issues: "Onko toimituksissa poikkeamia?", conf: "Tilausvahvistus", by: n => `Hyväksynyt: ${n}`, wait_n: n => `${n} odottaa hyväksyntää`,
+      ah: "Hyväksynnät", alede: "Tilaukset, jotka ylittävät sen, mitä saat tilata yksin. Hyväksyjä päättää omalla laitteellaan.", anone: "Ei hyväksyntää odottavia tilauksia.", why: { B1: "Tilaus ylittää summan, jonka saat tilata yksin.", B2: "Viikon tilaukset ylittävät summan, jonka saat tilata yksin." }, wait: "Odottaa hyväksyntää", ok: "Hyväksytty, vahvista tilaus", load: "Haetaan…", fail: "Tilauksia ei saatu haettua." } },
+  en: { banner: "How this would work in the Valio Aimo web shop. A prototype on Valio Aimo's challenge data. Not a Valio Aimo system.", portal: "Web shop", minun: "Order assistant prototype, Junction 2026", custno: "Customer number", search: "Search products or ask the order assistant",
+    t_order: "Order", t_shelf: "Products", t_orders: "Orders", t_props: "Proposals", t_appr: "Approvals",
+    shop_h: "Order", shop_lede: "Tell the order assistant what you plan to serve. It builds a cart at your contract prices and checks the stock. Nothing is ordered until you confirm.",
+    shelf_h: "Often bought", shelf_tap: "Order again puts your usual amount in a cart", shelf_none: "This customer number has no order history yet.", again: "Order again", again_l: n => `Order again: ${n}`,
+    byhand: "The same order by hand, product by product", access: "What Valio Aimo decides and sees",
+    fine: "Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system. Prices and stock come from the challenge's test API.",
+    asst: "Order assistant", try: "Try:", reset: "New conversation", input: "Tell me what you plan to serve…", photo: "Attach a photo", send: "Send", photo_on: "The photo goes with your message", remove: "Remove",
+    photo_only: "Here is a photo.", photo_sent: "Photo", retry: "Try again", failed: "The answer stopped halfway.", hello_fail: "Could not reach the order assistant.",
+    read: "Reading your request…", read_img: "Reading the photo…", think: "Thinking…", menu: "Working out the cart for the menu…", source: "Building the cart…", props: "Reading Valio Aimo's proposals…",
+    issues: "Checking your deliveries…", place: "Confirming the order…", search_s: "Searching products…", write: "Writing the answer…", orders_s: "Looking up your orders…", act: "Updating the cart…",
+    find: q => `Find: ${q}`,
+    did: { get_checkout: "Cart read", list_proposals: "Valio Aimo's proposals", answer_proposal: "Proposal answered", search_catalog: "Products in Valio Aimo's range", lookup_catalog: "Product facts and your price",
+      get_order: "Order", list_order_issues: "Delivery exceptions", resolve_order_issue: "Delivery exception settled", plan_menu_order: "The menu worked out" },
+    tabmsg: { proposals: "Does Valio Aimo have any proposals for us?", issues: "Is there any problem with our deliveries?" },
+    c: { built: "Cart built", placed: "Confirmed order", canceled: "Cart cancelled", replaced: "Replaced by a newer cart", stopped: "This cart cannot be ordered", waiting: "waiting for approval", lines: n => `${n} ${n === 1 ? "line" : "lines"}`,
+      day: "Delivery day", ex: "Subtotal (ex VAT)", inc: "Total (incl. VAT)", confirm: "Confirm the order", rows: n => `Show the lines (${n})`, rows_hide: "Hide the lines", checks: "Show the checks", checks_hide: "Hide the checks",
+      cancel: "Cancel the cart", record: "Show the order confirmation", swap: "Change", swap_hide: "Close", subst: "Replacement:", for_: n => `replaces ${n}`, contract: "contract price", list: "list price",
+      tier: { best: "match: best", better: "match: better", good: "match: good" }, per: (p, u) => `${p > 0 ? "+" : "−"}${Math.abs(Math.round(p))}%/${u}`,
+      short: "Not enough stock:", short_only: (a, b, u) => `Not enough stock, amount changed: ${a} of ${b} ${u}.`, only: (a, u) => `Only what is in stock: ${a} ${u}`,
+      why: (s) => `The same kind of product, the same diet claims, no new allergens. ${s.listed ? "On Valio Aimo's substitute list" : "From Valio Aimo's own range"}${s.contract_price ? ", at your contract price." : ", at the list price: there is no contract price for it."}`,
+      moved: (a, b) => `Not available for the delivery day you asked for, ${a}. Moved to ${b}.`, move: d => `Move to ${d}`, not_day: (a, d) => `${a}: not available for delivery on ${d}.`, can_day: d => `Available ${d}`,
+      which: a => `${a}: which of these do you mean?`, amount: a => `${a}: how much? Type the amount.`, amount_usual: (a, q, u, n) => `${a}: how much? Your usual amount is ${q} ${u} (${n}). Type the amount or pick the usual.`, usual_btn: (q, u) => `${q} ${u}, as usual`, none: a => `${a}: not found in Valio Aimo's range.`,
+      usual: (a, q, u) => `${a}: no amount was given, so the cart has your usual ${q} ${u}.`, drop: "Leave out",
+      late_ok: d => `Order anyway for ${d}`,
+      sub_diff: (t, f, lost, added, und) => `Note: the replacement ${t}` + (lost.length ? ` is not ${lost.join(", ")}, unlike ${f}` : "") + (lost.length && added.length ? ", and it" : "") + (added.length ? ` contains ${added.join(", ")} (${und ? `${f} has no allergen declaration to compare with` : `${f} does not declare these`})` : "") + ".",
+      claim: { "FREE_FROM:LACTOSE": "lactose-free", "FREE_FROM:GLUTEN": "gluten-free", "DIET:FREE_FROM_GLUTEN": "gluten-free", "FREE_FROM:WHEAT": "wheat-free", "FREE_FROM:EGGS": "egg-free", "FREE_FROM:SOY": "soy-free", "DIET:VEGAN": "vegan", "DIET:VEGETARIAN": "vegetarian" },
+      alg: { AM: "milk", AE: "eggs", AF: "fish", AC: "crustaceans", UM: "molluscs", AP: "peanuts", AN: "tree nuts", AY: "soybeans", AS: "sesame", BM: "mustard", BC: "celery", NL: "lupin", AU: "sulphites", AW: "cereals containing gluten", UW: "wheat", GB: "barley", GO: "oats", NR: "rye", GS: "spelt", GK: "kamut", ML: "lactose", SA: "almond", SC: "cashew", SH: "hazelnut", SM: "macadamia", SP: "pecan", SR: "brazil nut", ST: "pistachio", SW: "walnut" },
+      late: (ev, d) => `It will not arrive in time. The event is on ${ev} and the first possible delivery day is ${d}.`, same_day: d => `Delivery is on the day of the event, ${d}. There is no earlier delivery day.`,
+      dishes: (n, g) => `${n} ${n === 1 ? "dish" : "dishes"}${g ? `, ${g} guests` : ""}:`, diet_all: "every portion", diet_n: (n, g) => `${n} ${n === 1 ? "portion" : "portions"}${g ? ` of ${g}` : ""}`,
+      diet: { gluten: "Gluten-free", lactose: "Lactose-free", milk: "Milk-free", vegan: "Vegan", vegetarian: "Vegetarian", nut: "Nut-free", peanut: "Peanut-free", egg: "Egg-free", fish: "Fish-free", soy: "Soy-free", sesame: "Sesame-free", shellfish: "Shellfish-free", celery: "Celery-free", mustard: "Mustard-free" },
+      menu_sub: n => `${n} ${n === 1 ? "replacement" : "replacements"} from Valio Aimo's own range:`, left_out: "Not in the cart, yours to decide:", pantry: "Left to the kitchen's own shelf:",
+      held_n: (dish, n, diet, item, rest) => `${dish}: ${n} ${n === 1 ? "portion" : "portions"}${diet ? ` (${diet})` : ""} left out, because ${item} does not fit the diet.${rest ? ` The other ${rest} ${rest === 1 ? "is" : "are"} in the cart.` : ""} Yours to decide what they get.`,
+      held_all: (dish, diet, item) => `${dish} is left out, because ${item} does not fit the diet${diet ? ` (${diet})` : ""}. Yours to decide what to serve instead.`,
+      invented: "There is no recipe card for these, so the amounts are an estimate. Check them:", undeclared: "The manufacturer declared no allergens for these, so they could not be checked. Check them yourself before you confirm:", more: n => ` and ${n} more (marked on the lines)`, no_decl: "no allergen declaration",
+      made: (n, s, img) => `${img ? "One photo" : "One message"}: ${n} lines in the cart, in ${s} seconds.`, made_again: n => `One photo: ${n} lines in the cart. The same photo was read earlier today, so the same reading is used.`, share: "Send the link to the approver", share_text: "An order is waiting for your approval.",
+      need: "Needs approval", need_how: "The approver opens the link on their own phone. You cannot approve your own order.", copy: "Copy the link for the approver", copied: "Link copied", approved: n => `Approved by ${n}`, rejected: n => `Rejected by ${n}`,
+      cheaper: (n, e) => `Without approval: ${n}, ${e}`, expired: "The hold on price and stock has run out. Confirm the order and they are checked again.",
+      B1: (a, m) => `The order is ${a} (ex VAT). Without approval you may order up to ${m}.`, B2: m => `This week's orders would go over the ${m} you may order without approval.`, B3: "There are already orders or unconfirmed carts for this delivery day, and together they go over what you may order without approval.",
+      W3: "Valio Aimo's daily limit for orders made with the assistant would be passed.", A1: "A product may contain traces of an allergen you excluded.", S1: "The replacement does not meet the same requirements as the original.", other: "This order needs a second person's approval.",
+      deny: "This cart cannot be ordered as it is. The checks say why.", deny_h: "This cart cannot be ordered as it is.",
+      deny_why: { W1: "Valio Aimo has paused ordering with the assistant for this customer number. Order in the shop the usual way, or contact Valio Aimo.", W2: "On this customer number the assistant may only look up prices and stock, not order.", W4: "Valio Aimo has stopped the assistant's orders for now.",
+                  W: "Valio Aimo's limit for orders made with the assistant would be passed. Make the order smaller, or order in the shop the usual way.", M2: "The amount is over what may be ordered at once with the assistant. Lower the amount.", M: "The right to order with the assistant is not valid. Sign in again.",
+                  A1: "The cart has a product that contains an allergen you excluded, or is named for it. Change or remove it.", A2: "A product does not meet a requirement you asked for. Change or remove it.", A3: "A product lacks a required label. Change or remove it.",
+                  other: "The checks say why." }, checks_h: "Valio Aimo's rules for this cart", pass: "pass", esc: "approval", den: "stopped",
+      rec: "The order record and signatures", ledger: "What the assistant did (log)", asked: "Your request, word for word:", plan: "Show how the menu was worked out", sig: "Show the signatures and the technical card",
+      unit: { piece: "pcs", kg: "kg", case: "case", pack: "pack", bag: "bag", box: "box", jar: "jar", bottle: "bottle", sack: "sack", carton: "carton", roll: "roll", L: "L", KG: "kg", pcs: "pcs" },
+      opt: { usual_product: "your usual product", lowest_price: "lowest price", bigger_pack: "bigger pack, less in total", most_reliable: "most reliable delivery", finnish_origin: "Finnish", as_requested: "as you asked", needs: "needs approval", no: "not allowed" } },
+    o: { h: "Orders", lede: "Orders confirmed with the order assistant. You can also ask it: where is my order?", none: "No orders confirmed with the assistant yet.", placed: "Confirmed orders", last: "Last week's order",
+      sample: "Sample data: this prototype's order history is invented.", same: "Same as last week", issues: "Is there any problem with our deliveries?", conf: "Order confirmation", by: n => `Approved by ${n}`, wait_n: n => `${n} waiting for approval`,
+      ah: "Approvals", alede: "Orders over what you may order alone. The approver decides on their own device.", anone: "No orders waiting for approval.", why: { B1: "The order is over what you may order alone.", B2: "This week's orders are over what you may order alone." }, wait: "Waiting for approval", ok: "Approved, confirm the order", load: "Loading…", fail: "Could not load the orders." } },
+};
+let lang = (() => { try { return localStorage.getItem("shop.lang") || "fi"; } catch (e) { return "fi"; } })();
+const t = k => T[lang][k];
+const loc = () => lang === "fi" ? "fi-FI" : "en-GB";
+const eur = c => c == null ? "" : lang === "fi" ? (c / 100).toLocaleString("fi-FI", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €" : "€" + (c / 100).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const num = n => n == null ? "" : Number(n).toLocaleString(loc(), { maximumFractionDigits: 2 });
+const FI_D = ["su", "ma", "ti", "ke", "to", "pe", "la"];
+function dayS(s) {  // "ma 16.11." as the shop writes a delivery day
+  const m = /^(\d{4})-(\d\d)-(\d\d)/.exec(String(s || ""));
+  if (!m) return String(s || "");
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  return lang === "fi" ? `${FI_D[d.getUTCDay()]} ${+m[3]}.${+m[2]}.` : d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+}
+const unitS = u => t("c").unit[u] || String(u || "").toLowerCase();
+function paint() {
+  document.documentElement.lang = lang;
+  for (const el of $$("[data-s]")) el.textContent = t(el.dataset.s);
+  for (const el of $$("[data-p]")) el.placeholder = t(el.dataset.p);
+  for (const el of $$("[data-a]")) el.setAttribute("aria-label", t(el.dataset.a));
+  for (const b of $$("[data-lang]")) b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
+  document.title = t("portal") + " · " + t("minun");
+}
+
+// ---------------------------------------------------------------- the gateway: MCP for the cards' own calls
+let hello = null, cardHtml = null, rid = 0, tools = {};
+async function rpc(method, params, again = true) {
+  const r = await fetch("/mcp", { method: "POST", headers: { "content-type": "application/json", accept: "application/json, text/event-stream", authorization: "Bearer " + (hello && hello.card_token) }, body: JSON.stringify({ jsonrpc: "2.0", id: ++rid, method, params: params || {} }) });
+  if (r.status === 401 && again) { await loadHello(); return rpc(method, params, false); }
+  if (!r.ok) throw new Error(r.status === 429 ? "The gateway is busy. Try again in a moment." : "The gateway answered " + r.status + ".");
+  const j = await r.json();
+  if (j.error) throw new Error(j.error.message || "The MCP call failed.");
+  return j.result;
+}
+async function cardReady() {
+  if (cardHtml) return cardHtml;
+  const r = await fetch("/static/chat/card.html", { cache: "no-store" });
+  cardHtml = await r.text();
+  return cardHtml;
+}
+
+// ---------------------------------------------------------------- the shop chat's own API
+const backend = {
+  hello: async () => { const r = await fetch(`/api/shop/hello?lang=${lang}`, { cache: "no-store" }); if (!r.ok) throw new Error("hello " + r.status); return r.json(); },
+  send: async body => { const r = await fetch("/api/shop/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }); const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.detail || j.message || (r.status === 429 ? "Busy. Try again in a moment." : "The shop answered " + r.status + ".")); return j; },
+  poll: async (th, after) => { const r = await fetch(`/api/shop/chat/${encodeURIComponent(th)}?after=${after}`, { cache: "no-store" }); if (r.status === 404) return { gone: true, busy: false, events: [] }; if (!r.ok) throw new Error("poll " + r.status); return r.json(); },
+  orders: async () => { const r = await fetch(`/api/shop/orders?lang=${lang}`, { cache: "no-store" }); if (!r.ok) throw new Error("orders " + r.status); return r.json(); },
+  reset: async () => { await fetch("/api/shop/reset", { method: "POST" }).catch(() => {}); },
+};
+
+// ---------------------------------------------------------------- the conversation
+const log = $("#log");
+let thread = null, after = 0, busy = false, pollT = null, statusEl = null, statusT = null, lastUser = null, queued = [], greetEl = null, replay = false;
+const drawnTurns = new Set(), frames = [], turns = {}, carts = {};
+const KEY = "shop.thread";
+const keep = () => { try { thread ? sessionStorage.setItem(KEY, thread) : sessionStorage.removeItem(KEY); } catch (e) {} };
+const turnOf = n => turns[n] || (turns[n] = { me: null, first: null, quiet: [] });
+
+function nearBottom() { return log.scrollHeight - log.scrollTop - log.clientHeight < 80; }
+function reveal(el, force) {
+  if (replay) return;
+  requestAnimationFrame(() => {
+    const bottom = log.scrollHeight - log.clientHeight;
+    let to = bottom;
+    if (el.classList.contains("tool") || el.classList.contains("cart")) to = Math.min(bottom, el.offsetTop - 12);
+    if (force || to > log.scrollTop) log.scrollTo({ top: to, behavior: "smooth" });
+  });
+}
+// The end of a turn: the person's own message at the top, the answer under it, then the card. Never the bottom of a long card.
+function settle(n) {
+  if (replay) return;
+  const tn = turns[n], top = tn && (tn.me || tn.first);
+  if (!top || !top.isConnected) return;
+  requestAnimationFrame(() => log.scrollTo({ top: Math.min(log.scrollHeight - log.clientHeight, Math.max(0, top.offsetTop - 10)), behavior: "smooth" }));
+}
+function mk(html) { const d = document.createElement("div"); d.innerHTML = html.trim(); return d.firstElementChild; }
+function addEl(html, before) {
+  const el = typeof html === "string" ? mk(html) : html;
+  log.insertBefore(el, before && before.isConnected ? before : statusEl && statusEl.isConnected ? statusEl : null); return el;
+}
+function greet() {
+  if (!greetEl || !greetEl.isConnected) { greetEl = document.createElement("div"); greetEl.className = "greet"; log.prepend(greetEl); }
+  if (!hello) { greetEl.innerHTML = `<div class="msg bot"><p>${esc(t("hello_fail"))}</p></div><div class="err"><button class="btn" type="button" data-retry-hello>${esc(t("retry"))}</button></div>`; return; }
+  greetEl.innerHTML = `<div class="msg bot"><p>${esc(hello.greeting)}</p></div>` + ((hello.chips || []).length && !$(".msg.me", log) ? `<div class="chips">${hello.chips.map(chip).join("")}</div>` : "");
+}
+// A starter request. One with image sends a sample photo with its words, so a menu photo is one tap away on a laptop too.
+function chip(c) { return `<button type="button" data-say="${esc(c.text)}"${c.image ? ` data-img="${esc(c.image)}"` : ""}>${esc(c.label || c.text)}</button>`; }
+async function sample(text, url) {
+  let d = null;
+  try { d = await shrink(await (await fetch(url)).blob()); } catch (err) {}
+  send(text, d);
+}
+function quick() {
+  const q = $("#quick"), on = !!(hello && $(".msg.me", log));
+  q.hidden = !on;
+  if (on) q.innerHTML = (hello.chips || []).map(chip).join("") + `<button type="button" class="new" data-new>${esc(t("reset"))}</button>`;
+}
+function said(text, img, hasImg, turn) {
+  const el = addEl(`<div class="msg me">${img ? `<img src="${esc(img)}" alt="">` : hasImg ? `<span class="ph">${esc(t("photo_sent"))}</span>` : ""}${esc(text)}</div>`);
+  if (turn) turnOf(turn).me = el;
+  const gc = greetEl && $(".chips", greetEl); if (gc) gc.remove();
+  reveal(el, true); quick();
+  return el;
+}
+// The assistant's sentence goes above the turn's card, where the eye is.
+function botText(text, turn) {
+  const tn = turns[turn];
+  const el = addEl(`<div class="msg bot">${String(text).trim().split(/\n{2,}/).map(p => `<p>${esc(p).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")}</p>`).join("")}</div>`, tn && tn.first);
+  if (!(tn && tn.first && tn.first.isConnected)) reveal(el);
+}
+function failed(text) {
+  const el = addEl(`<div class="err"><span>${esc(t("failed"))} ${esc(text || "")}</span>${lastUser ? `<button class="btn" type="button" data-retry>${esc(t("retry"))}</button>` : ""}</div>`);
+  reveal(el);
+}
+
+// ---- status in words while a turn runs
+function guess(text) {
+  const s = String(text || "").toLowerCase();
+  if (/ruokalist|menu|henge|henke|annos|vieraa|guests|pupils|oppila|lounas|illallis|dinner|lunch|hää|juhla|tilaisuu|wedding|event|buffet|tarjoil|serving/.test(s)) return "menu";
+  if (/ehdotu|proposal/.test(s)) return "props";
+  if (/poikkeam|ongelm|problem|issue/.test(s)) return "issues";
+  if (/tilasin|tilaukseni|did i order|my order/.test(s)) return "orders_s";
+  if (/^vahvista|^confirm/.test(s)) return "place";
+  if (/^hae|^find|search|onko teillä/.test(s)) return "search_s";
+  return "source";
+}
+let statusKey = "read";
+function setStatus(k) {
+  statusKey = k;
+  if (!statusEl) return;
+  $("span:last-child", statusEl).textContent = t(k);
+}
+function startStatus(text, img, first) {
+  stopStatus();
+  statusEl = document.createElement("div");
+  statusEl.className = "status";
+  statusEl.innerHTML = `<span class="dots"><i></i><i></i><i></i></span><span></span>`;
+  log.appendChild(statusEl);
+  setStatus(first || (img ? "read_img" : "read"));
+  if (!first) { const next = img ? "menu" : guess(text); statusT = setTimeout(() => setStatus(next), img ? 4000 : 1600); }
+  reveal(statusEl);
+}
+function stopStatus() { clearTimeout(statusT); if (statusEl) statusEl.remove(); statusEl = null; }
+
+// ---- sending and polling. A message goes to the assistant; a button on a card (action) is done in code, with no model.
+async function send(text, image, label, action) {
+  text = String(text || "").trim();
+  if (!action) {
+    if (!text && !image) return;
+    if (!text) text = t("photo_only");
+  }
+  if (busy) { if (!action) queued.push([text, image, label]); return; }
+  busy = true; syncCompose();
+  lastUser = action ? null : [text, image, label];
+  const me = said(label || text, image);
+  startStatus(text, image, action ? (action.type === "confirm" ? "place" : "act") : null);
+  try {
+    const r = await backend.send(action ? { thread, action, lang } : { thread, text, image: image || null, lang, ...(label ? { label } : {}) });
+    if (r.thread !== thread) { thread = r.thread; keep(); }
+    drawnTurns.add(r.turn);
+    turnOf(r.turn).me = me;
+    poll();
+  } catch (e) { stopStatus(); busy = false; syncCompose(); failed(String(e.message || e)); }
+}
+const act = (action, label) => { view("chat"); send("", null, label, action); };
+async function poll() {
+  clearTimeout(pollT);
+  if (!thread) return;
+  let r;
+  try { r = await backend.poll(thread, after); }
+  catch (e) { pollT = setTimeout(poll, 2000); return; }
+  if (r.gone) { thread = null; keep(); stopStatus(); busy = false; syncCompose(); return; }
+  for (const ev of r.events || []) { after = Math.max(after, ev.n); draw(ev); }
+  if (r.busy) { pollT = setTimeout(poll, 700); if (!statusEl && busy) startStatus("", false); return; }
+  stopStatus();
+  busy = false; syncCompose();
+  if (queued.length) { const [a, b, c] = queued.shift(); send(a, b, c); }
+}
+const AFTER_TOOL = { plan_menu_order: "source", create_checkout: "write", update_checkout: "write", complete_checkout: "write", list_orders: "write" };
+function draw(ev) {
+  if (ev.type === "user") { Object.assign(turnOf(ev.turn), { typed: !ev.action, img: !!ev.image }); if (!drawnTurns.has(ev.turn)) { drawnTurns.add(ev.turn); said(ev.label || ev.text, null, ev.image, ev.turn); lastUser = ev.action ? null : [ev.text, null, ev.label]; } }
+  else if (ev.type === "text") { if (String(ev.text || "").trim()) botText(ev.text, ev.turn); }
+  else if (ev.type === "tool") { tool(ev); setStatus(AFTER_TOOL[ev.name] || "think"); }
+  else if (ev.type === "examples") { const tn = turnOf(ev.turn), el = addEl(`<div class="chips try"><span>${esc(t("try"))}</span>${(ev.chips || []).map(chip).join("")}</div>`); if (!tn.first) tn.first = el; }
+  else if (ev.type === "error") { stopStatus(); failed(ev.text); }
+  else if (ev.type === "done") { settle(ev.turn); if (!replay) counts(); }
+}
+
+// ---------------------------------------------------------------- what a tool answer becomes on the page
+const metaOf = ev => ((ev.result || {})._meta || {})[META] || {};
+const fullOf = ev => metaOf(ev).full || (ev.result || {}).structuredContent || {};
+const isCheckout = d => !!(d && d.ap2 && d.id && Array.isArray(d.line_items));
+const amount = (totals, k) => ((totals || []).find(x => x.type === k) || {}).amount;
+function tool(ev) {
+  const tn = turnOf(ev.turn), d = fullOf(ev);
+  if (ev.quiet) { tn.quiet.push(ev); return; }       // the menu's working: kept for "Näytä tarkistukset"
+  if (ev.replaced) {                                  // a newer cart took this one's place: its card says so where it stands
+    const S = carts[d.id];
+    if (S && isCheckout(d)) { clearTimeout(S.timer); S.d = d; S.x = Object.assign({}, S.x, { cart: metaOf(ev).cart || Object.assign({}, S.x.cart, { replaced: true }) }); S.open = {}; render(S); }
+    return;
+  }
+  if ((ev.result || {}).isError && !isCheckout(d)) return;  // the assistant says what went wrong, in words
+  const lists = ["products", "issues", "proposals"].filter(k => Array.isArray(d[k]));
+  if (!isCheckout(d) && lists.length && lists.every(k => !d[k].length)) return;  // nothing found: said in words, not drawn as an empty card
+  let el = null;
+  if (isCheckout(d)) el = cartCard(ev, d, tn);
+  else if (ev.name === "list_orders") el = mk(`<div class="cart">${ordersHtml(d, true)}</div>`);
+  else if (ev.name === "build_cart") el = d.cart ? mk(`<div class="cart"><div class="hd"><b>${esc(t("c").built)}</b></div>${itemNotes({ d: { status: "none" }, x: { cart: d.cart }, open: {} })}</div>`) : null;
+  else { card(ev, tn); return; }
+  if (!el) return;
+  addEl(el);
+  if (!tn.first) tn.first = el;
+  reveal(el);
+}
+
+// ---- the cart
+function cartCard(ev, d, tn) {
+  const old = carts[d.id];
+  if (old) { old.el.remove(); clearTimeout(old.timer); }   // one card per cart: the newest stands
+  const S = { id: d.id, d, x: metaOf(ev), ev, quiet: tn.quiet.slice().concat(old ? old.quiet.filter(q => !tn.quiet.includes(q)) : []), open: old ? old.open : { rows: d.line_items.length <= 5 }, el: document.createElement("div"), timer: null,
+              made: old ? old.made : tn.typed && ev.since_ms ? { ms: ev.since_ms, img: tn.img } : null };
+  if (!S.x.cart && old && old.x.cart) S.x.cart = old.x.cart;
+  carts[d.id] = S;
+  render(S);
+  watch(S);
+  return S.el;
+}
+const nameOf = (S, id, title, fi) => lang === "fi" ? ((S.x.names_fi || {})[id] || fi || title) : title;
+const nt = (html, cls) => `<div class="nt${cls ? " " + cls : ""}">${html}</div>`;
+function choiceLabel(S, it, c) {
+  const L = t("c"), u = unitS(it.unit);
+  let main;
+  if (c.substitute) { const s = c.substitute; main = `${L.subst} ${esc(lang === "fi" ? s.title_fi : s.title)} · ${L.tier[s.tier] || s.tier} · ${s.contract_price ? L.contract : L.list}${s.price_delta_pct != null ? " · " + L.per(s.price_delta_pct, unitS(s.per)) : ""}`; }
+  else if ((c.covers_pct ?? 100) < 99.5) main = esc(L.only(num(c.covers), u));
+  else main = c.lines.map(l => `${num(l.units)} × ${esc(lang === "fi" ? l.title_fi : l.title)}`).join(" + ") + (L.opt[c.label] ? ` · ${L.opt[c.label]}` : "");
+  if (c.decision === "needs_human_approval") main += ` · ${L.opt.needs}`;
+  else if (c.decision === "not_allowed") main += ` · ${L.opt.no}`;
+  return `<span>${main}</span><span>${eur(c.total)}</span>`;
+}
+function itemNotes(S) {
+  const c = S.x.cart, L = t("c"), out = [];
+  if (!c) return "";
+  const live = !["completed", "canceled"].includes(S.d.status), has = S.d.status !== "none";
+  if (c.moved) out.push(nt(esc(L.moved(dayS(c.moved.from), dayS(c.moved.to)))));
+  const m = c.menu;
+  if (m) {
+    if (m.late) out.push(nt(`<b>${esc(L.late(dayS(m.event_date), dayS(c.day)))}</b>`, "bad"));
+    else if (m.same_day) out.push(nt(esc(L.same_day(dayS(c.day)))));
+    const facts = [], perDish = {}, rest = [];
+    for (const x of m.diet || []) {
+      if (x.scope === "dish" && x.dish) (perDish[x.dish] = perDish[x.dish] || []).push((L.diet[x.kind] || x.kind).toLowerCase());
+      else if (x.scope !== "dish") rest.push(`<b>${esc(L.diet[x.kind] || x.note)}:</b> ${esc(x.scope === "guests" && x.count ? L.diet_n(x.count, m.guests) : L.diet_all)}`);
+    }
+    // a note written on one dish ("Lohikeitto (L, G)") is shown on that dish, in words
+    const dishName = x => { const n = String(lang === "fi" ? x.fi : x.name), marks = perDish[x.name]; return marks ? `${n.replace(/\s*\([^)]*\)\s*$/, "")} (${[...new Set(marks)].join(", ")})` : n; };
+    if ((m.dishes || []).length) facts.push(`<b>${esc(L.dishes(m.dishes.length, m.guests))}</b> ${esc(m.dishes.map(dishName).join(", "))}`);
+    facts.push(...rest);
+    if ((m.pantry || []).length) facts.push(`<span class="mu">${esc(L.pantry)} ${esc(m.pantry.map(x => lang === "fi" ? x.fi : x.item).join(", "))}</span>`);
+    if (facts.length) out.push(nt(facts.join("<br>"), "info"));
+    if ((m.replaced || []).length) out.push(nt(`<b>${esc(L.menu_sub(m.replaced.length))}</b> ${m.replaced.map(r => `${esc(lang === "fi" ? r.title_fi : r.title)} <span class="mu">(${esc(L.for_(lang === "fi" ? r.for_title_fi : r.for_title))})</span>`).join("; ")}`));
+    // portions held by a dietary note are not "a product missing from the cart": the dish is ordered for everyone else
+    const heldP = (m.not_ordered || []).filter(x => x.kind === "no_fit" && (x.portions || x.whole)), leftP = (m.not_ordered || []).filter(x => !heldP.includes(x));
+    for (const x of heldP) {
+      const dish = lang === "fi" ? x.dish_fi : x.dish, item = lang === "fi" ? x.fi : x.item, diet = (x.diet || []).map(k => (L.diet[k] || L.diet[String(k).replace(/-free$/, "")] || k).toLowerCase()).join(", ");
+      out.push(nt(esc(x.whole ? L.held_all(dish, diet, item) : L.held_n(dish, x.portions, diet, item, x.rest))));
+    }
+    if (leftP.length) out.push(nt(`<b>${esc(L.left_out)}</b> ${esc(leftP.map(x => (lang === "fi" ? x.fi : x.item) + (x.dish ? ` (${lang === "fi" ? x.dish_fi : x.dish})` : "")).join(", "))}`));
+    if ((m.invented || []).length) out.push(nt(`${esc(L.invented)} ${esc((lang === "fi" && m.invented_fi || m.invented).join(", "))}`));
+  }
+  (c.items || []).forEach((it, i) => {
+    if (it.dropped) return;
+    const a = `”${esc(it.as_written)}”`, ch = it.choices ? it.choices[it.chosen || 0] : null, u = unitS(it.unit);
+    const more = live && has && ch && it.choices.length > 1;
+    const swapBtn = more ? `<button type="button" class="sm" data-act="swapopen" data-i="${i}">${esc(S.open.swap === i ? L.swap_hide : L.swap)}</button>` : "";
+    const alts = more && S.open.swap === i ? `<div class="alts">${it.choices.map((x, k) => `<button type="button" class="sm" data-act="swap" data-i="${i}" data-k="${k}" aria-current="${k === (it.chosen || 0)}"${k === (it.chosen || 0) ? " disabled" : ""}>${choiceLabel(S, it, x)}</button>`).join("")}</div>` : "";
+    if (it.status === "replaced" && ch) {
+      const s = ch.substitute, first = ch.lines[0], rest = ch.lines.find(l => l.for) || ch.lines[1] || {};
+      out.push(nt(`<b>${esc(L.short)}</b> ${esc(lang === "fi" ? first.title_fi : first.title)}, ${num(first.covers)} / ${num(it.quantity)} ${u}.<br><b>${esc(L.subst)}</b> ${esc(lang === "fi" ? s.title_fi : s.title)}, ${num(rest.covers)} ${u} · ${esc(L.tier[s.tier] || s.tier)} · ${esc(s.contract_price ? L.contract : L.list)}${s.price_delta_pct != null ? " · " + esc(L.per(s.price_delta_pct, unitS(s.per))) : ""}<br><span class="mu">${esc(L.why(s))}</span>${swapBtn ? `<div class="acts">${swapBtn}</div>` : ""}${alts}`));
+    }
+    else if (it.status === "short" && ch) out.push(nt(`${a}: ${esc(L.short_only(num(ch.covers), num(it.quantity), u))}${swapBtn ? `<div class="acts">${swapBtn}</div>` : ""}${alts}`));
+    else if (it.status === "which_kind") out.push(nt(`${esc(L.which(a.replace(/&[a-z#0-9]+;/g, m => ({ "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'" }[m] || m))))}<div class="acts">${(it.kinds || []).map(k => { const lab = lang === "fi" ? (k.fi || k.example_fi || k.kind) : k.kind; return has && live ? `<button type="button" class="sm" data-act="kind" data-i="${i}" data-kind="${esc(k.kind)}">${esc(lab)}</button>` : `<button type="button" class="sm" data-say="${esc((it.quantity ? num(it.quantity) + " " + u + " " : "") + lab)}">${esc(lab)}</button>`; }).join("")}</div>`));
+    else if (it.status === "ask_amount" && it.usual_amount) {
+      const ua = it.usual_amount, q = num(ua.quantity), uu = unitS(ua.unit), nm = lang === "fi" ? ua.title_fi || ua.title : ua.title;
+      out.push(nt(`${L.amount_usual(a, q, uu, esc(nm))}<div class="acts">${has && live ? `<button type="button" class="sm" data-act="usual" data-i="${i}">${esc(L.usual_btn(q, uu))}</button>` : `<button type="button" class="sm" data-again="${esc(ua.id)}" data-title="${esc(nm)}" data-asked="1">${esc(L.usual_btn(q, uu))}</button>`}</div>`));
+    }
+    else if (it.status === "ask_amount") out.push(nt(L.amount(a)));
+    else if (it.status === "not_on_day") out.push(nt(`${L.not_day(a, esc(dayS(c.day)))}${it.available_on && live && has ? `<div class="acts"><button type="button" class="sm" data-act="day" data-date="${esc(it.available_on)}">${esc(L.move(dayS(it.available_on)))}</button></div>` : it.available_on ? ` ${esc(L.can_day(dayS(it.available_on)))}` : ""}`));
+    else if (it.status === "not_found") out.push(nt(L.none(a)));
+    else if (ch) {
+      if (it.usual && !c.same_as_last_week) out.push(nt(L.usual(a, num(it.quantity), u) + (swapBtn ? `<div class="acts">${swapBtn}</div>` : "") + alts, "info"));
+      else if (more && S.open.swap === i) out.push(nt(`${a}${alts}`, "info"));
+    }
+  });
+  const und = (((S.d.wholesale || {}).policy || {}).rules || []).filter(r => r.id === "A1" && r.outcome === "pass" && r.undeclared).flatMap(r => r.undeclared);
+  for (const x of (((S.d.wholesale || {}).policy || {}).rules || []).filter(r => r.id === "S1" && r.outcome === "pass" && r.sub).map(r => r.sub))
+    if (live) out.push(nt(esc(L.sub_diff(nameOf(S, x.id, x.title), nameOf(S, x.for, x.for_title), (x.lost || []).map(k => L.claim[k] || k), (x.added || []).map(k => L.alg[k] || k), x.for_undeclared))));
+  if (und.length && live) out.push(nt(`${esc(L.undeclared)} ${esc(und.slice(0, 4).map(x => nameOf(S, x.id, x.title)).join(", "))}${und.length > 4 ? esc(L.more(und.length - 4)) : ""}`));
+  return out.join("");
+}
+function whyApproval(S) {
+  const L = t("c"), d = S.d, mv = S.x.mandate || {}, out = [];
+  for (const r of (((d.wholesale || {}).policy || {}).rules || []).filter(r => r.outcome === "escalate")) {
+    const s = r.id === "B1" ? L.B1(eur(amount(d.totals, "subtotal")), eur(mv.max_per_order)) : r.id === "B2" ? L.B2(eur(mv.max_per_week)) : L[r.id] || L.other;
+    if (!out.includes(s)) out.push(s);
+  }
+  return out.length ? out : [L.other];
+}
+function rowsHtml(S) {
+  const L = t("c"), c = S.x.cart, live = !["completed", "canceled"].includes(S.d.status);
+  const und = new Set((((S.d.wholesale || {}).policy || {}).rules || []).filter(r => r.id === "A1" && r.undeclared).flatMap(r => r.undeclared).map(x => String(x.id)));
+  const itemOf = id => c ? (c.items || []).findIndex(it => !it.dropped && it.choices && it.choices[it.chosen || 0].lines.some(l => l.id === id) && it.choices.length > 1) : -1;
+  return `<ul class="rows">${S.d.line_items.map(l => {
+    const w = l.wholesale || {}, sf = w.substitutes_for, i = itemOf(l.item.id);
+    return `<li><b>${esc(num(w.units))} ${esc(unitS((l.item.quantity_unit || {}).display_text))} × ${esc(nameOf(S, l.item.id, l.item.title))}</b><span class="a">${eur(amount(l.totals, "subtotal"))}</span>`
+      + (sf || w.contract_price || i >= 0 || und.has(String(l.item.id)) ? `<span class="s">${[sf ? `${esc(L.subst)} ${esc(L.for_(nameOf(S, sf.for, sf.for_title)))}` : "", w.contract_price ? esc(L.contract) : "", und.has(String(l.item.id)) ? esc(L.no_decl) : "", live && i >= 0 && !sf ? `<button type="button" class="lnkbtn" style="min-height:24px;font-size:var(--t1)" data-act="swapopen" data-i="${i}">${esc(L.swap)}</button>` : ""].filter(Boolean).join(" · ")}</span>` : "") + `</li>`;
+  }).join("")}</ul>`;
+}
+function checksHtml(S) {
+  const L = t("c"), d = S.d, w = d.wholesale || {}, o = d.order || {};
+  const words = s => String(s || "").replace(/\b[A-Z_]+:[A-Z_]+\b/g, k => L.claim[k] || k.split(":").reverse().join(" ").toLowerCase().replace(/_/g, " "));
+  const rules = ((w.policy || {}).rules || []).map(r => `<li><b>${esc((L.rule || {})[r.id] || r.title)}</b> <span class="${r.outcome === "pass" ? "p" : r.outcome === "deny" ? "d" : "e"}">${esc(r.outcome === "pass" ? L.pass : r.outcome === "deny" ? L.den : L.esc)}</span><br><span lang="en">${esc(words(r.detail))}</span></li>`).join("");
+  const url = o.permalink_url || S.x.order_url;
+  return `<ul class="chk"><li><b>${esc(L.asked)}</b> ${esc(w.intent || "")}</li><li><b>${esc(L.checks_h)}</b></li>${rules}`
+    + (url ? `<li><a href="${esc(url)}" target="_blank" rel="noopener">${esc(L.rec)}</a></li>` : "")
+    + `<li><a href="/ledger" target="_blank" rel="noopener">${esc(L.ledger)}</a></li></ul>`
+    + `<div class="folds">${S.quiet.length ? `<button type="button" class="lnkbtn" data-act="plan">${esc(L.plan)}</button>` : ""}<button type="button" class="lnkbtn" data-act="sig">${esc(L.sig)}</button></div><div data-frames></div>`;
+}
+function render(S) {
+  const L = t("c"), d = S.d, w = d.wholesale || {}, st = d.status, o = d.order || {}, ap = w.approval || null, n = d.line_items.length;
+  const done = st === "completed", off = st === "canceled", esc_ = st === "requires_escalation", ready = st === "ready_for_complete";
+  const expired = st === "incomplete" && (d.messages || []).some(m => m.code === "offer_expired");
+  const stopped = st === "incomplete" && !expired;
+  // An order that cannot arrive before the event is not offered for confirming or approving until the person says they want it anyway.
+  const lateGate = (ready || esc_) && S.x.cart && S.x.cart.menu && S.x.cart.menu.late && !S.open.late_ok;
+  S.el.className = "cart" + (done ? " done" : off ? " off" : "");
+  S.el.dataset.cid = d.id;
+  const c = S.x.cart, solo = c && (c.items || []).filter(it => !it.dropped && it.choices);
+  let cheaper = "";
+  if (esc_ && solo && solo.length === 1) {  // one product, over the limit: say which choice would need no approver
+    const it = solo[0], i = c.items.indexOf(it), k = it.choices.findIndex((x, j) => j !== (it.chosen || 0) && x.decision === "agent_may_order" && (x.covers_pct ?? 100) >= 99.5);
+    if (k >= 0) cheaper = `<p style="margin:10px 0 6px">${esc(L.cheaper(it.choices[k].lines.map(l => lang === "fi" ? l.title_fi : l.title).join(" + "), eur(it.choices[k].total)))}</p><button type="button" class="sm" data-act="swap" data-i="${i}" data-k="${k}">${esc(L.swap)}</button>`;
+  }
+  S.el.innerHTML = `<div class="hd"><b>${esc(done ? `${L.placed} ${o.label || ""}` : off ? (S.x.cart && S.x.cart.replaced ? L.replaced : L.canceled) : stopped ? L.stopped : L.built)}</b><span>${esc(L.lines(n))}</span></div>`
+    + (w.intent ? `<p class="ask">”${esc(w.intent)}”</p>` : "")
+    + (S.made && n >= 3 && !done && !off && !String(w.intent || "").includes(" / ") ? `<p class="made">${esc(S.x.cart && S.x.cart.menu && S.x.cart.menu.photo_reused ? L.made_again(n) : L.made(n, Math.max(1, Math.round(S.made.ms / 1000)), S.made.img))}</p>` : "")
+    + (off ? "" : itemNotes(S))
+    + (stopped ? nt(esc([L.deny_h].concat([...new Set(((w.policy || {}).rules || []).filter(r => r.outcome === "deny").map(r => L.deny_why[r.id] || L.deny_why[r.id[0]] || L.deny_why.other))]).join(" ") || L.deny), "bad") : "") + (expired ? nt(esc(L.expired)) : "")
+    + `<dl class="sum"><dt>${esc(L.day)}</dt><dd>${esc(dayS(w.delivery_date))}</dd><dt>${esc(L.ex)}</dt><dd>${eur(amount(d.totals, "subtotal"))}</dd><dt class="tot">${esc(L.inc)}</dt><dd class="tot">${eur(amount(d.totals, "total"))}</dd></dl>`
+    + (lateGate ? `<div class="acts" style="margin:10px 0 4px"><button type="button" class="sm" data-act="lateok">${esc(L.late_ok(dayS(w.delivery_date)))}</button></div>` : "")
+    + (esc_ && !lateGate ? `<div class="appr"><div><b>${esc(L.need)}</b>${whyApproval(S).map(s => `<p>${esc(s)}</p>`).join("")}<p class="mu">${esc(L.need_how)}</p></div><div class="qr">${S.x.qr || ""}</div><div class="rest">${navigator.share ? `<button type="button" class="sm" data-act="share">${esc(L.share)}</button>` : ""}<button type="button" class="sm" data-act="copy">${esc(L.copy)}</button>${cheaper}</div></div>` : "")
+    + (ap && ap.decision === "approved" && !off ? `<div class="okline">✓ ${esc(L.approved(ap.by || ""))}</div>` : ap && ap.decision === "rejected" ? `<div class="nt bad">${esc(L.rejected(ap.by || ""))}</div>` : "")
+    + (lateGate ? "" : ready || expired ? `<button type="button" class="cta" data-act="confirm">${esc(L.confirm)}</button>` : esc_ ? `<button type="button" class="cta" disabled>${esc(L.confirm)} · ${esc(L.waiting)}</button>` : done && (o.permalink_url || S.x.order_url) ? `<a class="cta" href="${esc(o.permalink_url || S.x.order_url)}" target="_blank" rel="noopener">${esc(L.record)}</a>` : "")
+    + `<div class="folds"><button type="button" class="lnkbtn" data-act="rows">${esc(S.open.rows ? L.rows_hide : L.rows(n))}</button><button type="button" class="lnkbtn" data-act="checks">${esc(S.open.checks ? L.checks_hide : L.checks)}</button>${ready || esc_ ? `<button type="button" class="lnkbtn" data-act="cancel">${esc(L.cancel)}</button>` : ""}</div>`
+    + (S.open.rows ? rowsHtml(S) : "") + (S.open.checks ? checksHtml(S) : "");
+}
+// A cart that waits for an approver asks the gateway now and then, and turns to "Hyväksynyt" by itself.
+function watch(S) {
+  clearTimeout(S.timer);
+  if (S.d.status !== "requires_escalation" || replay && false) return;
+  const t0 = Date.now();
+  const tick = async () => {
+    if (carts[S.id] !== S || !S.el.isConnected || Date.now() - t0 > 40 * 60 * 1000) return;
+    try {
+      const r = await rpc("tools/call", { name: "card_data", arguments: { kind: "checkout", id: S.id } });
+      const v = r.structuredContent || JSON.parse(((r.content || [])[0] || {}).text || "{}");
+      if (v.checkout && (v.checkout.status !== S.d.status || JSON.stringify((v.checkout.wholesale || {}).approval) !== JSON.stringify((S.d.wholesale || {}).approval))) {
+        S.d = v.checkout; S.x = Object.assign({}, S.x, v.card || {}, { cart: S.x.cart }); render(S); counts();
+        if (S.d.status !== "requires_escalation") return;
+      }
+    } catch (e) {}
+    S.timer = setTimeout(tick, 3000);
+  };
+  S.timer = setTimeout(tick, 3000);
+}
+function cartAct(S, b) {
+  const a = b.dataset.act, L = t("c"), c = S.x.cart, i = Number(b.dataset.i);
+  if (a === "rows" || a === "checks") { S.open[a] = !S.open[a]; render(S); return; }
+  if (a === "share") { navigator.share({ title: L.need, text: L.share_text, url: S.d.continue_url || "" }).catch(() => {}); return; }
+  if (a === "lateok") { S.open.late_ok = true; render(S); return; }
+  if (a === "swapopen") { S.open.swap = S.open.swap === i ? null : i; render(S); const el = $(".alts", S.el); if (el) el.scrollIntoView({ block: "nearest", behavior: "smooth" }); return; }
+  if (a === "copy") { const u = S.d.continue_url || ""; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => { b.textContent = L.copied; }).catch(() => { prompt(L.copy, u); }); return; }
+  if (a === "plan") { const box = $("[data-frames]", S.el); b.remove(); for (const q of S.quiet) card(q, null, box); return; }
+  if (a === "sig") { const box = $("[data-frames]", S.el); b.remove(); card({ name: S.ev.name, args: S.ev.args || {}, result: { content: [], structuredContent: S.d, _meta: { [META]: { ...S.x, full: S.d } } } }, null, box); return; }
+  if (busy) return;
+  if (a === "confirm") act({ type: "confirm", checkout: S.id }, L.confirm);
+  else if (a === "cancel") act({ type: "cancel", checkout: S.id }, L.cancel);
+  else if (a === "day") act({ type: "day", checkout: S.id, date: b.dataset.date }, L.move(dayS(b.dataset.date)));
+  else if (a === "kind") act({ type: "kind", checkout: S.id, item: i, kind: b.dataset.kind }, `${c.items[i].as_written}: ${b.textContent}`);
+  else if (a === "drop") act({ type: "drop", checkout: S.id, item: i }, `${L.drop}: ${c.items[i].as_written}`);
+  else if (a === "usual") act({ type: "usual", checkout: S.id, item: i }, b.textContent);
+  else if (a === "swap") { const k = Number(b.dataset.k), ch = c.items[i].choices[k], s = ch.substitute; act({ type: "swap", checkout: S.id, item: i, choice: k }, `${L.swap}: ${s ? (lang === "fi" ? s.title_fi : s.title) : (lang === "fi" ? ch.lines[0].title_fi : ch.lines[0].title)}`); }
+}
+
+// ---- orders: in the chat ("mitä tilasin viime viikolla?") and under Tilaukset and Hyväksynnät
+let ordersData = null;
+function orderRow(o) {
+  const O = t("o"), L = t("c");
+  return `<div class="oc"><div class="h"><b>${esc(o.label)}</b><span>${eur(o.subtotal)}</span></div><div class="m">${esc(L.day)} ${esc(dayS(o.delivery_date))} · ${esc(L.lines(o.lines))} · ${esc(L.inc)} ${eur(o.total)}${o.approved_by ? ` · ${esc(O.by(o.approved_by))}` : ""}</div>`
+    + (o.intent ? `<p class="q">”${esc(o.intent)}”</p>` : "") + `<div class="acts"><a class="sm" href="${esc(o.url)}" target="_blank" rel="noopener">${esc(O.conf)}</a></div></div>`;
+}
+function waitRow(w) {
+  const O = t("o"), L = t("c");
+  return `<div class="oc"><div class="h"><b>${esc(L.day)} ${esc(dayS(w.delivery_date))}</b><span>${eur(w.subtotal)}</span></div><div class="m"><span class="tag${w.approved_by ? " ok" : ""}">${esc(w.approved_by ? O.ok : O.wait)}</span> ${esc(L.lines(w.lines))}${w.approved_by ? ` · ${esc(O.by(w.approved_by))}` : ""}</div>`
+    + (w.intent ? `<p class="q">”${esc(w.intent)}”</p>` : "")
+    + (w.approved_by ? "" : `<div class="m">${esc([...new Set((w.rules || []).map(r => O.why[r] || L[r] || L.other))].join(" "))}</div>`)
+    + `<div class="acts">${w.approved_by ? `<button type="button" class="sm pri" data-confirm="${esc(w.id)}">${esc(L.confirm)}</button>` : `<button type="button" class="sm" data-copyurl="${esc(w.url || "")}">${esc(L.copy)}</button>`}</div></div>`;
+}
+function ordersHtml(v, inChat) {
+  const O = t("o"), L = t("c"), lw = v.last_week;
+  const placed = (v.orders || []).length ? `<div class="ol">${v.orders.map(orderRow).join("")}</div>` : "";
+  const wait = (v.waiting || []).length ? `<div class="ol">${v.waiting.map(waitRow).join("")}</div>` : "";
+  const last = lw ? `<div class="oc"><div class="h"><b>${esc(inChat ? O.last : `${L.day} ${dayS(lw.delivery_date)}`)}</b><span>${esc(inChat ? dayS(lw.delivery_date) : "")}</span></div><ul>${lw.items.map(x => `<li>${esc(num(x.units))} × ${esc(lang === "fi" ? x.title_fi : x.title)}</li>`).join("")}</ul><div class="m">${esc(O.sample)}</div><div class="acts"><button type="button" class="sm pri" data-say="${esc(O.same)}">${esc(O.same)}</button></div></div>` : "";
+  if (!inChat) return `<h2>${esc(O.placed)}</h2>` + (placed || `<p class="empty">${esc(O.none)}</p>`) + (last ? `<h2>${esc(O.last)}</h2>${last}` : "");
+  const parts = { placed, waiting: wait, last_week: last }, first = parts[v.about] != null ? v.about : "placed";
+  const body = [parts[first], ...Object.keys(parts).filter(k => k !== first).map(k => parts[k])].filter(Boolean).join("");
+  return `<div class="hd"><b>${esc(O.h)}</b><span>${esc((v.waiting || []).length ? O.wait_n(v.waiting.length) : "")}</span></div>` + (body || `<p class="nt info">${esc(O.none)}</p>`);
+}
+async function counts() {
+  try { ordersData = await backend.orders(); } catch (e) { return; }
+  const w = ordersData.waiting.length, o = ordersData.orders.length;
+  $("#apprn").hidden = !w; $("#apprn").textContent = w;
+  $("#ordn").hidden = !o; $("#ordn").textContent = o;
+  const v = $("#main").dataset.view;
+  if (v === "orders" || v === "approvals") panel(v);
+}
+function panel(v) {
+  const O = t("o"), d = ordersData, box = $("#panelin");
+  if (v === "orders") box.innerHTML = `<h1>${esc(O.h)}</h1><p class="lede">${esc(O.lede)}</p>` + (d ? ordersHtml(d, false) : `<p class="empty">${esc(O.load)}</p>`) + `<nav class="links"><a href="#" data-say="${esc(t("tabmsg").issues)}">${esc(O.issues)}</a></nav>`;
+  else box.innerHTML = `<h1>${esc(O.ah)}</h1><p class="lede">${esc(O.alede)}</p>` + (!d ? `<p class="empty">${esc(O.load)}</p>` : d.waiting.length ? `<div class="ol" style="margin-top:var(--s5)">${d.waiting.map(waitRow).join("")}</div>` : `<p class="empty">${esc(O.anone)}</p>`);
+}
+
+// ---------------------------------------------------------------- the technical cards: this page is the chat host (MCP Apps, ui/*)
+async function card(ev, tn, into) {
+  const cap = t("did")[ev.name] || "";
+  const box = mk(`<div class="tool">${cap && !into ? `<span class="cap" data-tool="${esc(ev.name)}">${esc(cap)}</span>` : ""}<iframe sandbox="allow-scripts allow-popups" allow="clipboard-write" title="${esc(cap || ev.name)}"></iframe></div>`);
+  if (into) into.appendChild(box); else addEl(box);
+  const f = { iframe: $("iframe", box), name: ev.name, args: ev.args || {}, result: ev.result, ready: false, box, pinned: !!into };
+  frames.push(f);
+  if (tn && !tn.first) tn.first = box;
+  if (!into) reveal(box);
+  try { f.iframe.srcdoc = await cardReady(); } catch (e) { box.remove(); }
+}
+function recap() { for (const c of $$(".tool .cap[data-tool]")) c.textContent = t("did")[c.dataset.tool] || ""; }
+const post = (f, method, params) => { try { f.iframe.contentWindow.postMessage({ jsonrpc: "2.0", method, params }, "*"); } catch (e) {} };
+function hostContext(f) {
+  const cs = getComputedStyle(document.documentElement), v = n => cs.getPropertyValue(n).trim();
+  const coarse = matchMedia("(pointer:coarse)").matches;
+  return { theme: matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light", displayMode: "inline", availableDisplayModes: ["inline"],
+    locale: loc(), timeZone: "Europe/Helsinki", platform: innerWidth < 700 ? "mobile" : "web",
+    deviceCapabilities: { touch: coarse, hover: matchMedia("(hover:hover)").matches }, containerDimensions: { width: f.iframe.clientWidth, maxHeight: 8000 },
+    toolInfo: { tool: tools[f.name] || { name: f.name } },
+    styles: { variables: { "--color-background-primary": v("--panel"), "--color-background-secondary": v("--soft"), "--color-background-tertiary": v("--hover"), "--color-text-primary": v("--ink"), "--color-text-secondary": v("--ink-2"),
+      "--color-text-tertiary": v("--muted"), "--color-border-primary": v("--line-2"), "--color-border-secondary": v("--line"), "--color-text-success": v("--pass"), "--color-text-warning": v("--esc"), "--color-text-danger": v("--deny") } } };
+}
+addEventListener("message", async ev => {
+  const f = frames.find(x => x.iframe.contentWindow === ev.source), m = ev.data;
+  if (!f || !m || m.jsonrpc !== "2.0" || !m.method) return;
+  const answer = body => { if (m.id !== undefined) ev.source.postMessage({ jsonrpc: "2.0", id: m.id, ...body }, "*"); };
+  const p = m.params || {};
+  try {
+    if (m.method === "ui/initialize") answer({ result: { protocolVersion: PROTO, hostInfo: { name: "aimo-shop", version: "1.0.0" },
+      hostCapabilities: { openLinks: {}, serverTools: {}, serverResources: {}, logging: {}, downloadFile: {}, updateModelContext: { text: {} }, message: { text: {} } }, hostContext: hostContext(f) } });
+    else if (m.method === "ui/notifications/initialized") { f.ready = true; post(f, "ui/notifications/tool-input", { arguments: f.args }); if (f.result) post(f, "ui/notifications/tool-result", f.result); }
+    else if (m.method === "ui/notifications/size-changed") {
+      const h = Math.max(48, Math.ceil(p.height || 0)), stick = nearBottom() && !f.pinned && !busy;
+      f.iframe.style.height = h + "px";
+      if (stick && !replay) log.scrollTop = log.scrollHeight;
+    }
+    else if (m.method === "tools/call") answer({ result: await rpc("tools/call", { name: p.name, arguments: p.arguments || {} }) });
+    else if (m.method === "resources/read") answer({ result: await rpc("resources/read", p) });
+    else if (m.method === "ui/open-link") { const w = window.open(p.url, "_blank", "noopener"); answer(w === null && !/^https?:/.test(p.url) ? { error: { code: -32000, message: "blocked" } } : { result: {} }); }
+    else if (m.method === "ui/message") { answer({ result: {} }); const text = (p.content || []).map(c => c.text || "").join(" ").trim(), label = String((p._meta || {})["fi.valioaimo/label"] || "").trim().slice(0, 120); if (text) send(text, null, label); }
+    else if (m.method === "ui/update-model-context") answer({ result: {} });
+    else if (m.method === "ui/download-file") {
+      for (const c of p.contents || []) { const r = c.resource || {}; const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([r.text || ""], { type: r.mimeType || "text/plain" })); a.download = String(r.uri || "file").split("/").pop(); document.body.appendChild(a); a.click(); a.remove(); }
+      answer({ result: {} });
+    }
+    else if (m.method === "ping") answer({ result: {} });
+    else answer({ error: { code: -32601, message: "Method not found" } });
+  } catch (e) { answer({ error: { code: -32000, message: String(e.message || e) } }); }
+});
+
+// ---------------------------------------------------------------- the shop around it
+const BOX = '<svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 6.2L9 3l6 3.2v5.6L9 15l-6-3.2zM3 6.2l6 3.1 6-3.1M9 9.3V15" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>';
+function shop() {
+  const a = (hello || {}).account || {};
+  $("#acct").textContent = a.name || " ";
+  $("#custno").textContent = a.customer ? `${t("custno")} ${a.customer}` : " ";
+  const n = (hello || {}).proposals || 0, w = (hello || {}).waiting || 0, o = (hello || {}).orders || 0;
+  $("#propn").hidden = !n; $("#propn").textContent = n;
+  if (!ordersData) { $("#apprn").hidden = !w; $("#apprn").textContent = w; $("#ordn").hidden = !o; $("#ordn").textContent = o; }
+  const ps = (hello || {}).products;
+  $("#shelf").innerHTML = !ps ? Array.from({ length: 4 }, () => `<div class="tile sk"><div class="im"></div><b>&nbsp;</b><span class="pr">&nbsp;</span></div>`).join("")
+    : !ps.length ? `<p class="muted" style="font-size:var(--t3)">${esc(t("shelf_none"))}</p>`
+    : ps.map(p => `<button type="button" class="tile" data-again="${esc(p.id)}" data-title="${esc(p.title)}"><span class="im${p.picture ? "" : " none"}">${p.picture ? `<img src="${esc(p.picture)}" alt="" loading="lazy">` : BOX}</span><b>${esc(p.title)}</b><span class="pr">${esc(p.price_text || "")}</span><span class="go">${esc(t("again"))}</span></button>`).join("");
+}
+async function loadHello() {
+  try { hello = await backend.hello(); } catch (e) { hello = null; }
+  if (hello && hello.card_token && !Object.keys(tools).length) rpc("tools/list", {}).then(tl => { for (const x of tl.tools) tools[x.name] = x; }).catch(() => {});
+  shop(); greet();
+}
+function view(v) {
+  $("#main").dataset.view = v;
+  const cur = { shop: "shelf", chat: "order", orders: "orders", approvals: "approvals" }[v];
+  for (const b of $$("[data-tab]")) b.setAttribute("aria-current", String(b.dataset.tab === cur));
+  if (v === "chat") requestAnimationFrame(() => { if (!busy && !Object.keys(turns).length) log.scrollTop = log.scrollHeight; });
+  if (v === "orders" || v === "approvals") { panel(v); counts(); }
+}
+
+// ---- input
+const ta = $("#text"), fileIn = $("#file");
+let image = null;
+function syncCompose() { $("#send").disabled = false; }
+function grow() { ta.style.height = "auto"; ta.style.height = Math.min(140, ta.scrollHeight) + "px"; }
+ta.addEventListener("input", grow);
+ta.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing && !matchMedia("(pointer:coarse)").matches) { e.preventDefault(); $("#compose").requestSubmit(); } });
+$("#compose").addEventListener("submit", e => {
+  e.preventDefault();
+  const text = ta.value, img = image;
+  if (!text.trim() && !img) return;
+  ta.value = ""; grow(); setImage(null);
+  send(text, img);
+});
+$("#photo").onclick = () => fileIn.click();
+fileIn.onchange = async () => { const f = fileIn.files[0]; fileIn.value = ""; if (f) setImage(await shrink(f)); };
+$("#unatt").onclick = () => setImage(null);
+function setImage(d) { image = d; $("#att").hidden = !d; if (d) $("#att img").src = d; }
+async function shrink(file, max = 1600) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = url; });
+    const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement("canvas"); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL("image/jpeg", 0.85);
+  } finally { URL.revokeObjectURL(url); }
+}
+
+// ---- clicks anywhere on the page
+document.addEventListener("click", async e => {
+  if (e.target.closest("[data-new]")) { fresh(); return; }
+  const ab = e.target.closest("[data-act]"), ce = ab && ab.closest(".cart[data-cid]");
+  if (ab && ce && carts[ce.dataset.cid]) { cartAct(carts[ce.dataset.cid], ab); return; }
+  const ag = e.target.closest("[data-again]");
+  if (ag) { if (!busy) act({ type: "again", product: ag.dataset.again, ...(ag.dataset.asked ? { asked: true } : {}) }, ag.dataset.asked ? ag.textContent : t("again_l")(ag.dataset.title)); else view("chat"); return; }
+  const cf = e.target.closest("[data-confirm]");
+  if (cf) { if (!busy) act({ type: "confirm", checkout: cf.dataset.confirm }, t("c").confirm); return; }
+  const cu = e.target.closest("[data-copyurl]");
+  if (cu) { const u = cu.dataset.copyurl; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => { cu.textContent = t("c").copied; }).catch(() => { prompt(t("c").copy, u); }); return; }
+  const s = e.target.closest("[data-say]");
+  if (s) { e.preventDefault(); view("chat"); if (s.dataset.img) sample(s.dataset.say, s.dataset.img); else send(s.dataset.say); return; }
+  const tb = e.target.closest("[data-tab]");
+  if (tb) { const k = tb.dataset.tab; if (k === "order") view("chat"); else if (k === "shelf") view("shop"); else if (k === "orders" || k === "approvals") view(k); else { view("chat"); send(t("tabmsg")[k]); } return; }
+  const lb = e.target.closest("[data-lang]");
+  if (lb && lb.dataset.lang !== lang) {
+    lang = lb.dataset.lang; try { localStorage.setItem("shop.lang", lang); } catch (err) {}
+    paint(); shop(); setStatus(statusKey); recap();
+    for (const k of Object.keys(carts)) if (carts[k].el.isConnected) render(carts[k]);
+    for (const f of frames) if (f.ready) post(f, "ui/notifications/host-context-changed", { locale: loc() });
+    const v = $("#main").dataset.view; if (v === "orders" || v === "approvals") panel(v);
+    await loadHello(); quick(); return;
+  }
+  if (e.target.closest("[data-retry]") && lastUser && !busy) { e.target.closest(".err").remove(); const [a, b, c] = lastUser; send(a, b, c); return; }
+  if (e.target.closest("[data-retry-hello]")) { loadHello(); return; }
+});
+for (const f of $$("[data-search]")) f.addEventListener("submit", e => { e.preventDefault(); const q = f.q.value.trim(); if (!q) return; f.q.value = ""; view("chat"); send(t("find")(q)); });
+async function fresh() {
+  if (busy) return;
+  await backend.reset();
+  thread = null; after = 0; keep(); frames.length = 0; drawnTurns.clear(); lastUser = null;
+  for (const k of Object.keys(carts)) { clearTimeout(carts[k].timer); delete carts[k]; }
+  for (const k of Object.keys(turns)) delete turns[k];
+  log.innerHTML = ""; greetEl = null;
+  await loadHello(); quick();
+}
+$("#reset").onclick = fresh;
+addEventListener("resize", () => { for (const f of frames) if (f.ready) post(f, "ui/notifications/host-context-changed", { containerDimensions: { width: f.iframe.clientWidth, maxHeight: 8000 }, platform: innerWidth < 700 ? "mobile" : "web" }); });
+
+// ---------------------------------------------------------------- start
+paint(); shop(); syncCompose();
+cardReady().catch(() => {});
+(async () => {
+  await loadHello();
+  try { thread = sessionStorage.getItem(KEY); } catch (e) {}
+  if (thread) { busy = true; replay = true; await poll(); replay = false; requestAnimationFrame(() => { log.scrollTop = log.scrollHeight; }); }
+  else thread = null;
+  counts();
+})();
+</script>
+</body>
+</html>

@@ -142,6 +142,10 @@ def default_profile() -> dict:
     return {"enabled": True, "tier": "order", "max_order_total": 1500000, "day_ceiling": DAY_CEILING, "show_contract_prices": True, "show_exact_stock": False, "keyless_cap": 50000}
 
 
+# Claims a guest's diet rests on. Losing one of these in a replacement is never left to the person who asked alone.
+GUEST_CLAIMS = {"FREE_FROM:LACTOSE", "FREE_FROM:GLUTEN", "FREE_FROM:WHEAT", "FREE_FROM:EGGS", "FREE_FROM:SOY", "DIET:VEGAN", "DIET:VEGETARIAN", "DIET:FREE_FROM_GLUTEN"}
+
+
 def evaluate(lines, subtotal, principal, profile, history, spent_week, requirements, day_auto=0, after=None, proposal=None, cleared=None, day_placed=0) -> list[dict]:
     """after: set when the lines change an order that is already placed (see after_rules). The money rules then
     judge the difference (new goods less what is credited), and the after-order rules are added."""
@@ -151,6 +155,10 @@ def evaluate(lines, subtotal, principal, profile, history, spent_week, requireme
         detail = (principal or {}).get("detail", "No mandate was presented. Ordering needs a mandate signed by the buying company.")
         return [rule("M1", "Valid mandate", "deny", f"{detail} ({err})")]
     m = principal["mandate"]
+    # The shop assistant's mandate: the signed-in person sees every cart and confirms it themselves. What exists to catch an agent acting
+    # alone (a first-time product, an unusual amount, a replacement it chose) then needs no second person. Money limits and allergens still do.
+    # Only Valio Aimo's own shop chat can say so: a mandate a buyer signs for an outside agent cannot carry it (fit_mandate drops it), and it counts for no other agent name.
+    person = bool(m.get("person_confirms")) and str(principal.get("agent") or "").endswith("/shop-assistant") and (principal.get("mandate_key") or {}).get("held_by") != "buyer"
     out.append(rule("M1", "Valid mandate", "pass", f"Mandate {principal['jti']} signed by {principal['buyer_name']}, valid until {time.strftime('%d %b %Y', time.gmtime(principal['exp']))}."))
 
     max_units = m.get("max_units_per_order")
@@ -215,8 +223,8 @@ def evaluate(lines, subtotal, principal, profile, history, spent_week, requireme
         # Split-order check: orders the agent placed alone for the same delivery day count as one order.
         if subtotal <= lim and day_auto:
             out.append(
-                rule("B3", "Split-order check", "escalate", f"The agent already ordered {eur(day_auto)} for this delivery day without a person. With this order that is {eur(day_auto + subtotal)}, over the {eur(lim)} limit, so it is treated as one order.")
-                if day_auto + subtotal > lim else rule("B3", "Split-order check", "pass", f"Agent-only orders for this delivery day total {eur(day_auto + subtotal)} including this one, within {eur(lim)}.")
+                rule("B3", "Split-order check", "escalate", f"Orders and open carts made for this delivery day without a person already come to {eur(day_auto)}. With this order that is {eur(day_auto + subtotal)}, over the {eur(lim)} limit, so it is treated as one order.")
+                if day_auto + subtotal > lim else rule("B3", "Split-order check", "pass", f"Orders and open carts made for this delivery day without a person come to {eur(day_auto + subtotal)} including this one, within {eur(lim)}.")
             )
     wk = b.get("max_per_week")
     if wk is not None:
@@ -267,6 +275,16 @@ def evaluate(lines, subtotal, principal, profile, history, spent_week, requireme
         seen = lambda l, c: ((cleared or {}).get(l["id"]) or {}).get(c)
         open_ = [(l, [c for c in codes if not seen(l, c)]) for l, codes in silent]
         open_ = [(l, codes) for l, codes in open_ if codes] if m.get("undeclared_allergens", "ask") == "ask" else []
+        if open_ and person:
+            # In the shop the signed-in person is the one who decides: the cart names these lines above its button, and they confirm knowing it.
+            # What declares the excluded allergen is still refused, and "may contain traces" still goes to a second person.
+            what = names(sorted(set().union(*(codes for _, codes in open_))))
+            which = ", ".join(l["title"] for l, _ in open_[:3]) + (f" and {len(open_) - 3} more" if len(open_) > 3 else "")
+            r = rule("A1", "Allergen exclusions", "pass", f"{len(open_)} of {len(lines)} line{'s have' if len(open_) != 1 else ' has'} no allergen declaration from the manufacturer, so the exclusion of {what} "
+                     f"cannot be checked there: {which}. The cart says so above its button, and the signed-in person confirms the order themselves.")
+            r["undeclared"] = [{"id": l["id"], "title": l["title"], "codes": codes, "what": names(codes)} for l, codes in open_]
+            out.append(r)
+            silent, open_ = [(l, codes) for l, codes in silent if not any(l is x for x, _ in open_)], []
         if open_:
             what = names(sorted(set().union(*(codes for _, codes in open_))))
             which = ", ".join(l["title"] for l, _ in open_[:3]) + (f" and {len(open_) - 3} more" if len(open_) > 3 else "")
@@ -319,28 +337,52 @@ def evaluate(lines, subtotal, principal, profile, history, spent_week, requireme
         if not s:
             continue
         allow, cap_pct = sub.get("allow", "listed"), sub.get("max_unit_price_increase_pct", 10)
-        why = []
-        if allow == "none":
-            why.append("the mandate allows no substitutions")
-        elif allow == "listed" and not s["listed"]:
-            why.append("it is not on Valio Aimo's substitute list for the requested product")
-        if s["lost_claims"]:
-            why.append("it drops " + ", ".join(s["lost_claims"]))
-        if s["new_allergens"] and s.get("for_undeclared"):
-            why.append("the product it replaces has no allergen declaration to compare with (this one contains " + ", ".join(ALLERGENS.get(c, c) for c in s["new_allergens"]) + ")")
-        elif s["new_allergens"]:
-            why.append("it adds allergens: " + ", ".join(ALLERGENS.get(c, c) for c in s["new_allergens"]))
-        if s["price_delta_pct"] is not None and s["price_delta_pct"] > cap_pct:
-            why.append(f"it costs {s['price_delta_pct']:.0f}% more per {s['per']} (limit {cap_pct}%)")
+        why, differs = [], None
+        lost = [c for c in s["lost_claims"] if c in GUEST_CLAIMS] if person else s["lost_claims"]
+        label = [c for c in s["lost_claims"] if c not in lost]
+        if person:
+            # In the shop the replacement is a proposal: the person sees it and its price on the cart and confirms it, or picks another.
+            # What they asked for (a claim on the item, an allergen they excluded) is still enforced by A1 and A2. What differs from the
+            # product it stands in for (a dietary claim it does not carry, an allergen it adds) is named on the cart in plain words.
+            if lost or s["new_allergens"]:
+                differs = {"id": l["id"], "title": l["title"], "for": s.get("for"), "for_title": s["for_title"], "lost": lost, "added": list(s["new_allergens"]), "for_undeclared": bool(s.get("for_undeclared"))}
+        else:
+            if allow == "none":
+                why.append("the mandate allows no substitutions")
+            elif allow == "listed" and not s["listed"]:
+                why.append("it is not on Valio Aimo's substitute list for the requested product")
+            if lost:
+                why.append("it drops " + ", ".join(lost))
+            if s["new_allergens"] and s.get("for_undeclared"):
+                why.append("the product it replaces has no allergen declaration to compare with (this one contains " + ", ".join(ALLERGENS.get(c, c) for c in s["new_allergens"]) + ")")
+            elif s["new_allergens"]:
+                why.append("it adds allergens: " + ", ".join(ALLERGENS.get(c, c) for c in s["new_allergens"]))
+            if s["price_delta_pct"] is not None and s["price_delta_pct"] > cap_pct:
+                why.append(f"it costs {s['price_delta_pct']:.0f}% more per {s['per']} (limit {cap_pct}%)")
         base = f"{l['title']} replaces {s['for_title']}"
+        said = []
+        if differs and lost:
+            said.append("it does not carry " + ", ".join(lost) + ", which the replaced product did")
+        if differs and differs["added"]:
+            said.append("it contains " + ", ".join(ALLERGENS.get(c, c) for c in differs["added"]) + (", and the replaced product has no allergen declaration to compare with" if differs["for_undeclared"] else ", which the replaced product did not declare"))
         out.append(
             rule("S1", "Substitution", "escalate", f"{base}: {'; '.join(why)}.", l["path"])
-            if why else rule("S1", "Substitution", "pass", f"{base}: listed substitute, same claims, no new allergens, {s['price_delta_pct'] or 0:+.0f}% per {s['per']}.", l["path"])
+            if why else rule("S1", "Substitution", "pass", f"{base}: from Valio Aimo's own range, {s['price_delta_pct'] or 0:+.0f}% per {s['per']}. It differs from the product it replaces: {'; '.join(said)}. "
+                             "The cart says so in words, and the signed-in person confirms the order themselves or picks another product.", l["path"]) | {"sub": differs}
+            if differs else rule("S1", "Substitution", "pass", f"{base}: {'listed substitute' if s['listed'] else 'from Valio Aimo\'s own range'}, "
+                             + (f"keeps every dietary claim, no new allergens, {s['price_delta_pct'] or 0:+.0f}% per {s['per']}. It does not carry {', '.join(label)}, which the replaced product did and this request did not ask for."
+                                if label else f"same claims, no new allergens, {s['price_delta_pct'] or 0:+.0f}% per {s['per']}.")
+                             + (" The signed-in person sees it on the cart and confirms the order themselves." if person else ""), l["path"])
         )
 
     if m.get("new_products", "ask") == "ask":
         new = [l for l in lines if l["id"] not in history and not l.get("substitution")]
-        if new:
+        free, worth = m.get("new_products_free"), sum(l.get("amount") or 0 for l in new)
+        if new and person:
+            out.append(rule("N1", "First-time products", "pass", f"{len(new)} of {len(lines)} products are new to this account. The signed-in person sees them on the cart and confirms the order themselves, so no second person is asked."))
+        elif new and free is not None and worth <= free:
+            out.append(rule("N1", "First-time products", "pass", f"{len(new)} first-time product{'s' if len(new) != 1 else ''} worth {eur(worth)}, within the {eur(free)} this mandate lets an agent try without asking."))
+        elif new:
             # A short order names the products. A long one (a whole menu) says it once; each new line is marked on the order itself.
             what = ("Never ordered on this account before: " + ", ".join(l["title"] for l in new) + ". A person must decide.") if len(new) <= 3 else \
                 f"{len(new)} of {len(lines)} products are new to this account. A person must decide about the first-time products."
@@ -348,7 +390,7 @@ def evaluate(lines, subtotal, principal, profile, history, spent_week, requireme
         else:
             out.append(rule("N1", "First-time products", "pass", "Every product has been ordered on this account before or is an allowed substitute."))
 
-    factor = m.get("quantity_anomaly_factor")
+    factor = None if person else m.get("quantity_anomaly_factor")  # the person typed the amount and confirms it on the cart
     if factor:
         odd = [(l, history[l["id"]]["typical_units"]) for l in lines if l["id"] in history and l["units"] > factor * history[l["id"]]["typical_units"]]
         unknown = [l for l in lines if l["id"] not in history]

@@ -42,6 +42,14 @@ h1{font-size:var(--t8);letter-spacing:-.025em;line-height:1.1;margin-top:4px}
 .now td,.now th{font-size:var(--t3)}
 .more-ev>summary{margin-top:var(--s2)}
 .small-note{font-size:var(--t1);color:var(--muted);margin:var(--s3) 0 0}
+/* the confirmation a customer of the shop reads: Finnish, the order first, the technical record behind one fold */
+.frow{display:grid;grid-template-columns:1fr auto;gap:var(--s3);padding:10px 0;border-bottom:1px solid var(--line);font-size:var(--t3)}
+.frow b{font-weight:600}.frow .muted{font-size:var(--t2)}.frow .sub{font-size:var(--t2);color:var(--muted)}
+.fok{display:flex;gap:var(--s2);align-items:flex-start;margin-top:var(--s4);padding:var(--s3) var(--s4);border-radius:var(--r);background:var(--pass-bg);color:var(--pass);font-size:var(--t3)}
+.fok.bad{background:var(--deny-bg);color:var(--deny)}
+details.tech>summary{cursor:pointer;font-size:var(--t3);padding:var(--s3) 0;color:var(--muted)}
+details.tech>.in{display:flex;flex-direction:column;gap:var(--s4);margin-top:var(--s3)}
+.backshop{display:inline-block;padding:14px var(--s4);font-weight:600;font-size:var(--t3)}
 @media (max-width:640px){h1{font-size:26px;word-break:break-word}main{padding-top:var(--s5)}.ev{grid-template-columns:52px 1fr}}
 </style>
 </head>
@@ -151,6 +159,31 @@ function afterCard(after, ares) {
   return h + `<p class="muted" style="font-size:12.5px;margin:12px 0 0">${esc(after.lots || "")}</p></div>`;
 }
 
+// ---- An order confirmed in the shop chat: what the customer reads, in Finnish. Everything else on this page waits behind "Näytä tarkistukset".
+const isShop = o => /\/shop-assistant$/.test(String(o.wholesale.placed_by || ""));
+const eurFi = c => (c / 100).toLocaleString("fi-FI", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "\u00a0€";
+const dayFi = d => d ? new Date(d + "T12:00:00").toLocaleDateString("fi-FI", { weekday: "short", day: "numeric", month: "numeric" }) : "";
+const whenFi = iso => iso ? new Date(iso).toLocaleString("fi-FI", { day: "numeric", month: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: TZ }) : "";
+let namesFi = {};
+function shopHead(o, res, done) {
+  const w = o.wholesale, ev = w.evidence, amt = t => (o.totals.find(x => x.type === t) || {}).amount, tax = o.totals.find(x => x.type === "tax");
+  const unit = l => ({ piece: "kpl", case: "ltk" }[l.item.quantity_unit.display_text] || l.item.quantity_unit.display_text), nm = (id, t) => namesFi[id] || t;
+  const pct = tax && /([\d.,]+)\s*%/.exec(tax.display_text || ""), ok = res && res.every(r => r[0]);
+  return `<div class="ohead"><div class="eyebrowless">Verkkokauppa · tilausvahvistus · prototyyppi</div><h1>Tilaus ${esc(o.label)}</h1>
+    <div class="pills"><span class="pill pass">${ev.approval ? "hyväksynyt: " + esc(ev.approval.by) : "vahvistettu verkkokaupassa"}</span><span class="pill">${esc(whenFi(w.placed_at))}</span></div></div>
+    <div class="card"><h3>Tilaus</h3>` + o.line_items.map(l => { const sub = l.wholesale.substitutes_for; return `<div class="frow"><div><b>${esc(nm(l.item.id, l.item.title))}</b>
+      ${sub ? `<div class="sub">Korvaava tuote: korvaa tuotteen ${esc(nm(sub.for, sub.for_title))}</div>` : ""}<div class="muted">${(l.wholesale.units ?? l.quantity.total ?? l.quantity).toLocaleString("fi-FI")} ${esc(unit(l))} × ${eurFi(l.item.price)}</div></div><div class="num">${eurFi(l.totals[0].amount)}</div></div>`; }).join("") + `
+      <table class="totals" style="margin-top:6px"><tr><td class="muted">Ostokset (alv 0 %)</td><td class="num">${eurFi(amt("subtotal"))}</td></tr>
+        ${tax ? `<tr><td class="muted">Alv${pct ? " " + pct[1].replace(".", ",") + " %" : ""}</td><td class="num">${eurFi(tax.amount)}</td></tr>` : ""}
+        <tr class="grand"><td><b>Yhteensä (sis. alv)</b></td><td class="num"><b>${eurFi(amt("total"))}</b></td></tr></table>
+      <dl class="kv" style="margin-top:var(--s4)"><dt>Toimituspäivä</dt><dd>${esc(dayFi(w.delivery_date))}</dd><dt>Asiakas</dt><dd>${esc(w.buyer.name)} · asiakasnumero ${esc(w.customer)}</dd>
+        ${w.intent ? `<dt>Pyyntösi</dt><dd>”${esc(w.intent)}”</dd>` : ""}<dt>Maksu</dt><dd>Lasku nykyisillä maksuehdoillasi.</dd></dl>
+      ${!res ? "" : !done ? `<div class="fok" style="background:var(--soft);color:var(--muted)"><span class="spin"></span><span>Tarkistetaan allekirjoituksia selaimessasi…</span></div>`
+        : ok ? `<div class="fok">${markHtml(true)}<span>Tilausta ei ole muutettu vahvistuksen jälkeen. ${res.length} tarkistusta tehtiin juuri tässä selaimessa.</span></div>`
+        : `<div class="fok bad">${markHtml(false)}<span>Tilauksen tiedot eivät täsmää allekirjoitukseen. Ota yhteyttä asiakaspalveluun.</span></div>`}
+      <div style="margin-top:var(--s4)"><a class="btn" href="/shop">Takaisin verkkokauppaan</a></div></div>`;
+}
+
 let lastRes = null;
 const checkRow = (r, state) => `<div class="check ${state}">${state === "pending" ? markHtml(null) : markHtml(r[0])}<div><b>${esc(r[1])}</b><div class="d">${state === "pending" ? "Checking" : esc(r[2])}</div></div></div>`;
 const verdict = (res, done) => !res ? '<div class="verdict">Signature checks need a secure (https) page.</div>'
@@ -165,7 +198,7 @@ async function render() {
   const ares = crypto.subtle ? await Promise.all(after.issues.map(i => afterChecks(o, i))) : null;
   const first = lastRes === null, calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
   let h = `<div class="ohead"><div class="eyebrowless">Valio Aimo agent gateway · order confirmation</div><h1>Order ${esc(o.label)}</h1>
-    <div class="pills"><span class="pill" title="${esc(w.placed_by)}">placed by agent ${esc(String(w.placed_by||"").replace(/^agent:/,""))}</span>${ev.approval ? `<span class="pill escalate">approved by ${esc(ev.approval.by)}</span>` : '<span class="pill pass">no person involved</span>'}<span class="pill">${esc(when(w.placed_at))}</span>${st && st.status === "cancelled" ? '<span class="pill deny">cancelled after the order</span>' : st && st.amendments.length ? '<span class="pill escalate">changed after the order</span>' : ""}</div>
+    <div class="pills"><span class="pill" title="${esc(w.placed_by)}">placed by agent ${esc(String(w.placed_by||"").replace(/^agent:/,""))}</span>${ev.approval ? `<span class="pill escalate">approved by ${esc(ev.approval.by)}</span>` : isShop(o) ? '<span class="pill pass">confirmed in the shop by the signed-in person</span>' : '<span class="pill pass">no person involved</span>'}<span class="pill">${esc(when(w.placed_at))}</span>${st && st.status === "cancelled" ? '<span class="pill deny">cancelled after the order</span>' : st && st.amendments.length ? '<span class="pill escalate">changed after the order</span>' : ""}</div>
     ${after.amends ? `<div style="margin-top:var(--s3)">Replaces goods on <a href="${esc(after.amends.url || after.amends.permalink_url ? orderLink(after.amends) : "/orders/" + after.amends.order_id)}">order ${esc(after.amends.order_label)}</a> after a ${esc((KIND[after.amends.kind] || "").toLowerCase())}: ${esc(after.amends.title)}.</div>` : ""}</div>`;
   h += `<div class="card evi"><h3>Evidence, checked in your browser</h3><div id="verdict">${verdict(res, !first || calm)}</div><div id="checks">` +
     (res ? res.map((r, i) => checkRow(r, first && !calm ? "pending" : lastRes && lastRes[i] && lastRes[i][0] !== r[0] ? (r[0] ? "ok changed" : "bad changed") : r[0] ? "ok" : "bad")).join("") : "") + `</div>
@@ -185,8 +218,18 @@ async function render() {
     + (EV.length > FIRST ? `<details class="more-ev"><summary>Show the other ${EV.length - FIRST}</summary>${EV.slice(FIRST).map(evRow).join("")}</details>` : "") + `</div>`;
   h += `<div class="card docs"><h3>Documents</h3><div class="links"><a href="${esc(keyed(w.documents.peppol_order))}">Peppol BIS 3 Order (UBL XML)</a><a href="${esc(keyed(w.documents.peppol_order_response))}">Peppol BIS 3 Order Response</a>${st && st.amendments.length ? `<a href="${esc(keyed(`/orders/${o.id}/peppol/order-response-amended.xml`))}">Order Response after the changes</a>` : ""}<a href="${esc(keyed(w.documents.audit))}">Audit trail (JSON)</a><a href="/ledger">Ledger</a></div>
     <details style="margin-top:var(--s3)"><summary>Signed order (JSON)</summary><pre>${esc(JSON.stringify(o, null, 1))}</pre></details>
-    <p class="small-note">The XML is shaped to Peppol BIS Ordering 3 so the order can enter the same EDI flow as any other; it has not been run through the Peppol validator.</p></div>`;
-  $("#main").innerHTML = h;
+    <p class="small-note" id="ppnote">The XML is shaped to Peppol BIS Ordering 3 so the order can enter the same EDI flow as any other. Checking it against the published rules…</p></div>`;
+  const shop = isShop(o), open = !!($("#main details.tech") || {}).open;
+  $("#main").innerHTML = shop ? `<div id="shophead">${shopHead(o, res, !first || calm)}</div><details class="tech"${open ? " open" : ""}><summary>Näytä tarkistukset (tekninen tallenne, englanniksi)</summary><div class="in">${h}</div></details>` : h;
+  // one statement about the Peppol document everywhere: what the validator said for this order, and that it was not sent
+  if (!render.pp) render.pp = fetch(keyed(`/orders/${o.id}/peppol/check`)).then(r => r.ok ? r.json() : null).catch(() => null);
+  render.pp.then(v => {
+    const el = $("#ppnote"), c = v && v.check; if (!el) return;
+    el.textContent = (c && c.ok ? `The Peppol order passed the UBL 2.1 schema and OpenPeppol's BIS Ordering 3 rules (${c.fired} rules fired, ${(c.errors || []).length} errors, ${(c.warnings || []).length} warnings).`
+      : c && c.ok === false ? `The Peppol order did not pass validation: ${((c.errors || [])[0] || {}).text || ""}`
+      : "The XML is shaped to Peppol BIS Ordering 3. It could not be checked against the published rules just now, so it is not claimed valid here.")
+      + " " + ((v && v.not_sent) || "Not sent: this prototype has no Peppol access point.");
+  });
   $("#t1").onclick = () => { tamper.price = !tamper.price; render(); };
   $("#t2").onclick = () => { tamper.ledger = !tamper.ledger; render(); };
   // First time: the checks land one by one, as the browser finishes each.
@@ -195,6 +238,7 @@ async function render() {
     for (const [i, r] of res.entries()) { await new Promise(ok => setTimeout(ok, i ? 260 : 380)); rows[i].outerHTML = checkRow(r, (r[0] ? "ok" : "bad") + " landed"); }
     await new Promise(ok => setTimeout(ok, 200));
     $("#verdict").innerHTML = verdict(res, true);
+    if (shop) $("#shophead").innerHTML = shopHead(o, res, true);
   }
   lastRes = res || [];
 }
@@ -206,6 +250,13 @@ const keyed = u => KQ && u && !/[?&]k=/.test(u) ? u + KQ : u;
   [order, audit, profile, ledger] = await Promise.all([api(`/orders/${oid}${KQ}`), api(`/orders/${oid}/audit${KQ}`), api("/.well-known/ucp"), api("/ledger?format=json&limit=400")]).catch(() => [{}]);
   if (!order || !order.id) { $("#main").innerHTML = `<div class="card" style="text-align:center;padding:48px 24px"><h2 style="font-size:var(--t6)">This order cannot be opened from here</h2><p class="muted">An order opens for the account that placed it, or with the full link from its confirmation (it ends in ?k=...). The link may also be wrong.</p><a class="btn" href="/demo">Place an order</a></div>`; return; }
   document.title = "Order " + order.label;
+  if (isShop(order)) {  // opened from the shop: the shop's language and words, and the way back to it
+    document.title = "Tilaus " + order.label; document.documentElement.lang = "fi";
+    $(".banner").textContent = "Prototyyppi Valio Aimon haastedatalla, ei Valio Aimon järjestelmä.";
+    $("#site").innerHTML = '<a class="backshop" href="/shop">← Verkkokauppa</a>';
+    const f = document.getElementById("sitefoot"); if (f) f.remove();
+    namesFi = ((await api(`/orders/${oid}/names${KQ}`).catch(() => null)) || {}).fi || {};
+  }
   render();
 })();
 </script>

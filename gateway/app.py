@@ -21,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from mcp.server.transport_security import TransportSecuritySettings
 
 from . import home, mcp_tools, oauth, peppol, policy, tower
-from . import proof
+from . import chat, proof
 from . import after
 from . import anchor
 from . import seller
@@ -255,6 +255,20 @@ def order_peppol(oid: str, request: Request):
     return Response(peppol.order_xml(order_for_reader(oid, request)), media_type="application/xml")
 
 
+@app.get("/orders/{oid}/names", include_in_schema=False)
+def order_names(oid: str, request: Request):
+    """The order's products by their Finnish names, for the confirmation a customer of the shop reads."""
+    o = order_for_reader(oid, request)
+    ids = {str(l["item"]["id"]) for l in o["line_items"]} | {str((l["wholesale"].get("substitutes_for") or {}).get("for") or "") for l in o["line_items"]}
+    return {"fi": {i: n for i in ids if i and (n := ((g.cat.get(i) or {}).get("names") or {}).get("fi"))}}
+
+
+@app.get("/orders/{oid}/peppol/check", tags=["orders"], summary="The Peppol order checked against the UBL 2.1 schema and OpenPeppol's rules, as an access point would before sending")
+def order_peppol_check(oid: str, request: Request):
+    d = chat.peppol_doc(order_for_reader(oid, request))
+    return {"check": d["check"], "not_sent": d.get("stand_in")}
+
+
 @app.get("/orders/{oid}/peppol/order-response.xml", tags=["orders"], summary="The confirmation as a Peppol BIS Ordering 3 OrderResponse (UBL 2.1)")
 def order_peppol_response(oid: str, request: Request):
     return Response(peppol.order_response_xml(order_for_reader(oid, request)), media_type="application/xml")
@@ -290,15 +304,39 @@ def approve_page(cid: str, k: str = ""):
     return FileResponse(WEB / "approve.html", status_code=code, headers={"Cache-Control": "no-store"})
 
 
+def _own_request(cid: str, request: Request) -> bool:
+    """True when the browser that opened the approval link is the one that asked for the order in the shop chat:
+    the checkout was made by Valio Aimo's own shop assistant for an account, and this browser's visitor session is that
+    account. Then the asker would approve their own order, so the gateway refuses the yes. A phone that scanned the QR,
+    a private window or an API call has no such session and approves as before. Orders an outside agent or the
+    /demo, /menu and /tower pages asked for are not "own": there the visitor is the approver."""
+    c = g._load(cid)
+    if not str(c["wholesale"].get("agent") or "").endswith("/shop-assistant"):
+        return False
+    tok = request.cookies.get(COOKIE)
+    s = g.store.get("session:" + tok) if tok else None
+    if not s:
+        return False
+    mine = s.get("slug") or ((s.get("view") or STAGE) if s.get("operator") else None)
+    acct = g.account_of(c["_internal"].get("customer")) or {}
+    return bool(mine) and mine == acct.get("slug")
+
+
 @app.get("/api/approve/{cid}", include_in_schema=False)
-def approve_view(cid: str, k: str = ""):
-    return g.approval_view(cid, k)
+def approve_view(cid: str, request: Request, k: str = ""):
+    v = g.approval_view(cid, k)
+    return v | ({"_own": True} if _own_request(cid, request) else {})
 
 
 @app.post("/api/approve/{cid}", include_in_schema=False)
 def approve_decide(cid: str, request: Request, body: dict = Body(...)):
     approve, by, note = bool(body.get("approve")), str(body.get("approver") or "").strip()[:60], str(body.get("note") or "")[:300]
     g.approval_view(cid, str(body.get("k") or ""))  # a wrong key is refused before anything else is said
+    if approve and _own_request(cid, request):  # the person who asked in the shop chat cannot also be the one who approves
+        c = g._load(cid)
+        g.store.log(c["_internal"].get("trace"), "gateway", "refused", "The person who asked for this order in the shop chat tried to approve it in their own browser. Refused: an approval comes from someone else, on their own device. Nothing was approved.",
+                    {"code": "own_request"}, cid=cid)
+        raise GatewayError(403, "own_request", "You cannot approve your own order. Send the link to the approver or show them the QR code; they approve on their own device. Nothing was approved.")
     if approve and not by:  # the server never makes up who approved
         raise GatewayError(400, "approver_required", "An approval carries the name of the person who gives it. Nothing was approved.")
     clears = body.get("clears") if isinstance(body.get("clears"), list) else None  # the lines with no allergen declaration the approver ticked, one by one
@@ -385,6 +423,18 @@ def spec_page():
 def chat_page():
     """The cards a chat draws (MCP Apps), in a small host of our own next to the plain text every connector returns."""
     return page("chat/host.html")
+
+
+@app.get("/architecture", include_in_schema=False)
+def architecture_page():
+    """For the people who own integrations and data governance: where the gateway sits, what it stores and shows, what a pilot needs."""
+    return page("architecture.html")
+
+
+@app.get("/access", include_in_schema=False)
+def access_page():
+    """What an outside agent can see for one customer account, what it never sees, and Valio Aimo's switches for it, with a live lookup."""
+    return page("access.html")
 
 
 @app.get("/favicon.ico", include_in_schema=False)
@@ -647,6 +697,8 @@ app.include_router(anchor.build(g, ctx))  # ledger head anchored on Solana devne
 app.include_router(seller.build(g, ctx, page))  # Valio Aimo's own agent: proposals, summary, /seller
 app.include_router(passkey.build(g, ctx, page, COOKIE))  # an approver's own device signs the decision
 app.include_router(menu.build(g, ctx, page))  # a menu photo becomes an order: /menu, /byhand, POST /menu/plan
+from . import shopchat  # noqa: E402
+app.include_router(shopchat.build(g, ctx, page))  # Valio Aimo's shop assistant: /shop, /api/shop/*
 
 
 class McpGuard:
@@ -666,6 +718,28 @@ class McpGuard:
                 await send({"type": "http.response.start", "status": 401, "headers": [(b"content-type", b"application/json"), (b"www-authenticate", www.encode()), (b"access-control-allow-origin", b"*"), (b"access-control-expose-headers", b"WWW-Authenticate")]})
                 await send({"type": "http.response.body", "body": body})
                 return
+            if scope["method"] == "POST":  # note what each client says about itself: its name and whether it draws cards (MCP Apps)
+                buf, agent = [], p.get("agent")
+
+                async def heard():
+                    m = await receive()
+                    try:
+                        if m["type"] == "http.request" and sum(map(len, buf)) < 20_000:
+                            buf.append(m.get("body", b""))
+                            body = b"".join(buf)
+                            if not m.get("more_body") and (b'"initialize"' in body or b"clientInfo" in body):
+                                q = (json.loads(body) or {}).get("params") or {}
+                                meta = q.get("_meta") or {}  # 2026-07-28 clients say it on every request, older ones once in initialize
+                                said = {"agent": agent, "client": q.get("clientInfo") or meta.get("io.modelcontextprotocol/clientInfo"),
+                                        "capabilities": q.get("capabilities") if "clientInfo" in q else meta.get("io.modelcontextprotocol/clientCapabilities"),
+                                        "protocol": q.get("protocolVersion") or meta.get("io.modelcontextprotocol/protocolVersion")}
+                                if said["client"] and chat.CLIENTS.get(agent) != said:
+                                    chat.CLIENTS[agent] = said
+                                    g.store.put(f"mcp_client:{agent}", {**said, "at": int(time.time())})
+                    except Exception:
+                        pass  # never in the way of the call itself
+                    return m
+                return await self.inner(scope, heard, send)
         await self.inner(scope, receive, send)
 
 

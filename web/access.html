@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What an agent can see · Aimo Agent Gateway</title>
+<meta name="description" content="What an outside agent can see and do for one Valio Aimo customer account, what it never sees, and the switches Valio Aimo holds per customer.">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/app.css">
+<script>
+// Finnish unless this browser chose English, in the shop or here: the same key as /shop.
+try { document.documentElement.lang = localStorage.getItem("shop.lang") === "en" ? "en" : "fi"; } catch (e) { }
+</script>
+<style>
+html[lang=fi] .en-only,html[lang=en] .fi-only{display:none!important}
+.lang{display:flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;flex:none}
+.lang button{border:0;background:none;height:30px;min-width:38px;border-radius:999px;font-size:var(--t1);font-weight:600;color:var(--muted);cursor:pointer}
+.lang button[aria-pressed=true]{background:var(--ink);color:var(--panel)}
+.head{padding:var(--s7) 0 var(--s5)}
+.head h1{font-size:var(--t8);line-height:1.12}
+.say{margin:var(--s4) 0 0;font-size:clamp(19px,2vw,24px);line-height:1.38;letter-spacing:-.016em;font-weight:500;max-width:46ch;color:var(--ink)}
+.say span{color:var(--muted)}
+.acct{margin:var(--s4) 0 0;font-size:var(--t2);color:var(--muted)}
+.acct b{color:var(--ink);font-weight:500}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s4)}
+.blk{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-l);padding:var(--s4) var(--s5) var(--s5);min-width:0}
+.blk h2{font-size:var(--t5);letter-spacing:-.01em;display:flex;align-items:center;gap:var(--s2)}
+.blk h2 .mark{width:20px;height:20px}
+.blk h2 .mark svg{width:12px;height:12px}
+.blk ul{list-style:none;margin:var(--s3) 0 0;padding:0}
+.blk li{padding:var(--s2) 0;border-top:1px solid var(--line);font-size:var(--t3);line-height:1.5;color:var(--ink-2)}
+.blk li:first-child{border-top:0}
+.blk li b{color:var(--ink);font-weight:600}
+.blk li .mono{font-size:.92em}
+.blk.ctl{background:var(--soft);border-color:var(--line-2)}
+.sw{padding:var(--s3) 0;border-top:1px solid var(--line-2)}
+.sw:first-of-type{border-top:0;padding-top:var(--s2)}
+.sw .lbl{display:flex;justify-content:space-between;gap:var(--s2);align-items:baseline;font-size:var(--t3);font-weight:600;color:var(--ink)}
+.sw .lbl .mono{font-weight:400;color:var(--muted);font-size:var(--t1)}
+.sw .note{margin:6px 0 0;font-size:var(--t2);color:var(--muted);line-height:1.45}
+.seg{display:flex;flex-wrap:wrap;gap:4px;margin-top:var(--s2)}
+.seg button{flex:1 1 auto;min-height:34px;padding:4px 10px;border:1px solid var(--line-2);background:var(--panel);border-radius:var(--r-s);font-size:var(--t2);font-weight:500;color:var(--ink-2);cursor:pointer;transition:background-color .15s,border-color .15s,color .15s}
+.seg button:hover{background:var(--hover)}
+.seg button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.seg button:disabled{opacity:.55;cursor:default}
+.money{display:flex;align-items:center;border:1px solid var(--line-2);border-radius:var(--r);background:var(--panel);height:36px;margin-top:var(--s2);max-width:220px}
+.money:focus-within{border-color:var(--ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--ink) 12%,transparent)}
+.money span{padding:0 0 0 12px;color:var(--muted);font-size:var(--t3)}
+.money span.u{padding:0 12px 0 6px;font-size:var(--t1);white-space:nowrap}
+.money input{border:0!important;box-shadow:none!important;background:transparent!important;height:34px;padding:0 4px;min-width:0;font-variant-numeric:tabular-nums}
+html[lang=fi] .money input{padding-left:12px;text-align:right}
+.saved{font-size:var(--t1);color:var(--pass);opacity:0;transition:opacity .3s}
+.saved.on{opacity:1}
+
+.proof{margin-top:var(--s3)}
+.proof .ph{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s3);flex-wrap:wrap}
+.proof .ph p{margin:0;font-size:var(--t2);color:var(--muted);max-width:70ch}
+.row{display:grid;grid-template-columns:minmax(0,13rem) minmax(0,1fr) auto;gap:var(--s2) var(--s5);padding:var(--s4) 0;border-top:1px solid var(--line);align-items:start}
+.row:first-of-type{border-top:0}
+.row .q{font-size:var(--t3);font-weight:600;color:var(--ink);line-height:1.4}
+.row .q .mono{display:block;font-weight:400;color:var(--muted);font-size:var(--t1);margin-top:2px}
+.row .a{font-size:var(--t4);line-height:1.5;color:var(--ink);min-width:0}
+.row .a p{margin:0}
+.row .a p+p{margin-top:4px;color:var(--ink-2);font-size:var(--t3)}
+.row .a .muted{font-size:var(--t3)}
+.row .a details{margin-top:var(--s2)}
+.row .a pre{margin:var(--s2) 0 0;max-height:320px;overflow:auto;font-size:11.5px}
+.row .st{justify-self:end}
+.row.changed .a>p:first-child{animation:flash 1.2s var(--ease)}
+@keyframes flash{0%{background:var(--esc-bg)}100%{background:transparent}}
+.callers{margin:var(--s6) 0 var(--s8);padding-top:var(--s4);border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:var(--s3) var(--s5);align-items:center;flex-wrap:wrap}
+.callers p{margin:0;font-size:var(--t4);color:var(--ink-2);max-width:72ch;line-height:1.5}
+.callers p b{color:var(--ink)}
+.tech{margin:calc(-1 * var(--s6)) 0 var(--s8)}
+.tech .in{margin-top:var(--s3);font-size:var(--t2);color:var(--muted);line-height:1.5;max-width:80ch}
+.tech .in p{margin:0 0 var(--s2)}
+@media (max-width:980px){.three{grid-template-columns:1fr 1fr}.blk.ctl{grid-column:1/-1}}
+@media (max-width:640px){
+  .head{padding:var(--s5) 0 var(--s4)}
+  .head h1{font-size:26px}
+  .three{grid-template-columns:1fr}
+  .blk{padding:var(--s4)}
+  .row{grid-template-columns:minmax(0,1fr) auto;gap:var(--s2) var(--s3)}
+  .row .a{grid-column:1/-1}
+  .row .st{grid-row:1;grid-column:2}
+  .money{max-width:none}
+}
+</style>
+</head>
+<body>
+<div class="banner"><span class="en-only">Junction 2026 prototype on Valio Aimo's challenge data and mock API. Not a Valio Aimo system.</span><span class="fi-only">Prototyyppi Valio Aimon haastedatalla, ei Valio Aimon järjestelmä.</span></div>
+<header id="site"><div class="lang" role="group" aria-label="Kieli / Language"><button type="button" data-lang="fi">FI</button><button type="button" data-lang="en">EN</button></div></header>
+<main class="wrap">
+<section class="head">
+  <h1><span class="en-only">What an agent can see</span><span class="fi-only">Mitä asiakkaan apuri näkee</span></h1>
+  <p class="say en-only">An outside agent sees what this customer already sees in the web shop: Valio Aimo's range, this customer's own prices, and whether its order can be filled. <span>Never another customer and never margins. The web shop shows the customer the stock count; an agent gets it only where Valio Aimo turns it on for that customer, and otherwise gets available, limited or out.</span></p>
+  <p class="say fi-only" id="fi-answer">Ei kaikkea. Asiakkaan oma tilausohjelma tai tekoälyapuri näkee yhden asiakkaan puolesta vain sen, minkä asiakas itse näkee verkkokaupassa: omat sopimushinnat, saatavuuden ja omat tilaukset. <span>Ei koskaan toista asiakasta eikä katteita, ja varastosaldon vain, jos Valio Aimo kytkee sen päälle. Valio Aimo päättää asiakas kerrallaan tämän sivun kytkimillä ja voi pysäyttää yhden asiakkaan apurin tilaukset heti.</span></p>
+  <p class="acct en-only">For developers: <a href="/openapi.json">OpenAPI description</a> · <a href="/docs">interactive API docs</a>. The same operations are there as plain REST with an OpenAPI description and as MCP tools at <span class="mono">/mcp</span>, so an agent built on existing OpenAPI specs needs nothing new.</p>
+  <p class="acct fi-only">Kehittäjille: <a href="/openapi.json">rajapinnan kuvaus</a> · <a href="/docs">kokeiltava rajapinta</a> (englanniksi).</p>
+  <p class="acct" id="acct"><span class="en-only">Opening your own test account</span><span class="fi-only">Avataan omaa testiasiakastasi</span></p>
+</section>
+
+<section class="three" aria-label="What an agent sees, never sees, and what Valio Aimo decides">
+  <div class="blk">
+    <h2><span class="mark ok" id="ic-sees"></span><span class="en-only">Sees, for this account only</span><span class="fi-only">Näkee, vain tämän asiakkaan osalta</span></h2>
+    <ul class="en-only">
+      <li><b>Product facts</b> from the manufacturers' own GS1 data: name, pack size, claims, allergens, certificates. Anyone may read these.</li>
+      <li><b>This account's own price</b> for its delivery day, next to the list price, and whether Valio Aimo marks it as a contract price.</li>
+      <li><b>Available, limited or out</b> for its delivery day, the order-by time, and how much of its own request can be filled: "698 of your 1,000 L".</li>
+      <li><b>What this account usually orders</b> and how much at a time, so "we need milk" becomes one proposal to confirm.</li>
+      <li><b>Its own offers, orders and record</b> on the ledger.</li>
+    </ul>
+    <ul class="fi-only">
+      <li><b>Tuotetiedot</b> valmistajien omista tiedoista: nimi, myyntierä, ominaisuudet, allergeenit, sertifikaatit. Nämä saa lukea kuka tahansa.</li>
+      <li><b>Asiakkaan oman hinnan</b> sen toimituspäivälle listahinnan vieressä, ja onko se Valio Aimon merkitsemä sopimushinta.</li>
+      <li><b>Saatavilla, rajoitetusti tai loppu</b> toimituspäivälle, tilaa viimeistään -ajan ja kuinka paljon asiakkaan omasta tilauksesta voidaan toimittaa: "698 / 1 000 l".</li>
+      <li><b>Mitä asiakas yleensä tilaa</b> ja kuinka paljon kerralla, joten "tarvitaan maitoa" muuttuu yhdeksi ostoskoriksi, jonka asiakas vahvistaa.</li>
+      <li><b>Omat ostoskorit, tilaukset ja tapahtumat</b> tapahtumalokissa.</li>
+    </ul>
+  </div>
+  <div class="blk">
+    <h2><span class="mark bad" id="ic-never"></span><span class="en-only">Never sees</span><span class="fi-only">Ei näe koskaan</span></h2>
+    <ul class="en-only">
+      <li><b>Another customer.</b> Its prices, offers and orders are refused to this account's agent, and its entries on the ledger show only as a hash and an event kind.</li>
+      <li><b>Margins, purchase prices or supplier terms.</b> The gateway does not hold them, so it cannot pass them on.</li>
+      <li><b>The stock count</b>, unless Valio Aimo turns exact stock on for this account. Until then it gets available, limited or out, and how much of its own request can be filled.</li>
+      <li><b>The catalogue in bulk.</b> An agent that has never ordered and looks up 40 products within ten minutes is refused (rule W4).</li>
+    </ul>
+    <ul class="fi-only">
+      <li><b>Toista asiakasta.</b> Toisen asiakkaan hintoja, ostoskoreja ja tilauksia ei anneta tämän asiakkaan apurille, ja sen tapahtumista näkyy vain tunniste ja tapahtuman laji.</li>
+      <li><b>Katteita, ostohintoja tai toimittajien ehtoja.</b> Tämä palvelu ei säilytä niitä, joten se ei voi niitä luovuttaa.</li>
+      <li><b>Varastosaldoa</b>, ellei Valio Aimo kytke sitä päälle tälle asiakkaalle. Siihen asti apuri saa vain tiedon saatavilla, rajoitetusti tai loppu, ja kuinka paljon sen omasta tilauksesta voidaan toimittaa.</li>
+      <li><b>Koko valikoimaa kerralla.</b> Apuri, joka ei ole koskaan tilannut ja hakee 40 tuotetta kymmenessä minuutissa, saa kieltävän vastauksen.</li>
+    </ul>
+  </div>
+  <div class="blk ctl" id="ctl">
+    <h2><span class="en-only">Valio Aimo decides, per customer</span><span class="fi-only">Valio Aimo päättää, asiakas kerrallaan</span></h2>
+    <div class="sw">
+      <div class="lbl"><span class="en-only">What agents may do</span><span class="fi-only">Mitä apuri saa tehdä</span><span class="mono en-only">rule W2</span></div>
+      <div class="seg" role="group" aria-label="What agents may do" data-fi-aria="Mitä apuri saa tehdä" id="tier">
+        <button type="button" data-v="read" aria-pressed="false"><span class="en-only">Look up only</span><span class="fi-only">Vain tiedot</span></button>
+        <button type="button" data-v="reorder" aria-pressed="false"><span class="en-only">Re-order only</span><span class="fi-only">Vain uusintatilaus</span></button>
+        <button type="button" data-v="order" aria-pressed="false"><span class="en-only">Order</span><span class="fi-only">Saa tilata</span></button>
+      </div>
+    </div>
+    <div class="sw" id="capsw">
+      <div class="lbl"><span class="en-only">A person approves an order above</span><span class="fi-only">Tilausraja: tätä suuremman tilauksen vahvistaa hyväksyjä</span><span class="mono en-only">rule W3</span></div>
+      <div class="money"><span class="en-only">€</span><input type="text" inputmode="numeric" id="cap" autocomplete="off" aria-label="Approval limit per order, euros ex VAT" data-fi-aria="Tilausraja tilausta kohden, euroa ilman arvonlisäveroa"><span class="u"><span class="en-only">ex VAT</span><span class="fi-only">€ (alv 0 %)</span></span></div>
+    </div>
+    <div class="sw">
+      <div class="lbl"><span class="en-only">Prices and availability in a lookup</span><span class="fi-only">Hinnat ja saatavuus tuotehaussa</span></div>
+      <div class="seg" role="group" aria-label="Prices and availability in a lookup" data-fi-aria="Hinnat ja saatavuus tuotehaussa" id="prices">
+        <button type="button" data-v="1" aria-pressed="false"><span class="en-only">Shown</span><span class="fi-only">Näkyvissä</span></button>
+        <button type="button" data-v="0" aria-pressed="false"><span class="en-only">Hidden</span><span class="fi-only">Piilossa</span></button>
+      </div>
+      <p class="note"><span class="en-only">Hidden, a lookup answers with public product facts only. A plan or an offer still names this account's price, because an order needs one.</span><span class="fi-only">Piilossa tuotehaku vastaa vain julkisilla tuotetiedoilla. Ehdotus tai ostoskori kertoo silti asiakkaan hinnan, koska tilaus tarvitsee sen.</span></p>
+    </div>
+    <div class="sw">
+      <div class="lbl"><span class="en-only">Exact stock count</span><span class="fi-only">Varastosaldo</span></div>
+      <div class="seg" role="group" aria-label="Exact stock count" data-fi-aria="Varastosaldo" id="stock">
+        <button type="button" data-v="0" aria-pressed="false"><span class="en-only">Hidden</span><span class="fi-only">Piilossa</span></button>
+        <button type="button" data-v="1" aria-pressed="false"><span class="en-only">Shown</span><span class="fi-only">Näkyvissä</span></button>
+      </div>
+      <p class="note"><span class="en-only">Shown, a lookup carries the count, as the web shop shows it to the customer. Hidden, it says available, limited (fewer than its order, or under 10) or out.</span><span class="fi-only">Näkyvissä tuotehaku kertoo saldon, niin kuin verkkokauppa näyttää sen asiakkaalle. Piilossa se kertoo saatavilla, rajoitetusti (vähemmän kuin tilaus tai alle 10) tai loppu.</span></p>
+    </div>
+    <div class="sw">
+      <div class="lbl"><span class="en-only">Pause all agent ordering</span><span class="fi-only">Apurin tilaukset</span><span class="mono en-only">rule W1</span></div>
+      <div class="seg" role="group" aria-label="Agent ordering" data-fi-aria="Apurin tilaukset" id="on">
+        <button type="button" data-v="1" aria-pressed="false"><span class="en-only">Ordering on</span><span class="fi-only">Päällä</span></button>
+        <button type="button" data-v="0" aria-pressed="false"><span class="en-only">Paused</span><span class="fi-only">Keskeytetty</span></button>
+      </div>
+      <p class="note"><span class="en-only">Paused, every order is refused. Lookups still answer.</span><span class="fi-only">Keskeytettynä jokainen apurin tilaus hylätään heti. Tuotehaut vastaavat silti.</span></p>
+    </div>
+    <p class="note" style="margin-top:var(--s2)"><span class="saved" id="saved"><span class="en-only">Saved. The agent's answer below is asked again.</span><span class="fi-only">Tallennettu. Apurin vastaus alla kysytään uudelleen.</span></span></p>
+  </div>
+</section>
+
+<h2 class="sec"><span class="en-only">What an agent gets right now</span><span class="fi-only">Mitä apuri saa juuri nyt</span></h2>
+<section class="card proof" aria-live="polite">
+  <div class="ph"><p id="who"><span class="en-only">An outside agent signed in to your test account, asking the same door every caller uses. Real calls to the gateway, asked again each time a switch changes.</span><span class="fi-only">Asiakkaan apuri kirjautuneena omalle testiasiakkaallesi, samasta ovesta kuin kaikki muutkin. Oikeita kyselyjä, ja ne kysytään uudelleen aina, kun kytkin muuttuu.</span></p></div>
+  <div id="rows">
+    <div class="row" id="r-look"><div class="q"><span class="en-only">Looks up a product<span class="mono">POST /catalog/lookup</span></span><span class="fi-only">Hakee tuotteen tiedot</span></div><div class="a"><span class="wait"><span class="spin"></span><span><span class="en-only">Asking the gateway</span><span class="fi-only">Kysytään</span></span></span></div><div class="st"></div></div>
+    <div class="row" id="r-plan"><div class="q"><span class="en-only">Asks for 1,000 L of it<span class="mono">POST /sourcing/plan</span></span><span class="fi-only">Kysyy sitä 1 000 l</span></div><div class="a"><span class="wait"><span class="spin"></span><span><span class="en-only">Waiting for the lookup</span><span class="fi-only">Odotetaan tuotehakua</span></span></span></div><div class="st"></div></div>
+    <div class="row" id="r-order"><div class="q"><span class="en-only">Tries to order 100<span class="mono">POST /checkout-sessions</span></span><span class="fi-only">Yrittää tilata 100 kpl</span></div><div class="a"><span class="wait"><span class="spin"></span><span><span class="en-only">Waiting for the lookup</span><span class="fi-only">Odotetaan tuotehakua</span></span></span></div><div class="st"></div></div>
+  </div>
+</section>
+
+<section class="callers">
+  <p class="en-only"><b>Who calls this door:</b> Valio Aimo's own shop chat, a menu photo on Valio Aimo's site, a customer's purchasing software, a chat assistant such as Claude or ChatGPT. One door, the same rules.</p>
+  <p class="fi-only"><b>Kuka tästä ovesta tulee:</b> Valio Aimon verkkokaupan oma tilausapuri, ruokalistan kuva Valio Aimon sivuilla, asiakkaan oma tilausohjelma tai tekoälyapuri, kuten Claude tai ChatGPT. Yksi ovi, samat säännöt.</p>
+  <p class="fi-only"><b>Asiakas päättää myös itse:</b> se antaa apurilleen tilausluvan, jossa on asiakkaan oma tilausraja ja vaatimukset tuotteille, kuten kielletyt allergeenit. Korvaavan tuotteen apuri saa valita itse vain Valio Aimon korvaavien tuotteiden listalta; muuten hyväksyjä päättää.</p>
+  <a class="btn" href="/demo#connect" id="connect">Connect an agent</a>
+</section>
+<details class="tech fi-only" id="tech"><summary>Näytä tekniset tiedot</summary><div class="in">
+  <p>The same operations are there as plain REST with an OpenAPI description and as MCP tools at <span class="mono">/mcp</span>, so an agent built on existing OpenAPI specs needs nothing new.</p>
+  <p>Rules behind the switches: what agents may do, rule W2. A person approves an order above, rule W3 (Valio Aimo's cap per agent order). Pause all agent ordering, rule W1. The catalogue in bulk is refused under rule W4.</p>
+  <p>The calls below: <span class="mono">POST /catalog/lookup</span>, <span class="mono">POST /sourcing/plan</span>, <span class="mono">POST /checkout-sessions</span>, each with the account's mandate as a bearer token. The raw answer of each is under it.</p>
+</div></details>
+</main>
+<script src="/static/lib.js"></script>
+<script>
+$("#ic-sees").innerHTML = ICON.check; $("#ic-never").innerHTML = ICON.cross;
+// The product the proof asks about: one this test account usually orders, whose stock Valio Aimo's data tracks.
+const PID = "463380", ORDER_UNITS = 100, NEED = { quantity: 1000, unit: "L" };
+let profile = null, mandate = null, gen = 0, usual = null, acctInfo = null, hist = null;
+let lang = document.documentElement.lang === "en" ? "en" : "fi";
+const FI = () => lang === "fi";
+
+// ---- Finnish as the web shop writes it: 1 560,00 €, ma 16.11., klo 17.00.
+const fiNum = (x, d) => Number(x || 0).toLocaleString("fi-FI", { maximumFractionDigits: d == null ? 2 : d });
+const fiEur = c => ((c || 0) / 100).toLocaleString("fi-FI", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "\u00a0€";
+const FI_D = ["su", "ma", "ti", "ke", "to", "pe", "la"];
+const fiDay = s => { const m = /^(\d{4})-(\d\d)-(\d\d)/.exec(String(s || "")); if (!m) return String(s || ""); const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])); return `${FI_D[d.getUTCDay()]} ${+m[3]}.${+m[2]}.`; };
+function fiWhen(iso) {  // "pe 13.11. klo 14.00" in Helsinki time
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(iso)).map(x => [x.type, x.value]));
+  return `${fiDay(`${p.year}-${p.month}-${p.day}`)} klo\u00a0${+p.hour}.${p.minute}`;
+}
+const UNIT_FI = { piece: "kpl", case: "ltk", kg: "kg", l: "l", L: "l" };
+// Euro amounts inside an English rule detail, in order, as cents.
+const cents = s => [...String(s || "").matchAll(/€([\d,]+(?:\.\d+)?)/g)].map(m => Math.round(parseFloat(m[1].replace(/,/g, "")) * 100));
+const RULE_FI = {
+  M1: "Voimassa oleva tilauslupa", M2: "Tilausluvan määräraja", W1: "Valio Aimo sallii apurin tilaukset", W2: "Mitä apuri saa tehdä", W3: "Valio Aimon tilausraja apurin tilaukselle",
+  W4: "Apurin luotettavuus", W5: "Valio Aimon katto toimituspäivää kohden", T1: "Apuri ilman omaa tunnistetta", L1: "Niukka tuote jaetaan sopimusosuuksin", B0: "Raha lasketaan erotuksesta",
+  B1: "Asiakkaan tilausraja tilausta kohden", B2: "Asiakkaan tilausraja viikossa", B3: "Pilkotun tilauksen tarkistus", C1: "Tuoteryhmät", A1: "Kielletyt allergeenit", A2: "Tuotteelle asetetut vaatimukset",
+  A3: "Vaaditut sertifikaatit", S1: "Korvaava tuote", N1: "Ensimmäistä kertaa tilattavat tuotteet", R1: "Takaisinvedettyä tuotetta ei pidetä", D1: "Viive, jonka apuri saa hyväksyä", P1: "Osatoimitus, jonka apuri saa hyväksyä",
+  SIG: "Tilaus ei tullut apurin omalla tunnisteella",
+};
+function ruleFi(r) {  // one rule that fired, in Finnish, from its id and the numbers in its detail
+  const e = cents(r.detail);
+  const said = {
+    W1: "Valio Aimo on keskeyttänyt apurin tilaukset tällä asiakkaalla.",
+    W2: r.outcome === "deny" ? "Tämän asiakkaan apuri saa katsoa hintoja ja saatavuutta, mutta ei tilata." : "Asiakas saa vain uusintatilata, ja tilauksessa on tuote, jota ei ole tilattu ennen.",
+    W3: e.length >= 2 ? `Tilaus on ${fiEur(e[0])}, yli Valio Aimon tilausrajan ${fiEur(e[1])}, joten hyväksyjä päättää.` : "Tilaus ylittää Valio Aimon tilausrajan, joten hyväksyjä päättää.",
+    W4: "Valio Aimo on pysäyttänyt tämän apurin. Se voi hakea tuotteita, mutta ei tilata ennen kuin Valio Aimo palauttaa sen.",
+    W5: `Valio Aimon katto apurien tilauksille tälle toimituspäivälle on ${e.length ? fiEur(e[e.length - 1]) : "ylittynyt"}. Mikään hyväksyntä ei nosta sitä, vain Valio Aimo.`,
+    B1: e.length >= 3 ? `Tilaus on ${fiEur(e[0])} (alv 0 %), ${fiEur(e[1])} yli tilausrajan ${fiEur(e[2])}, jonka asiakas on antanut apurilleen.` : "Tilaus ylittää asiakkaan tilausrajan.",
+    B2: "Asiakkaan viikon tilausraja ylittyisi.",
+    B3: "Saman toimituspäivän apuritilaukset ylittäisivät yhdessä asiakkaan tilausrajan.",
+    T1: e.length >= 1 ? `Apurilla ei ole omaa tunnistetta, joten se saa tilata itse vain ${fiEur(e[0])} asti.` : "Apurilla ei ole omaa tunnistetta.",
+  }[r.id];
+  return said ? esc(said) : `<b>${esc(RULE_FI[r.id] || r.title)}</b>.`;
+}
+
+// ---- The language switch: the same key and pill as /shop.
+function paint() {
+  document.documentElement.lang = lang;
+  for (const b of document.querySelectorAll("[data-lang]")) b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
+  for (const el of document.querySelectorAll("[data-fi-aria]")) { if (!el.dataset.enAria) el.dataset.enAria = el.getAttribute("aria-label"); el.setAttribute("aria-label", FI() ? el.dataset.fiAria : el.dataset.enAria); }
+  document.title = FI() ? "Mitä asiakkaan apuri näkee · Aimo Agent Gateway" : "What an agent can see · Aimo Agent Gateway";
+  $("#connect").innerHTML = `<span>${FI() ? "Yhdistä apuri" : "Connect an agent"}</span>` + ICON.arrow;
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-lang]");
+  if (!b || b.dataset.lang === lang) return;
+  lang = b.dataset.lang; try { localStorage.setItem("shop.lang", lang); } catch (err) { }
+  paint();
+  if (profile) showSwitches();
+  if (acctInfo) showAcct();
+  draw(false);
+});
+paint();
+
+const money = v => FI() ? Math.round(Number(String(v).replace(/[\s €]/g, "").replace(",", ".").replace(/[^\d.]/g, "")) * 100) || 0 : Math.round(Number(String(v).replace(/[^\d.]/g, "")) * 100) || 0;
+const moneyText = c => FI() ? (Math.round(c) / 100).toLocaleString("fi-FI", { maximumFractionDigits: 2 }) : (Math.round(c) / 100).toLocaleString("en-IE", { maximumFractionDigits: 2 });
+const pill = (cls, t) => `<span class="pill ${cls}">${esc(t)}</span>`;
+const raw = (label, body, call) => FI() ? `<details><summary>Näytä tekniset tiedot</summary><pre>${esc((call ? call + "\n" : "") + JSON.stringify(body, null, 1))}</pre></details>` : `<details><summary>${esc(label)}</summary><pre>${esc(JSON.stringify(body, null, 1))}</pre></details>`;
+
+// One call the way an outside agent makes it: the account's mandate as a bearer token.
+async function asAgent(path, body, method) {
+  if (!mandate) mandate = (await api("/api/demo/mandate-token")).mandate;
+  const go = () => fetch(path, { method: method || (body ? "POST" : "GET"), headers: { authorization: "Bearer " + mandate, "content-type": "application/json", accept: "application/json" }, body: body ? JSON.stringify(body) : undefined });
+  let r = await go();
+  if (r.status === 401) { mandate = (await api("/api/demo/mandate-token")).mandate; r = await go(); }
+  return { status: r.status, body: await r.json().catch(() => ({})) };
+}
+
+function showSwitches() {
+  const p = profile;
+  const press = (id, v) => { for (const b of document.querySelectorAll(`#${id} button`)) b.setAttribute("aria-pressed", String(b.dataset.v === v)); };
+  press("tier", p.tier); press("prices", p.show_contract_prices === false ? "0" : "1"); press("stock", p.show_exact_stock ? "1" : "0"); press("on", p.enabled === false ? "0" : "1");
+  if (document.activeElement !== $("#cap")) $("#cap").value = moneyText(p.max_order_total);
+  $("#capsw").style.opacity = p.tier === "read" ? ".5" : "";
+}
+async function save(change) {
+  for (const b of document.querySelectorAll("#ctl button")) b.disabled = true;
+  try { profile = await api("/api/demo/profile", change); } finally { for (const b of document.querySelectorAll("#ctl button")) b.disabled = false; }
+  showSwitches();
+  $("#saved").classList.add("on"); setTimeout(() => $("#saved").classList.remove("on"), 1800);
+  ask(true);
+}
+$("#tier").onclick = e => { const b = e.target.closest("button"); if (b && b.dataset.v !== profile.tier) save({ tier: b.dataset.v }); };
+$("#prices").onclick = e => { const b = e.target.closest("button"); if (b) save({ show_contract_prices: b.dataset.v === "1" }); };
+$("#stock").onclick = e => { const b = e.target.closest("button"); if (b) save({ show_exact_stock: b.dataset.v === "1" }); };
+$("#on").onclick = e => { const b = e.target.closest("button"); if (b) save({ enabled: b.dataset.v === "1" }); };
+$("#cap").onchange = () => save({ max_order_total: money($("#cap").value) });
+
+function setRow(id, html, st, changed) {
+  const r = $("#" + id), a = $(".a", r);
+  if (a.innerHTML === html) return;
+  a.innerHTML = html; $(".st", r).innerHTML = st || "";
+  if (changed) { r.classList.remove("changed"); void r.offsetWidth; r.classList.add("changed"); }
+}
+const WHAT_FI = { "The lookup": "Tuotehaku", "The plan": "Ehdotus", "The checkout": "Ostoskori" };
+const failed = (res, what) => FI() ? `<p class="muted">${esc(WHAT_FI[what] || what)} ei vastannut. Se kysytään uudelleen, kun kytkin muuttuu.</p>`
+  : `<p class="muted">${esc(((res.body.messages || [])[0] || {}).content || what + " did not answer. It is asked again when a switch changes.")}</p>`;
+const nameOf = p => FI() ? ((p.variants && p.variants[0] && (p.variants[0].description || {}).plain) || p.title) : p.title;
+
+function lookHtml(p, day) {
+  const w = p.wholesale, v = p.variants[0];
+  if (FI()) {
+    const u = UNIT_FI[v.quantity_unit.display_text] || v.quantity_unit.display_text;
+    if (!w.price) return [`<p>Vain julkiset tuotetiedot: ${esc(nameOf(p))}, ${esc(u)}, sen ominaisuudet ja allergeenit. <b>Ei hintaa eikä saatavuutta.</b></p><p>Valio Aimo on piilottanut hinnat ja saatavuuden tämän asiakkaan tuotehauista.</p>`, pill("", "Julkiset tiedot")];
+    const pr = w.price;
+    const contract = pr.contract_price ? "Valio Aimo merkitsee sen sopimushinnaksi." : "Valio Aimo ei merkitse sitä sopimushinnaksi.";
+    const band = { available: "Saatavilla", limited: "Rajoitetusti saatavilla", out: "Loppu" }[w.availability] || nice(w.availability);
+    const by = w.delivery && w.delivery.order_by ? `, tilaa viimeistään ${fiWhen(w.delivery.order_by)}` : "";
+    const stock = w.stock ? (w.stock.known ? `<b>Varastosaldo: ${fiNum(w.stock.available, 0)} ${esc(u)}</b>, koska Valio Aimo on kytkenyt sen päälle.` : "Varastosaldo: tuotetta ei lasketa varastossa (toimittaja toimittaa suoraan).") : "Varastosaldo: ei näytetä. Apuri saa tiedon saatavilla, rajoitetusti tai loppu.";
+    return [`<p>${esc(nameOf(p))}: <b>${fiEur(pr.unit_price)} / ${esc(u)}</b> (alv 0 %), asiakkaan oma hinta (listahinta ${fiEur(pr.list_price)}). ${band} toimituspäivälle ${esc(fiDay(w.delivery.requested_date))}${esc(by)}.</p><p>${contract} ${stock}</p>`, pill("pass", "Vastasi")];
+  }
+  if (!w.price) return [`<p>Public product facts only: ${esc(p.title)}, ${esc(v.quantity_unit.display_text)}, its claims and allergens. <b>No price and no availability.</b></p><p>Valio Aimo has hidden prices and availability in lookups for this account.</p>`, pill("", "Public facts")];
+  const pr = w.price, unit = esc(v.quantity_unit.display_text);
+  const contract = pr.contract_price ? "Valio Aimo marks it as a contract price." : "Valio Aimo does not mark it as a contract price.";
+  const band = { available: "Available", limited: "Limited", out: "Out" }[w.availability] || nice(w.availability);
+  const by = w.delivery && w.delivery.order_by ? `, order by ${new Date(w.delivery.order_by).toLocaleString("en-GB", { weekday: "long", hour: "2-digit", minute: "2-digit", timeZone: TZ })}` : "";
+  const stock = w.stock ? (w.stock.known ? `<b>Exact stock: ${Number(w.stock.available).toLocaleString("en-IE")} ${unit}s</b>, because Valio Aimo turned it on.` : "Exact stock: this product is not counted in stock (supplier-shipped).") : "Exact stock: not shown. It gets available, limited or out.";
+  return [`<p>${esc(p.title)}: <b>${eur(pr.unit_price)} a ${unit}</b> ex VAT, this account's price (list ${eur(pr.list_price)}). ${band} for ${esc(day(w.delivery.requested_date))}${esc(by)}.</p><p>${contract} ${stock}</p>`, pill("pass", "Answered")];
+}
+
+function planHtml(res, look) {
+  const opts = res.body.options || [];
+  const mine = opts.find(o => o.line_items.length === 1 && o.line_items[0].item.id === PID);
+  if (FI()) {
+    const title = look ? nameOf(look) : "Tuote", q = fiNum(NEED.quantity);
+    let first;
+    if (mine) first = mine.covers_pct >= 100 ? `<p>${esc(title)}: voidaan toimittaa <b>kaikki ${q} l</b>.</p>` : `<p>${esc(title)}: voidaan toimittaa <b>${fiNum(mine.covers)} / ${q} l</b> (${fiNum(mine.covers_pct)} %).</p>`;
+    else first = `<p>${opts.length ? `${opts.length} ${opts.length === 1 ? "vaihtoehto" : "vaihtoehtoa"} ${q} litralle, mutta ei tätä tuotetta yksinään.` : "Tälle määrälle ei ole vaihtoehtoa."}</p>`;
+    const rest = `<p>Näin paljon asiakkaan omasta tilauksesta voidaan toimittaa. Vain kun se pyytää enemmän kuin on, luku on sama kuin saldo sen toimituspäivälle. ${opts.length > 1 ? `Vastauksessa on ${opts.length} vaihtoehtoa, kaikki Valio Aimon valikoimasta asiakkaan omaan hintaan.` : ""}</p>`;
+    return [first + rest, pill("pass", "Vastasi")];
+  }
+  const title = (look && look.title) || "this product";
+  let first;
+  if (mine) first = mine.covers_pct >= 100 ? `<p>${esc(title)} can fill <b>all ${NEED.quantity.toLocaleString("en-IE")} L</b>.</p>` : `<p>${esc(title)} can fill <b>${Number(mine.covers).toLocaleString("en-IE")} of its ${NEED.quantity.toLocaleString("en-IE")} L</b> (${mine.covers_pct}%).</p>`;
+  else first = `<p>${opts.length ? `${opts.length} ${opts.length === 1 ? "option" : "options"} for ${NEED.quantity.toLocaleString("en-IE")} L, none of them this product alone.` : "No option for this amount."}</p>`;
+  const rest = `<p>That is how much of its own request can be filled. Only when it asks for more than there is does this number equal the stock for its day. ${opts.length > 1 ? `The answer has ${opts.length} options, every one from Valio Aimo's range at this account's price.` : ""}</p>`;
+  return [first + rest, pill("pass", "Answered")];
+}
+
+// The order attempt as an outside agent makes it. The page only shows what the agent would get: an offer that could go ahead is cancelled at once and its stock released.
+async function orderAttempt() {
+  const res = await asAgent("/checkout-sessions", { line_items: [{ item: { id: PID }, quantity: ORDER_UNITS }] });
+  const c = res.body;
+  let cancelled = null;
+  if (c.wholesale && c.id && (c.status === "ready_for_complete" || c.status === "requires_escalation")) {
+    const x = await asAgent(`/checkout-sessions/${c.id}/cancel`, {}).catch(() => null);
+    cancelled = !!(x && x.body.status === "canceled");
+  }
+  return { res, cancelled };
+}
+function orderHtml({ res, cancelled }) {
+  const c = res.body;
+  if (!c.wholesale) return [failed(res, "The checkout"), pill("", FI() ? "Ei vastausta" : "No answer")];
+  const rules = (c.wholesale.policy || {}).rules || [];
+  const fired = rules.filter(r => r.outcome !== "pass");
+  let html, st;
+  if (FI()) {
+    const sub = (c.totals.find(t => t.type === "subtotal") || {}).amount;
+    if (c.status === "incomplete" && fired.some(r => r.outcome === "deny")) {
+      html = `<p>Hylätty. ${fired.filter(r => r.outcome === "deny").map(ruleFi).join(" ")}</p><p>Mikään hyväksyntä ei muuta tätä. Vain Valio Aimo voi.</p>`; st = pill("deny", "Hylätty");
+    } else if (c.status === "requires_escalation") {
+      html = `<p>Hyväksyjän on vahvistettava ensin. ${fired.map(ruleFi).join(" ")}</p>`; st = pill("escalate", "Hyväksyjä tarvitaan");
+    } else if (c.status === "ready_for_complete") {
+      html = `<p>Apuri voisi tehdä tämän tilauksen itse: kaikki ${rules.length} tarkistusta menivät läpi, ${fiEur(sub)} (alv 0 %).</p>`; st = pill("pass", "Saa tilata itse");
+    } else {
+      html = failed(res, "The checkout"); st = pill("", nice(c.status));
+    }
+    if (cancelled !== null) html += cancelled ? `<p>Tämä sivu perui ostoskorin heti. Mitään ei tilattu.</p>` : `<p>Ostoskorin peruminen ei mennyt läpi, joten se vanhenee itsestään. Mitään ei tilattu.</p>`;
+    return [html, st];
+  }
+  const line = r => `<b>rule ${esc(r.id)}, ${esc(r.title)}</b>: ${esc(r.detail)}`;
+  if (c.status === "incomplete" && fired.some(r => r.outcome === "deny")) {
+    const d = fired.filter(r => r.outcome === "deny");
+    html = `<p>Refused by ${d.map(line).join("; ")}</p><p>No approval can change this. Only Valio Aimo can.</p>`; st = pill("deny", "Refused");
+  } else if (c.status === "requires_escalation") {
+    html = `<p>A person must approve first: ${fired.map(line).join("; ")}</p>`; st = pill("escalate", "Needs a person");
+  } else if (c.status === "ready_for_complete") {
+    html = `<p>It could place this order alone: all ${rules.length} rules passed, ${eur((c.totals.find(t => t.type === "subtotal") || {}).amount)} ex VAT.</p>`; st = pill("pass", "May order alone");
+  } else {
+    html = failed(res, "The checkout"); st = pill("", nice(c.status));
+  }
+  if (cancelled !== null) html += cancelled ? `<p>This page cancelled the offer straight away. Nothing was ordered.</p>` : `<p>Cancelling the offer did not go through, so it lapses by itself. Nothing was ordered.</p>`;
+  return [html, st];
+}
+
+// The last answers, so the language switch redraws them without asking the gateway again.
+const LAST = { look: null, plan: null, order: null, down: false };
+function draw(changed) {
+  const noAns = pill("", FI() ? "Ei vastausta" : "No answer");
+  if (LAST.down) {
+    for (const id of ["r-look", "r-plan", "r-order"]) setRow(id, FI() ? '<p class="muted">Palvelu ei vastannut. Se kysytään uudelleen, kun kytkin muuttuu.</p>' : '<p class="muted">The gateway did not answer. It is asked again when a switch changes.</p>', noAns);
+    return;
+  }
+  const lk = LAST.look;
+  if (lk) {
+    const p = (lk.body.products || [])[0];
+    if (p) { const [h, st] = lookHtml(p, day); setRow("r-look", h + raw("The raw answer", p, "POST /catalog/lookup"), st, changed); }
+    else setRow("r-look", failed(lk, "The lookup"), noAns);
+  }
+  const pl = LAST.plan;
+  if (pl) {
+    const p = lk && (lk.body.products || [])[0];
+    if (pl.body.options) { const [h, st] = planHtml(pl, p); setRow("r-plan", h + raw("The raw answer", pl.body.options, "POST /sourcing/plan"), st, changed); }
+    else setRow("r-plan", failed(pl, "The plan"), noAns);
+  }
+  const o = LAST.order;
+  if (o) {
+    const [h, st] = orderHtml(o), c = o.res.body;
+    setRow("r-order", h + raw("The raw answer", { status: c.status, totals: c.totals, rules: ((c.wholesale || {}).policy || {}).rules, messages: c.messages }, "POST /checkout-sessions"), st, changed);
+  }
+}
+
+async function ask(changed) {
+  const me = ++gen;
+  for (const id of ["r-look", "r-plan", "r-order"]) { const s = $(`#${id} .st`); s.innerHTML = '<span class="spin"></span>'; }
+  try {
+    const lk = await asAgent("/catalog/lookup", { ids: [PID] });
+    if (me !== gen) return;
+    Object.assign(LAST, { look: lk, down: false }); draw(changed);
+    const pl = await asAgent("/sourcing/plan", { query: "lactose-free milk", preferred_product: PID, need: NEED });
+    if (me !== gen) return;
+    LAST.plan = pl; draw(changed);
+    const o = await orderAttempt();
+    if (me !== gen) return;
+    LAST.order = o; draw(changed);
+  } catch (e) {
+    if (me === gen) for (const id of ["r-look", "r-plan", "r-order"]) { const s = $(`#${id} .st`); if (s.querySelector(".spin")) setRow(id, FI() ? '<p class="muted">Palvelu ei vastannut. Se kysytään uudelleen, kun kytkin muuttuu.</p>' : '<p class="muted">The gateway did not answer. It is asked again when a switch changes.</p>', pill("", FI() ? "Ei vastausta" : "No answer")); }
+  }
+}
+
+function showAcct() {
+  const s = acctInfo, h = hist;
+  $("#acct").innerHTML = FI()
+    ? `Näytetään omalla testiasiakkaallasi <b>${esc(s.buyer)}</b>, asiakasnumero ${esc(s.customer || (s.account || {}).customer || "")}${s.account.kind === "sandbox" ? ", tehty sinua varten" : ""}. Kytkimet muuttavat vain tätä asiakasta. Kaikki tällä sivulla pitää paikkansa tässä palvelussa.`
+    : `Shown for your own test account, <b>${esc(s.buyer)}</b>${s.account.kind === "sandbox" ? ", made for you" : ""}. The switches change only this account. Every line on this page is true of the gateway running here.`;
+  if (usual || h) $("#who").innerHTML = FI()
+    ? `Asiakkaan apuri kirjautuneena omalle testiasiakkaallesi, samasta ovesta kuin kaikki muutkin. Tuote on yksi asiakkaan usein ostetuista: ${usual ? `${fiNum(usual.past_orders, 0)} aiempaa tilausta, yleensä ${fiNum(usual.usual_units)} kerralla` : `${fiNum(h.orders, 0)} aiempaa tilausta`}, kuten apuri saa tietää. Kysytään uudelleen aina, kun kytkin muuttuu.`
+    : `An outside agent signed in to your test account, asking the same door every caller uses. The product is one this account usually orders: ${usual ? `${usual.past_orders} past orders, usually ${usual.usual_units} at a time` : `${h.orders} past orders`}, as <span class="mono">usual_orders</span> tells the agent. Asked again each time a switch changes.`;
+}
+
+async function start() {
+  const s = await api("/api/console");
+  profile = s.profile; showSwitches();
+  acctInfo = s; hist = (s.history || []).find(x => x.id === PID);
+  showAcct();
+  const u = await asAgent("/sourcing/usual").catch(() => null);
+  usual = u && (u.body.usual || []).find(x => x.id === PID);
+  showAcct();
+  ask(false);
+}
+start().catch(() => { $("#acct").textContent = FI() ? "Palvelu ei vastaa. Lataa sivu hetken päästä uudelleen." : "The gateway is not answering. Reload in a moment."; });
+</script>
+</body>
+</html>

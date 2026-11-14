@@ -421,15 +421,17 @@ function parseReason(reason) {
   }
   return roles.length ? { have, roles } : null;
 }
+// Where the replacement comes from and what it costs this customer, and what the kitchen gives and gets with it.
+const rangeHtml = l => (l.tradeoff ? `<p>${esc(l.tradeoff)}</p>` : "") + (l.from_range ? `<p><b>${esc(l.from_range)}</b></p>` : "");
 function swapHtml(l, id) {
   const p = parseReason(l.reason), was = esc(l.substitutes_for.title), item = [...new Set(l.for.map(f => f.item))];
-  if (!p) return `<div class="swap"${id}>${IC.swap}<div class="h">Replaces ${was}</div><p>${esc(l.reason)}</p></div>`;
+  if (!p) return `<div class="swap"${id}>${IC.swap}<div class="h">Replaces ${was}</div><p>${esc(l.reason)}</p>${rangeHtml(l)}</div>`;
   const groups = {};
   for (const x of p.roles) { const g = groups[x.needs + "|" + x.fit] ||= { needs: x.needs, fit: x.fit, roles: [] }; g.roles.push(x.role); }
   const roles = [...new Set(p.roles.map(x => x.role))], more = [...new Set(p.roles.map(x => x.more).filter(Boolean))];
   return `<div class="swap"${id}>${IC.swap}<div class="h">${esc(cap(andList(roles)))}: this instead of ${esc(andList(item))}</div>
     ${Object.values(groups).map(g => { const rs = [...new Set(g.roles)]; return `<p>${esc(cap(andList(rs.map(r => "a " + r))))} need${rs.length === 1 ? "s" : ""} ${esc(g.needs)}. This one (${esc(g.fit)}) does that.</p>`; }).join("")}
-    <p class="m">${esc(p.have)} This covers ${esc(andList(p.roles.map(x => x.covers)))}. ${esc(more.join(" "))}</p></div>`;
+    <p class="m">${esc(p.have)} This covers ${esc(andList(p.roles.map(x => x.covers)))}. ${esc(more.join(" "))}</p>${rangeHtml(l)}</div>`;
 }
 const NEEDS = { "whipped topping": "A whipped topping needs cream that whips, which takes 30% fat or more, so cooking cream would not do." };
 function keptHtml(l, all) {
@@ -539,7 +541,7 @@ function planHtml(fresh) {
   } else if (ck.status === "ready_for_complete" || ck.status === "requires_escalation") {
     const total = eur((ck.totals.find(t => t.type === "total") || {}).amount);
     // An offer a rule sent to a person has no button here: the approver decides on the approval page, on their own device.
-    h += `<div class="offerbar${fresh ? " after" : ""}" style="--d:${end}ms"><div class="ob"><b>One signed offer${ck.signed ? ", signed by Valio Aimo" : ""}</b><span>${pl.totals.lines} lines, ${total} with VAT. ${asks.length ? `${asks.length} rule${asks.length === 1 ? " asks" : "s ask"} for a person, so this page cannot place it.` : "Every rule passed."}</span></div>
+    h += `<div class="offerbar${fresh ? " after" : ""}" style="--d:${end}ms"><div class="ob"><b>One signed offer${ck.signed ? ", signed by Valio Aimo" : ""}</b><span>${pl.totals.lines} lines, ${total} with VAT. ${asks.length ? `${asks.length} rule${asks.length === 1 ? " asks" : "s ask"} for a person, so this page cannot place it.` : "Every rule passed."}${pl.range_note ? ` ${esc(pl.range_note)}` : ""}</span></div>
       ${asks.length ? `<a class="btn" href="#await" id="towait">${S.phase === "ordering" ? "Approved, placing the order" : "Waiting for the approver"}</a>`
         : `<button class="btn primary" id="go"${S.phase === "ordering" ? " disabled" : ""}>${S.phase === "ordering" ? '<span class="spin" style="border-color:color-mix(in srgb,var(--accent-ink) 35%,transparent);border-top-color:var(--accent-ink)"></span> Placing the order' : "Place the order"}</button>`}</div>
       ${asks.length ? awaitHtml(fresh, end) : ""}

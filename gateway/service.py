@@ -17,7 +17,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 
 from . import policy
 from .aimo import Aimo, AimoError, facts, parse_ts
-from .catalog import ALLERGENS, UNITS, Catalog, declares_allergens, kind, pieces
+from .catalog import ALLERGENS, UNITS, Catalog, declares_allergens, fold, kind, pieces
 from .config import CURRENCY, DEMO_CUSTOMER, EXT, FREEZE_NOW, HOLD_MINUTES, PUBLIC_URL, STAGE, TZ, UCP_VERSION, order_url
 from .signing import Key, b64d, digest, jwt_encode, jwt_peek, jwt_verify, now, public_jwk, sign_detached
 from .store import Store
@@ -564,7 +564,9 @@ class Gateway:
 
     # ------------------------------------------------------------ substitutes
     def _subinfo(self, d, f, od, of) -> dict:
-        crit = lambda x: {c for c in x["claims"] if c.startswith(("FREE_FROM:", "DIET:"))}
+        def crit(x):  # a vegan product is vegetarian whether or not the manufacturer ticked both boxes
+            c = {c for c in x["claims"] if c.startswith(("FREE_FROM:", "DIET:"))}
+            return c | ({"DIET:VEGETARIAN"} if "DIET:VEGAN" in c else set())
         per, delta = "unit", None
         if f.get("comparison_price") and of.get("comparison_price") and f.get("comparison_unit") == of.get("comparison_unit"):
             per, delta = f["comparison_unit"], 100 * (f["comparison_price"] - of["comparison_price"]) / of["comparison_price"]
@@ -587,6 +589,7 @@ class Gateway:
         ids = (listed + rest)[:120]
         live = self._live(ids + [od["id"]], day, principal)
         of, out = live[od["id"]], []
+        hist = self._history(principal) if principal and principal.get("ok") else {}
         for i in ids:
             d, f = self.cat.get(i), live[i]
             if not f["orderable"]:
@@ -594,13 +597,17 @@ class Gateway:
             s = self._subinfo(d, f, od, of)
             if s["lost_claims"] or s["new_allergens"]:
                 continue  # never offered: would break a dietary claim or add an allergen
-            tier = "best" if s["listed"] else "better" if (d.get("brand") == od.get("brand") or abs(s["price_delta_pct"] or 0) <= 10) else "good"
-            out.append({"id": d["id"], "title": d["title"], "tier": tier, "listed_by_valio_aimo": s["listed"], "price_delta_pct": s["price_delta_pct"], "per": s["per"],
+            # Best: Valio Aimo names it as the substitute, or this kitchen already orders it. Better: this account has a contract price for it,
+            # or it is the same brand, or within 10 % of the price. Good: the same kind of product at the list price.
+            own, contract = hist.get(d["id"]), bool(f.get("contract_price") and self._full(principal))
+            tier = "best" if s["listed"] or own else "better" if (contract or d.get("brand") == od.get("brand") or abs(s["price_delta_pct"] or 0) <= 10) else "good"
+            out.append({"id": d["id"], "title": d["title"], "tier": tier, "listed_by_valio_aimo": s["listed"], "contract_price": contract, "price_delta_pct": s["price_delta_pct"], "per": s["per"],
                         "unit_price": f.get("price"), "availability": self._availability(f), "delivery_reliability": d.get("reliability"),
-                        "why": ("On Valio Aimo's substitute list. " if s["listed"] else f"The same kind of product ({kind(od)})" + (". " if d["temp"] == od["temp"] else f", but {d['temp']} where yours is {od['temp']}. "))
-                               + "Keeps every free-from and diet claim; adds no allergens."})
+                        "why": ("On Valio Aimo's substitute list. " if s["listed"] else (f"This kitchen already orders it ({own['orders']} past orders). " if own else "") + f"The same kind of product ({kind(od)})" + (". " if d["temp"] == od["temp"] else f", but {d['temp']} where yours is {od['temp']}. "))
+                               + "Keeps every free-from and diet claim; adds no allergens. From Valio Aimo's own range, "
+                               + ("at this account's contract price." if contract else "at the list price: this account has no contract price for it." if self._full(principal) else "at this account's price.")})
         order = {"best": 0, "better": 1, "good": 2}
-        out.sort(key=lambda x: (order[x["tier"]], abs(x["price_delta_pct"] or 0)))
+        out.sort(key=lambda x: (order[x["tier"]], not x["contract_price"], abs(x["price_delta_pct"] or 0)))  # within a rank, what this account has a contract price for comes first
         return out[:limit]
 
     # ----------------------------------------------------------------- plan
@@ -616,6 +623,7 @@ class Gateway:
                 "labels": self.cat.canon_labels((req.get("filters") or {}).get("labels"))}
         query = req.get("query", "")
         pref = self.cat.get(req.get("preferred_product")) if req.get("preferred_product") else None
+        named = str(req.get("preferred_product")).strip() if req.get("preferred_product") and not pref else ""  # a brand or product name instead of an id
         hist = self._history(principal)
         # A request for milk gets milk: coffee milk and sour milk are other kinds, however cheap. They are named, not offered.
         docs, f, notes, picked = self.cat.pick(query, req.get("filters") or {}, pref)
@@ -649,6 +657,15 @@ class Gateway:
         elif not picked["kinds"]:
             notes.append(f"Nothing in Valio Aimo's range is called '{query}'. Try the plain name of the product.")
         docs.sort(key=lambda d: d["id"] not in hist)   # what the account has ordered before is always priced
+        if named:
+            # "Arla Pro" for whipping cream: the product of this kind whose name carries every word of the name that the request itself does not.
+            words = lambda t: set(re.findall(r"[a-z0-9]+", fold(t)))
+            want = words(named) - words(query)
+            hits = [d for d in docs if want and want <= words(d.get("_text") or d["title"])]
+            if hits:
+                pref = hits[0]
+            else:
+                notes.append(f"Valio Aimo's range has no {names or 'product'} called '{named}' that meets this request, so the options are the nearest products that do.")
         if pref and pref["id"] not in [d["id"] for d in docs]:
             docs.insert(0, pref)
         if len(docs) > 200:
@@ -667,7 +684,11 @@ class Gateway:
                 cands.append((d, fx, fit))
         cands.sort(key=lambda c: c[1]["price"] / c[2]["content_per_unit"])
         # Cheapest means what the kitchen pays for its need, not the price per kilo of a case six times too big.
-        full = sorted((c for c in cands if c[2]["covers_pct"] >= 100), key=lambda c: (c[2].get("line_total_ex_vat", 0), c[1]["price"] / c[2]["content_per_unit"]))
+        every = sorted((c for c in cands if c[2]["covers_pct"] >= 100), key=lambda c: (c[2].get("line_total_ex_vat", 0), c[1]["price"] / c[2]["content_per_unit"]))
+        # Six kilos of butter is not a 20 kg case, however cheap the case: a pack that brings over half again what was asked is offered as a choice, never picked first.
+        sized = lambda c: c[2]["units_needed"] * c[2]["content_per_unit"] <= 1.5 * need["quantity"]
+        full = [c for c in every if sized(c)] or every
+        bigger = every[0] if every and every[0] is not full[0] and every[0][2].get("line_total_ex_vat", 0) < full[0][2].get("line_total_ex_vat", 0) else None
 
         def line(c, units, sub_for=None):
             d, fx, fit = c
@@ -700,18 +721,23 @@ class Gateway:
                 add(pref_label, [line(c, c[2]["units_needed"])], f"{pref_text}, in full, delivered {nice_day(day)}.")
             elif c:
                 rest = need["quantity"] - c[2]["covers_quantity"]
-                subs = self.substitutes(pref["id"], day, principal, limit=8)
+                subs = self.substitutes(pref["id"], day, principal, limit=60)
+                tiers = set()  # one choice per tier, best first: the kitchen picks between Valio Aimo's best, better and good replacement
                 for s in subs:
                     sc = next((x for x in cands if x[0]["id"] == s["id"]), None)
-                    if not sc:
+                    if not sc or s["tier"] in tiers:
                         continue
                     step = sc[0]["increment"] / 10 ** sc[0]["scale"]
                     su = math.ceil(rest / sc[2]["content_per_unit"] / step - 1e-9) * step
                     if sc[1]["stock_known"] and sc[1]["available"] < su:
                         continue
+                    n = len(options)
                     add("split_with_substitute", [line(c, c[2]["units_can_be_supplied"]), line(sc, su, pref["id"])],
                         f"We can supply {c[2]['covers_quantity']:g} of your {need['quantity']:g} {need['unit']} as {pref['title']}; the remaining {rest:g} {need['unit']} uses '{s['tier']}' substitute {sc[0]['title']}. {s['why']}")
-                    break
+                    if len(options) > n:
+                        tiers.add(s["tier"])
+                        options[-1]["substitute"] = {"tier": s["tier"], "id": s["id"], "title": s["title"], "listed_by_valio_aimo": s["listed_by_valio_aimo"], "contract_price": s["contract_price"],
+                                                     "price_delta_pct": s["price_delta_pct"], "per": s["per"], "why": s["why"]}
                 add("partial_only", [line(c, c[2]["units_can_be_supplied"])], f"We can supply {c[2]['covers_quantity']:g} of your {need['quantity']:g} {need['unit']} of {pref['title']}; {rest:g} {need['unit']} is short.")
             else:
                 why = REASONS.get(live.get(pref["id"], {}).get("reason", ""), "it is not orderable")
@@ -724,6 +750,9 @@ class Gateway:
             fin = [c for c in full if c[0].get("origin") == "FI" and "GOODS_FROM_FINLAND_BLUE_SWAN" in c[0]["labels"]]
             if fin:
                 add("finnish_origin", [line(fin[0], fin[0][2]["units_needed"])], "Cheapest option carrying the Hyvää Suomesta (Finnish origin) label.")
+            if bigger:
+                got = bigger[2]["units_needed"] * bigger[2]["content_per_unit"]
+                add("bigger_pack", [line(bigger, bigger[2]["units_needed"])], f"A bigger pack costs less in total, but it is {got:g} {need['unit']} where {need['quantity']:g} was asked.")
         elif cands and not pref:
             rest, lines = need["quantity"], []
             for c in cands:
@@ -751,7 +780,8 @@ class Gateway:
             del o["_sig"]
         skipped_txt = [{"reason": r, "products": n, "meaning": REASONS.get(r, "pack content unknown, so quantity cannot be computed")} for r, n in skipped.most_common()]
         resp = {"ucp": self._env(), "need": need, "delivery_date": day, "requirements": {k: v for k, v in reqs.items() if v}, "options": options[:5],
-                "also_qualifying": others, "not_offered": skipped_txt, "messages": [{"type": "info", "content": n} for n in notes]}
+                "also_qualifying": others, "not_offered": skipped_txt, "messages": [{"type": "info", "content": n} for n in notes],
+                "range_note": "Every product, price and substitute in this answer is from Valio Aimo's own range, as Valio Aimo's systems answer for this account. Nothing comes from outside Valio Aimo."}
         if other_kinds:
             resp["other_kinds"] = [{"kind": k, "products": len(v), "example": {"id": v[0]["id"], "title": v[0]["title"]}} for k, v in list(other_kinds.items())[:8]]
         if any(fx.get("stale") for fx in live.values()):
@@ -1086,7 +1116,29 @@ class Gateway:
         c = self._load(cid)
         if not secrets.compare_digest(token or "", c["_internal"]["approval_token"]):
             raise GatewayError(403, "forbidden", "This approval link is not valid.")
-        return self.public(self.store.checkout(cid)) | {"_events": self.store.events(ref=c["_internal"].get("trace"), cid=cid), "_asked_by": c["_internal"].get("asked_by") or c["wholesale"].get("agent")}
+        v = self.public(self.store.checkout(cid)) | {"_events": self.store.events(ref=c["_internal"].get("trace"), cid=cid), "_asked_by": c["_internal"].get("asked_by") or c["wholesale"].get("agent")}
+        return v | {"_names_fi": self._names_fi(v)}
+
+    def _names_fi(self, v) -> list[dict]:
+        """The Finnish catalogue name (names.fi) of every product the approval page names: its lines, what a line replaces,
+        the lines the allergen rule could not check. The page shows these in its Finnish view; {id, title, fi}."""
+        seen, out = set(), []
+        def add(pid, title=None):
+            d = (self.cat.get(str(pid)) or {}) if pid else {}
+            fi, en = (d.get("names") or {}).get("fi"), title or d.get("title")
+            if fi and en and (str(pid), en) not in seen:
+                seen.add((str(pid), en))
+                out.append({"id": str(pid), "title": en, "fi": fi})
+        for l in v.get("line_items") or []:
+            add(l["item"]["id"], l["item"].get("title"))
+            sub = (l.get("wholesale") or {}).get("substitutes_for") or {}
+            add(sub.get("for"), sub.get("for_title"))
+        for r in ((v.get("wholesale") or {}).get("policy") or {}).get("rules") or []:
+            for u in r.get("undeclared") or []:
+                add(u.get("id"), u.get("title"))
+        st = ((v.get("wholesale") or {}).get("proposal") or {}).get("standing") or {}
+        add(st.get("id") or st.get("product"), st.get("title"))
+        return out
 
     @staticmethod
     def clears_of(c) -> list[dict]:

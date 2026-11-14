@@ -227,6 +227,16 @@ ok(asked(reading(notes=["ask Maija about table 4"]), "could not be turned into a
 ok(asked(reading(notes=["gluten-free croissants for 5"]), "no ingredient on this menu matches"), "a note about an ingredient the menu does not have: asked, not silently ignored")
 ok(asked(reading(dishes=[{"name": "Chef's surprise"}]), "no recipe card"), "a dish with no card and no recipe: asked")
 ok(asked(reading(dishes=[{"name": "Odd stew", "recipe": [{"item": "potatoes", "role": "body", "amount": 9000, "unit": "g"}]}]), "does not add up to a portion"), "a recipe with 9 kg of potatoes per portion: asked")
+# The kitchen's own recipe with its own amounts stands in place of the card: 9 kg of salmon for 60 portions is 18 kg for 120, nothing added, nothing dropped silently.
+own = menu.plan_menu_order(g, {"guests": 120, "dishes": [{"name": "Creamy salmon soup", "recipe_portions": 60, "recipe": [
+    {"item": "salmon fillet", "amount": 9, "unit": "kg"}, {"item": "potatoes", "amount": 12, "unit": "kg"}, {"item": "whipping cream", "amount": 6, "unit": "l"},
+    {"item": "onions", "amount": 1, "unit": "kg"}, {"item": "eggs", "amount": 10, "unit": "pcs"}, {"item": "dill", "fi": "tilliä"}]}]}, p)
+needs = {l["for"][0]["item"]: round(l["pack"]["need"]) for l in own["lines"]}
+ok(own["status"] == "ready" and own["dishes"][0]["card"] is None and "own recipe" in own["dishes"][0]["recipe"] and needs == {"salmon fillet": 18000, "potato": 24000, "whipping cream": 12000, "onion": 2000, "egg": 1100},
+   f"a kitchen's own recipe replaces the card and its amounts are kept as written, scaled to the guests: {needs}")
+ok(next(l for l in own["lines"] if l["for"][0]["item"] == "onion")["pack"]["ordered"] == 2000, "1 kg of onion for 60 portions is 2 kg for 120: dividing and multiplying does not tip it into a third bag")
+ok([f["kind"] for f in own["flags"]] == ["left_out"] and "tilliä" in own["flags"][0]["text"] and not any(l["for"][0]["item"] == "dill" for l in own["lines"]),
+   "an ingredient with no amount is not guessed: it is left off the order and the plan says so, in the kitchen's own word")
 api = menu.plan_menu_order(g, {"dishes": ["Creamy salmon soup", "Strawberry cream cake"], "guests": 10000}, p)
 ok(api["status"] == "needs_answers" and "checkout" not in api and "Do not order" in api["next"], "plan_menu_order tells an agent to ask and order nothing")
 
@@ -307,6 +317,15 @@ try:
 finally:
     g.store.settle("menu_test_short", "released")
 
+# ---- 5b. paprika in a Finnish kitchen is the vegetable: a milk-free, gluten-free wok is not held over paprika crisps
+caps = menu.find(g, "paprika")
+ok(caps and all(str(g.cat.get(pid)["category"])[:3] == "174" for pid in caps), f"'paprika' finds only fresh capsicum ({len(caps)} products), no crisps and no spice")
+ok(all(str(g.cat.get(pid)["category"])[:3] == "226" for pid in menu.find(g, "paprika powder")), "'paprika powder' still finds the spice")
+wok = menu.build_plan(g, menu.normalize({"guests": 120, "dishes": [{"name": "Broileri-kasviswokki ja riisi", "notes": ["maidoton", "gluteeniton"], "source": "model",
+      "recipe": [{"item": "chicken breast", "amount": 120, "unit": "g"}, {"item": "paprika", "amount": 60, "unit": "g"}, {"item": "rice", "amount": 70, "unit": "g"}]}]}, "model"), p)
+ok(wok["status"] == "ready" and not [x for x in wok["not_ordered"] if x["kind"] == "no_fit"] and any(str(l["product"]["id"]) in caps for l in wok["lines"]),
+   "a milk-free, gluten-free wok with paprika is ordered, with a fresh capsicum on its line")
+
 # ---- 6. the photo: a non-menu refused, a sample placed as an order over HTTP (calls Gemini)
 if MODEL:
     from fastapi.testclient import TestClient
@@ -347,6 +366,18 @@ if MODEL:
                                                                                     "guests": 180, "event_date": "2026-11-21", "notes": ["Nut-free kitchen"]}).json()
     ok(typed["status"] == "ready" and typed["checkout"]["line_items"] and typed["usage"]["tokens_in"] == 0 and typed.get("proof"), f"POST /menu/plan with typed dishes: {typed['totals']['lines']} lines, signed, no model used")
     ok(web.post("/menu/plan", json={"dishes": ["Creamy salmon soup"], "guests": 20}).status_code == 401, "POST /menu/plan without a mandate is refused")
+
+    # ---- the same order by hand reads in Finnish first: names for the list, the products and the reasons
+    bh = web.get("/api/byhand/task").json()
+    ok(bh["list"] and all(x.get("fi") for x in bh["list"]) and all(len(x["dishes_fi"]) == len(x["dishes"]) for x in bh["list"]) and len(bh["notes_fi"]) == len(bh["notes"]),
+       f"/byhand: every item on the shopping list has a Finnish name ({bh['list'][0]['fi']}), and dishes and notes come in Finnish too")
+    found = web.get("/api/byhand/search", params={"q": "kuohukerma"}).json()["products"]
+    ok(found and all(x.get("title_fi") and len(x["al"]) == len(x["contains"]) and len(x["may"]) == len(x["may_contain"]) for x in found),
+       f"/byhand: search rows carry the Finnish product name and the allergen codes behind the English words ({found[0]['title_fi']})")
+    att = web.post("/api/byhand/start", json={}).json()["attempt"]
+    res = web.post("/api/byhand/checkout", json={"attempt": att, "basket": [{"id": found[0]["id"], "units": 1}]}).json()
+    ok(res["lines"] == 1 and not res["finished"] and res["needed"] == -(-len(bh["list"]) * 4 // 5) and all("why_code" in x and "hits" in x and (x["orderable"] or x["why_code"]) for x in res["rows"]),
+       f"/byhand: the checked basket says in codes why a line would not go through, and how many lines count as finished ({res['needed']})")
 
     # ---- 7. the model's recipe is checked against the dish name (calls Gemini)
     rd = menu.normalize({"guests": 60, "dishes": [{"name": "Peanut satay chicken skewers"}, {"name": "Lohikeitto"}, {"name": "Almond cake with berries"}], "notes": ["8 guests severe peanut allergy"]}, "agent")
