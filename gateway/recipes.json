@@ -232,7 +232,12 @@
   },
   "pancake flour mix": {
    "unit": "g",
-   "prefer": ["469830"]
+   "prefer": ["469830"],
+   "gluten_free": "gluten-free flour mix"
+  },
+  "gluten-free flour mix": {
+   "unit": "g",
+   "prefer": ["473319", "470892", "473388"]
   },
   "oat flakes": {
    "unit": "g",
@@ -385,6 +390,14 @@
   "swede": {
    "unit": "g",
    "prefer": ["460687", "460879"]
+  },
+  "pork shoulder": {
+   "unit": "g",
+   "prefer": ["468480", "462874", "462868"]
+  },
+  "lingonberry": {
+   "unit": "g",
+   "prefer": ["469504", "473629", "475423", "471205"]
   },
   "beef bouillon": {
    "unit": "g",
@@ -835,6 +848,43 @@
     {"item": "sugar", "role": "topping", "amount": 5, "unit": "g"},
     {"item": "cinnamon", "role": "topping", "amount": 0.5, "unit": "g"},
     {"item": "salt", "role": "seasoning", "amount": 1, "unit": "g"}
+   ]
+  },
+  {
+   "id": "karelian_stew",
+   "name": "Karelian stew",
+   "aliases": ["karelian stew", "karelian hot pot", "karjalanpaisti", "karelsk stek"],
+   "portion": "200 g",
+   "ingredients": [
+    {"item": "beef chuck", "role": "main", "amount": 75, "unit": "g", "waste_pct": 5},
+    {"item": "pork shoulder", "role": "main", "amount": 75, "unit": "g", "waste_pct": 5},
+    {"item": "onion", "role": "vegetable", "amount": 20, "unit": "g", "waste_pct": 10},
+    {"item": "allspice", "role": "seasoning", "amount": 0.3, "unit": "g"},
+    {"item": "bay leaf", "role": "seasoning", "amount": 0.05, "unit": "g"},
+    {"item": "salt", "role": "seasoning", "amount": 2, "unit": "g"}
+   ]
+  },
+  {
+   "id": "mashed_potatoes",
+   "name": "Mashed potatoes",
+   "aliases": ["mashed potatoes", "mashed potato", "potato mash", "perunamuusi", "perunasose", "muusi", "potatismos"],
+   "portion": "200 g",
+   "ingredients": [
+    {"item": "potato", "role": "body", "amount": 200, "unit": "g", "waste_pct": 15},
+    {"item": "milk", "role": "liquid", "amount": 50, "unit": "ml"},
+    {"item": "butter", "role": "fat", "amount": 10, "unit": "g"},
+    {"item": "salt", "role": "seasoning", "amount": 1.5, "unit": "g"},
+    {"item": "white pepper", "role": "seasoning", "amount": 0.05, "unit": "g"}
+   ]
+  },
+  {
+   "id": "lingonberry_crush",
+   "name": "Crushed lingonberries",
+   "aliases": ["crushed lingonberries", "lingonberry crush", "puolukkasurvos", "puolukkasose", "rårörda lingon"],
+   "portion": "40 g",
+   "ingredients": [
+    {"item": "lingonberry", "role": "main", "amount": 40, "unit": "g"},
+    {"item": "sugar", "role": "seasoning", "amount": 8, "unit": "g"}
    ]
   }
  ],

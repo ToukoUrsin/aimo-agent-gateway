@@ -210,10 +210,10 @@ a.cta{display:grid;place-items:center;text-decoration:none;background:var(--pane
   .bar1{height:54px;padding:0 var(--s4);gap:var(--s3)}
   .logo div{display:none}
   .banner{font-size:11px;padding:3px 12px}
-  .tabs{padding:0 var(--s2)}
+  .tabs{padding:0 4px}
   .tabs{gap:0;justify-content:space-between}
-  .tabs button{padding:0 4px;font-size:13px;gap:3px}
-  .tabs .n{min-width:15px;height:15px;padding:0 4px;font-size:10px}
+  .tabs button{padding:0 3px;font-size:clamp(11px,3vw,13px);gap:2px}
+  .tabs .n{min-width:14px;height:14px;padding:0 3px;font-size:9.5px}
   .tabs button[aria-current=true]::after{left:4px;right:4px}
   .shelf{grid-template-columns:repeat(2,minmax(0,1fr))}
   .log{padding:var(--s3) var(--s3) var(--s4)}
@@ -301,7 +301,7 @@ const T = {
       am_h: o => `Muutos tilaukseen ${o}`, am_cancel_h: o => `Tilauksen ${o} peruutus`, am_done: o => `Muutos vahvistettu: tilaus ${o}`, am_cancelled: o => `Tilaus ${o} on peruttu`, am_off: o => `Muutosta ei tehty: tilaus ${o} on ennallaan`,
       am_credit: "Hyvitys (alv\u00a00\u00a0%)", am_credit_inc: "Hyvitys (sis. alv)", am_goods: "Uudet tuotteet (alv\u00a00\u00a0%)", am_confirm: "Vahvista muutos", am_confirm_cancel: "Vahvista peruutus", am_keep: "Älä muuta tilausta",
       am_note: "Mikään ei muutu ennen kuin vahvistat. Alkuperäinen tilausvahvistus säilyy; muutos allekirjoitetaan sen rinnalle.",
-      cancel: "Peru ostoskori", record: "Näytä tilausvahvistus", swap: "Vaihda", swap_hide: "Sulje", subst: "Korvaava tuote:", for_: n => `korvaa tuotteen ${n}`, contract: "sopimushinta", list: "listahinta",
+      cancel: "Peru ostoskori", recheck: "Tarkista uudelleen", record: "Näytä tilausvahvistus", swap: "Vaihda", swap_hide: "Sulje", subst: "Korvaava tuote:", for_: n => `korvaa tuotteen ${n}`, contract: "sopimushinta", list: "listahinta",
       tier: { best: "vastaavuus: paras", better: "vastaavuus: parempi", good: "vastaavuus: hyvä" }, per: (p, u) => `${p > 0 ? "+" : "−"}${Math.abs(Math.round(p))} %/${u}`,
       short: "Ei tarpeeksi saatavuutta:", short_only: (a, b, u) => `Ei tarpeeksi saatavuutta, määrä muutettu: ${a} / ${b} ${u}.`, only: (a, u) => `Vain saatavilla oleva määrä: ${a} ${u}`,
       why: (s) => `Sama tuotelaji, samat erityisruokavaliomerkinnät, ei uusia allergeeneja. ${s.listed ? "Valio Aimon korvaavien tuotteiden listalta" : "Valio Aimon valikoimasta"}${s.contract_price ? ", sopimushinnallasi." : ", listahinnalla: tälle ei ole sopimushintaa."}`,
@@ -310,6 +310,7 @@ const T = {
     diff_h: "Poikkeaa siitä, mitä pyysit:", d_part: (a, x) => `${a}: osa korvattu tuotteella ${x}`, d_other: (a, x) => `${a}: tilalla ${x}`, d_more: (a, n, u) => `${a}: pakkauskoon vuoksi ${n} ${u}`, d_menu: n => n === 1 ? "menussa 1 korvaava tuote" : `menussa ${n} korvaavaa tuotetta`,
     pack_more: (per, n, tot) => `myydään ${per} kpl:n pakkauksissa, joten ostoskorissa on ${n} pakkausta eli ${tot} kpl.`,
     less_q: x => `Ostoskorissa on vähemmän kuin pyysit: ${x}. Loppua ei tilata.`, over_budget: (b, s, o) => `Sanoit budjetiksi enintään ${b}. Ostoskori on ${s} (alv\u00a00\u00a0%), eli ${o} yli.`,
+    usual_lf: (a, n) => `”${a}”: ostoskorissa on useimmin tilaamasi ${n}. Se on laktoositon: jos haluat tavallisen, vaihda se riviltä.`,
     budget_pick: (a, s, b, t, u) => `Valittu budjettiisi sopiva tuote: ${a}, ${s} (alv\u00a00\u00a0%). ${u ? "Useimmin tilaamasi " : ""}${b} olisi maksanut ${t}. Voit vaihtaa sen riviltä.`,
     blocked_stock: (n, can, asked, u) => `${n}: toimituspäivälle saa vain ${can} ${u}, ostoskorissa on ${asked} ${u}. Pienennä määrää tai vaihda tuote.`, blocked_rule: n => `Tuote: ${n}.`, blocked_line: n => `${n}: ei voi toimittaa tälle toimituspäivälle. Poista tai vaihda se.`,
     left_out: a => `${a}: ei ostoskorissa.`, open_q: (n, x) => n === 1 ? `Yksi pyytämäsi tuote ei ole ostoskorissa: ${x}. Tilaus vahvistetaan ilman sitä.` : `${n} pyytämääsi tuotetta ei ole ostoskorissa: ${x}. Tilaus vahvistetaan ilman niitä.`,
@@ -328,7 +329,7 @@ const T = {
       which: a => `${a}: mitä näistä tarkoitat?`, amount: a => `${a}: kuinka paljon? Kirjoita määrä.`, amount_usual: (a, q, u, n) => `${a}: kuinka paljon? Tavallinen määräsi on ${q} ${u} (${n}). Kirjoita määrä tai valitse tavallinen.`, usual_btn: (q, u) => `${q} ${u}, kuten yleensä`, none: a => `${a}: ei löytynyt Valio Aimon valikoimasta.`,
       usual: (a, q, u) => `${a}: määrää ei annettu, joten korissa on tavallinen määräsi ${q} ${u}.`, drop: "Jätä pois",
       late_ok: d => `Tilaa silti toimituspäivälle ${d}`,
-      sub_diff: (t, f, lost, added, und) => `Huomaa: korvaava tuote ${t}` + (lost.length ? ` ei ole ${lost.join(", ")}, toisin kuin ${f}` : "") + (lost.length && added.length ? ", ja se" : "") + (added.length ? ` sisältää: ${added.join(", ")} (${und ? `tuotteella ${f} ei ole allergeeni-ilmoitusta, johon verrata` : `tuotteessa ${f} näitä ei ole ilmoitettu`})` : "") + ".",
+      sub_diff: (t, f, lost, added, und) => "Huomaa: " + (lost.length ? `korvaavan tuotteen ${t} tuotetiedoissa ei ole merkintää ${lost.map(x => `”${x}”`).join(", ")}, toisin kuin tuotteella ${f}` : `korvaava tuote ${t}`) + (lost.length && added.length ? ", ja se" : "") + (added.length ? ` sisältää: ${added.join(", ")} (${und ? `tuotteella ${f} ei ole allergeeni-ilmoitusta, johon verrata` : `tuotteessa ${f} näitä ei ole ilmoitettu`})` : "") + ".",
       claim: { "FREE_FROM:LACTOSE": "laktoositon", "FREE_FROM:GLUTEN": "gluteeniton", "DIET:FREE_FROM_GLUTEN": "gluteeniton", "FREE_FROM:WHEAT": "vehnätön", "FREE_FROM:EGGS": "kananmunaton", "FREE_FROM:SOY": "soijaton", "DIET:VEGAN": "vegaaninen", "DIET:VEGETARIAN": "kasvisruokavalioon sopiva" },
       alg: { AM: "maito", AE: "kananmuna", AF: "kala", AC: "äyriäiset", UM: "nilviäiset", AP: "maapähkinä", AN: "pähkinät", AY: "soija", AS: "seesami", BM: "sinappi", BC: "selleri", NL: "lupiini", AU: "sulfiitit", AW: "gluteenia sisältävät viljat", UW: "vehnä", GB: "ohra", GO: "kaura", NR: "ruis", GS: "speltti", GK: "kamut", ML: "laktoosi", SA: "manteli", SC: "cashewpähkinä", SH: "hasselpähkinä", SM: "makadamiapähkinä", SP: "pekaanipähkinä", SR: "parapähkinä", ST: "pistaasipähkinä", SW: "saksanpähkinä" },
       late: (ev, d) => `Ei ehdi tilaisuuteen. Tilaisuus on ${ev} ja ensimmäinen mahdollinen toimituspäivä on ${d}`, same_day: d => `Toimitus on tilaisuuspäivänä ${d} Aiempaa toimituspäivää ei ole.`,
@@ -355,7 +356,7 @@ const T = {
               B0: "Raja lasketaan erotuksesta", B1: "Raja yhdelle tilaukselle", B2: "Viikkoraja", B3: "Saman toimituspäivän tilaukset yhteensä", C1: "Tuoteryhmät", A1: "Allergeenirajaukset", A2: "Pyydetyt ominaisuudet", A3: "Vaaditut merkit", S1: "Korvaava tuote",
               N1: "Uudet tuotteet", Q1: "Poikkeava määrä", L1: "Vähissä oleva tuote jaetaan sopimusten mukaan", R1: "Takaisinvedettyä ei pidetä", D1: "Myöhästyminen", P1: "Osatoimitus", V1: "Valio Aimon ehdotukset käytössä", V2: "Ehdotuksia päivässä",
               V3: "Hylättyä ehdotusta ei tehdä uudelleen", V4: "Ehdotus ei ylitä viikkorajaa", V5: "Ehdotukset, jotka voi hyväksyä itse", V6: "Ehdotusten lisäkulut viikossa", V7: "Vakiotilauksen muutos tarvitsee hyväksyjän" }, pass: "läpi", esc: "hyväksyntä", den: "estetty",
-      rec: "Tilauksen tallenne ja allekirjoitukset", ledger: "Mitä tilausapuri teki (loki)", asked: "Pyyntösi sanasta sanaan:", plan: "Näytä ruokalistan laskelma", sig: "Näytä allekirjoitukset ja tekninen kortti",
+      rec: "Tilauksen tallenne ja allekirjoitukset", ledger: "Mitä tilausapuri teki (loki)", asked: "Pyyntösi sanasta sanaan:", plan: "Näytä ruokalistan laskelma", plan_note: "Laskelma on ruokalistan suunnitelma sellaisena kuin se laskettiin. Voimassa on ostoskori yllä: sen rivit ja summa voivat poiketa tästä.", sig: "Näytä allekirjoitukset ja tekninen kortti",
       unit: { piece: "kpl", kg: "kg", case: "ltk", pack: "pkt", bag: "ps", box: "ltk", jar: "prk", bottle: "plo", sack: "säkki", carton: "tlk", roll: "rll", L: "l", KG: "kg", pcs: "kpl" },
       opt: { usual_product: "tavallinen tuotteesi", lowest_price: "edullisin", bigger_pack: "isompi pakkaus, halvempi yhteensä", most_reliable: "varmin toimitus", finnish_origin: "kotimainen", as_requested: "pyytämäsi", needs: "tarvitsee hyväksynnän", no: "ei sallittu" } },
     o: { h: "Tilaukset", lede: "Tilausapurilla vahvistetut tilaukset. Voit myös kysyä apurilta: missä tilaukseni on?", none: "Ei vielä tilausapurilla vahvistettuja tilauksia.", placed: "Vahvistetut tilaukset", last: "Viime viikon tilaus",
@@ -380,7 +381,7 @@ const T = {
       am_h: o => `Change to order ${o}`, am_cancel_h: o => `Cancelling order ${o}`, am_done: o => `Change confirmed: order ${o}`, am_cancelled: o => `Order ${o} is cancelled`, am_off: o => `No change was made: order ${o} stands`,
       am_credit: "Credit (ex VAT)", am_credit_inc: "Credit (incl. VAT)", am_goods: "New goods (ex VAT)", am_confirm: "Confirm the change", am_confirm_cancel: "Confirm the cancellation", am_keep: "Leave the order as it is",
       am_note: "Nothing changes until you confirm. The original order confirmation stays; the change is signed next to it.",
-      cancel: "Cancel the cart", record: "Show the order confirmation", swap: "Change", swap_hide: "Close", subst: "Replacement:", for_: n => `replaces ${n}`, contract: "contract price", list: "list price",
+      cancel: "Cancel the cart", recheck: "Check again", record: "Show the order confirmation", swap: "Change", swap_hide: "Close", subst: "Replacement:", for_: n => `replaces ${n}`, contract: "contract price", list: "list price",
       tier: { best: "match: best", better: "match: better", good: "match: good" }, per: (p, u) => `${p > 0 ? "+" : "−"}${Math.abs(Math.round(p))}%/${u}`,
       short: "Not enough stock:", short_only: (a, b, u) => `Not enough stock, amount changed: ${a} of ${b} ${u}.`, only: (a, u) => `Only what is in stock: ${a} ${u}`,
       why: (s) => `The same kind of product, the same diet claims, no new allergens. ${s.listed ? "On Valio Aimo's substitute list" : "From Valio Aimo's own range"}${s.contract_price ? ", at your contract price." : ", at the list price: there is no contract price for it."}`,
@@ -389,6 +390,7 @@ const T = {
     diff_h: "Differs from what you asked:", d_part: (a, x) => `${a}: part replaced with ${x}`, d_other: (a, x) => `${a}: ${x} in its place`, d_more: (a, n, u) => `${a}: ${n} ${u} because of the pack size`, d_menu: n => n === 1 ? "1 replacement product in the menu" : `${n} replacement products in the menu`,
     pack_more: (per, n, tot) => `sold in packs of ${per}, so the cart has ${n} packs, which is ${tot} pieces.`,
     less_q: x => `Less in the cart than you asked for: ${x}. The rest is not ordered.`, over_budget: (b, s, o) => `You said a budget of at most ${b}. The cart is ${s} ex VAT, ${o} over.`,
+    usual_lf: (a, n) => `“${a}”: the cart has the product you order most often, ${n}. It is lactose-free: if you want the ordinary one, change it on the line.`,
     budget_pick: (a, s, b, t, u) => `Picked to fit your budget: ${a}, ${s} ex VAT. ${u ? "The one you order most often, " : ""}${b} would have cost ${t}. You can change it on the line.`,
     blocked_stock: (n, can, asked, u) => `${n}: only ${can} ${u} can come on the delivery day, and the cart has ${asked} ${u}. Lower the amount or change the product.`, blocked_rule: n => `The product: ${n}.`, blocked_line: n => `${n}: cannot be delivered on this delivery day. Remove it or change it.`,
     left_out: a => `${a}: not in the cart.`, open_q: (n, x) => n === 1 ? `One thing you asked for is not in the cart: ${x}. The order is confirmed without it.` : `${n} things you asked for are not in the cart: ${x}. The order is confirmed without them.`,
@@ -407,7 +409,7 @@ const T = {
       which: a => `${a}: which of these do you mean?`, amount: a => `${a}: how much? Type the amount.`, amount_usual: (a, q, u, n) => `${a}: how much? Your usual amount is ${q} ${u} (${n}). Type the amount or pick the usual.`, usual_btn: (q, u) => `${q} ${u}, as usual`, none: a => `${a}: not found in Valio Aimo's range.`,
       usual: (a, q, u) => `${a}: no amount was given, so the cart has your usual ${q} ${u}.`, drop: "Leave out",
       late_ok: d => `Order anyway for ${d}`,
-      sub_diff: (t, f, lost, added, und) => `Note: the replacement ${t}` + (lost.length ? ` is not ${lost.join(", ")}, unlike ${f}` : "") + (lost.length && added.length ? ", and it" : "") + (added.length ? ` contains ${added.join(", ")} (${und ? `${f} has no allergen declaration to compare with` : `${f} does not declare these`})` : "") + ".",
+      sub_diff: (t, f, lost, added, und) => `Note: the replacement ${t}` + (lost.length ? ` is not marked ${lost.join(", ")} in the product data, unlike ${f}` : "") + (lost.length && added.length ? ", and it" : "") + (added.length ? ` contains ${added.join(", ")} (${und ? `${f} has no allergen declaration to compare with` : `${f} does not declare these`})` : "") + ".",
       claim: { "FREE_FROM:LACTOSE": "lactose-free", "FREE_FROM:GLUTEN": "gluten-free", "DIET:FREE_FROM_GLUTEN": "gluten-free", "FREE_FROM:WHEAT": "wheat-free", "FREE_FROM:EGGS": "egg-free", "FREE_FROM:SOY": "soy-free", "DIET:VEGAN": "vegan", "DIET:VEGETARIAN": "vegetarian" },
       alg: { AM: "milk", AE: "eggs", AF: "fish", AC: "crustaceans", UM: "molluscs", AP: "peanuts", AN: "tree nuts", AY: "soybeans", AS: "sesame", BM: "mustard", BC: "celery", NL: "lupin", AU: "sulphites", AW: "cereals containing gluten", UW: "wheat", GB: "barley", GO: "oats", NR: "rye", GS: "spelt", GK: "kamut", ML: "lactose", SA: "almond", SC: "cashew", SH: "hazelnut", SM: "macadamia", SP: "pecan", SR: "brazil nut", ST: "pistachio", SW: "walnut" },
       late: (ev, d) => `It will not arrive in time. The event is on ${ev} and the first possible delivery day is ${d}.`, same_day: d => `Delivery is on the day of the event, ${d}. There is no earlier delivery day.`,
@@ -430,7 +432,7 @@ const T = {
                   W: "Valio Aimo's limit for orders made with the assistant would be passed. Make the order smaller, or order in the shop the usual way.", M2: "The amount is over what may be ordered at once with the assistant. Lower the amount.", M: "The right to order with the assistant is not valid. Sign in again.",
                   A1: "The cart has a product that contains an allergen you excluded, or is named for it. Change or remove it.", A2: "A product does not meet a requirement you asked for. Change or remove it.", A3: "A product lacks a required label. Change or remove it.",
                   other: "The checks say why." }, checks_h: "Valio Aimo's rules for this cart", pass: "pass", esc: "approval", den: "stopped",
-      rec: "The order record and signatures", ledger: "What the assistant did (log)", asked: "Your request, word for word:", plan: "Show how the menu was worked out", sig: "Show the signatures and the technical card",
+      rec: "The order record and signatures", ledger: "What the assistant did (log)", asked: "Your request, word for word:", plan: "Show how the menu was worked out", plan_note: "This is the menu plan as it was worked out. The cart above is what counts: its lines and total can differ from this.", sig: "Show the signatures and the technical card",
       unit: { piece: "pcs", kg: "kg", case: "case", pack: "pack", bag: "bag", box: "box", jar: "jar", bottle: "bottle", sack: "sack", carton: "carton", roll: "roll", L: "L", KG: "kg", pcs: "pcs" },
       opt: { usual_product: "your usual product", lowest_price: "lowest price", bigger_pack: "bigger pack, less in total", most_reliable: "most reliable delivery", finnish_origin: "Finnish", as_requested: "as you asked", needs: "needs approval", no: "not allowed" } },
     o: { h: "Orders", lede: "Orders confirmed with the order assistant. You can also ask it: where is my order?", none: "No orders confirmed with the assistant yet.", placed: "Confirmed orders", last: "Last week's order",
@@ -712,6 +714,7 @@ function itemNotes(S) {
     const facts = [], perDish = {}, rest = [];
     for (const x of m.diet || []) {
       if (x.scope === "dish" && x.dish) (perDish[x.dish] = perDish[x.dish] || []).push((L.diet[x.kind] || x.kind).toLowerCase());
+      else if (x.scope === "guests" && x.count && (m.diet || []).some(y => y !== x && y.kind === x.kind && y.scope !== "dish" && !(y.scope === "guests" && y.count))) continue;
       else if (x.scope !== "dish") rest.push(`<b>${esc(L.diet[x.kind] || x.note)}:</b> ${esc(x.scope === "guests" && x.count ? L.diet_n(x.count, m.guests) : L.diet_all)}`);
     }
     // a note written on one dish ("Lohikeitto (L, G)") is shown on that dish, in words
@@ -873,11 +876,14 @@ function render(S) {
     + ((ready || esc_) && !lateGate && openQ.length ? nt(esc(L.open_q(openQ.length, openQ.map(x => `”${x.as_written || x.query}”`).join(", "))), "bad") : "")
     + ((ready || esc_) && !lateGate && lessQ.length ? nt(esc(L.less_q(lessQ.map(x => `”${x.as_written || x.query}” ${num(x.choices[x.chosen || 0].covers)} / ${num(x.quantity)} ${unitS(x.unit)}`).join(", "))), "bad") : "")
     + ((ready || esc_) && !lateGate && otherQ.length ? nt(esc(`${L.diff_h} ${otherQ.join("; ")}.`)) : "")
+    // A plain word ("kevytmaitoa") answered with the kitchen's usual product that is lactose-free: said, so the cook can take the ordinary one.
+    + ((ready || esc_) && !lateGate ? (c ? c.items || [] : []).filter(it => !it.dropped && !it.usual && it.choices && it.choices.length > 1 && it.choices[it.chosen || 0].label === "usual_product" && !/lakto|lactose/i.test(it.as_written || "") && !(c.stated || []).some(x => /lact|milk/.test(x))
+      && it.choices[it.chosen || 0].lines.some(l => /laktoositon|lactose[- ]free/i.test((l.title_fi || "") + " " + (l.title || "")))).map(it => nt(esc(L.usual_lf(it.as_written, it.choices[it.chosen || 0].lines.map(l => lang === "fi" ? l.title_fi || l.title : l.title).join(" + "))), "info")).join("") : "")
     + ((ready || esc_) && !lateGate ? (c ? c.items || [] : []).filter(it => it.budget_pick && !it.dropped && it.choices).map(it => nt(esc(L.budget_pick(it.choices[it.chosen || 0].lines.map(l => lang === "fi" ? l.title_fi || l.title : l.title).join(" + "), eur(it.choices[it.chosen || 0].total), (lang === "fi" ? it.budget_pick.from.title_fi : "") || it.budget_pick.from.title, eur(it.budget_pick.from_total), it.budget_pick.usual)), "info")).join("") : "")
     + ((ready || esc_) && !lateGate && overB ? nt(esc(L.over_budget(eur(Math.round(c.budget * 100)), eur(subC), eur(overB))), "bad") : "")
     + (needTick && !lateGate ? `<label class="tick"><input type="checkbox" data-act="labels"${S.open.labels ? " checked" : ""}><span>${esc(L.labels(blankN))}</span></label>` : "")
     + (lateGate ? "" : ready || expired ? `<button type="button" class="cta" data-act="confirm"${needTick && !S.open.labels ? " disabled" : ""}>${esc(A ? (A.cancel ? L.am_confirm_cancel : L.am_confirm) : L.confirm)}</button>` : esc_ ? `<button type="button" class="cta" disabled>${esc(A ? (A.cancel ? L.am_confirm_cancel : L.am_confirm) : L.confirm)} · ${esc(L.waiting)}</button>` : done && (o.permalink_url || S.x.order_url) ? `<a class="cta" href="${esc(o.permalink_url || S.x.order_url)}" target="_blank" rel="noopener">${esc(L.record)}</a>` : "")
-    + `<div class="folds">${A && !n ? "" : `<button type="button" class="lnkbtn" data-act="rows">${esc(S.open.rows ? L.rows_hide : L.rows(n))}</button>`}<button type="button" class="lnkbtn" data-act="checks">${esc(S.open.checks ? L.checks_hide : L.checks)}</button>${ready || esc_ || stopped ? `<button type="button" class="lnkbtn" data-act="cancel">${esc(A ? L.am_keep : L.cancel)}</button>` : ""}</div>`
+    + `<div class="folds">${A && !n ? "" : `<button type="button" class="lnkbtn" data-act="rows">${esc(S.open.rows ? L.rows_hide : L.rows(n))}</button>`}<button type="button" class="lnkbtn" data-act="checks">${esc(S.open.checks ? L.checks_hide : L.checks)}</button>${stopped ? `<button type="button" class="lnkbtn" data-act="recheck">${esc(L.recheck)}</button>` : ""}${ready || esc_ || stopped ? `<button type="button" class="lnkbtn" data-act="cancel">${esc(A ? L.am_keep : L.cancel)}</button>` : ""}</div>`
     + (S.open.rows ? rowsHtml(S) : "") + (S.open.checks ? checksHtml(S) : "");
 }
 // A cart that waits for an approver asks the gateway now and then, and turns to "Hyväksynyt" by itself.
@@ -910,11 +916,12 @@ function cartAct(S, b) {
   if (a === "demoappr") { const u = S.d.continue_url || ""; if (u) { watch(S, 1500); if (!window.open(u + (u.includes("?") ? "&" : "?") + "demo=1", "_blank")) location.href = u + (u.includes("?") ? "&" : "?") + "demo=1"; } return; }
   if (a === "swapopen") { S.open.swap = S.open.swap === i ? null : i; render(S); const el = $(".alts", S.el); if (el) el.scrollIntoView({ block: "nearest", behavior: "smooth" }); return; }
   if (a === "copy") { const u = S.d.continue_url || ""; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => { b.textContent = L.copied; }).catch(() => { prompt(L.copy, u); }); return; }
-  if (a === "plan") { const box = $("[data-frames]", S.el); b.remove(); for (const q of S.quiet) card(q, null, box); return; }
+  if (a === "plan") { const box = $("[data-frames]", S.el); b.remove(); box.insertAdjacentHTML("beforeend", nt(esc(L.plan_note), "info")); for (const q of S.quiet) card(q, null, box); return; }
   if (a === "sig") { const box = $("[data-frames]", S.el); b.remove(); card({ name: S.ev.name, args: S.ev.args || {}, result: { content: [], structuredContent: S.d, _meta: { [META]: { ...S.x, full: S.d } } } }, null, box); return; }
   if (busy) return;
   if (a === "confirm") act({ type: "confirm", checkout: S.id, read_labels: !!S.open.labels }, L.confirm);
   else if (a === "cancel") act({ type: "cancel", checkout: S.id }, L.cancel);
+  else if (a === "recheck") act({ type: "recheck", checkout: S.id }, L.recheck);
   else if (a === "day") act({ type: "day", checkout: S.id, date: b.dataset.date }, L.move(dayS(b.dataset.date)));
   else if (a === "kind") act({ type: "kind", checkout: S.id, item: i, kind: b.dataset.kind }, `${c.items[i].as_written}: ${b.textContent}`);
   else if (a === "drop") act({ type: "drop", checkout: S.id, item: i }, `${L.drop}: ${c.items[i].as_written}`);

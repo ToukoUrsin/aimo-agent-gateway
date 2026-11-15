@@ -808,7 +808,7 @@ def _ingredient_matches(item: str, d: dict) -> bool:
         "coffee milk": ("coffee milk", "milk", "maito", "mjolk"),
         "vegetable bouillon": ("bouillon", "stock", "liemikuutio", "kasvisliemi"),
         "rapeseed oil": ("rapeseed", "canola", "rypsi", "oil", "olje"),
-        "beef chuck": ("beef", "naudan"), "christmas ham": ("ham", "kinkku"), "porridge rice": ("porridge rice", "puuroriisi"), "pickled cucumber": ("pickled cucumber", "maustekurk"),
+        "beef chuck": ("beef", "naudan"), "pork shoulder": ("pork", "porsaan"), "gluten-free flour mix": ("flour mix", "jauhoseos"), "lingonberry": ("lingonberr", "puolukka"), "christmas ham": ("ham", "kinkku"), "porridge rice": ("porridge rice", "puuroriisi"), "pickled cucumber": ("pickled cucumber", "maustekurk"),
         "breadcrumbs": ("breadcrumb", "korppujauho"), "gluten-free breadcrumbs": ("breadcrumb", "korppujauho"), "dark syrup": ("syrup", "siirappi"), "beef bouillon": ("bouillon", "lihaliemi"),
         "swede": ("swede", "lanttu"), "cinnamon": ("cinnamon", "kaneli"),
     }

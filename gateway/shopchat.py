@@ -77,7 +77,7 @@ FAILED = {"fi": "Jokin meni pieleen, enkä saanut tätä valmiiksi. Kokeile uude
 
 # What the code says itself, without a model: the answer to a button on a card.
 W = {
-    "fi": {"confirm": "Vahvista tilaus", "late_ok": "Tilaa silti toimituspäivälle", "swap": "Vaihda: {x}", "day": "Siirrä päivälle {x}", "drop": "Jätä pois: {x}", "again": "Tilaa uudelleen: {x}", "usual": "Tavallinen määrä: {x}", "cancel": "Peru ostoskori",
+    "fi": {"confirm": "Vahvista tilaus", "late_ok": "Tilaa silti toimituspäivälle", "swap": "Vaihda: {x}", "day": "Siirrä päivälle {x}", "drop": "Jätä pois: {x}", "again": "Tilaa uudelleen: {x}", "usual": "Tavallinen määrä: {x}", "cancel": "Peru ostoskori", "recheck": "Tarkista uudelleen",
            "placed": "Tilaus {label} on vahvistettu. Toimituspäivä {day}",
            "amend_confirm": "Vahvista muutos", "cancel_confirm": "Vahvista peruutus", "amend_placed": "Muutos tilaukseen {label} on vahvistettu. {what}", "cancel_placed": "Tilaus {label} on peruttu. {what}",
            "amend_off": "Muutosta ei tehty. Tilaus {label} on ennallaan.",
@@ -98,7 +98,7 @@ W = {
            "alg_c_blank": "Valmistajan ilmoitus puuttuu ({n}): {x}. Sitä ei voi tarkistaa tästä, lue pakkaus.",
            "gone": "Tätä ostoskoria ei enää ole. Kerro uudelleen mitä tarvitset.", "not_placed": "Tilausta ei tehty. {why}",
            "swapped": "Vaihdettu. Ostoskori on päivitetty; mitään ei ole vielä tilattu.", "moved": "Ostoskorin toimituspäivä on nyt {day} Mitään ei ole vielä tilattu.",
-           "dropped": "Poistettu ostoskorista.", "kind_set": "Lisätty ostoskoriin. Mitään ei ole vielä tilattu.", "kind": "{a}: {x}", "canceled": "Ostoskori on peruttu. Mitään ei tilattu.", "empty": "Ostoskoriin ei jäänyt yhtään riviä.",
+           "dropped": "Poistettu ostoskorista.", "kind_set": "Lisätty ostoskoriin. Mitään ei ole vielä tilattu.", "kind": "{a}: {x}", "canceled": "Ostoskori on peruttu. Mitään ei tilattu.", "recheck_ok": "Tarkistin ostoskorin uudelleen: sen voi nyt tilata. Mitään ei ole vielä tilattu.", "recheck_no": "Tarkistin ostoskorin uudelleen: sitä ei vieläkään voi tilata. Syy on kortilla.", "empty": "Ostoskoriin ei jäänyt yhtään riviä.",
            "again_none": "En löytänyt tälle tuotteelle tavallista määrää. Kerro kuinka paljon tarvitset.",
            "bad_amount": "Määrän pitää olla suurempi kuin nolla, joten en koonnut ostoskoria pyynnöstä ”{x}”. Viestin muutkaan rivit eivät menneet ostoskoriin: lähetä se uudelleen oikealla määrällä.",
            "built": "Ostoskori on koottu. Mitään ei ole vielä tilattu: tilaus lähtee vasta, kun painat Vahvista tilaus.",
@@ -125,7 +125,7 @@ W = {
            "off_never": "”{a}” ei ole ostoskorissa: Valio Aimon valikoimassa on sitä, mutta sitä ei juuri nyt saa millekään toimituspäivälle.", "off_excl": "”{a}” ei ole ostoskorissa: Valio Aimon valikoimasta ei löytynyt sille tuotetta, joka sopii rajaukseesi ({x}).",
            "next": "Mitään ei ole vielä tilattu: tilaus lähtee vasta, kun painat Vahvista tilaus.", "next_esc": "Ostoskori tarvitsee hyväksynnän ennen kuin sen voi vahvistaa: lähetä kortin linkki hyväksyjälle.",
            "next_stop": "Ostoskoria ei voi tilata tällaisenaan. Kortti kertoo miksi."},
-    "en": {"confirm": "Confirm the order", "late_ok": "Order anyway for", "swap": "Change to: {x}", "day": "Move to {x}", "drop": "Leave out: {x}", "again": "Order again: {x}", "usual": "The usual amount: {x}", "cancel": "Cancel the cart",
+    "en": {"confirm": "Confirm the order", "late_ok": "Order anyway for", "swap": "Change to: {x}", "day": "Move to {x}", "drop": "Leave out: {x}", "again": "Order again: {x}", "usual": "The usual amount: {x}", "cancel": "Cancel the cart", "recheck": "Check again",
            "placed": "Order {label} is confirmed. Delivery {day}.",
            "amend_confirm": "Confirm the change", "cancel_confirm": "Confirm the cancellation", "amend_placed": "The change to order {label} is confirmed. {what}", "cancel_placed": "Order {label} is cancelled. {what}",
            "amend_off": "No change was made. Order {label} stands as it was.",
@@ -146,7 +146,7 @@ W = {
            "alg_c_blank": "No manufacturer's declaration ({n}): {x}. That cannot be checked here, read the label.",
            "gone": "This cart is no longer there. Tell me again what you need.", "not_placed": "The order was not placed. {why}",
            "swapped": "Changed. The cart is updated; nothing is ordered yet.", "moved": "The cart is now for {day}. Nothing is ordered yet.",
-           "dropped": "Removed from the cart.", "kind_set": "Added to the cart. Nothing is ordered yet.", "kind": "{a}: {x}", "canceled": "The cart is cancelled. Nothing was ordered.", "empty": "No line was left in the cart.",
+           "dropped": "Removed from the cart.", "kind_set": "Added to the cart. Nothing is ordered yet.", "kind": "{a}: {x}", "canceled": "The cart is cancelled. Nothing was ordered.", "recheck_ok": "I checked the cart again: it can be ordered now. Nothing is ordered yet.", "recheck_no": "I checked the cart again: it still cannot be ordered. The card says why.", "empty": "No line was left in the cart.",
            "again_none": "I found no usual amount for this product. Tell me how much you need.",
            "bad_amount": "An amount has to be more than zero, so I built no cart from \"{x}\". The other lines of the message were not put on a cart either: send it again with the right amount.",
            "built": "The cart is built. Nothing is ordered yet: the order goes out only when you press Confirm the order.",
@@ -364,14 +364,14 @@ NUMBER_WORDS = {"yksi": 1, "yhdellä": 1, "yhden": 1, "yhdelle": 1, "one": 1, "k
                 "neljä": 4, "neljällä": 4, "four": 4, "viisi": 5, "viidellä": 5, "five": 5, "kuusi": 6, "kuudella": 6, "six": 6, "seitsemän": 7, "seven": 7, "kahdeksan": 8, "eight": 8,
                 "yhdeksän": 9, "nine": 9, "kymmenen": 10, "kymmenellä": 10, "ten": 10}
 # The recipe cards and shelf ingredients go by English names in code; the Finnish page shows these.
-DISH_FI = {"Creamy salmon soup": "Kermainen lohikeitto", "Meat soup": "Lihakeitto", "Christmas ham": "Joulukinkku", "Carrot casserole": "Porkkanalaatikko", "Rosolli beetroot salad": "Rosolli", "Rice porridge": "Riisipuuro", "Green salad with vinaigrette": "Vihreä salaatti ja vinegretti", "Green salad": "Vihreä salaatti", "Chicken breast with thyme cream sauce": "Broilerin rintafilee ja timjamikermakastike",
+DISH_FI = {"Creamy salmon soup": "Kermainen lohikeitto", "Meat soup": "Lihakeitto", "Karelian stew": "Karjalanpaisti", "Mashed potatoes": "Perunamuusi", "Crushed lingonberries": "Puolukkasurvos", "Christmas ham": "Joulukinkku", "Carrot casserole": "Porkkanalaatikko", "Rosolli beetroot salad": "Rosolli", "Rice porridge": "Riisipuuro", "Green salad with vinaigrette": "Vihreä salaatti ja vinegretti", "Green salad": "Vihreä salaatti", "Chicken breast with thyme cream sauce": "Broilerin rintafilee ja timjamikermakastike",
            "Roasted potatoes and carrots": "Paahdetut perunat ja porkkanat", "Mushroom risotto": "Sienirisotto", "Strawberry cream cake": "Mansikkakermakakku", "Coffee and tea": "Kahvi ja tee",
            "Rye bread and butter": "Ruisleipä ja voi", "Macaroni casserole": "Makaronilaatikko", "Chicken sauce and rice": "Broilerikastike ja riisi",
            "Meatballs, mashed potatoes and brown sauce": "Lihapullat, perunamuusi ja ruskeakastike", "Pea soup": "Hernekeitto", "Oven pancake with strawberry jam": "Pannukakku ja mansikkahillo",
            "Fish fingers and boiled potatoes": "Kalapuikot ja keitetyt perunat", "Grated carrot": "Porkkanaraaste", "Crisp bread and spread": "Näkkileipä ja levite", "Milk to drink": "Ruokajuomaksi maito",
            "Scrambled eggs": "Munakokkeli", "Fried bacon": "Paistettu pekoni", "Breakfast sausages": "Aamiaismakkarat", "Oat porridge": "Kaurapuuro", "Boiled eggs": "Keitetyt kananmunat",
            "Croissants": "Croissantit", "Cheese, ham and vegetables": "Juusto, kinkku ja kasvikset", "Yoghurt, muesli and jam": "Jogurtti, mysli ja hillo", "Fresh fruit": "Tuoreet hedelmät", "Orange juice": "Appelsiinimehu"}
-ITEM_FI = {"beef chuck": "naudan etuselkä", "christmas ham": "joulukinkku", "swede": "lanttu", "beef bouillon": "lihaliemi", "porridge rice": "puuroriisi", "pickled cucumber": "maustekurkku", "breadcrumbs": "korppujauho", "gluten-free breadcrumbs": "gluteeniton korppujauho", "dark syrup": "tumma siirappi", "cinnamon": "kaneli", "vegan cheese": "vegaaninen juusto", "whipping cream": "vispikerma", "cooking cream": "ruokakerma", "plant whipping cream": "kasvipohjainen vispikerma", "oat cooking cream": "kauraruokakerma", "milk": "maito", "coffee milk": "kahvimaito",
+ITEM_FI = {"beef chuck": "naudan etuselkä", "christmas ham": "joulukinkku", "pork shoulder": "porsaan lapa", "lingonberry": "puolukka", "gluten-free flour mix": "gluteeniton jauhoseos", "swede": "lanttu", "beef bouillon": "lihaliemi", "porridge rice": "puuroriisi", "pickled cucumber": "maustekurkku", "breadcrumbs": "korppujauho", "gluten-free breadcrumbs": "gluteeniton korppujauho", "dark syrup": "tumma siirappi", "cinnamon": "kaneli", "vegan cheese": "vegaaninen juusto", "whipping cream": "vispikerma", "cooking cream": "ruokakerma", "plant whipping cream": "kasvipohjainen vispikerma", "oat cooking cream": "kauraruokakerma", "milk": "maito", "coffee milk": "kahvimaito",
            "oat drink": "kaurajuoma", "butter": "voi", "margarine": "margariini", "rapeseed oil": "rypsiöljy", "olive oil": "oliiviöljy", "parmesan": "parmesaani", "grated cheese": "juustoraaste",
            "cheese slices": "juustoviipaleet", "yoghurt": "jogurtti", "egg": "kananmuna", "eggs in shell": "kananmunat", "potato": "peruna", "carrot": "porkkana", "onion": "sipuli", "leek": "purjo", "dill": "tilli",
            "lettuce": "salaatti", "cucumber": "kurkku", "tomato": "tomaatti", "mushroom": "herkkusieni", "garlic": "valkosipuli", "lemon": "sitruuna", "strawberry": "mansikka", "banana": "banaani", "apple": "omena",
@@ -1764,7 +1764,7 @@ def build(g, ctx, page) -> APIRouter:
                     ks = set()
                 y = next((z for z in by_ref.values() if z.get("gap") and not z.get("choices") and ks & {str(k.get("kind")).lower() for k in z.get("kinds") or []}), None)
                 if y:
-                    x["line"] = y["ref"]
+                    x["line"], x["for_gap"] = y["ref"], y["gap"]
             if not y:
                 x.pop("line", None)
                 if old and not x["quantity"] and not x.get("use_usual"):
@@ -2091,14 +2091,20 @@ def build(g, ctx, page) -> APIRouter:
         gaps = [x for x in cart["menu"]["not_ordered"] if x.get("kind") in ("no_fit", "not_in_range") and x.get("need") and x.get("unit") in ("g", "ml")
                 and not x.get("portions") and not x.get("whole") and not x.get("diet") and set(x.get("rules") or []) <= GAP_RULES][:3]
         if gaps:
-            asked = [norm({"query": x["item"], "as_written": (x.get("fi") if T.lang == "fi" else None) or x["item"], "quantity": math.ceil(x["need"] / 100 - 1e-9) / 10, "unit": "kg" if x["unit"] == "g" else "l"})
-                     | {"_t": T.turn, "gap": x["item"]} for x in gaps]
+            # What the cook already chose for such an ingredient on the cart this one replaces (a tap on "porsaan kylki") stays their choice, in the amount the menu needs now.
+            picked = {y["for_gap"]: y for c_ in gone_carts[-1:] for y in (c_.get("items") or []) if y.get("for_gap") and y.get("choices") and not y.get("dropped")}
+            asked = [norm({"query": picked[x["item"]]["query"] if x["item"] in picked else x["item"], "as_written": (x.get("fi") if T.lang == "fi" else None) or x["item"], "quantity": math.ceil(x["need"] / 100 - 1e-9) / 10,
+                           "unit": "kg" if x["unit"] == "g" else "l", "own_pick": bool(x["item"] in picked and picked[x["item"]].get("own_pick"))})
+                     | {"_t": T.turn} | ({"for_gap": x["item"]} if x["item"] in picked else {"gap": x["item"]}) for x in gaps]
             try:
                 await plan_cart(cart, asked, T.p, T.tr)
             except Exception:
                 cart["items"] = []
             for it in list(cart["items"]):
-                x = next((x for x in gaps if x["item"] == it.get("gap")), None)
+                x = next((x for x in gaps if x["item"] == (it.get("gap") or it.get("for_gap"))), None)
+                if x and it.get("for_gap") and not it.get("choices"):  # the kind they chose cannot come in the new amount: the menu's own note stands again
+                    cart["items"] = [y for y in cart["items"] if y is not it]
+                    continue
                 ids_ = [str(l["id"]) for l in it["choices"][it.get("chosen") or 0]["lines"]] if it.get("choices") else []
                 milk = x and "lactose-free" in (x.get("rules") or []) and any({"AM", "ML"} & set((g.cat.get(i) or {}).get("contains") or []) and not any("LACTOSE" in str(c) for c in (g.cat.get(i) or {}).get("claims") or []) for i in ids_)
                 # a kitchen-wide rule (gluten-free, nut-free): the product that stands in is read against the manufacturer's declaration, contains and may contain
@@ -2325,7 +2331,7 @@ def build(g, ctx, page) -> APIRouter:
                 T.show("cancel_checkout", {"id": cid}, res, ms)
                 T.step("cancel", {"cart": cid}, f"The change to order {am.get('order_label')} was dropped; the order stands as it was.")
                 T.say(L["amend_off"].format(label=am.get("order_label")))
-            elif kind_ in ("swap", "drop", "day", "cancel", "kind", "usual"):
+            elif kind_ in ("swap", "drop", "day", "cancel", "kind", "usual", "recheck"):
                 cart = cart_of(cid)
                 cur = await asyncio.to_thread(g.get_checkout, cid, T.p) if cart else None
                 if not cart or cur.get("status") in ("completed", "canceled"):
@@ -2337,6 +2343,11 @@ def build(g, ctx, page) -> APIRouter:
                     T.show("cancel_checkout", {"id": cid}, res, ms)
                     T.step("cancel", {"cart": cid}, "The cart is cancelled.")
                     T.say(L["canceled"])
+                    return
+                if kind_ == "recheck":  # a cart the door stopped (ordering paused, a rule since changed) is put through the door again as it is
+                    read, full = await put_cart(T, cart, started)
+                    T.step("recheck", {"cart": cid}, read)
+                    T.say(L["recheck_ok"] if (full or {}).get("status") in ("ready_for_complete", "requires_escalation") else L["recheck_no"])
                     return
                 if kind_ == "day":
                     day = g._day(str(a.get("date") or ""))
@@ -2357,7 +2368,8 @@ def build(g, ctx, page) -> APIRouter:
                         if not want:
                             raise Stop(L["gone"])
                         asked, told = dict(it), (snap(cart, lang), cart["day"])
-                        await plan_cart(cart, [{**norm(it), "query": want["kind"], "_t": T.turn, **({"preferred_product": None, "own_pick": True} if it.get("near") else {})}], T.p, T.tr)
+                        await plan_cart(cart, [{**norm(it), "query": want["kind"], "_t": T.turn, **({"preferred_product": None, "own_pick": True} if it.get("near") else {}),
+                                               **({"for_gap": it.get("gap") or it.get("for_gap")} if it.get("gap") or it.get("for_gap") else {})}], T.p, T.tr)
                         new = next((x for x in cart["items"] if x.get("_t") == T.turn), None)
                         rest = [k for k in asked.get("kinds") or [] if k is not want]
                         if new is not None and not new.get("choices") and new.get("status") in ("not_on_day", "not_found") and not new.get("available_on") and rest:
@@ -2415,6 +2427,8 @@ def build(g, ctx, page) -> APIRouter:
             return L["confirm"]
         if k == "cancel":
             return L["cancel"]
+        if k == "recheck":
+            return L["recheck"]
         if k == "again":
             d = g.cat.get(str(a.get("product") or ""))
             return L["usual" if a.get("asked") else "again"].format(x=name_of(d["id"], d["title"], lang) if d else "?")
@@ -2444,7 +2458,7 @@ def build(g, ctx, page) -> APIRouter:
     async def chat_post(request: Request, response: Response, body: dict = Body(...)):
         c = ctx(request, response)
         lang = "en" if body.get("lang") == "en" else "fi"
-        action = body.get("action") if isinstance(body.get("action"), dict) and body["action"].get("type") in ("confirm", "swap", "drop", "day", "again", "cancel", "kind", "usual") else None
+        action = body.get("action") if isinstance(body.get("action"), dict) and body["action"].get("type") in ("confirm", "swap", "drop", "day", "again", "cancel", "kind", "usual", "recheck") else None
         text = str(body.get("text") or "").strip()[:4000]
         image = body.get("image") or None
         if image is not None and not action:
