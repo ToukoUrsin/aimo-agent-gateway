@@ -45,6 +45,7 @@ TOOLS = {
     "create_checkout": ("Get a signed offer", False, False), "update_checkout": ("Change the offer", False, False), "get_checkout": ("Read the offer", True, False),
     "complete_checkout": ("Place the order", False, False), "cancel_checkout": ("Cancel the offer", False, True), "get_order": ("Read the order", True, False),
     "list_order_issues": ("Problems on placed orders", True, False), "resolve_order_issue": ("Settle a problem on an order", False, False),
+    "cancel_order": ("Ask to cancel a placed order", False, True),
     "list_proposals": ("Proposals from Valio Aimo's agent", True, False), "answer_proposal": ("Answer a proposal", False, False),
     "card_data": ("Refresh the card", True, False),
 }

@@ -96,7 +96,7 @@ function tampered() {
 const checks = (o, led) => orderChecks(o, audit, profile, led, ledger.genesis);
 
 // ---- After the order: issues Valio Aimo raised, the way out chosen, the signed amendments and linked orders.
-const KIND = { short_pick: "Short pick", delay: "Delay", recall: "Recall" };
+const KIND = { short_pick: "Short pick", delay: "Delay", recall: "Recall", cancel_request: "Cancellation asked by the customer" };
 // A linked order's own link carries its own key. Keep it on this site, whatever host the server names.
 const orderLink = o => siteUrl(o.url || o.permalink_url || "/orders/" + o.id);
 const kidOf = jws => { try { return JSON.parse(new TextDecoder().decode(b64d(jws.split(".")[0]))).kid; } catch (e) { return ""; } };

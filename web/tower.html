@@ -562,7 +562,7 @@ function ops(d) {
   p.textContent = fi ? (d.paused_all ? "Palauta apurien tilaukset" : "Keskeytä kaikki apurien tilaukset") : (d.paused_all ? "Switch agent ordering back on" : "Pause all agent ordering");
   p.className = "btn small " + (d.paused_all ? "primary" : "danger");
   p.disabled = !OP;
-  $("#rstart").title = cooling ? tr("A short cool-down prevents runs being queued.", "Lyhyt tauko estää ajojen jonoutumisen.") : (ru.running && ru.live ? tr("Everyone watches this same live run.", "Kaikki katsovat samaa ajoa.") : why);
+  $("#rstart").title = cooling ? tr("A short cool-down prevents runs being queued.", "Lyhyt tauko estää ajojen jonoutumisen.") : (ru.running && ru.live ? tr("Everyone watches this same live run.", "Kaikki katsovat samaa ajoa.") : OP ? "" : tr("A visitor may start this small run: 12 kitchen assistants order from the same short stock.", "Vierailija saa käynnistää tämän pienen ajon: 12 keittiön apuria tilaa samasta niukasta varastosta."));
   p.title = why;
 }
 

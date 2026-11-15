@@ -1192,7 +1192,7 @@ function vProposals(d, ttlOver) {
   return wrap(head(fi() ? `Valio Aimo ehdottaa ${ps.length === 1 ? "yhtä muutosta" : ps.length + " muutosta"}` : `Valio Aimo's agent proposes ${ps.length === 1 ? "one change" : ps.length + " changes"}`, L("Each one passed Valio Aimo's own rules before it was sent. A declined proposal is never made again.", "Jokainen ehdotus on tarkistettu Valio Aimon säännöillä ennen lähettämistä. Hylättyä ehdotusta ei tehdä uudelleen."), "")
     + ps.map(one).join("") + (d.proof ? sigLine("doc", "signed") : ""));
 }
-const IKIND_FI = { short_pick: "Vajaa keräily", delay: "Myöhästyminen", recall: "Takaisinveto", issue: "Ongelma" };
+const IKIND_FI = { short_pick: "Vajaa keräily", delay: "Myöhästyminen", recall: "Takaisinveto", cancel_request: "Peruutuspyyntö", issue: "Ongelma" };
 function vIssues(d) {
   const is = d.issues || (d.what_happened ? [d] : []);
   const net = w => w.net_ex_vat < 0 ? L(`${eur(-w.net_ex_vat)} less`, `${eur(-w.net_ex_vat)} vähemmän`) : w.net_ex_vat > 0 ? L(`${eur(w.net_ex_vat)} more`, `${eur(w.net_ex_vat)} enemmän`) : L("Same price", "Sama hinta");
@@ -1208,7 +1208,7 @@ function vIssues(d) {
   if (!is.length) return `<div class="one"><i></i><span>${esc(tr(((d.messages || [])[0] || {}).content || "No open problems on placed orders."))}</span></div>`;
   if (inShop()) {
     // In the shop: "toimituspoikkeama", what happened, then each way out with its cost and one button.
-    const IK_S = { delay: ["Delivery problem: late", "Toimituspoikkeama: myöhästyminen"], short_pick: ["Delivery problem: short", "Toimituspoikkeama: vajaa toimitus"], recall: ["Recall", "Takaisinveto"] };
+    const IK_S = { delay: ["Delivery problem: late", "Toimituspoikkeama: myöhästyminen"], short_pick: ["Delivery problem: short", "Toimituspoikkeama: vajaa toimitus"], recall: ["Recall", "Takaisinveto"], cancel_request: ["Cancellation asked", "Peruutuspyyntö"] };
     const wayS = (x, i) => (w, j) => { const t = tr(w.title) || w.title, swap = /^substitute|^replace/.test(String(w.option || ""));
       return `<div class="way"><div class="o-top"><span class="a">${esc(t)}</span><span class="price" style="font-size:14px">${net(w)}</span></div>${w.effect ? `<p class="o-sub">${esc(tr(w.effect))}</p>` : ""}<div class="o-foot">${authBlock(`w${i}_${j}`, w.authority)}${sayBtn(j ? "ghost" : "", `Settle issue ${x.id} with option ${w.option} (${w.title}).`, L(`I choose: ${w.title}`, `Valitsen: ${t}`), swap ? L("Swap", "Vaihda") : L("Choose", "Valitse"))}</div></div>`; };
     const oneS = (x, i) => {

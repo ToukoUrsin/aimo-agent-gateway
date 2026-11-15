@@ -377,6 +377,47 @@
   "apple juice": {
    "unit": "ml",
    "prefer": ["465158", "472751"]
+  },
+  "beef chuck": {
+   "unit": "g",
+   "prefer": ["464744", "463020", "463071"]
+  },
+  "swede": {
+   "unit": "g",
+   "prefer": ["460687", "460879"]
+  },
+  "beef bouillon": {
+   "unit": "g",
+   "prefer": ["463817", "465304"]
+  },
+  "porridge rice": {
+   "unit": "g",
+   "prefer": ["462353", "462319", "466964"]
+  },
+  "christmas ham": {
+   "unit": "g",
+   "prefer": ["473419", "463608", "462490", "463613"]
+  },
+  "pickled cucumber": {
+   "unit": "g",
+   "prefer": ["471169", "470365", "464246"]
+  },
+  "breadcrumbs": {
+   "unit": "g",
+   "prefer": ["461363", "460613"],
+   "gluten_free": "gluten-free breadcrumbs"
+  },
+  "gluten-free breadcrumbs": {
+   "unit": "g",
+   "prefer": ["466705", "461325"]
+  },
+  "dark syrup": {
+   "unit": "g",
+   "prefer": ["470673"]
+  },
+  "cinnamon": {
+   "unit": "g",
+   "prefer": ["465770"]
   }
  },
  "cards": [
@@ -717,6 +758,83 @@
    "portion": "1.5 dl",
    "ingredients": [
     {"item": "orange juice", "role": "drink", "amount": 150, "unit": "ml"}
+   ]
+  },
+  {
+   "id": "meat_soup",
+   "name": "Meat soup",
+   "aliases": ["meat soup", "beef soup", "beef and vegetable soup", "lihakeitto", "naudanlihakeitto", "köttsoppa"],
+   "portion": "3 dl",
+   "ingredients": [
+    {"item": "beef chuck", "role": "main", "amount": 90, "unit": "g", "waste_pct": 5},
+    {"item": "potato", "role": "body", "amount": 120, "unit": "g", "waste_pct": 15},
+    {"item": "carrot", "role": "vegetable", "amount": 40, "unit": "g", "waste_pct": 15},
+    {"item": "swede", "role": "vegetable", "amount": 25, "unit": "g", "waste_pct": 15},
+    {"item": "onion", "role": "vegetable", "amount": 15, "unit": "g", "waste_pct": 10},
+    {"item": "leek", "role": "vegetable", "amount": 15, "unit": "g", "waste_pct": 15},
+    {"item": "parsley", "role": "herb", "amount": 2, "unit": "g", "waste_pct": 10},
+    {"item": "beef bouillon", "role": "stock", "amount": 4, "unit": "g"},
+    {"item": "allspice", "role": "seasoning", "amount": 0.2, "unit": "g"},
+    {"item": "bay leaf", "role": "seasoning", "amount": 0.05, "unit": "g"},
+    {"item": "salt", "role": "seasoning", "amount": 1.5, "unit": "g"}
+   ]
+  },
+  {
+   "id": "christmas_ham",
+   "name": "Christmas ham",
+   "aliases": ["christmas ham", "baked ham", "oven-baked ham", "joulukinkku", "juhlakinkku", "kinkku", "uunikinkku", "julskinka"],
+   "portion": "120 g cooked",
+   "ingredients": [
+    {"item": "christmas ham", "role": "main", "amount": 160, "unit": "g"},
+    {"item": "mustard", "role": "condiment", "amount": 10, "unit": "g"},
+    {"item": "breadcrumbs", "role": "crust", "amount": 3, "unit": "g"}
+   ]
+  },
+  {
+   "id": "carrot_casserole",
+   "name": "Carrot casserole",
+   "aliases": ["carrot casserole", "porkkanalaatikko", "morotslåda"],
+   "portion": "150 g",
+   "ingredients": [
+    {"item": "carrot", "role": "main", "amount": 90, "unit": "g", "waste_pct": 15},
+    {"item": "porridge rice", "role": "body", "amount": 12, "unit": "g"},
+    {"item": "milk", "role": "liquid", "amount": 60, "unit": "ml"},
+    {"item": "egg", "role": "binding", "amount": 8, "unit": "g"},
+    {"item": "butter", "role": "tin fat", "amount": 4, "unit": "g"},
+    {"item": "dark syrup", "role": "seasoning", "amount": 4, "unit": "g"},
+    {"item": "breadcrumbs", "role": "crust", "amount": 3, "unit": "g"},
+    {"item": "salt", "role": "seasoning", "amount": 1, "unit": "g"}
+   ]
+  },
+  {
+   "id": "rosolli",
+   "name": "Rosolli beetroot salad",
+   "aliases": ["rosolli", "beetroot salad", "punajuurisalaatti", "sallatti", "rosolli salad"],
+   "portion": "120 g",
+   "ingredients": [
+    {"item": "beetroot", "role": "main", "amount": 50, "unit": "g", "waste_pct": 15},
+    {"item": "potato", "role": "body", "amount": 25, "unit": "g", "waste_pct": 15},
+    {"item": "carrot", "role": "vegetable", "amount": 25, "unit": "g", "waste_pct": 15},
+    {"item": "pickled cucumber", "role": "vegetable", "amount": 12, "unit": "g"},
+    {"item": "apple", "role": "fruit", "amount": 10, "unit": "g", "waste_pct": 15},
+    {"item": "onion", "role": "vegetable", "amount": 5, "unit": "g", "waste_pct": 10},
+    {"item": "whipping cream", "role": "dressing", "amount": 15, "unit": "ml"},
+    {"item": "white wine vinegar", "role": "dressing", "amount": 1, "unit": "ml"},
+    {"item": "sugar", "role": "dressing", "amount": 0.5, "unit": "g"}
+   ]
+  },
+  {
+   "id": "rice_porridge",
+   "name": "Rice porridge",
+   "aliases": ["rice porridge", "christmas porridge", "riisipuuro", "joulupuuro", "risgrynsgröt"],
+   "portion": "2.5 dl",
+   "ingredients": [
+    {"item": "porridge rice", "role": "body", "amount": 35, "unit": "g"},
+    {"item": "milk", "role": "liquid", "amount": 220, "unit": "ml"},
+    {"item": "butter", "role": "serving fat", "amount": 3, "unit": "g"},
+    {"item": "sugar", "role": "topping", "amount": 5, "unit": "g"},
+    {"item": "cinnamon", "role": "topping", "amount": 0.5, "unit": "g"},
+    {"item": "salt", "role": "seasoning", "amount": 1, "unit": "g"}
    ]
   }
  ],

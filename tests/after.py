@@ -188,6 +188,37 @@ a.close_recall(rc["id"])
 o5 = place(pa, ta, 50, "after-5", "50 litres of lactose-free milk")
 ok(o5["line_items"][0]["wholesale"]["lot"] == f"L{MILK}-261116-02", "after closing, the product can be ordered again and new orders get the next batch")
 
+# ------------------------------------------------------------------ the customer cancels a placed order
+print("\nThe customer cancels a placed order")
+import gateway.after as after_mod  # noqa: E402
+
+o6 = place(pa, ta, 40, "after-6", "40 litres of lactose-free milk")
+held = lambda o: {r[0] for r in g.store.q("select state from holds where ref=?", (o["id"],))}  # noqa: E731
+c6 = a.request_cancel(o6["label"], "the event was called off", pa, "after-6c")
+am6 = c6["wholesale"]["amends"]
+ok(c6["status"] == "ready_for_complete" and offer_ok(c6) and am6["option"] == "cancel_order" and am6["order_id"] == o6["id"] and am6["credit"] == 40 * 156, "asked before the cut-off: a signed checkout that cancels the order and credits it in full")
+i6 = next(i for i in a.issues_of(o6["id"]) if i["kind"] == "cancel_request")
+ok(signed(i6["notice"]) and i6["notice"]["raised_by"] == "the customer" and i6["status"] == "pending", "the request is on the record as the customer's, answered with a signed notice")
+ok(a.request_cancel(o6["id"], "", pa, "after-6d")["id"] == c6["id"], "asking again while it waits gives the same checkout, not a second one")
+ok(a.state(o6)["status"] == "confirmed" and g.store.q("select total from orders where id=?", (o6["id"],))[0][0] > 0, "nothing changes before the checkout is completed")
+g.cancel_checkout(c6["id"], pa)
+i6 = a._sync(a._get(i6["id"]))
+ok(i6["status"] == "closed" and a.state(o6)["status"] == "confirmed" and not a.state(o6).get("open_issues"), "a request that is dropped is closed and the order stands")
+c6 = a.request_cancel(o6["label"], "", pa, "after-6e")
+r = finish(c6, pa, ta)
+st = a.state(o6)
+am = a._get(next(i for i in a.issues_of(o6["id"]) if i["kind"] == "cancel_request" and i["status"] == "resolved")["id"])["amendment"]
+ok(r["status"] == "completed" and st["status"] == "cancelled" and st["credit_ex_vat"] == 40 * 156 and g.store.q("select total from orders where id=?", (o6["id"],))[0][0] == 0, "completed: the order is cancelled and credited in full")
+ok(signed(am) and am["changes"] == [{"type": "cancelled"}] and am["order"]["confirmation_digest"] == digest({k: v for k, v in o6.items() if k != "proof"}), "the cancellation is a signed amendment that names the original confirmation")
+ok(held(o6) <= {"released"}, "the stock the order held is free again")
+ok(refused(lambda: a.request_cancel(o6["label"], "", pa, "after-6f"), "invalid_state"), "an order that is cancelled cannot be cancelled again")
+ok(refused(lambda: a.request_cancel(o5["label"], "", pb, "after-6g"), "not_found"), "another account cannot cancel this account's order")
+ok(refused(lambda: a.request_cancel(o5["label"], "", None, "after-6h"), "mandate_required"), "no mandate, no cancellation")
+cut = a.cutoff(o5)
+after_mod.FREEZE_NOW = cut.isoformat()
+ok(refused(lambda: a.request_cancel(o5["label"], "", pa, "after-6i"), "cutoff_passed") and a.state(o5)["status"] == "confirmed", "at the order's cut-off the answer is no and nothing changes")
+after_mod.FREEZE_NOW = ""
+
 # ------------------------------------------------------------------ the record
 print("\nThe record")
 chain = g.store.verify_chain()

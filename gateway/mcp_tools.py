@@ -31,6 +31,8 @@ Flow: list_order_issues -> resolve_order_issue -> complete_checkout.
 - resolve_order_issue returns a checkout that changes the order. Finish it exactly like an order: ready_for_complete = call complete_checkout;
   requires_escalation = a person must approve at continue_url first, then call complete_checkout. Nothing changes on the order until complete_checkout succeeds.
 - A recall cannot be declined: the lot is replaced or credited, never kept.
+- The buyer may ask to cancel a placed order: cancel_order, until the order's own ordering cut-off. It returns a checkout that cancels the order and is finished
+  like any other. Never cancel an order the buyer did not ask to cancel.
 - While an issue is open the affected product cannot be ordered again for that day, so do not try to get around a notice with a new order.
 Valio Aimo's own agent may also make proposals to this account: a standing order that has drifted from use, short-dated stock at a markdown, the standing order that is not placed yet before the cut-off,
 a replacement for a product about to run short, or filling a part case. They work for Valio Aimo, not for the buyer.
@@ -170,6 +172,15 @@ def build(g: Gateway) -> MCPServer:
     async def resolve_order_issue(ctx: Context, id: str, option: str, rationale: str = "") -> CallToolResult:
         p, tr = who(ctx)
         return chat.result(g, "resolve_order_issue", await guard(lambda: g.after.resolve(id, option, rationale, p, tr)))
+
+    @srv.tool(meta=chat.TOOL_META, description="Ask Valio Aimo to cancel a placed order. Only when the buyer said so in so many words. order: the order id or its number (VA-AG-...). reason: the buyer's reason, if given. "
+                          "Possible until the order's own ordering cut-off; after that it is refused with the time the cut-off passed. Returns a signed checkout that cancels the whole order and credits it: "
+                          "if its status is ready_for_complete, call complete_checkout with its id to make the cancellation final; if requires_escalation, a person must approve at continue_url first. "
+                          "Nothing changes on the order until complete_checkout succeeds. It ends as a signed amendment; the original confirmation is never altered. "
+                          "A placed order cannot be changed line by line: cancel it and place a new one.")
+    async def cancel_order(ctx: Context, order: str, reason: str = "") -> CallToolResult:
+        p, tr = who(ctx)
+        return chat.result(g, "cancel_order", await guard(lambda: g.after.request_cancel(order, reason, p, tr)))
 
     @srv.tool(meta=chat.TOOL_META, description="List proposals from Valio Aimo's own agent to this account: each has kind, title, reason, basis (the numbers behind it), line_items, total_ex_vat, extra_ex_vat "
                           "and authority (agent_may_accept = you may accept alone under the buyer's mandate; needs_human_approval = accepting sends it to a person). Signed by Valio Aimo.")

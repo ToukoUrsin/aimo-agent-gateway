@@ -76,7 +76,7 @@ COOK = re.compile(r"cooking|ruoka|matlag|imat")
 def _allergy(en: str, fi: str) -> str:
     """How a note rules an allergen out: "peanut allergy", "nut-free", "no nuts", "allergic to sesame", "pähkinätön", "maapähkinäallergia"."""
     return (rf"\b(?:{en})s?[- ]?(?:free|allerg\w*|intoleran\w*)|\b(?:no|without|avoid\w*|allergic to|allerg\w* to|allerg\w*:)\s*(?:{en})s?\b"
-            rf"|(?:{fi})(?:ton|tto\w*|allergi\w*)\b|\b(?:ei|ilman)\s+(?:{fi})\w*")
+            rf"|(?:{fi})(?:ton\w*|tto\w*|allergi\w*)\b|\b(?:ei|ilman)\s+(?:{fi})\w*")  # pähkinätön, pähkinätöntä, pähkinättömänä
 
 
 DIETS = [
@@ -808,6 +808,9 @@ def _ingredient_matches(item: str, d: dict) -> bool:
         "coffee milk": ("coffee milk", "milk", "maito", "mjolk"),
         "vegetable bouillon": ("bouillon", "stock", "liemikuutio", "kasvisliemi"),
         "rapeseed oil": ("rapeseed", "canola", "rypsi", "oil", "olje"),
+        "beef chuck": ("beef", "naudan"), "christmas ham": ("ham", "kinkku"), "porridge rice": ("porridge rice", "puuroriisi"), "pickled cucumber": ("pickled cucumber", "maustekurk"),
+        "breadcrumbs": ("breadcrumb", "korppujauho"), "gluten-free breadcrumbs": ("breadcrumb", "korppujauho"), "dark syrup": ("syrup", "siirappi"), "beef bouillon": ("bouillon", "lihaliemi"),
+        "swede": ("swede", "lanttu"), "cinnamon": ("cinnamon", "kaneli"),
     }
     terms = aliases.get(item, (item,))
     return any(all(w in text for w in fold(term).split()) for term in terms)

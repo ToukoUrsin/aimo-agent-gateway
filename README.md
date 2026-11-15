@@ -77,7 +77,8 @@ The browser test and the deck use Playwright from the film project: `cd film && 
 ```
 uv run -q python -m tests.flow       # one order end to end
 uv run -q python -m tests.need       # milk gets milk, 600 eggs are 600 eggs, "chicken" asks which
-uv run -q python -m tests.after      # short pick, delay, recall
+uv run -q python -m tests.after      # short pick, delay, recall, the customer cancels before the cut-off
+uv run -q python -m tests.stated     # an allergy the cook states is read by code, however it is worded
 uv run -q python -m tests.controls   # what an agent can see, rate limits, ledger
 uv run -q python -m tests.menu       # menu to order, a kitchen's own recipe
 uv run -q python -m tests.shop http://127.0.0.1:8642   # the shop chat, against a running gateway

@@ -79,6 +79,8 @@ FAILED = {"fi": "Jokin meni pieleen, enkä saanut tätä valmiiksi. Kokeile uude
 W = {
     "fi": {"confirm": "Vahvista tilaus", "late_ok": "Tilaa silti toimituspäivälle", "swap": "Vaihda: {x}", "day": "Siirrä päivälle {x}", "drop": "Jätä pois: {x}", "again": "Tilaa uudelleen: {x}", "usual": "Tavallinen määrä: {x}", "cancel": "Peru ostoskori",
            "placed": "Tilaus {label} on vahvistettu. Toimituspäivä {day}",
+           "amend_confirm": "Vahvista muutos", "cancel_confirm": "Vahvista peruutus", "amend_placed": "Muutos tilaukseen {label} on vahvistettu. {what}", "cancel_placed": "Tilaus {label} on peruttu. {what}",
+           "amend_off": "Muutosta ei tehty. Tilaus {label} on ennallaan.",
            "waits": "Tämä ostoskori odottaa vielä hyväksyntää, joten sitä ei voi vahvistaa. Lähetä kortin linkki hyväksyjälle.",
            "changed": "Hinta tai saatavuus muuttui sen jälkeen kun ostoskori koottiin, joten mitään ei tilattu. Tarkista päivitetty ostoskori ja vahvista uudelleen.",
            "stopped": "Valio Aimo on pysäyttänyt tilausapurin tilaukset tältä asiakasnumerolta, joten mitään ei tilattu. Kortti kertoo lisää.",
@@ -103,7 +105,8 @@ W = {
            "built_esc": "Ostoskori on koottu. Se tarvitsee hyväksynnän ennen kuin sen voi vahvistaa: lähetä kortin linkki hyväksyjälle.",
            "built_stop": "Ostoskoria ei voi tilata tällaisenaan. Kortti kertoo miksi.",
            "chg_added": "Lisätty: {x}.", "chg_removed": "Poistettu: {x}.", "chg_amount": "Määrä muutettu: {x}.", "chg_swapped": "Tuote vaihtui: {x}.", "chg_day": "Toimituspäivä on nyt {x}",
-           "chg_none": "Ostoskori ei muuttunut.", "chg_nomatch": "Ostoskorista ei löytynyt riviä sanalla ”{x}”. Kerro, mitä riviä tarkoitat.", "chg_more": "ja {n} muuta",
+           "chg_none": "Ostoskori ei muuttunut.", "chg_early": "Päivälle {a} ei voi enää tilata: aikaisin toimituspäivä on {day} Ostoskori on sille päivälle.",
+           "bad_line": "”{x}” jäi pois: määrän pitää olla suurempi kuin nolla.", "chg_budget": "Valitsin budjettiisi sopivan tuotteen: {a}, {s} (alv 0 %). {u}{b} olisi maksanut {t}.", "chg_nomatch": "Ostoskorista ei löytynyt riviä sanalla ”{x}”. Kerro, mitä riviä tarkoitat.", "chg_more": "ja {n} muuta",
            "chg_fail": "Muutosta ei voitu tehdä, joten ostoskori on ennallaan. Kokeile uudelleen.",
            "chg_short": "{a}: pyysit {asked}, mutta saatavilla on vain {got}. Ostoskorissa on se määrä; muut vaihtoehdot ovat kortin Vaihda-napin takana.",
            "chg_repl": "{a}: pyysit {asked}, mutta sitä on saatavilla vain {got}. Loput on ostoskorissa korvaavana tuotteena {sub}; kortti kertoo miksi.",
@@ -124,6 +127,8 @@ W = {
            "next_stop": "Ostoskoria ei voi tilata tällaisenaan. Kortti kertoo miksi."},
     "en": {"confirm": "Confirm the order", "late_ok": "Order anyway for", "swap": "Change to: {x}", "day": "Move to {x}", "drop": "Leave out: {x}", "again": "Order again: {x}", "usual": "The usual amount: {x}", "cancel": "Cancel the cart",
            "placed": "Order {label} is confirmed. Delivery {day}.",
+           "amend_confirm": "Confirm the change", "cancel_confirm": "Confirm the cancellation", "amend_placed": "The change to order {label} is confirmed. {what}", "cancel_placed": "Order {label} is cancelled. {what}",
+           "amend_off": "No change was made. Order {label} stands as it was.",
            "waits": "This cart is still waiting for approval, so it cannot be confirmed. Send the link on the card to the approver.",
            "changed": "The price or the stock changed after the cart was built, so nothing was ordered. Check the updated cart and confirm again.",
            "stopped": "Valio Aimo has stopped the assistant's orders for this customer number, so nothing was ordered. The card says more.",
@@ -148,7 +153,8 @@ W = {
            "built_esc": "The cart is built. It needs an approval before it can be confirmed: send the link on the card to the approver.",
            "built_stop": "This cart cannot be ordered as it is. The card says why.",
            "chg_added": "Added: {x}.", "chg_removed": "Removed: {x}.", "chg_amount": "Amount changed: {x}.", "chg_swapped": "Product changed: {x}.", "chg_day": "The delivery day is now {x}.",
-           "chg_none": "The cart did not change.", "chg_nomatch": "No line in the cart matches \"{x}\". Tell me which line you mean.", "chg_more": "and {n} more",
+           "chg_none": "The cart did not change.", "chg_early": "Delivery on {a} is no longer possible: the earliest delivery day is {day}. The cart is for that day.",
+           "bad_line": "\"{x}\" was left out: an amount has to be more than zero.", "chg_budget": "I picked the product that fits your budget: {a}, {s} ex VAT. {u}{b} would have cost {t}.", "chg_nomatch": "No line in the cart matches \"{x}\". Tell me which line you mean.", "chg_more": "and {n} more",
            "chg_fail": "The change could not be made, so the cart is as it was. Try again.",
            "chg_short": "{a}: you asked for {asked}, but only {got} can be delivered. That amount is in the cart; the other choices are behind the card's Change button.",
            "chg_repl": "{a}: you asked for {asked}, but only {got} of it can be delivered. The rest is in the cart as the replacement {sub}; the card says why.",
@@ -173,7 +179,8 @@ CHANGE_CLAIM = re.compile(r"poistettu|poistin|poistui|lisätty|lisäsin|vaihdett
                           r"|\b(?:removed|added|changed|updated|increased|raised|lowered|reduced|replaced|swapped|switched|took out|taken out|left out)\b", re.I)
 MORE = re.compile(r"(?<![\wäöå])(?:lisää|lisätään|vielä|lisäksi|more|another|extra|additional)(?![\wäöå])", re.I)
 # An allergy the person states for the kitchen rules that allergen out of every cart of the conversation. The rule engine checks it; a model's caution is not a check.
-ALLERGY_ONLY = [("milk", r"(?:maito|milk|dairy)[- ]?allerg"), ("egg", r"(?:kanan)?muna[- ]?allerg|\begg[- ]?allerg"), ("fish", r"\bkala[- ]?allerg|\bfish[- ]?allerg")]
+STATED_STEM = [("peanut", "maapahkin"), ("nut", "(?<!maa)pahkin"), ("sesame", "seesam"), ("soy", "soija"), ("milk", "maito|maido"), ("gluten", "gluteeni"), ("egg", "(?:kanan)?muna"), ("fish", "kala")]
+ALLERGY_ONLY = [("gluten", r"keliak|coeliac|celiac"), ("milk", r"(?:maito|milk|dairy)[- ]?allerg"), ("egg", r"(?:kanan)?muna[- ]?allerg|\begg[- ]?allerg"), ("fish", r"\bkala[- ]?allerg|\bfish[- ]?allerg")]
 EXCL_WORD = {"fi": {"nut": "pähkinätön", "peanut": "maapähkinätön", "sesame": "seesamiton", "soy": "soijaton", "shellfish": "äyriäisetön", "celery": "selleritön", "mustard": "sinapiton", "milk": "maidoton", "egg": "kananmunaton", "fish": "kalaton", "gluten": "gluteeniton"},
              "en": {"nut": "nut-free", "peanut": "peanut-free", "sesame": "sesame-free", "soy": "soy-free", "shellfish": "shellfish-free", "celery": "celery-free", "mustard": "mustard-free", "milk": "milk-free", "egg": "egg-free", "fish": "fish-free", "gluten": "gluten-free"}}
 
@@ -225,7 +232,13 @@ def stated_exclusions(text: str) -> list[str]:
             said.append(part)
     f = menu.fold(" . ".join(said))
     out = [k for k in menu._kinds(f) if k in menu.HARD] + [k for k, pat in ALLERGY_ONLY if re.search(pat, f)]
-    out += [k for k, pat in KITCHEN_FREE if re.search(rf"(?:keittio\w*|kitchen|koko tilau\w*|whole order)[^.]{{0,40}}?(?:{pat})|(?:{pat})\w*\s+(?:keittio|kitchen)", f)]
+    out += [k for k, pat in KITCHEN_FREE if re.search(rf"(?:keittio\w*|kitchen|koko tilau\w*|whole order|\bkaikki|\bkaiken|\beverything)[^.]{{0,40}}?(?:{pat})|(?:{pat})\w*\s+(?:keittio|kitchen)", f)]
+    # said as a ban: "ei saa sisältää maitoa", "älä laita pähkinää", "pähkinävapaa", and for the allergens with no stand-in also "pähkinät pois"
+    for k, stem in STATED_STEM:
+        if re.search(rf"\b(?:ei saa (?:sisaltaa|olla)|ei yhtaan|ala laita|alkaa laittako)\s+(?:mitaan\s+|yhtaan\s+)?(?:{stem})\w*|\b(?:{stem})\w*[- ]?vapaa\w*", f) or (k in menu.HARD and re.search(rf"\b(?:{stem})\w*\s+pois\b", f)):
+            out.append(k)
+    if "nut" in out and "peanut" in out:
+        out.remove("peanut")  # a nut note rules out peanuts already
     if re.search(r"\b(?:ei|ilman)\s+maapahkino\w*", f):
         out.append("peanut")
     elif re.search(r"\b(?:ei|ilman)\s+pahkino\w*", f):  # "ei pähkinöitä": the plural's stem is not the singular's
@@ -241,6 +254,9 @@ CLAIM_WORD = {"fi": {"FREE_FROM:LACTOSE": "laktoositon", "FREE_FROM:GLUTEN": "gl
 ASK_KIND = [("peanut", r"maapahkin|peanut"), ("nut", r"pahkin|\bnuts?\b"), ("gluten", r"gluteeni|keliaak|gluten|coeliac|celiac"), ("milk", r"\bmaito|maido|\bmilk|dairy"), ("lactose", r"laktoos|lactose"),
             ("egg", r"muna|\beggs?\b"), ("fish", r"\bkala|\bfish"), ("soy", r"soija|\bsoy"), ("sesame", r"seesam|sesame"), ("vegan", r"vegaani|vegan")]
 ASK_CODES = {**menu.EXCODES, "lactose": {"ML"}}
+RULE_KIND = {v: k for k, v in menu.DIET_WORD.items()}
+# The dietary rules under which a menu's missing main ingredient may still be asked again as a line: the ones an allergen declaration can answer. Never vegan or vegetarian.
+GAP_RULES = {r for r, k in RULE_KIND.items() if k in ASK_CODES and k != "vegan"}
 ASK_NAME = {"fi": {"peanut": "maapähkinä", "nut": "pähkinät", "gluten": "gluteeni", "milk": "maito", "lactose": "laktoosi", "egg": "kananmuna", "fish": "kala", "soy": "soija", "sesame": "seesami", "vegan": "eläinperäiset ainekset",
                    "shellfish": "äyriäiset", "celery": "selleri", "mustard": "sinappi"},
             "en": {"peanut": "peanuts", "nut": "nuts", "gluten": "gluten", "milk": "milk", "lactose": "lactose", "egg": "egg", "fish": "fish", "soy": "soy", "sesame": "sesame", "vegan": "animal products",
@@ -348,14 +364,14 @@ NUMBER_WORDS = {"yksi": 1, "yhdellä": 1, "yhden": 1, "yhdelle": 1, "one": 1, "k
                 "neljä": 4, "neljällä": 4, "four": 4, "viisi": 5, "viidellä": 5, "five": 5, "kuusi": 6, "kuudella": 6, "six": 6, "seitsemän": 7, "seven": 7, "kahdeksan": 8, "eight": 8,
                 "yhdeksän": 9, "nine": 9, "kymmenen": 10, "kymmenellä": 10, "ten": 10}
 # The recipe cards and shelf ingredients go by English names in code; the Finnish page shows these.
-DISH_FI = {"Creamy salmon soup": "Kermainen lohikeitto", "Green salad with vinaigrette": "Vihreä salaatti ja vinegretti", "Green salad": "Vihreä salaatti", "Chicken breast with thyme cream sauce": "Broilerin rintafilee ja timjamikermakastike",
+DISH_FI = {"Creamy salmon soup": "Kermainen lohikeitto", "Meat soup": "Lihakeitto", "Christmas ham": "Joulukinkku", "Carrot casserole": "Porkkanalaatikko", "Rosolli beetroot salad": "Rosolli", "Rice porridge": "Riisipuuro", "Green salad with vinaigrette": "Vihreä salaatti ja vinegretti", "Green salad": "Vihreä salaatti", "Chicken breast with thyme cream sauce": "Broilerin rintafilee ja timjamikermakastike",
            "Roasted potatoes and carrots": "Paahdetut perunat ja porkkanat", "Mushroom risotto": "Sienirisotto", "Strawberry cream cake": "Mansikkakermakakku", "Coffee and tea": "Kahvi ja tee",
            "Rye bread and butter": "Ruisleipä ja voi", "Macaroni casserole": "Makaronilaatikko", "Chicken sauce and rice": "Broilerikastike ja riisi",
            "Meatballs, mashed potatoes and brown sauce": "Lihapullat, perunamuusi ja ruskeakastike", "Pea soup": "Hernekeitto", "Oven pancake with strawberry jam": "Pannukakku ja mansikkahillo",
            "Fish fingers and boiled potatoes": "Kalapuikot ja keitetyt perunat", "Grated carrot": "Porkkanaraaste", "Crisp bread and spread": "Näkkileipä ja levite", "Milk to drink": "Ruokajuomaksi maito",
            "Scrambled eggs": "Munakokkeli", "Fried bacon": "Paistettu pekoni", "Breakfast sausages": "Aamiaismakkarat", "Oat porridge": "Kaurapuuro", "Boiled eggs": "Keitetyt kananmunat",
            "Croissants": "Croissantit", "Cheese, ham and vegetables": "Juusto, kinkku ja kasvikset", "Yoghurt, muesli and jam": "Jogurtti, mysli ja hillo", "Fresh fruit": "Tuoreet hedelmät", "Orange juice": "Appelsiinimehu"}
-ITEM_FI = {"vegan cheese": "vegaaninen juusto", "whipping cream": "vispikerma", "cooking cream": "ruokakerma", "plant whipping cream": "kasvipohjainen vispikerma", "oat cooking cream": "kauraruokakerma", "milk": "maito", "coffee milk": "kahvimaito",
+ITEM_FI = {"beef chuck": "naudan etuselkä", "christmas ham": "joulukinkku", "swede": "lanttu", "beef bouillon": "lihaliemi", "porridge rice": "puuroriisi", "pickled cucumber": "maustekurkku", "breadcrumbs": "korppujauho", "gluten-free breadcrumbs": "gluteeniton korppujauho", "dark syrup": "tumma siirappi", "cinnamon": "kaneli", "vegan cheese": "vegaaninen juusto", "whipping cream": "vispikerma", "cooking cream": "ruokakerma", "plant whipping cream": "kasvipohjainen vispikerma", "oat cooking cream": "kauraruokakerma", "milk": "maito", "coffee milk": "kahvimaito",
            "oat drink": "kaurajuoma", "butter": "voi", "margarine": "margariini", "rapeseed oil": "rypsiöljy", "olive oil": "oliiviöljy", "parmesan": "parmesaani", "grated cheese": "juustoraaste",
            "cheese slices": "juustoviipaleet", "yoghurt": "jogurtti", "egg": "kananmuna", "eggs in shell": "kananmunat", "potato": "peruna", "carrot": "porkkana", "onion": "sipuli", "leek": "purjo", "dill": "tilli",
            "lettuce": "salaatti", "cucumber": "kurkku", "tomato": "tomaatti", "mushroom": "herkkusieni", "garlic": "valkosipuli", "lemon": "sitruuna", "strawberry": "mansikka", "banana": "banaani", "apple": "omena",
@@ -434,7 +450,8 @@ What you do
   · A product that is short for the day: the cart shows a korvaava tuote from Valio Aimo's own range with the reason and the price difference, the "Vaihda" button shows the other choices, and when nothing fits the cart says so and leaves that item for the person to decide.
   · Nothing is ordered before the person presses "{confirm}" on the cart. After that the order is confirmed for its toimituspäivä and is listed under Tilaukset. A cart over what the person may order alone goes to an approver first, with the link on the card.
     This is a prototype: a confirmed order stays here and does not reach Valio Aimo's real order system.
-    A confirmed order cannot be cancelled or changed in this prototype: say that in one sentence, and that in Valio Aimo's own shop it would follow Valio Aimo's rules and cut-off times. Offer to build a new cart for what is missing.
+    A confirmed order can be cancelled as a whole until its ordering cut-off: when the person says in so many words to cancel a confirmed order, call cancel_order with its number (list_orders gives the numbers; "the order I just made" is the latest one; ask which when it is unclear). It answers with a card where the person confirms the cancellation with a button: say that in one sentence and never say the order is cancelled before they have pressed it. When it is refused because the cut-off has passed, say so with the time.
+    A confirmed order cannot be changed line by line in this prototype: say that in one sentence, and offer to cancel it and build a new cart, or to build a new cart for what is missing.
 - A product question ("onko teillä gluteenitonta pastaa", a price, an allergen): search_catalog or lookup_catalog, then one sentence.
 - A problem with a delivery (toimituspoikkeama): list_order_issues. Proposals from Valio Aimo: list_proposals; accept or decline one only when the person says so. When a proposal carries open_cart, the person already has a cart with the same products for that day: say that first, and that accepting too would order them twice.
 - Money in tool answers is in euro cents; write euros ({money}). Dates: write them as in "{day_example}", from the dates below; never work out a weekday yourself.
@@ -535,6 +552,19 @@ def system_prompt(acct: dict, lang: str) -> str:
 
 UNIT_WORD = r"(?:l|ltr|litra\w*|litre\w*|liter\w*|dl|ml|kg|kilo\w*|g|gramm\w*|kpl|pcs|pieces?|pkt|ltk|prk|tlk|plo|pss|laatikko\w*|box(?:es)?|cases?)"
 BAD_AMOUNT = re.compile(r"(?<![\w.,])(?:[-−]\d+(?:[.,]\d+)?|0+(?:[.,]0+)?)\s*" + UNIT_WORD + r"\b", re.I)
+
+
+ABOUT_ORDER = re.compile(r"VA-AG-\d|\btilauks\w*|\btilau\w*\b.*\b(?:muut|vaihd|peru|poist)|\b(?:muut|vaihd|peru|poist)\w*\b.*\btilau|\b(?:change|cancel|amend)\w*\b.*\border\b|\b(?:my|placed|confirmed) order\b", re.I)
+
+
+def bad_part(text: str, bad: str) -> tuple[str, str]:
+    """The item of a list that carries an amount no one can order ("-3 kg juustoa"), and the message without it."""
+    parts = [x for x in re.split(r"([,;\n]+|\s+(?:ja|sekä|and)\s+)", str(text or ""))]
+    for i in range(0, len(parts), 2):
+        if bad in parts[i]:
+            rest = "".join(parts[:i - 1] + parts[i + 1:]) if i else "".join(parts[2:])
+            return parts[i].strip(), rest.strip(" ,;\n")
+    return bad, ""
 
 
 def bad_amount(text: str) -> str | None:
@@ -794,7 +824,13 @@ def build(g, ctx, page) -> APIRouter:
         cust, placed = p["customer"], []
         for o in g.store.orders(30, cust):
             w = o.get("wholesale") or {}
-            placed.append({"id": o["id"], "label": o.get("label"), "placed_at": w.get("placed_at"), "delivery_date": w.get("delivery_date"), "lines": len(o.get("line_items") or []),
+            try:  # what happened after the order: an open delivery exception, a signed change or a cancellation shows on the order's own row
+                st = g.after.state(o)
+                kinds = sorted({i["kind"] for i in g.after.issues_of(o["id"]) if i["status"] in ("open", "pending")})
+                now = {"state": st["status"], "open_issues": len([k for k in kinds if k != "cancel_request"]), "kinds": [k for k in kinds if k != "cancel_request"], "cancel_pending": "cancel_request" in kinds}
+            except Exception:
+                now = {}
+            placed.append({**now, "id": o["id"], "label": o.get("label"), "placed_at": w.get("placed_at"), "delivery_date": w.get("delivery_date"), "lines": len(o.get("line_items") or []),
                            "subtotal": _amount(o.get("totals")), "total": _amount(o.get("totals"), "total"), "url": o.get("permalink_url"), "intent": w.get("intent"),
                            "approved_by": ((w.get("evidence") or {}).get("approval") or {}).get("by"),
                            "items": [{"id": l["item"]["id"], "title": l["item"].get("title"), "title_fi": fi_name(l["item"]["id"], l["item"].get("title")), "units": (l.get("wholesale") or {}).get("units"),
@@ -1149,7 +1185,7 @@ def build(g, ctx, page) -> APIRouter:
 
     def cart_public(cart: dict) -> dict:
         """The cart's notes for the page: what was asked, what stands for it, the other choices."""
-        keep = ("as_written", "query", "quantity", "unit", "usual", "usual_amount", "status", "kinds", "available_on", "why", "reasons", "chosen", "choices", "dropped", "ref", "named_miss", "no_fit", "never", "too_much", "near", "named_off", "named_none", "strict", "gap")
+        keep = ("as_written", "query", "quantity", "unit", "usual", "usual_amount", "status", "kinds", "available_on", "why", "reasons", "chosen", "choices", "dropped", "ref", "named_miss", "no_fit", "never", "too_much", "near", "named_off", "named_none", "strict", "gap", "budget_pick")
         return {"id": cart.get("id"), "day": cart["day"], "asked_day": cart.get("asked_day"), "moved": cart.get("moved"), "title": cart.get("title"), "same_as_last_week": cart.get("same_as_last_week"), "stated": cart.get("stated") or [], "no_subs": bool(cart.get("no_subs")), "budget": cart.get("budget"), "blocked": cart.get("blocked") or [],
                 "items": [{k: it[k] for k in keep if k in it} for it in cart["items"]], "menu": cart.get("menu"), "replaced": bool(cart.get("replaced"))}
 
@@ -1166,6 +1202,14 @@ def build(g, ctx, page) -> APIRouter:
         stops = [f"{x.get('title')}: {x.get('detail')}" for x in (w.get("policy") or {}).get("rules") or [] if x.get("outcome") != "pass"]
         errs = [m.get("content", "") for m in full.get("messages") or [] if m.get("type") == "error" and m.get("code") not in ("approval_required", "policy_denied")]
         out = [f"Cart {full.get('id')}: {len(full.get('line_items') or [])} lines, {money_text(_amount(full.get('totals')), lang)} ex VAT, delivery {w.get('delivery_date')} ({day_text(w.get('delivery_date'), lang)})."]
+        am = w.get("amends")
+        if am:  # not a cart: a change to an order that is already placed (a delivery problem settled, or a cancellation the person asked for)
+            out = [f"This card is a change to placed order {am.get('order_label')}: {am.get('title')}. {am.get('effect')}"]
+            if st == "ready_for_complete":
+                btn = W[lang]["cancel_confirm" if any(x.get("type") == "cancelled" for x in am.get("changes") or []) else "amend_confirm"]
+                return out[0] + f" Nothing has changed on the order yet: the person confirms it with the button \"{btn}\" on the card. Say that in one sentence, and never say it is done."
+            if st == "completed":
+                return out[0] + " It is confirmed and signed; the order confirmation shows it."
         if st == "ready_for_complete":
             out.append(f"It is ready: the person confirms it with the button \"{W[lang]['confirm']}\" on the card. Nothing is ordered yet.")
         elif st == "requires_escalation":
@@ -1234,6 +1278,12 @@ def build(g, ctx, page) -> APIRouter:
         menu_ = (cart or {}).get("menu")
         if menu_:
             tell += menu_.get("tell") or []
+        for it in (cart or {}).get("items") or []:
+            bp = it.get("budget_pick")
+            if bp and it.get("choices") and not it.get("dropped") and st not in ("completed", "canceled"):
+                ch_ = it["choices"][it.get("chosen") or 0]
+                tell.append(f"The person's budget picked the product: {ch_['lines'][0].get('title')} at {money_text(ch_.get('total'), lang)} ex VAT is on the cart, because {'the product this account orders most often' if bp.get('usual') else 'the first choice'} "
+                            f"({bp['from'].get('title')}) would have cost {money_text(bp.get('from_total'), lang)}. Say this in one sentence; the card says it too and has the button to change it.")
         over = (_amount(full.get("totals")) or 0) - round(((cart or {}).get("budget") or 0) * 100)
         if (cart or {}).get("budget") and over > 0 and st not in ("completed", "canceled"):
             tell.append(f"The person said a budget of at most {money_text(round(cart['budget'] * 100), lang)}. This cart is {money_text(_amount(full.get('totals')), lang)} ex VAT, {money_text(over, lang)} over it. "
@@ -1265,6 +1315,8 @@ def build(g, ctx, page) -> APIRouter:
         earlier = history_text(th, turn - 1)
         now = t["text"] + ("\n(The person attached a photo. For plan_menu_order pass image \"attached\".)" if t.get("image") else "")
         out = (f"This continues a conversation in the shop. So far:\n\n{earlier}\n\nThe person now writes: {now}" if earlier else f"The person now writes: {now}")
+        if t.get("skipped"):
+            out += f"\n\nThe shop left out this part of the message, because an amount has to be more than zero: \"{t['skipped']}\". Do not build it, with any amount, and do not ask about it: the shop tells the person. Build everything else they asked for."
         if partial:
             out += "\n\nIn this turn you already did:\n" + "\n".join(f"Called {st['tool']} {json.dumps(st['args'], ensure_ascii=False)[:600]} and read: {st['read'][:4500]}" for st in partial)
             out += "\nCarry on from there."
@@ -1277,7 +1329,8 @@ def build(g, ctx, page) -> APIRouter:
             if t.get("cart") and said:
                 break
             asked_only = t is not th["turns"][turn - 1] and not t.get("cart") and any(x.get("tool") in ASKING for x in t.get("steps") or [])  # a question answered on the way ("mitä tilasin viime viikolla?") is not part of the order
-            if not t.get("action") and not asked_only and not t.get("refused"):
+            placed_ = t is not th["turns"][turn - 1] and not t.get("cart") and ABOUT_ORDER.search(str(t.get("text") or ""))  # about an order already placed ("vaihda tilauksen perunat"): not a word of the next cart's request
+            if not t.get("action") and not asked_only and not placed_ and not t.get("refused"):
                 said.append(t["text"])
         return " / ".join(reversed(said))[:1000]
 
@@ -1395,11 +1448,58 @@ def build(g, ctx, page) -> APIRouter:
         cart["stated"], cart["exclude_allergens"] = sorted(set(cart.get("stated") or []) | set(kinds)), codes
         return True
 
+    def fit_budget(cart: dict, turn: int) -> None:
+        """A budget the person wrote picks the product when more than one meets the request: when the first choice would take the cart over the
+        budget and a cheaper product covers the whole amount, the cheaper one is on the cart, and the card and the chat say which it stands in
+        front of. Only for a product the person did not name, in the turn it was asked, and never on a menu's cart."""
+        b = round((cart.get("budget") or 0) * 100)
+        live = [it for it in cart["items"] if it.get("choices") and not it.get("dropped")]
+        if not b or cart.get("fixed") or not live:
+            return
+        tot = lambda it: it["choices"][it.get("chosen") or 0].get("total") or 0
+        for it in sorted(live, key=lambda it: -tot(it)):
+            if sum(tot(x) for x in live) <= b:
+                break
+            cur = it["choices"][it.get("chosen") or 0]
+            if it.get("_t") != turn or it.get("preferred_product") or it.get("budget_pick") or cur.get("substitute") or len(cur.get("lines") or []) != 1:
+                continue
+            better = [(c.get("total") or 0, i) for i, c in enumerate(it["choices"]) if (c.get("covers_pct") or 0) >= 100 and len(c.get("lines") or []) == 1 and not c.get("substitute") and 0 < (c.get("total") or 0) < tot(it)]
+            if better:
+                i = min(better)[1]
+                it["budget_pick"] = {"from": {k: cur["lines"][0].get(k) for k in ("id", "title", "title_fi")}, "from_total": cur.get("total"), "t": turn, "usual": cur.get("label") == "usual_product"}
+                it["chosen"], it["status"] = i, state_of(it["choices"][i])
+
     def amount_text(q, unit, lang: str) -> str:
         if not q:
             return ""
         n = f"{float(q):,.2f}".rstrip("0").rstrip(".").replace(",", "\u00a0" if lang == "fi" else ",")  # never "1e+06": the amount as a person writes it
         return f"{n.replace('.', ',') if lang == 'fi' else n} " + {"KG": "kg", "L": "l", "pcs": "kpl" if lang == "fi" else "pcs"}.get(str(unit), str(unit or ""))
+
+    def amend_public(full: dict, lang: str) -> dict:
+        """A change to a placed order, in the person's language, from the change's own figures: what the card and the chat say."""
+        am, fi, what, done = (full.get("wholesale") or {}).get("amends") or {}, lang == "fi", [], full.get("status") == "completed"
+        for ch in am.get("changes") or []:
+            if ch.get("type") == "cancelled":
+                what.append(("Mitään ei toimiteta." if done else "Koko tilaus perutaan, mitään ei toimiteta.") if fi else ("Nothing is delivered." if done else "The whole order is cancelled and nothing is delivered."))
+            elif ch.get("type") == "delivery_date":
+                what.append(f"Koko tilaus tulee {day_text(ch.get('to'), lang)} eikä {day_text(ch.get('from'), lang)}." if fi else f"The whole order arrives on {day_text(ch.get('to'), lang)} instead of {day_text(ch.get('from'), lang)}.")
+            elif ch.get("type") == "line_quantity":
+                name, u = (fi_name(ch.get("product"), ch.get("title")) if fi else ch.get("title")), {"L": "l", "pcs": "kpl" if fi else "pcs"}.get(str(ch.get("unit")), str(ch.get("unit") or "").lower())
+                n = lambda x: f"{float(x or 0):,.2f}".rstrip("0").rstrip(".").replace(",", "\u00a0" if fi else ",")
+                if ch.get("status") == "short":
+                    what.append(f"{name}: toimitetaan {n(ch.get('to'))} / {n(ch.get('from'))} {u}." if fi else f"{name}: {n(ch.get('to'))} of {n(ch.get('from'))} {u} are delivered.")
+                elif ch.get("status") == "recalled":
+                    what.append(f"{name}: takaisinvedetty erä poistuu tilauksesta." if fi else f"{name}: the recalled lot leaves the order.")
+                else:
+                    what.append(f"{name}: riviä ei toimiteta." if fi else f"{name}: the line is not delivered.")
+        new = [f"{float((l.get('wholesale') or {}).get('units') or l.get('quantity') or 0):g} × {fi_name(l['item']['id'], l['item'].get('title')) if fi else l['item'].get('title')}" for l in full.get("line_items") or []]
+        if new:
+            what.append(("Tilalle tulee: " if fi else "In its place: ") + ", ".join(new) + ".")
+        credit = int(am.get("credit") or 0)
+        if credit:
+            what.append(f"Hyvitys {money_text(credit, lang)} (alv 0 %)." if fi else f"Credit {money_text(credit, lang)} ex VAT.")
+        return {"order": am.get("order_label"), "option": am.get("option"), "kind": am.get("kind"), "cancel": any(x.get("type") == "cancelled" for x in am.get("changes") or []),
+                "what": what, "credit": credit, "credit_total": credit + int(am.get("credit_tax") or 0), "goods": bool(new)}
 
     def snap(cart: dict | None, lang: str) -> dict:
         """What a cart holds, line by line: for saying in code what a change changed."""
@@ -1472,6 +1572,15 @@ def build(g, ctx, page) -> APIRouter:
                        + (" " + L["off_near"] if it.get("near") and it.get("kinds") else ""))
             if (it.get("_stays") or {}).get("t") == T.turn:
                 out.append(L["chg_stays"].format(x=it["_stays"]["x"], q=it["_stays"]["q"]))
+        for it in cart["items"]:
+            bp = it.get("budget_pick") or {}
+            if bp.get("t") == T.turn and it.get("choices") and not it.get("dropped"):
+                ch_ = it["choices"][it.get("chosen") or 0]
+                out.append(L["chg_budget"].format(a=name_of(str(ch_["lines"][0]["id"]), ch_["lines"][0].get("title"), lang), s=money_text(ch_.get("total"), lang), b=name_of(str(bp["from"]["id"]), bp["from"].get("title"), lang), t=money_text(bp.get("from_total"), lang),
+                                                  u=("" if not bp.get("usual") else "Useimmin tilaamasi " if lang == "fi" else "The one you order most often, ")))
+        early = T.rec.pop("early", None)
+        if early:
+            out.insert(0, L["chg_early"].format(a=day_text(early, lang), day=day_text(cart["day"], lang)))
         if not out:
             out.append(L["chg_none"])
             T.rec["nochange"] = True
@@ -1615,8 +1724,13 @@ def build(g, ctx, page) -> APIRouter:
         before, day0 = (snap(old, T.lang), old["day"]) if old else (None, None)
         if old:
             cart = old
-            if asked_day and g._day(asked_day) != cart["day"]:  # a new day: everything on the cart is planned again for it
-                cart.update({"asked_day": g._day(asked_day), "day": max(g._day(asked_day), first), "moved": None})
+            early = g._day(asked_day) if asked_day and g._day(asked_day) < first else None
+            if early:  # "jo tänään": a day before the first one that can be delivered. The shop says so; the question is never passed over
+                T.rec["early"] = early
+            if early and cart["day"] == first:
+                cart.update({"asked_day": early, "moved": {"from": early, "to": first}})  # the cart already stands on the first day: nothing to plan again
+            elif asked_day and g._day(asked_day) != cart["day"]:  # a new day: everything on the cart is planned again for it
+                cart.update({"asked_day": g._day(asked_day), "day": max(g._day(asked_day), first), "moved": {"from": early, "to": first} if early else None})
                 again = [norm(x) | {"usual": x.get("usual"), "ref": x.get("ref")} for x in cart["items"] if not x.get("dropped") and x.get("status") not in ("which_kind", "ask_amount")]
                 cart["items"] = []
                 await plan_cart(cart, again, T.p, T.tr)
@@ -1675,7 +1789,8 @@ def build(g, ctx, page) -> APIRouter:
                 # The product on the line stays the product: a new amount never changes the brand, the pack or fresh to frozen without saying so.
                 # When there is not enough of it, the planner offers a replacement, and the card shows that as a replacement with its reason.
                 on_line = str(y["choices"][y.get("chosen") or 0]["lines"][0]["id"]) if y.get("choices") else None
-                x.update({"query": y["query"], "as_written": y.get("as_written") or x["as_written"], "preferred_product": x["preferred_product"] or y.get("preferred_product") or on_line, "claims": x["claims"] or y.get("claims") or []})
+                now_ = x["quantity"] and x["quantity"] != y.get("quantity") and re.search(r"\d", str(x.get("as_written") or ""))  # a new amount in the person's own words: the card quotes those, not the amount it took the place of
+                x.update({"query": y["query"], "as_written": (x["as_written"] if now_ else None) or y.get("as_written") or x["as_written"], "preferred_product": x["preferred_product"] or y.get("preferred_product") or on_line, "claims": x["claims"] or y.get("claims") or []})
             if not x["quantity"]:  # another variety, the amount stays
                 x["quantity"], x["unit"] = y.get("quantity"), y.get("unit")
             elif not x["unit"]:
@@ -1732,6 +1847,7 @@ def build(g, ctx, page) -> APIRouter:
         try:
             if items:
                 await plan_cart(cart, items, T.p, T.tr)
+                fit_budget(cart, T.turn)
                 for it in cart["items"]:
                     ids = it.pop("_takes", None)
                     if ids and it.get("choices") and not it.get("dropped"):
@@ -1808,6 +1924,10 @@ def build(g, ctx, page) -> APIRouter:
                 return "The hold had expired and the fresh cart differs or cannot be ordered alone. " + read, L["stopped" if switched_off(cur) else "changed"]
         if cur.get("status") == "requires_escalation":
             return "The cart still waits for an approver; nothing was ordered.", L["waits"]
+        am = (cur.get("wholesale") or {}).get("amends")  # a change to a placed order, not a cart
+        if cur.get("status") == "completed" and am:
+            a = amend_public(cur, T.lang)
+            return f"The change to order {a['order']} is already confirmed.", L["cancel_placed" if a["cancel"] else "amend_placed"].format(label=a["order"], what=" ".join(a["what"]))
         if cur.get("status") == "completed":
             return f"Already confirmed as order {(cur.get('order') or {}).get('label')}.", L["placed"].format(label=(cur.get("order") or {}).get("label"), day=day_text((cur.get("wholesale") or {}).get("delivery_date"), T.lang))
         if cur.get("status") != "ready_for_complete":
@@ -1821,15 +1941,21 @@ def build(g, ctx, page) -> APIRouter:
             g.store.log(T.tr, f"human:{T.p.get('buyer_name')} (in the shop)", "labels_read", f"The person in the shop ticked on the cart that they had read the labels of {len(blank)} product{'s' if len(blank) != 1 else ''} whose manufacturer declared no allergens: "
                         + "; ".join(f"{u['title']} ({u.get('what')})" for u in blank[:12]) + (f" and {len(blank) - 12} more" if len(blank) > 12 else "") + ". The rule engine could not check them; the tick is this person's word.",
                         {"checkout": cid, "products": [u["id"] for u in blank]}, cid=str(cid), acct=T.p.get("customer"))
-        g.store.log(T.tr, f"human:{T.p.get('buyer_name')} (in the shop)", "confirmed", "The person in the shop " + ("pressed Vahvista tilaus on the cart" if by_button else "told the assistant to confirm the cart they had seen")
-                    + " in the shop chat. The shop assistant places the order on that word, signing the exact offer with its own key.", {"checkout": cid, "by": "button" if by_button else "typed"}, cid=str(cid), acct=T.p.get("customer"))
+        g.store.log(T.tr, f"human:{T.p.get('buyer_name')} (in the shop)", "confirmed", "The person in the shop " + ((f"pressed the confirm button on the card that changes order {am.get('order_label')}" if by_button else f"told the assistant to confirm the change to order {am.get('order_label')} they had seen") if am else
+                                                                                                                         ("pressed Vahvista tilaus on the cart" if by_button else "told the assistant to confirm the cart they had seen"))
+                    + (" in the shop chat. The shop assistant makes the change on that word, signing the exact offer with its own key." if am else " in the shop chat. The shop assistant places the order on that word, signing the exact offer with its own key."), {"checkout": cid, "by": "button" if by_button else "typed"}, cid=str(cid), acct=T.p.get("customer"))
         args = {"id": str(cid), "checkout_mandate": g.agent_proof(cur, T.mandate)}
         res, ms = await T.call("complete_checkout", args)
         full = full_of(res)
         if cart:
             (res.setdefault("_meta", {})).setdefault(META, {})["cart"] = cart_public(cart)
+        if am and is_checkout(full):
+            (res.setdefault("_meta", {})).setdefault(META, {})["amend"] = amend_public(full, T.lang)
         T.show("complete_checkout", {"id": str(cid)}, res, ms)
         T.state = full.get("status")
+        if full.get("status") == "completed" and am:
+            a = amend_public(full, T.lang)
+            return f"The change to order {a['order']} is confirmed and signed: {am.get('title')}. {am.get('effect')}", L["cancel_placed" if a["cancel"] else "amend_placed"].format(label=a["order"], what=" ".join(a["what"]))
         if full.get("status") == "completed":
             label, day = (full.get("order") or {}).get("label"), (full.get("wholesale") or {}).get("delivery_date")
             return f"Order {label} is confirmed, {money_text(_amount(full.get('totals')), T.lang)} ex VAT, delivery {day}.", L["placed"].format(label=label, day=day_text(day, T.lang))
@@ -1963,7 +2089,7 @@ def build(g, ctx, page) -> APIRouter:
         whole = [k for k in stated if set(menu.EXCODES.get(k) or ["?"]) <= set(cart["exclude_allergens"])]
         cart["per_guest"] = [k for k in stated if k not in whole]
         gaps = [x for x in cart["menu"]["not_ordered"] if x.get("kind") in ("no_fit", "not_in_range") and x.get("need") and x.get("unit") in ("g", "ml")
-                and not x.get("portions") and not x.get("whole") and not x.get("diet") and set(x.get("rules") or []) <= {"lactose-free"}][:3]
+                and not x.get("portions") and not x.get("whole") and not x.get("diet") and set(x.get("rules") or []) <= GAP_RULES][:3]
         if gaps:
             asked = [norm({"query": x["item"], "as_written": (x.get("fi") if T.lang == "fi" else None) or x["item"], "quantity": math.ceil(x["need"] / 100 - 1e-9) / 10, "unit": "kg" if x["unit"] == "g" else "l"})
                      | {"_t": T.turn, "gap": x["item"]} for x in gaps]
@@ -1975,6 +2101,9 @@ def build(g, ctx, page) -> APIRouter:
                 x = next((x for x in gaps if x["item"] == it.get("gap")), None)
                 ids_ = [str(l["id"]) for l in it["choices"][it.get("chosen") or 0]["lines"]] if it.get("choices") else []
                 milk = x and "lactose-free" in (x.get("rules") or []) and any({"AM", "ML"} & set((g.cat.get(i) or {}).get("contains") or []) and not any("LACTOSE" in str(c) for c in (g.cat.get(i) or {}).get("claims") or []) for i in ids_)
+                # a kitchen-wide rule (gluten-free, nut-free): the product that stands in is read against the manufacturer's declaration, contains and may contain
+                codes = set().union(*(ASK_CODES.get(RULE_KIND.get(r), set()) for r in (x.get("rules") or []) if r != "lactose-free")) if x else set()
+                milk = milk or bool(codes and any(allergen_hits(codes, list((g.cat.get(i) or {}).get("contains") or []) + list((g.cat.get(i) or {}).get("may_contain") or []), (g.cat.get(i) or {}).get("claims")) for i in ids_))
                 if not x or milk or not (it.get("choices") or (it.get("near") and it.get("kinds")) or it.get("status") == "which_kind"):
                     cart["items"] = [y for y in cart["items"] if y is not it]  # nothing to offer for it: the menu's own note stands
                 else:
@@ -2011,6 +2140,9 @@ def build(g, ctx, page) -> APIRouter:
         rec = T.rec
         try:
             bad = bad_amount(rec.get("text"))
+            part, rest = bad_part(rec.get("text"), bad) if bad else ("", "")
+            if bad and re.search(r"\d", rest) and not bad_amount(rest):
+                rec["skipped"], bad = part, None  # one line of a list: that line is left out and said, the rest of the message is built
             if bad:  # checked in code, before any model reads it: a negative or zero amount builds nothing
                 text = W[lang]["bad_amount"].format(x=bad)
                 rec["refused"] = True  # nothing was built from this message: it is not part of any later cart's request
@@ -2065,8 +2197,10 @@ def build(g, ctx, page) -> APIRouter:
                             cart = cart_of(full["id"])
                             if cart:
                                 (res.setdefault("_meta", {})).setdefault(META, {})["cart"] = cart_public(cart)
+                            if (full.get("wholesale") or {}).get("amends"):  # a change to a placed order: the card says so in the person's language
+                                (res.setdefault("_meta", {})).setdefault(META, {})["amend"] = amend_public(full, lang)
                             T.state = full.get("status")
-                            if name in ("answer_proposal", "resolve_order_issue"):
+                            if name in ("answer_proposal", "resolve_order_issue", "cancel_order"):
                                 rec["cart"] = full["id"]  # made in this turn: the person confirms it on the card, never the model in the same breath
                         shown = T.show(name, args, res, ms)
                         read = cart_read(cart_of(full["id"]), full, lang) if is_checkout(full) else "".join(x.get("text", "") for x in res.get("content") or [] if x.get("type") == "text")[:14000]
@@ -2128,6 +2262,8 @@ def build(g, ctx, page) -> APIRouter:
                         g.store.log(T.tr, f"agent:{th['slug']}/{AGENT}", "corrected", "The model's sentence said the order was placed when it was not. The shop replaced it with the cart's real state.", {"state": T.state}, acct=T.p.get("customer"))
                     if OUTSIDE.search(fold(str(rec.get("text") or ""))) and W[lang]["outside"] not in text:
                         text = (text + " " + W[lang]["outside"]).strip()
+                    if rec.get("skipped"):
+                        text = (W[lang]["bad_line"].format(x=rec["skipped"]) + " " + text).strip()
                     rec["answer"] = text
                     if text:
                         emit(th, {"turn": turn, "type": "text", "text": text})
@@ -2178,6 +2314,17 @@ def build(g, ctx, page) -> APIRouter:
                     read, full = await put_cart(T, cart, started)
                     T.step("order_again", {"product": d["id"]}, read)
                     T.say(L["built_esc" if T.state == "requires_escalation" else "built_stop" if T.state != "ready_for_complete" else "built"])
+            elif kind_ == "cancel" and not cart_of(cid):  # the card of a change to a placed order: leaving it leaves the order as it was
+                cur = await asyncio.to_thread(g.get_checkout, cid, T.p)
+                am = (cur.get("wholesale") or {}).get("amends")
+                if not am or cur.get("status") in ("completed", "canceled"):
+                    raise Stop(L["gone"])
+                res, ms = await T.call("cancel_checkout", {"id": cid})
+                if is_checkout(full_of(res)):
+                    (res.setdefault("_meta", {})).setdefault(META, {})["amend"] = amend_public(full_of(res), lang)
+                T.show("cancel_checkout", {"id": cid}, res, ms)
+                T.step("cancel", {"cart": cid}, f"The change to order {am.get('order_label')} was dropped; the order stands as it was.")
+                T.say(L["amend_off"].format(label=am.get("order_label")))
             elif kind_ in ("swap", "drop", "day", "cancel", "kind", "usual"):
                 cart = cart_of(cid)
                 cur = await asyncio.to_thread(g.get_checkout, cid, T.p) if cart else None

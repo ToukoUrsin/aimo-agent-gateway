@@ -298,6 +298,9 @@ const T = {
     tabmsg: { proposals: "Onko Valio Aimolla ehdotuksia?", issues: "Onko toimituksissa poikkeamia?" },
     c: { built: "Ostoskori koottu", placed: "Vahvistettu tilaus", canceled: "Ostoskori peruttu", replaced: "Korvattu uudella ostoskorilla", stopped: "Ostoskoria ei voi tilata", waiting: "odottaa hyväksyntää", lines: n => `${n} ${n === 1 ? "rivi" : "riviä"}`,
       day: "Toimituspäivä", ex: "Ostokset (alv\u00a00\u00a0%)", inc: "Yhteensä (sis. alv)", confirm: "Vahvista tilaus", rows: n => `Näytä rivit (${n})`, rows_hide: "Piilota rivit", checks: "Näytä tarkistukset", checks_hide: "Piilota tarkistukset",
+      am_h: o => `Muutos tilaukseen ${o}`, am_cancel_h: o => `Tilauksen ${o} peruutus`, am_done: o => `Muutos vahvistettu: tilaus ${o}`, am_cancelled: o => `Tilaus ${o} on peruttu`, am_off: o => `Muutosta ei tehty: tilaus ${o} on ennallaan`,
+      am_credit: "Hyvitys (alv\u00a00\u00a0%)", am_credit_inc: "Hyvitys (sis. alv)", am_goods: "Uudet tuotteet (alv\u00a00\u00a0%)", am_confirm: "Vahvista muutos", am_confirm_cancel: "Vahvista peruutus", am_keep: "Älä muuta tilausta",
+      am_note: "Mikään ei muutu ennen kuin vahvistat. Alkuperäinen tilausvahvistus säilyy; muutos allekirjoitetaan sen rinnalle.",
       cancel: "Peru ostoskori", record: "Näytä tilausvahvistus", swap: "Vaihda", swap_hide: "Sulje", subst: "Korvaava tuote:", for_: n => `korvaa tuotteen ${n}`, contract: "sopimushinta", list: "listahinta",
       tier: { best: "vastaavuus: paras", better: "vastaavuus: parempi", good: "vastaavuus: hyvä" }, per: (p, u) => `${p > 0 ? "+" : "−"}${Math.abs(Math.round(p))} %/${u}`,
       short: "Ei tarpeeksi saatavuutta:", short_only: (a, b, u) => `Ei tarpeeksi saatavuutta, määrä muutettu: ${a} / ${b} ${u}.`, only: (a, u) => `Vain saatavilla oleva määrä: ${a} ${u}`,
@@ -307,7 +310,8 @@ const T = {
     diff_h: "Poikkeaa siitä, mitä pyysit:", d_part: (a, x) => `${a}: osa korvattu tuotteella ${x}`, d_other: (a, x) => `${a}: tilalla ${x}`, d_more: (a, n, u) => `${a}: pakkauskoon vuoksi ${n} ${u}`, d_menu: n => n === 1 ? "menussa 1 korvaava tuote" : `menussa ${n} korvaavaa tuotetta`,
     pack_more: (per, n, tot) => `myydään ${per} kpl:n pakkauksissa, joten ostoskorissa on ${n} pakkausta eli ${tot} kpl.`,
     less_q: x => `Ostoskorissa on vähemmän kuin pyysit: ${x}. Loppua ei tilata.`, over_budget: (b, s, o) => `Sanoit budjetiksi enintään ${b}. Ostoskori on ${s} (alv\u00a00\u00a0%), eli ${o} yli.`,
-    blocked_stock: (n, can, asked, u) => `${n}: toimituspäivälle saa vain ${can} ${u}, ostoskorissa on ${asked} ${u}. Pienennä määrää tai vaihda tuote.`, blocked_line: n => `${n}: ei voi toimittaa tälle toimituspäivälle. Poista tai vaihda se.`,
+    budget_pick: (a, s, b, t, u) => `Valittu budjettiisi sopiva tuote: ${a}, ${s} (alv\u00a00\u00a0%). ${u ? "Useimmin tilaamasi " : ""}${b} olisi maksanut ${t}. Voit vaihtaa sen riviltä.`,
+    blocked_stock: (n, can, asked, u) => `${n}: toimituspäivälle saa vain ${can} ${u}, ostoskorissa on ${asked} ${u}. Pienennä määrää tai vaihda tuote.`, blocked_rule: n => `Tuote: ${n}.`, blocked_line: n => `${n}: ei voi toimittaa tälle toimituspäivälle. Poista tai vaihda se.`,
     left_out: a => `${a}: ei ostoskorissa.`, open_q: (n, x) => n === 1 ? `Yksi pyytämäsi tuote ei ole ostoskorissa: ${x}. Tilaus vahvistetaan ilman sitä.` : `${n} pyytämääsi tuotetta ei ole ostoskorissa: ${x}. Tilaus vahvistetaan ilman niitä.`,
     usual_tag: "tilaat tätä useimmin", usual_why: "Ostoskorissa on tuote, jota tämä asiakasnumero tilaa useimmin.", before: (ev, d) => `Tilaisuus on ${ev} Toimitus on sitä edeltävänä toimituspäivänä ${d}`,
     named_any: n => `tuotetta nimellä ”${n}”`, no_subs: "Pyysit: ei korvaavia tuotteita. Ostoskorissa on vain se, mitä pyysit.", strict_tail: " Pyysit, ettei korvaavia tuotteita laiteta.",
@@ -355,7 +359,7 @@ const T = {
       unit: { piece: "kpl", kg: "kg", case: "ltk", pack: "pkt", bag: "ps", box: "ltk", jar: "prk", bottle: "plo", sack: "säkki", carton: "tlk", roll: "rll", L: "l", KG: "kg", pcs: "kpl" },
       opt: { usual_product: "tavallinen tuotteesi", lowest_price: "edullisin", bigger_pack: "isompi pakkaus, halvempi yhteensä", most_reliable: "varmin toimitus", finnish_origin: "kotimainen", as_requested: "pyytämäsi", needs: "tarvitsee hyväksynnän", no: "ei sallittu" } },
     o: { h: "Tilaukset", lede: "Tilausapurilla vahvistetut tilaukset. Voit myös kysyä apurilta: missä tilaukseni on?", none: "Ei vielä tilausapurilla vahvistettuja tilauksia.", placed: "Vahvistetut tilaukset", last: "Viime viikon tilaus",
-      sample: "Esimerkkidataa: tämän prototyypin tilaushistoria on keksitty.", same: "Sama kuin viime viikolla", issues: "Onko toimituksissa poikkeamia?", conf: "Tilausvahvistus", by: n => `Hyväksynyt: ${n}`, wait_n: n => `${n} odottaa hyväksyntää`,
+      sample: "Esimerkkidataa: tämän prototyypin tilaushistoria on keksitty.", same: "Sama kuin viime viikolla", issues: "Onko toimituksissa poikkeamia?", exc_open: "Toimituksessa on poikkeama:", exc_kind: { short_pick: "tuotetta ei riitä koko määrälle", delay: "toimitus myöhästyy", recall: "takaisinveto" }, exc_see: "Katso ja päätä", exc_amended: "Tilausta on muutettu vahvistuksen jälkeen. Muutos näkyy tilausvahvistuksessa.", exc_cancelled: "Tilaus on peruttu. Peruutus näkyy tilausvahvistuksessa.", exc_cancel_wait: "Tilauksen peruutus odottaa vahvistusta.", conf: "Tilausvahvistus", by: n => `Hyväksynyt: ${n}`, wait_n: n => `${n} odottaa hyväksyntää`,
       ah: "Hyväksynnät", alede: "Tilaukset, jotka ylittävät sen, mitä saat tilata yksin. Hyväksyjä päättää omalla laitteellaan.", anone: "Ei hyväksyntää odottavia tilauksia.", why: { B1: "Tilaus ylittää summan, jonka saat tilata yksin.", B2: "Viikon tilaukset ylittävät summan, jonka saat tilata yksin." }, wait: "Odottaa hyväksyntää", ok: "Hyväksytty, vahvista tilaus", load: "Haetaan…", fail: "Tilauksia ei saatu haettua." } },
   en: { banner: "How this would work in the Valio Aimo web shop. A prototype on Valio Aimo's challenge data. Not a Valio Aimo system.", portal: "Web shop", minun: "Order assistant prototype, Junction 2026", custno: "Customer number", search: "Search products or ask the order assistant",
     t_order: "Order", t_shelf: "Often bought", t_orders: "Orders", t_props: "Proposals", t_appr: "Approvals",
@@ -373,6 +377,9 @@ const T = {
     tabmsg: { proposals: "Does Valio Aimo have any proposals for us?", issues: "Is there any problem with our deliveries?" },
     c: { built: "Cart built", placed: "Confirmed order", canceled: "Cart cancelled", replaced: "Replaced by a newer cart", stopped: "This cart cannot be ordered", waiting: "waiting for approval", lines: n => `${n} ${n === 1 ? "line" : "lines"}`,
       day: "Delivery day", ex: "Subtotal (ex VAT)", inc: "Total (incl. VAT)", confirm: "Confirm the order", rows: n => `Show the lines (${n})`, rows_hide: "Hide the lines", checks: "Show the checks", checks_hide: "Hide the checks",
+      am_h: o => `Change to order ${o}`, am_cancel_h: o => `Cancelling order ${o}`, am_done: o => `Change confirmed: order ${o}`, am_cancelled: o => `Order ${o} is cancelled`, am_off: o => `No change was made: order ${o} stands`,
+      am_credit: "Credit (ex VAT)", am_credit_inc: "Credit (incl. VAT)", am_goods: "New goods (ex VAT)", am_confirm: "Confirm the change", am_confirm_cancel: "Confirm the cancellation", am_keep: "Leave the order as it is",
+      am_note: "Nothing changes until you confirm. The original order confirmation stays; the change is signed next to it.",
       cancel: "Cancel the cart", record: "Show the order confirmation", swap: "Change", swap_hide: "Close", subst: "Replacement:", for_: n => `replaces ${n}`, contract: "contract price", list: "list price",
       tier: { best: "match: best", better: "match: better", good: "match: good" }, per: (p, u) => `${p > 0 ? "+" : "−"}${Math.abs(Math.round(p))}%/${u}`,
       short: "Not enough stock:", short_only: (a, b, u) => `Not enough stock, amount changed: ${a} of ${b} ${u}.`, only: (a, u) => `Only what is in stock: ${a} ${u}`,
@@ -382,7 +389,8 @@ const T = {
     diff_h: "Differs from what you asked:", d_part: (a, x) => `${a}: part replaced with ${x}`, d_other: (a, x) => `${a}: ${x} in its place`, d_more: (a, n, u) => `${a}: ${n} ${u} because of the pack size`, d_menu: n => n === 1 ? "1 replacement product in the menu" : `${n} replacement products in the menu`,
     pack_more: (per, n, tot) => `sold in packs of ${per}, so the cart has ${n} packs, which is ${tot} pieces.`,
     less_q: x => `Less in the cart than you asked for: ${x}. The rest is not ordered.`, over_budget: (b, s, o) => `You said a budget of at most ${b}. The cart is ${s} ex VAT, ${o} over.`,
-    blocked_stock: (n, can, asked, u) => `${n}: only ${can} ${u} can come on the delivery day, and the cart has ${asked} ${u}. Lower the amount or change the product.`, blocked_line: n => `${n}: cannot be delivered on this delivery day. Remove it or change it.`,
+    budget_pick: (a, s, b, t, u) => `Picked to fit your budget: ${a}, ${s} ex VAT. ${u ? "The one you order most often, " : ""}${b} would have cost ${t}. You can change it on the line.`,
+    blocked_stock: (n, can, asked, u) => `${n}: only ${can} ${u} can come on the delivery day, and the cart has ${asked} ${u}. Lower the amount or change the product.`, blocked_rule: n => `The product: ${n}.`, blocked_line: n => `${n}: cannot be delivered on this delivery day. Remove it or change it.`,
     left_out: a => `${a}: not in the cart.`, open_q: (n, x) => n === 1 ? `One thing you asked for is not in the cart: ${x}. The order is confirmed without it.` : `${n} things you asked for are not in the cart: ${x}. The order is confirmed without them.`,
     usual_tag: "what you order most often", usual_why: "The cart has the product this customer number orders most often.", before: (ev, d) => `The event is on ${ev}. Delivery is on the delivery day before it, ${d}.`,
     named_any: n => `a product called “${n}”`, no_subs: "You asked for no substitutes. The cart has only what you asked for.", strict_tail: " You asked for no substitutes.",
@@ -426,7 +434,7 @@ const T = {
       unit: { piece: "pcs", kg: "kg", case: "case", pack: "pack", bag: "bag", box: "box", jar: "jar", bottle: "bottle", sack: "sack", carton: "carton", roll: "roll", L: "L", KG: "kg", pcs: "pcs" },
       opt: { usual_product: "your usual product", lowest_price: "lowest price", bigger_pack: "bigger pack, less in total", most_reliable: "most reliable delivery", finnish_origin: "Finnish", as_requested: "as you asked", needs: "needs approval", no: "not allowed" } },
     o: { h: "Orders", lede: "Orders confirmed with the order assistant. You can also ask it: where is my order?", none: "No orders confirmed with the assistant yet.", placed: "Confirmed orders", last: "Last week's order",
-      sample: "Sample data: this prototype's order history is invented.", same: "Same as last week", issues: "Is there any problem with our deliveries?", conf: "Order confirmation", by: n => `Approved by ${n}`, wait_n: n => `${n} waiting for approval`,
+      sample: "Sample data: this prototype's order history is invented.", same: "Same as last week", issues: "Is there any problem with our deliveries?", exc_open: "There is a delivery exception:", exc_kind: { short_pick: "not enough of a product for the full amount", delay: "the delivery is late", recall: "recall" }, exc_see: "See it and decide", exc_amended: "The order was changed after it was confirmed. The change is on the order confirmation.", exc_cancelled: "The order is cancelled. The cancellation is on the order confirmation.", exc_cancel_wait: "The cancellation of this order waits to be confirmed.", conf: "Order confirmation", by: n => `Approved by ${n}`, wait_n: n => `${n} waiting for approval`,
       ah: "Approvals", alede: "Orders over what you may order alone. The approver decides on their own device.", anone: "No orders waiting for approval.", why: { B1: "The order is over what you may order alone.", B2: "This week's orders are over what you may order alone." }, wait: "Waiting for approval", ok: "Approved, confirm the order", load: "Loading…", fail: "Could not load the orders." } },
 };
 // Review mode: the shop opened from its review link (/shop?demo=1). The server keeps the switch; only then does a cart that waits for an approver offer the approver's view on this same device.
@@ -833,7 +841,7 @@ function render(S) {
   const openQ = c ? (c.items || []).filter(it => !it.dropped && !it.choices) : [];  // asked for and not in the cart: said once more right at the button
   const lessQ = c ? (c.items || []).filter(it => !it.dropped && it.choices && it.status === "short") : [];  // in the cart, but less of it than asked
   const subC = amount(d.totals, "subtotal") || 0, overB = c && c.budget && subC > Math.round(c.budget * 100) ? subC - Math.round(c.budget * 100) : 0;
-  const blockedWhy = ((c && c.blocked) || []).map(b => { const n = lang === "fi" ? b.title_fi || b.title : b.title; return b.code === "insufficient_stock" && b.can != null ? L.blocked_stock(n, num(b.can), num(b.asked), unitS(b.unit)) : L.blocked_line(n); });
+  const blockedWhy = ((c && c.blocked) || []).map(b => { const n = lang === "fi" ? b.title_fi || b.title : b.title; return b.code === "insufficient_stock" && b.can != null ? L.blocked_stock(n, num(b.can), num(b.asked), unitS(b.unit)) : b.code === "policy_denied" ? L.blocked_rule(n) : L.blocked_line(n); });
   // Every line where the cart is not what was asked is named once more right at the button: another product, part of it replaced, more because of the pack.
   const nmL = l => lang === "fi" ? l.title_fi || l.title : l.title;
   const otherQ = !c ? [] : (c.items || []).filter(it => !it.dropped && it.choices).flatMap(it => {
@@ -849,22 +857,27 @@ function render(S) {
     const it = solo[0], i = c.items.indexOf(it), k = it.choices.findIndex((x, j) => j !== (it.chosen || 0) && x.decision === "agent_may_order" && (x.covers_pct ?? 100) >= 100);
     if (k >= 0) cheaper = (it.choices[it.chosen || 0].label === "usual_product" ? `<p style="margin:10px 0 0">${esc(L.usual_why)}</p>` : "") + `<p style="margin:10px 0 6px">${esc(L.cheaper(it.choices[k].lines.map(l => lang === "fi" ? l.title_fi : l.title).join(" + "), eur(it.choices[k].total)))}</p><button type="button" class="sm" data-act="swap" data-i="${i}" data-k="${k}">${esc(L.swap)}</button>`;
   }
-  S.el.innerHTML = `<div class="hd"><b>${esc(done ? `${L.placed} ${o.label || ""}` : off ? (S.x.cart && S.x.cart.replaced ? L.replaced : L.canceled) : stopped ? L.stopped : L.built)}</b><span>${esc(L.lines(n))}</span></div>`
-    + (w.intent ? `<p class="ask">”${esc(w.intent)}”</p>` : "")
+  // A change to a placed order (a delivery exception settled, or a cancellation the person asked for) is not a cart: the card says what changes on which order.
+  const A = w.amends ? (S.x.amend || { order: w.amends.order_label, what: [w.amends.title || ""], credit: w.amends.credit || 0, credit_total: (w.amends.credit || 0) + (w.amends.credit_tax || 0), cancel: (w.amends.changes || []).some(x => x.type === "cancelled") }) : null;
+  S.el.innerHTML = `<div class="hd"><b>${esc(A ? (done ? (A.cancel ? L.am_cancelled(A.order) : L.am_done(A.order)) : off ? L.am_off(A.order) : stopped ? L.stopped : A.cancel ? L.am_cancel_h(A.order) : L.am_h(A.order))
+      : done ? `${L.placed} ${o.label || ""}` : off ? (S.x.cart && S.x.cart.replaced ? L.replaced : L.canceled) : stopped ? L.stopped : L.built)}</b><span>${A && !n ? "" : esc(L.lines(n))}</span></div>`
+    + (A ? (off ? "" : `<p style="margin:8px 0 0;font-size:var(--t3);line-height:1.45;color:var(--ink)">${esc((A.what || []).join(" "))}</p>`) + (ready || esc_ ? `<p style="margin:6px 0 0;font-size:var(--t2);line-height:1.45;color:var(--muted)">${esc(L.am_note)}</p>` : "") : w.intent ? `<p class="ask">”${esc(w.intent)}”</p>` : "")
     + (S.made && n >= 3 && !done && !off && !String(w.intent || "").includes(" / ") ? `<p class="made">${esc(S.x.cart && S.x.cart.menu && S.x.cart.menu.photo_reused ? L.made_again(n) : L.made(n, Math.max(1, Math.round(S.made.ms / 1000)), S.made.img))}</p>` : "")
     + (off ? "" : itemNotes(S))
     + (stopped ? nt(esc((ws => ws.length ? [L.deny_h].concat(ws).join(" ") : L.deny)([...new Set(((w.policy || {}).rules || []).filter(r => r.outcome === "deny").map(r => L.deny_why[r.id] || L.deny_why[r.id[0]] || L.deny_why.other))].concat(blockedWhy))), "bad") : "") + (expired ? nt(esc(L.expired)) : "")
-    + `<dl class="sum"><dt>${esc(L.day)}</dt><dd>${esc(dayS(w.delivery_date))}</dd><dt>${esc(L.ex)}</dt><dd>${eur(amount(d.totals, "subtotal"))}</dd><dt class="tot">${esc(L.inc)}</dt><dd class="tot">${eur(amount(d.totals, "total"))}</dd></dl>`
+    + (A ? off ? "" : `<dl class="sum"><dt>${esc(L.day)}</dt><dd>${esc(dayS(w.delivery_date))}</dd>${n ? `<dt>${esc(L.am_goods)}</dt><dd>${eur(amount(d.totals, "subtotal"))}</dd>` : ""}${A.credit ? `<dt>${esc(L.am_credit)}</dt><dd>${eur(A.credit)}</dd><dt class="tot">${esc(L.am_credit_inc)}</dt><dd class="tot">${eur(A.credit_total)}</dd>` : ""}</dl>`
+      : `<dl class="sum"><dt>${esc(L.day)}</dt><dd>${esc(dayS(w.delivery_date))}</dd><dt>${esc(L.ex)}</dt><dd>${eur(amount(d.totals, "subtotal"))}</dd><dt class="tot">${esc(L.inc)}</dt><dd class="tot">${eur(amount(d.totals, "total"))}</dd></dl>`)
     + (lateGate ? `<div class="acts" style="margin:10px 0 4px"><button type="button" class="sm" data-act="lateok">${esc(L.late_ok(dayS(w.delivery_date)))}</button></div>` : "")
     + (esc_ && !lateGate ? `<div class="appr"><div><b>${esc(L.need)}</b>${whyApproval(S).map(s => `<p>${esc(s)}</p>`).join("")}<p class="mu">${esc(L.need_how)}</p></div><div class="qr">${S.x.qr || ""}</div><div class="rest">${navigator.share ? `<button type="button" class="sm" data-act="share">${esc(L.share)}</button>` : ""}<button type="button" class="sm" data-act="copy">${esc(L.copy)}</button>${hello && hello.review ? `<button type="button" class="lnkbtn alone" data-act="demoappr">${esc(L.alone)}</button>` : ""}${cheaper}</div></div>` : "")
     + (ap && ap.decision === "approved" && !off ? `<div class="okline">✓ ${esc(L.approved(ap.by || ""))}${ap.demo ? ` <span class="demo">${esc(L.demo_appr)}</span>` : ""}</div>` : ap && ap.decision === "rejected" ? `<div class="nt bad">${esc(L.rejected(ap.by || ""))}</div>` : "")
     + ((ready || esc_) && !lateGate && openQ.length ? nt(esc(L.open_q(openQ.length, openQ.map(x => `”${x.as_written || x.query}”`).join(", "))), "bad") : "")
     + ((ready || esc_) && !lateGate && lessQ.length ? nt(esc(L.less_q(lessQ.map(x => `”${x.as_written || x.query}” ${num(x.choices[x.chosen || 0].covers)} / ${num(x.quantity)} ${unitS(x.unit)}`).join(", "))), "bad") : "")
     + ((ready || esc_) && !lateGate && otherQ.length ? nt(esc(`${L.diff_h} ${otherQ.join("; ")}.`)) : "")
+    + ((ready || esc_) && !lateGate ? (c ? c.items || [] : []).filter(it => it.budget_pick && !it.dropped && it.choices).map(it => nt(esc(L.budget_pick(it.choices[it.chosen || 0].lines.map(l => lang === "fi" ? l.title_fi || l.title : l.title).join(" + "), eur(it.choices[it.chosen || 0].total), (lang === "fi" ? it.budget_pick.from.title_fi : "") || it.budget_pick.from.title, eur(it.budget_pick.from_total), it.budget_pick.usual)), "info")).join("") : "")
     + ((ready || esc_) && !lateGate && overB ? nt(esc(L.over_budget(eur(Math.round(c.budget * 100)), eur(subC), eur(overB))), "bad") : "")
     + (needTick && !lateGate ? `<label class="tick"><input type="checkbox" data-act="labels"${S.open.labels ? " checked" : ""}><span>${esc(L.labels(blankN))}</span></label>` : "")
-    + (lateGate ? "" : ready || expired ? `<button type="button" class="cta" data-act="confirm"${needTick && !S.open.labels ? " disabled" : ""}>${esc(L.confirm)}</button>` : esc_ ? `<button type="button" class="cta" disabled>${esc(L.confirm)} · ${esc(L.waiting)}</button>` : done && (o.permalink_url || S.x.order_url) ? `<a class="cta" href="${esc(o.permalink_url || S.x.order_url)}" target="_blank" rel="noopener">${esc(L.record)}</a>` : "")
-    + `<div class="folds"><button type="button" class="lnkbtn" data-act="rows">${esc(S.open.rows ? L.rows_hide : L.rows(n))}</button><button type="button" class="lnkbtn" data-act="checks">${esc(S.open.checks ? L.checks_hide : L.checks)}</button>${ready || esc_ ? `<button type="button" class="lnkbtn" data-act="cancel">${esc(L.cancel)}</button>` : ""}</div>`
+    + (lateGate ? "" : ready || expired ? `<button type="button" class="cta" data-act="confirm"${needTick && !S.open.labels ? " disabled" : ""}>${esc(A ? (A.cancel ? L.am_confirm_cancel : L.am_confirm) : L.confirm)}</button>` : esc_ ? `<button type="button" class="cta" disabled>${esc(A ? (A.cancel ? L.am_confirm_cancel : L.am_confirm) : L.confirm)} · ${esc(L.waiting)}</button>` : done && (o.permalink_url || S.x.order_url) ? `<a class="cta" href="${esc(o.permalink_url || S.x.order_url)}" target="_blank" rel="noopener">${esc(L.record)}</a>` : "")
+    + `<div class="folds">${A && !n ? "" : `<button type="button" class="lnkbtn" data-act="rows">${esc(S.open.rows ? L.rows_hide : L.rows(n))}</button>`}<button type="button" class="lnkbtn" data-act="checks">${esc(S.open.checks ? L.checks_hide : L.checks)}</button>${ready || esc_ || stopped ? `<button type="button" class="lnkbtn" data-act="cancel">${esc(A ? L.am_keep : L.cancel)}</button>` : ""}</div>`
     + (S.open.rows ? rowsHtml(S) : "") + (S.open.checks ? checksHtml(S) : "");
 }
 // A cart that waits for an approver asks the gateway now and then, and turns to "Hyväksynyt" by itself.
@@ -914,14 +927,17 @@ let ordersData = null;
 function orderRow(o) {
   const O = t("o"), L = t("c");
   return `<div class="oc"><div class="h"><b>${esc(o.label)}</b><span>${eur(o.subtotal)}</span></div><div class="m">${esc(L.day)} ${esc(dayS(o.delivery_date))} · ${esc(L.lines(o.lines))} · ${esc(L.inc)} ${eur(o.total)}${o.approved_by ? ` · ${esc(O.by(o.approved_by))}` : ""}</div>`
-    + (o.intent ? `<p class="q">”${esc(o.intent)}”</p>` : "") + `<div class="acts"><a class="sm" href="${esc(o.url)}" target="_blank" rel="noopener">${esc(O.conf)}</a></div></div>`;
+    + (o.intent ? `<p class="q">”${esc(o.intent)}”</p>` : "")
+    + (o.open_issues ? nt(`<b>${esc(O.exc_open)}</b> ${esc((o.kinds || []).map(k => O.exc_kind[k] || k).join(", "))}. <button type="button" class="lnkbtn" style="min-height:0;padding:0;display:inline" data-say="${esc(t("tabmsg").issues)}">${esc(O.exc_see)}</button>`)
+      : o.state === "cancelled" ? nt(esc(O.exc_cancelled), "info") : o.cancel_pending ? nt(esc(O.exc_cancel_wait), "info") : o.state === "amended" ? nt(esc(O.exc_amended), "info") : "")
+    + `<div class="acts"><a class="sm" href="${esc(o.url)}" target="_blank" rel="noopener">${esc(O.conf)}</a></div></div>`;
 }
 function waitRow(w) {
   const O = t("o"), L = t("c");
   return `<div class="oc"><div class="h"><b>${esc(L.day)} ${esc(dayS(w.delivery_date))}</b><span>${eur(w.subtotal)}</span></div><div class="m"><span class="tag${w.approved_by ? " ok" : ""}">${esc(w.approved_by ? O.ok : O.wait)}</span> ${esc(L.lines(w.lines))}${w.approved_by ? ` · ${esc(O.by(w.approved_by))}` : ""}</div>`
     + (w.intent ? `<p class="q">”${esc(w.intent)}”</p>` : "")
     + (w.approved_by ? "" : `<div class="m">${esc([...new Set((w.rules || []).map(r => O.why[r] || L[r] || L.other))].join(" "))}</div>`)
-    + `<div class="acts">${w.approved_by ? `<button type="button" class="sm pri" data-confirm="${esc(w.id)}">${esc(L.confirm)}</button>` : `<button type="button" class="sm" data-copyurl="${esc(w.url || "")}">${esc(L.copy)}</button>`}</div></div>`;
+    + `<div class="acts">${w.approved_by ? `<button type="button" class="sm pri" data-confirm="${esc(w.id)}">${esc(L.confirm)}</button>` : `<button type="button" class="sm" data-copyurl="${esc(w.url || "")}">${esc(L.copy)}</button><button type="button" class="sm" data-cancelcart="${esc(w.id)}">${esc(L.cancel)}</button>`}</div></div>`;
 }
 function ordersHtml(v, inChat) {
   const O = t("o"), L = t("c"), lw = v.last_week;
@@ -1063,6 +1079,8 @@ document.addEventListener("click", async e => {
   if (ag) { if (!busy) act({ type: "again", product: ag.dataset.again, ...(ag.dataset.asked ? { asked: true } : {}) }, ag.dataset.asked ? ag.textContent : t("again_l")(ag.dataset.title)); else view("chat"); return; }
   const cf = e.target.closest("[data-confirm]");
   if (cf) { if (!busy) act({ type: "confirm", checkout: cf.dataset.confirm }, t("c").confirm); return; }
+  const cx = e.target.closest("[data-cancelcart]");  // the person who asked may withdraw a cart that still waits for its approver
+  if (cx) { if (!busy) act({ type: "cancel", checkout: cx.dataset.cancelcart }, t("c").cancel); return; }
   const cu = e.target.closest("[data-copyurl]");
   if (cu) { const u = cu.dataset.copyurl; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => { cu.textContent = t("c").copied; }).catch(() => { prompt(t("c").copy, u); }); return; }
   const s = e.target.closest("[data-say]");

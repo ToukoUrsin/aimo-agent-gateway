@@ -26,8 +26,9 @@ from fastapi import APIRouter, Body, Request
 from fastapi.responses import Response
 
 from . import peppol, policy
+from .aimo import parse_ts
 from .catalog import fold
-from .config import PUBLIC_URL, order_url
+from .config import FREEZE_NOW, PUBLIC_URL, TZ, order_url
 from .signing import digest
 
 SCHEMA = [
@@ -36,7 +37,7 @@ SCHEMA = [
     "create index if not exists issues_order on issues(order_id)",
     "create index if not exists issues_customer on issues(customer)",
 ]
-KINDS = {"short_pick": "short pick", "delay": "delay", "recall": "recall"}
+KINDS = {"short_pick": "short pick", "delay": "delay", "recall": "recall", "cancel_request": "cancellation request"}
 AUTHORITY = {"auto": "agent_may_resolve", "escalate": "needs_human_approval", "deny": "not_allowed"}
 MAX_SUBSTITUTES = 3
 LOTS_NOTE = ("Lots are not in the challenge data. The gateway gives every order line a lot when the order is placed: product number, delivery day and a batch number "
@@ -269,6 +270,10 @@ class After:
             parts = [self._credit(o, l["id"], l["units"]) for l in st["lines"] if l["units"] > 0]
             credit = (sum(p[0] for p in parts), sum(p[1] for p in parts))
             add("cancel_order", "Cancel the order", f"Nothing from this order is delivered. {eur(credit[0])} ex VAT is credited.", {"delivered_pct": 0, "of": "the order"}, [{"type": "cancelled"}], credit)
+        elif kind == "cancel_request" and not self.too_late(o):
+            parts = [self._credit(o, l["id"], l["units"]) for l in st["lines"] if l["units"] > 0]
+            credit = (sum(p[0] for p in parts), sum(p[1] for p in parts))
+            add("cancel_order", "Cancel the order", f"Nothing from this order is delivered. {eur(credit[0])} ex VAT is credited.", {}, [{"type": "cancelled"}], credit)
         elif kind == "recall" and line and line["units"] > 0:
             have, u, t = line["units"], line["unit"], line["title"]
             credit, n, numbers = self._credit(o, line["id"], have), 0, {"recall": f["recall"], "lot": f["lot"]}
@@ -291,12 +296,13 @@ class After:
     def _raise(self, o, kind, facts, what, by) -> dict:
         """Write one issue: the facts, and a notice signed by Valio Aimo with the ways out as they stand right now."""
         g, w = self.g, o["wholesale"]
+        asked = kind == "cancel_request"  # the customer asked for this one; Valio Aimo answers with the way out
         issue = {"id": "iss_" + secrets.token_hex(5), "kind": kind, "status": "open", "created": time.time(), "raised_at": g_iso(), "order_id": o["id"], "order_label": o["label"], "customer": w["customer"],
                  "facts": facts, "what_happened": what, "attempts": [], "pending": None, "resolution": None, "amendment": None}
         p0, live = self._placed_under(o)
         ways = self.ways(issue, o, p0)
         issue["notice"] = g._prove({
-            "type": "order_issue", "id": issue["id"], "kind": kind, "raised_at": issue["raised_at"], "raised_by": "Valio Aimo", "customer": w["customer"],
+            "type": "order_issue", "id": issue["id"], "kind": kind, "raised_at": issue["raised_at"], "raised_by": "the customer" if asked else "Valio Aimo", "customer": w["customer"],
             "order": {"id": o["id"], "label": o["label"], "permalink_url": o["permalink_url"], "confirmation_digest": digest(body_of(o))},
             "what_happened": what, "facts": facts, "ways_out": self._public(ways, rules=True),
             "judged_under": {"mandate_id": w["evidence"].get("mandate_id"), "mandate_valid_now": live,
@@ -304,7 +310,8 @@ class After:
             "answer_with": {"mcp": "resolve_order_issue", "rest": f"{PUBLIC_URL}/issues/{issue['id']}/resolve"},
         })
         self._save(issue)
-        g.store.log(issue["id"], "gateway", "issue", f"Valio Aimo reported a {KINDS[kind]} on order {o['label']}: {what} {len(ways)} ways out sent to the customer's agent as a signed notice ({issue['id']}).",
+        g.store.log(issue["id"], "gateway", "issue", (f"The customer asked to cancel order {o['label']}: {what} Valio Aimo answered with a signed notice ({issue['id']})." if asked else
+                    f"Valio Aimo reported a {KINDS[kind]} on order {o['label']}: {what} {len(ways)} ways out sent to the customer's agent as a signed notice ({issue['id']})."),
                     {"issue": issue["id"], "kind": kind, "order_id": o["id"], "facts": facts, "ways_out": [{"option": x["option"], "authority": x["authority"]["decision"]} for x in ways], "raised_by": by}, acct=w["customer"])
         return issue
 
@@ -436,6 +443,49 @@ class After:
                 "notice": rc.get("notice"), "lots": LOTS_NOTE, "url": f"{PUBLIC_URL}/recalls/{rc['id']}"}
 
     # --------------------------------------------------------------- answer
+    def cutoff(self, o):
+        """The moment until which a placed order can still be cancelled: its own ordering cut-off, the earliest of its lines."""
+        ts = [parse_ts((l.get("wholesale") or {}).get("order_by")) for l in o.get("line_items") or []]
+        return min([t for t in ts if t], default=None)
+
+    def too_late(self, o) -> bool:
+        cut = self.cutoff(o)
+        return bool(cut and (parse_ts(FREEZE_NOW) or datetime.now(TZ)) >= cut)
+
+    def request_cancel(self, order, reason="", principal=None, trace=None) -> dict:
+        """The customer's side: ask to cancel a placed order. Until the order's own ordering cut-off Valio Aimo answers with one way out,
+        cancel with full credit, and this returns the checkout that does it: a signed offer, judged by the same rules and completed like any
+        other, so the agent's signature, the approval link and the signed amendment work as they do for a delivery problem. After the
+        cut-off the answer is no, with the time it passed."""
+        g = self.g
+        if not principal or not principal.get("ok"):
+            raise self.g_error(401, (principal or {}).get("error", "mandate_required"), (principal or {}).get("detail", "Present the buyer's mandate as Authorization: Bearer <mandate>."))
+        want = str(order or "").strip().lower()
+        mine = g.store.orders(500, principal["customer"])
+        o = next((x for x in mine if want and want in (x["id"].lower(), x["label"].lower())), None)
+        if not o:
+            raise self.g_error(404, "not_found", f"This account has no order '{str(order)[:40]}'.")
+        with self.lock:
+            if self.state(o)["status"] == "cancelled":
+                raise self.g_error(409, "invalid_state", f"Order {o['label']} is already cancelled.")
+            cut = self.cutoff(o)
+            if self.too_late(o):
+                raise self.g_error(409, "cutoff_passed", f"Order {o['label']} can no longer be cancelled here: its ordering cut-off was {cut.strftime('%a %-d %b %H:%M')} and it has gone to picking. Nothing was changed.")
+            for i in self.issues_of(o["id"]):  # asked before: the same checkout while it still waits
+                i = self._sync(i) if i["kind"] == "cancel_request" else i
+                if i["kind"] == "cancel_request" and i["status"] == "pending":
+                    return g.get_checkout(i["pending"]["checkout_id"], principal)
+            day = self.g_nice(self.state(o)["delivery_date"])
+            facts = {"asked_by": "customer", "delivery_date": self.state(o)["delivery_date"], "cancel_until": cut.isoformat() if cut else None, **({"reason": str(reason)[:200]} if reason else {})}
+            what = f"The customer asked to cancel order {o['label']} for {day}" + (f", before its ordering cut-off ({cut.strftime('%a %-d %b %H:%M')})." if cut else ".")
+            issue = self._raise(o, "cancel_request", facts, what, f"the customer ({g._who(principal)})")
+            c = self.resolve(issue["id"], "cancel_order", str(reason or "")[:600], principal, trace)
+            if c.get("status") == "incomplete":  # refused by a rule or a switch: the request ends here, nothing waits on the order
+                issue = self._get(issue["id"])
+                issue.update(status="closed", pending=None, resolution={"title": "The cancellation could not be offered", "at": g_iso()})
+                self._save(issue)
+            return c
+
     def _sync(self, issue) -> dict:
         """Bring an issue in line with its checkout: a rejected, cancelled or expired proposal opens the issue again."""
         p = issue.get("pending")
@@ -453,6 +503,8 @@ class After:
                 if issue["status"] == "pending":
                     issue["attempts"].append({**p, "status": st, "outcome": f"rejected by {ap['by']}" if ap.get("decision") == "rejected" else "cancelled" if st == "canceled" else "expired", **({"note": ap["note"]} if ap.get("note") else {})})
                     issue.update(pending=None, status="open")
+                    if issue["kind"] == "cancel_request":  # the customer's own request, not confirmed: it ends here and the order stands as it was
+                        issue.update(status="closed", resolution={"title": "The cancellation was not confirmed. The order stands.", "at": g_iso()})
                     self._save(issue)
         elif p.get("status") != st:
             issue["pending"]["status"] = st
@@ -542,7 +594,8 @@ class After:
                 raise self.g_error(400, "unknown_option", f"Issue {iid} has no way out '{option[:40]}'. Choose one of: {names}.")
             ctx, cid = way["_ctx"], "chk_" + secrets.token_hex(6)
             inputs = {"line_items": way["_lines"], "delivery_date": way["_day"], "requirements": self._reqs(o) if way["_lines"] else {}, "purchase_order": o["wholesale"].get("purchase_order"),
-                      "intent": f"Valio Aimo reported on order {o['label']}: {issue['what_happened']} Way out chosen: {way['title']}.", "rationale": rationale or None, "amends": ctx}
+                      "intent": (issue["what_happened"] if issue["kind"] == "cancel_request" else f"Valio Aimo reported on order {o['label']}: {issue['what_happened']} Way out chosen: {way['title']}."),
+                      "rationale": rationale or None, "amends": ctx}
             c = g._assemble(cid, inputs, principal, trace)
             c["messages"].append({"type": "info", "code": "amends_order", "content": f"This checkout changes order {o['label']}. {way['effect']}" if c["status"] != "incomplete"
                                   else "This way out is not available right now. Call list_order_issues for the current ways out."})
@@ -700,6 +753,11 @@ def build(g, ctx, page) -> APIRouter:
     def resolve(iid: str, request: Request, body: dict = Body(...)):
         p, tr = who(request)
         return a.resolve(iid, body.get("option"), body.get("rationale") or "", p, tr)
+
+    @r.post("/orders/{oid}/cancel", tags=["after the order"], summary="Ask to cancel a placed order before its ordering cut-off. Returns a checkout that cancels it: complete it like any other")
+    def cancel_order(oid: str, request: Request, body: dict = Body(default={})):
+        p, tr = who(request)
+        return a.request_cancel(oid, body.get("reason") or "", p, tr)
 
     @r.get("/orders/{oid}/peppol/order-response-amended.xml", tags=["after the order"], summary="The order as it stands after its amendments, as a Peppol BIS Ordering 3 OrderResponse")
     def peppol_amended(oid: str):
