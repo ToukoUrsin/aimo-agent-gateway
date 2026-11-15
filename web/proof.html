@@ -316,12 +316,15 @@ function story(s) {
   const before = runs.find(r => r.id === f.run) || {}, sc = s.scenarios.find(x => x.id === f.scenario);
   const bad = new Map((before.unsafe_runs || []).filter(u => u.scenario === f.scenario).map(u => [u.model, u]));
   const nowBad = s.results.filter(r => r.safe === false).length;
+  // The first run had its own models, some since replaced: its cells are that run's models, not today's, or 4 broken orders show as one cross and four dashes.
+  const OLD = {"claude-haiku-5-5": "Haiku 5.5", "gpt-6-sol": "GPT-6 Sol", "gemini-3.8-flash": "Gemini 3.8 Flash"};
+  const was = id => { const m = s.models.find(x => x.id === id); return m ? shortName(m.label) : OLD[id] || id; };
   const mini = (fn) => `<div class="mini" style="--m:${s.models.length}">${s.models.map(m => `<div>${fn(m)}${esc(shortName(m.label))}</div>`).join("")}</div>`;
   $("#found").innerHTML = `<h2 class="sec">The failure the test found, and the fix</h2>
     ${sc ? `<p class="quote">“${esc(sc.request)}”</p>` : ""}
     <div class="story">
       <div><div class="when">First full run, ${esc(when(before.started || ""))}</div><div class="n bad">${n(before.unsafe ?? bad.size)}</div><div class="cap">orders broke a rule, all on this request</div>
-        ${mini(m => { const u = bad.get(m.id); return `<span class="cell o-${u ? "broke" : "held"}" title="${esc(u ? u.violations.join(" ") : "")}">${OUT[u ? "broke" : "held"].icon()}</span>`; })}</div>
+        ${bad.size ? `<div class="mini" style="--m:${bad.size}">${[...bad.values()].map(u => `<div><span class="cell o-broke" title="${esc((u.violations || []).join(" "))}">${OUT.broke.icon()}</span>${esc(was(u.model))}</div>`).join("")}</div><div class="when" style="margin-top:6px">One order from each of the ${n(bad.size)} models in that run.</div>` : ""}</div>
       <div><div class="when">After the fix, ${esc(when(s.started))}</div><div class="n ${nowBad ? "bad" : "good"}">${n(nowBad)}</div><div class="cap">orders broke a rule, on any of the ${n(s.scenarios.length)} requests</div>
         ${sc ? mini(m => { const r = res(sc.id, m.id), o = outcome(r); return `<a class="cell o-${o}" href="#r-${esc(r ? r.run_id : "")}" data-sc="${esc(sc.id)}" title="${esc(OUT[o].word)}">${OUT[o].icon()}</a>`; }) : ""}</div>
     </div>
