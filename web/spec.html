@@ -43,7 +43,7 @@ table.wrap td:first-child{white-space:normal}
 <nav class="toc" id="toc" aria-label="On this page"></nav>
 <main class="read">
 <h1>How it works</h1>
-<p class="lead">This page is for Valio Aimo's IT. The shop chat on <a href="/shop">/shop</a> is the gateway's first user, and there nothing is ordered before the signed-in person confirms. The same gateway can let a customer's own software look up products, get a fixed price and place an order inside limits both companies set, once Valio Aimo opens that for the customer. Anything outside the limits goes to a person as one link.</p>
+<p class="lead">This page is for Valio Aimo's IT. The shop chat on <a href="/shop">/shop</a> is the gateway's first user, and there nothing is ordered before the person in the shop confirms. The same gateway can let a customer's own software look up products, get a fixed price and place an order inside limits both companies set, once Valio Aimo opens that for the customer. Anything outside the limits goes to a person as one link.</p>
 <p>The gateway sits in front of Valio Aimo's price and availability API. The rules run in code, never in a model. Every price, every decision and every order is signed, so either side can prove later what was agreed.</p>
 <p>The first caller is Valio Aimo's own: a chat in its web shop (<a href="/shop">/shop</a>), where the signed-in cook or purchasing manager says what they need and the order is built, and a menu photo (<a href="/menu">/menu</a>). A customer's own purchasing software, or a chat assistant, comes through the same door under the same rules. <a href="/access">/access</a> shows what any of them can see for one account.</p>
 <p>Three things go further than a safe door. A <a href="#menu">menu photo becomes one checked order</a>. <a href="#seller">Valio Aimo has its own agent</a> at the door, so the customer relationship stays with Valio Aimo whatever assistant the kitchen uses. And <a href="#allocation">short stock is split by contract share</a> when every agent asks at once.</p>
@@ -108,6 +108,7 @@ table.wrap td:first-child{white-space:normal}
 <li><b>Sourcing plan:</b> up to 200 of the kind asked for; the answer says when there were more.</li>
 <li><b>Checkout, menu, shop chat, after delivery:</b> their own lines and the replacements for them.</li>
 </ul>
+<p>These are products per request, not requests: one request to the API carries the whole list. Measured on 15 Nov 2026 with the shop's own wedding example (five dishes, 180 guests, 26 lines in the cart): 3 availability requests and 3 price requests in all, from the message to the finished cart.</p>
 <p>An answer is kept for 45 seconds per product, delivery day and customer, so an agent that asks again at once is answered from that. A list longer than 1,000 products goes out in pieces of 1,000, the API's own limit. When the API says it is busy or fails, the gateway tries again at once, then after 0.6, 1.8 and 4 seconds; if it still fails, it answers from the last kept answer and marks it as old. An agent that has never ordered and looks up 40 different products within 10 minutes is refused (rule W4).</p>
 <p>Three things ask on their own, not for one agent's request:</p>
 <ul>

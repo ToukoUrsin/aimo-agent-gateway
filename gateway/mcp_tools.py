@@ -187,15 +187,15 @@ def build(g: Gateway) -> MCPServer:
                           "portions only when a dish has its own number, recipe (per portion) only for a dish the kitchen has no card for. When the buyer gives their own recipe with amounts, pass the amounts as written "
                           "and recipe_portions = how many portions they make: code divides, and that recipe stands in place of the card. guests: how many it is for. event_date: YYYY-MM-DD of the first day served. "
                           "notes: every dietary note as written, e.g. [\"Nut-free kitchen\", \"Table 6 lactose-free\", \"6 gluten-free\"]. image: instead of dishes, a photo of the menu as a data URL (JPEG, PNG or WebP). "
-                          "budget_eur: the budget when the buyer gave one, with budget_per total or guest. order_staples: true also orders salt, oil and spices a kitchen keeps on the shelf (left off by default and listed under pantry). "
+                          "budget_eur: the budget when the buyer gave one, with budget_per total or guest. order_staples: true also orders salt, oil and spices a kitchen keeps on the shelf (left off by default and listed under pantry). keep_products: when this plan replaces an earlier cart, that cart's product ids; each stays where it still passes every check and can be supplied. "
                           "Returns lines (product, units, the dishes each is for, and the pack, allergen, stock and price checks code ran), not_ordered (what a person must sort out), pantry, diet (the rules applied), "
                           "budget (whether the order fits it) and checkout: pass it to create_checkout unchanged. status needs_answers means code found something to ask the buyer (for example 10,000 guests, or a line that is not food): order nothing.")
     async def plan_menu_order(ctx: Context, dishes: list = [], guests: int = 0, event_date: str = "", notes: list[str] = [], title: str = "", image: str = "",
-                              budget_eur: float = 0, budget_per: str = "total", order_staples: bool = False) -> CallToolResult:
+                              budget_eur: float = 0, budget_per: str = "total", order_staples: bool = False, keep_products: list[str] = []) -> CallToolResult:
         from . import menu
         p, tr = who(ctx)
         return chat.result(g, "plan_menu_order", await guard(lambda: menu.plan_menu_order(g, {"dishes": dishes, "guests": guests or None, "event_date": event_date, "notes": notes, "title": title, "image": image or None,
-                                                            "budget": {"amount": budget_eur, "per": budget_per} if budget_eur else None, "order_staples": order_staples}, p, tr)))
+                                                            "budget": {"amount": budget_eur, "per": budget_per} if budget_eur else None, "order_staples": order_staples, "keep_products": keep_products}, p, tr)))
 
     @srv.tool(meta=chat.APP_ONLY, description="For the order card only, not for the model: the current state of a checkout (kind checkout) or an order's signature and Peppol documents (kind order).")
     async def card_data(ctx: Context, kind: str, id: str) -> CallToolResult:

@@ -40,6 +40,7 @@ body{overflow:hidden;background:var(--panel)}
 .tabs button[aria-current=true]::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:2px;background:var(--ink)}
 .tabs .n{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--ink);color:var(--panel);font-size:11px;font-weight:600;display:inline-grid;place-items:center;font-variant-numeric:tabular-nums}
 .tabs .only-phone{display:none}
+#shoph .ph{display:none}
 
 /* body: shop on the left, the assistant on the right */
 .main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 480px}
@@ -199,6 +200,7 @@ a.cta{display:grid;place-items:center;text-decoration:none;background:var(--pane
   .main[data-view=chat] .shop{display:none}
   .main:not([data-view=chat]) .chat{display:none}
   .tabs .only-phone{display:flex}
+  #shoph .ph{display:inline}#shoph .wd{display:none}
   .bar1 .search{display:none}
   .shop .search.inline{display:block;margin:var(--s4) 0 0;max-width:none}
   .shop,.panel{padding:var(--s5) var(--s4) var(--s6)}
@@ -244,7 +246,7 @@ a.cta{display:grid;place-items:center;text-decoration:none;background:var(--pane
   <div class="main" id="main" data-view="chat">
     <section class="shop" aria-labelledby="shoph">
       <div class="in">
-        <h1 id="shoph" data-s="shop_h"></h1>
+        <h1 id="shoph"><span class="wd" data-s="shop_h"></span><span class="ph" data-s="t_shelf"></span></h1>
         <p class="lede" data-s="shop_lede"></p>
         <form class="search inline" role="search" data-search><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input type="search" name="q" data-p="search" autocomplete="off"></form>
         <div class="shelfh"><h2 data-s="shelf_h"></h2><span data-s="shelf_tap"></span></div>
@@ -279,8 +281,8 @@ const PROTO = "2026-01-26", META = "fi.valioaimo/card";
 // ---------------------------------------------------------------- words: Finnish as a Finnish wholesaler's web shop writes it, English behind the switch
 const T = {
   fi: { banner: "Näin tämä toimisi Valio Aimo -verkkokaupassa. Prototyyppi Valio Aimon haastedatalla, ei Valio Aimon järjestelmä.", portal: "Verkkokauppa", minun: "Tilausapurin prototyyppi, Junction 2026", custno: "Asiakasnumero", search: "Hae tuotteita tai kysy tilausapurilta",
-    t_order: "Tilaa", t_shelf: "Tuotteet", t_orders: "Tilaukset", t_props: "Ehdotukset", t_appr: "Hyväksynnät",
-    shop_h: "Tilaa", shop_lede: "Kerro tilausapurille, mitä aiot tarjoilla. Se kokoaa ostoskorin sopimushinnoillasi ja tarkistaa saatavuuden. Mitään ei tilata ennen kuin vahvistat.",
+    t_order: "Tilaa", t_shelf: "Usein ostetut", t_orders: "Tilaukset", t_props: "Ehdotukset", t_appr: "Hyväksynnät",
+    shop_h: "Tilaa", shop_lede: "Kerro tilausapurille, mitä aiot tarjoilla. Se kokoaa ostoskorin Valio Aimon valikoimasta ja tarkistaa saatavuuden. Mitään ei tilata ennen kuin vahvistat.",
     shelf_h: "Usein ostetut", shelf_tap: "Tilaa uudelleen lisää tavallisen määräsi ostoskoriin", shelf_none: "Tällä asiakasnumerolla ei ole vielä tilaushistoriaa.", again: "Tilaa uudelleen", again_l: n => `Tilaa uudelleen: ${n}`,
     byhand: "Sama tilaus käsin tuote kerrallaan", access: "Mitä Valio Aimo päättää ja näkee",
     fine: "Junction 2026 -prototyyppi Valio Aimon haastedatalla. Ei Valio Aimon järjestelmä. Hinnat ja saatavuus tulevat haasteen testirajapinnasta.",
@@ -301,6 +303,24 @@ const T = {
       short: "Ei tarpeeksi saatavuutta:", short_only: (a, b, u) => `Ei tarpeeksi saatavuutta, määrä muutettu: ${a} / ${b} ${u}.`, only: (a, u) => `Vain saatavilla oleva määrä: ${a} ${u}`,
       why: (s) => `Sama tuotelaji, samat erityisruokavaliomerkinnät, ei uusia allergeeneja. ${s.listed ? "Valio Aimon korvaavien tuotteiden listalta" : "Valio Aimon valikoimasta"}${s.contract_price ? ", sopimushinnallasi." : ", listahinnalla: tälle ei ole sopimushintaa."}`,
       moved: (a, b) => `Ei saatavilla haluamallesi toimituspäivälle ${a} Siirretty päivälle ${b}`, move: d => `Siirrä päivälle ${d}`, not_day: (a, d) => `${a}: ei saatavilla toimituspäivälle ${d}`, can_day: d => `Saatavilla ${d}`,
+      rounded: (a, q, n, u) => `${a}: ${q} ${u} ei voi tilata, joten ostoskorissa on ${n} ${u}.`,
+    diff_h: "Poikkeaa siitä, mitä pyysit:", d_part: (a, x) => `${a}: osa korvattu tuotteella ${x}`, d_other: (a, x) => `${a}: tilalla ${x}`, d_more: (a, n, u) => `${a}: pakkauskoon vuoksi ${n} ${u}`, d_menu: n => n === 1 ? "menussa 1 korvaava tuote" : `menussa ${n} korvaavaa tuotetta`,
+    pack_more: (per, n, tot) => `myydään ${per} kpl:n pakkauksissa, joten ostoskorissa on ${n} pakkausta eli ${tot} kpl.`,
+    less_q: x => `Ostoskorissa on vähemmän kuin pyysit: ${x}. Loppua ei tilata.`, over_budget: (b, s, o) => `Sanoit budjetiksi enintään ${b}. Ostoskori on ${s} (alv\u00a00\u00a0%), eli ${o} yli.`,
+    blocked_stock: (n, can, asked, u) => `${n}: toimituspäivälle saa vain ${can} ${u}, ostoskorissa on ${asked} ${u}. Pienennä määrää tai vaihda tuote.`, blocked_line: n => `${n}: ei voi toimittaa tälle toimituspäivälle. Poista tai vaihda se.`,
+    left_out: a => `${a}: ei ostoskorissa.`, open_q: (n, x) => n === 1 ? `Yksi pyytämäsi tuote ei ole ostoskorissa: ${x}. Tilaus vahvistetaan ilman sitä.` : `${n} pyytämääsi tuotetta ei ole ostoskorissa: ${x}. Tilaus vahvistetaan ilman niitä.`,
+    usual_tag: "tilaat tätä useimmin", usual_why: "Ostoskorissa on tuote, jota tämä asiakasnumero tilaa useimmin.", before: (ev, d) => `Tilaisuus on ${ev} Toimitus on sitä edeltävänä toimituspäivänä ${d}`,
+    named_any: n => `tuotetta nimellä ”${n}”`, no_subs: "Pyysit: ei korvaavia tuotteita. Ostoskorissa on vain se, mitä pyysit.", strict_tail: " Pyysit, ettei korvaavia tuotteita laiteta.",
+    named_off_gone: (a, n, x) => `${a}: ${n} on Valio Aimon valikoimassa, mutta sitä ei juuri nyt saa millekään toimituspäivälle. Ostoskorissa on lähin vastaava: ${x}.`,
+    named_off: (a, n, d, x) => `${a}: ${n} ei ole saatavilla toimituspäivälle ${d} Ostoskorissa on lähin vastaava: ${x}.`, named_off_day: (a, n, d) => `${a}: ${n} ei ole saatavilla toimituspäivälle ${d}`,
+    named_off_never: (a, n) => `${a}: ${n} on Valio Aimon valikoimassa, mutta sitä ei juuri nyt saa millekään toimituspäivälle. Ei ostoskorissa.`, named_none: (a, n) => `${a}: Valio Aimon valikoimassa ei ole tuotetta nimellä ${n}. Ei ostoskorissa.`,
+    near: d => `Nämä saa ${d} Valio Aimon valikoimasta:`, near_any: "Nämä saa Valio Aimon valikoimasta:", gap_in: (a, p) => `Menun aines ${a}: sen ensisijaisia tuotteita ei saa tälle toimituspäivälle. Ostoskorissa on sen tilalla ${p}, menun tarvitsema määrä.`, too_much: (a, n) => `${a}: määrä ylittää sen, mitä tilausapuri saa laittaa yhteen tilaukseen (${n} myyntiyksikköä). Kirjoita pienempi määrä. Ei ostoskorissa.`,
+    pack: (a, q, n, u) => `${a}: pakkauksessa on ${n} ${u}, joten ostoskorissa on ${n} ${u} (pyysit ${q} ${u}).`,
+    eg: x => `esim. ${x}`, never: a => `${a}: Valio Aimon valikoimassa on tätä, mutta sitä ei juuri nyt saa millekään toimituspäivälle. Ei ostoskorissa.`,
+    not_yet: "Ei vielä ostoskoria", stated: x => `Viestissäsi rajattiin pois: ${x}. Tuote, jonka valmistajan ilmoituksessa sitä on, ei mene tästä ostoskorista tilaukseen.`,
+      excl: { nut: "pähkinät", peanut: "maapähkinä", sesame: "seesami", soy: "soija", shellfish: "äyriäiset", celery: "selleri", mustard: "sinappi", gluten: "gluteeni", milk: "maito", egg: "kananmuna", fish: "kala", vegan: "eläinperäiset ainekset" },
+      no_fit: (a, x) => `${a}: Valio Aimon valikoimassa on tällaisia tuotteita, mutta jokaisessa on valmistajan ilmoituksen mukaan sitä, minkä rajasit pois (${x}). Ei ostoskorissa.`,
+      named_miss: (a, n, x) => `${a}: Valio Aimon valikoimassa ei ole tuotetta nimellä ${n}. Ostoskorissa on lähin vastaava: ${x}.`,
       which: a => `${a}: mitä näistä tarkoitat?`, amount: a => `${a}: kuinka paljon? Kirjoita määrä.`, amount_usual: (a, q, u, n) => `${a}: kuinka paljon? Tavallinen määräsi on ${q} ${u} (${n}). Kirjoita määrä tai valitse tavallinen.`, usual_btn: (q, u) => `${q} ${u}, kuten yleensä`, none: a => `${a}: ei löytynyt Valio Aimon valikoimasta.`,
       usual: (a, q, u) => `${a}: määrää ei annettu, joten korissa on tavallinen määräsi ${q} ${u}.`, drop: "Jätä pois",
       late_ok: d => `Tilaa silti toimituspäivälle ${d}`,
@@ -338,12 +358,12 @@ const T = {
       sample: "Esimerkkidataa: tämän prototyypin tilaushistoria on keksitty.", same: "Sama kuin viime viikolla", issues: "Onko toimituksissa poikkeamia?", conf: "Tilausvahvistus", by: n => `Hyväksynyt: ${n}`, wait_n: n => `${n} odottaa hyväksyntää`,
       ah: "Hyväksynnät", alede: "Tilaukset, jotka ylittävät sen, mitä saat tilata yksin. Hyväksyjä päättää omalla laitteellaan.", anone: "Ei hyväksyntää odottavia tilauksia.", why: { B1: "Tilaus ylittää summan, jonka saat tilata yksin.", B2: "Viikon tilaukset ylittävät summan, jonka saat tilata yksin." }, wait: "Odottaa hyväksyntää", ok: "Hyväksytty, vahvista tilaus", load: "Haetaan…", fail: "Tilauksia ei saatu haettua." } },
   en: { banner: "How this would work in the Valio Aimo web shop. A prototype on Valio Aimo's challenge data. Not a Valio Aimo system.", portal: "Web shop", minun: "Order assistant prototype, Junction 2026", custno: "Customer number", search: "Search products or ask the order assistant",
-    t_order: "Order", t_shelf: "Products", t_orders: "Orders", t_props: "Proposals", t_appr: "Approvals",
-    shop_h: "Order", shop_lede: "Tell the order assistant what you plan to serve. It builds a cart at your contract prices and checks the stock. Nothing is ordered until you confirm.",
+    t_order: "Order", t_shelf: "Often bought", t_orders: "Orders", t_props: "Proposals", t_appr: "Approvals",
+    shop_h: "Order", shop_lede: "Tell the order assistant what you plan to serve. It builds a cart from Valio Aimo's range and checks the stock. Nothing is ordered until you confirm.",
     shelf_h: "Often bought", shelf_tap: "Order again puts your usual amount in a cart", shelf_none: "This customer number has no order history yet.", again: "Order again", again_l: n => `Order again: ${n}`,
     byhand: "The same order by hand, product by product", access: "What Valio Aimo decides and sees",
     fine: "Junction 2026 prototype on Valio Aimo's challenge data. Not a Valio Aimo system. Prices and stock come from the challenge's test API.",
-    asst: "Order assistant", try: "Try:", reset: "New conversation", lang_note: "Shown in English because your browser is. A cook sees this shop in Finnish: tap FI at the top.", input: "What will you serve?", photo: "Attach a photo", send: "Send", photo_on: "The photo goes with your message", remove: "Remove",
+    asst: "Order assistant", try: "Try:", reset: "New conversation", lang_note: "Shown in English because your browser is. A cook sees this shop in Finnish: tap FI at the top.", review_note: "Review mode: when a cart needs an approver and you are alone on one device, the card can open the approver's view here. The order records that it was a demo approval. The shop opened without the review link has no such view.", input: "What will you serve?", photo: "Attach a photo", send: "Send", photo_on: "The photo goes with your message", remove: "Remove",
     photo_only: "Here is a photo.", photo_sent: "Photo", retry: "Try again", failed: "The answer stopped halfway.", hello_fail: "Could not reach the order assistant.",
     read: "Reading your request…", read_img: "Reading the photo…", think: "Thinking…", menu: "Working out the cart for the menu…", source: "Building the cart…", props: "Reading Valio Aimo's proposals…",
     issues: "Checking your deliveries…", place: "Confirming the order…", search_s: "Searching products…", write: "Writing the answer…", orders_s: "Looking up your orders…", act: "Updating the cart…",
@@ -358,6 +378,24 @@ const T = {
       short: "Not enough stock:", short_only: (a, b, u) => `Not enough stock, amount changed: ${a} of ${b} ${u}.`, only: (a, u) => `Only what is in stock: ${a} ${u}`,
       why: (s) => `The same kind of product, the same diet claims, no new allergens. ${s.listed ? "On Valio Aimo's substitute list" : "From Valio Aimo's own range"}${s.contract_price ? ", at your contract price." : ", at the list price: there is no contract price for it."}`,
       moved: (a, b) => `Not available for the delivery day you asked for, ${a}. Moved to ${b}.`, move: d => `Move to ${d}`, not_day: (a, d) => `${a}: not available for delivery on ${d}.`, can_day: d => `Available ${d}`,
+      rounded: (a, q, n, u) => `${a}: ${q} ${u} cannot be ordered, so the cart has ${n} ${u}.`,
+    diff_h: "Differs from what you asked:", d_part: (a, x) => `${a}: part replaced with ${x}`, d_other: (a, x) => `${a}: ${x} in its place`, d_more: (a, n, u) => `${a}: ${n} ${u} because of the pack size`, d_menu: n => n === 1 ? "1 replacement product in the menu" : `${n} replacement products in the menu`,
+    pack_more: (per, n, tot) => `sold in packs of ${per}, so the cart has ${n} packs, which is ${tot} pieces.`,
+    less_q: x => `Less in the cart than you asked for: ${x}. The rest is not ordered.`, over_budget: (b, s, o) => `You said a budget of at most ${b}. The cart is ${s} ex VAT, ${o} over.`,
+    blocked_stock: (n, can, asked, u) => `${n}: only ${can} ${u} can come on the delivery day, and the cart has ${asked} ${u}. Lower the amount or change the product.`, blocked_line: n => `${n}: cannot be delivered on this delivery day. Remove it or change it.`,
+    left_out: a => `${a}: not in the cart.`, open_q: (n, x) => n === 1 ? `One thing you asked for is not in the cart: ${x}. The order is confirmed without it.` : `${n} things you asked for are not in the cart: ${x}. The order is confirmed without them.`,
+    usual_tag: "what you order most often", usual_why: "The cart has the product this customer number orders most often.", before: (ev, d) => `The event is on ${ev}. Delivery is on the delivery day before it, ${d}.`,
+    named_any: n => `a product called “${n}”`, no_subs: "You asked for no substitutes. The cart has only what you asked for.", strict_tail: " You asked for no substitutes.",
+    named_off_gone: (a, n, x) => `${a}: ${n} is in Valio Aimo's range, but right now it cannot be delivered on any day. The cart has the nearest one of that kind: ${x}.`,
+    named_off: (a, n, d, x) => `${a}: ${n} is not available for delivery on ${d}. The cart has the nearest one of that kind: ${x}.`, named_off_day: (a, n, d) => `${a}: ${n} is not available for delivery on ${d}.`,
+    named_off_never: (a, n) => `${a}: ${n} is in Valio Aimo's range, but right now it cannot be delivered on any day. Not in the cart.`, named_none: (a, n) => `${a}: Valio Aimo's range has no product called ${n}. Not in the cart.`,
+    near: d => `These can come ${d} from Valio Aimo's range:`, near_any: "These can come from Valio Aimo's range:", gap_in: (a, p) => `Menu ingredient ${a}: its first products cannot come on this delivery day. The cart has ${p} in its place, in the amount the menu needs.`, too_much: (a, n) => `${a}: the amount is over what the order assistant may put in one order (${n} sales units). Write a smaller amount. Not in the cart.`,
+    pack: (a, q, n, u) => `${a}: the pack holds ${n} ${u}, so the cart has ${n} ${u} (you asked for ${q} ${u}).`,
+    eg: x => `e.g. ${x}`, never: a => `${a}: Valio Aimo's range has this, but right now it cannot be delivered on any day. Not in the cart.`,
+    not_yet: "No cart yet", stated: x => `Your message ruled out: ${x}. A product whose manufacturer's declaration lists it cannot be ordered from this cart.`,
+      excl: { nut: "nuts", peanut: "peanuts", sesame: "sesame", soy: "soy", shellfish: "shellfish", celery: "celery", mustard: "mustard", gluten: "gluten", milk: "milk", egg: "egg", fish: "fish", vegan: "animal products" },
+      no_fit: (a, x) => `${a}: Valio Aimo's range has products of this kind, but each one lists what you ruled out (${x}) in the manufacturer's declaration. Not on the cart.`,
+      named_miss: (a, n, x) => `${a}: Valio Aimo's range has no product called ${n}. The cart has the nearest one of that kind: ${x}.`,
       which: a => `${a}: which of these do you mean?`, amount: a => `${a}: how much? Type the amount.`, amount_usual: (a, q, u, n) => `${a}: how much? Your usual amount is ${q} ${u} (${n}). Type the amount or pick the usual.`, usual_btn: (q, u) => `${q} ${u}, as usual`, none: a => `${a}: not found in Valio Aimo's range.`,
       usual: (a, q, u) => `${a}: no amount was given, so the cart has your usual ${q} ${u}.`, drop: "Leave out",
       late_ok: d => `Order anyway for ${d}`,
@@ -393,6 +431,7 @@ const T = {
 };
 // Review mode: the shop opened from its review link (/shop?demo=1). The server keeps the switch; only then does a cart that waits for an approver offer the approver's view on this same device.
 const REVIEW_LINK = (() => { try { return new URLSearchParams(location.search).get("demo") === "1"; } catch (e) { return false; } })();
+try { REVIEW_LINK ? localStorage.setItem("shop.review", "1") : localStorage.removeItem("shop.review"); } catch (e) {}  // the order confirmation's way back keeps the review link
 // The language: ?lang=fi|en in the link, else the choice made with the switch, else the browser's own (Finnish anywhere in its list is Finnish).
 let lang = (() => {
   const ok = x => x === "fi" || x === "en" ? x : null;
@@ -583,7 +622,7 @@ async function poll() {
   try { r = await backend.poll(thread, after); }
   catch (e) { pollT = setTimeout(poll, 2000); return; }
   if (r.gone) { thread = null; keep(); stopStatus(); busy = false; syncCompose(); return; }
-  for (const ev of r.events || []) { after = Math.max(after, ev.n); draw(ev); }
+  for (const ev of r.events || []) { after = Math.max(after, ev.n); try { draw(ev); } catch (e) { console.error("draw", ev.type, ev.name || "", e); } }  // one card that cannot be drawn never stops the chat
   if (r.busy) { pollT = setTimeout(poll, 700); if (!statusEl && busy) startStatus("", false); return; }
   stopStatus();
   busy = false; syncCompose();
@@ -644,7 +683,7 @@ function choiceLabel(S, it, c) {
   const L = t("c"), u = unitS(it.unit);
   let main;
   if (c.substitute) { const s = c.substitute; main = `${L.subst} ${esc(lang === "fi" ? s.title_fi : s.title)} · ${L.tier[s.tier] || s.tier} · ${s.contract_price ? L.contract : L.list}${s.price_delta_pct != null ? " · " + L.per(s.price_delta_pct, unitS(s.per)) : ""}`; }
-  else if ((c.covers_pct ?? 100) < 99.5) main = esc(L.only(num(c.covers), u));
+  else if ((c.covers_pct ?? 100) < 100) main = esc(L.only(num(c.covers), u));
   else main = c.lines.map(l => `${num(l.units)} × ${esc(lang === "fi" ? l.title_fi : l.title)}`).join(" + ") + (L.opt[c.label] ? ` · ${L.opt[c.label]}` : "");
   if (c.decision === "needs_human_approval") main += ` · ${L.opt.needs}`;
   else if (c.decision === "not_allowed") main += ` · ${L.opt.no}`;
@@ -656,10 +695,12 @@ function itemNotes(S) {
   const live = !["completed", "canceled"].includes(S.d.status), has = S.d.status !== "none";
   if (c.moved) out.push(nt(esc(L.moved(dayS(c.moved.from), dayS(c.moved.to)))));
   if ((c.stated || []).length && live) out.push(nt(esc(L.stated(c.stated.map(k => L.excl[k] || k).join(", "))), "info"));
+  if (c.no_subs && live) out.push(nt(esc(L.no_subs), "info"));
   const m = c.menu;
   if (m) {
     if (m.late) out.push(nt(`<b>${esc(L.late(dayS(m.event_date), dayS(c.day)))}</b>`, "bad"));
     else if (m.same_day) out.push(nt(esc(L.same_day(dayS(c.day)))));
+    else if (m.event_date && c.day < m.event_date && live) out.push(nt(esc(L.before(dayS(m.event_date), dayS(c.day))), "info"));
     const facts = [], perDish = {}, rest = [];
     for (const x of m.diet || []) {
       if (x.scope === "dish" && x.dish) (perDish[x.dish] = perDish[x.dish] || []).push((L.diet[x.kind] || x.kind).toLowerCase());
@@ -690,7 +731,7 @@ function itemNotes(S) {
     if (facts.length) out.push(nt(facts.join("<br>"), "info"));
     if ((m.replaced || []).length) out.push(nt(`<b>${esc(L.menu_sub(m.replaced.length))}</b> ${m.replaced.map(r => `${esc(lang === "fi" ? r.title_fi : r.title)} <span class="mu">(${esc(L.for_(lang === "fi" ? r.for_title_fi : r.for_title))})</span>`).join("; ")}`));
     // portions held by a dietary note are not "a product missing from the cart": the dish is ordered for everyone else
-    const heldP = (m.not_ordered || []).filter(x => x.kind === "no_fit" && (x.portions || x.whole)), leftP = (m.not_ordered || []).filter(x => !heldP.includes(x));
+    const heldP = (m.not_ordered || []).filter(x => x.kind === "no_fit" && (x.portions || x.whole)), leftP = (m.not_ordered || []).filter(x => !heldP.includes(x) && !x.as_item);
     for (const x of heldP) {
       const dish = lang === "fi" ? x.dish_fi : x.dish, item = lang === "fi" ? x.fi : x.item, diet = (x.diet || []).map(k => (L.diet[k] || L.diet[String(k).replace(/-free$/, "")] || k).toLowerCase()).join(", ");
       out.push(nt(esc(x.whole ? L.held_all(dish, diet, item) : L.held_n(dish, x.portions, diet, item, x.rest))));
@@ -705,22 +746,37 @@ function itemNotes(S) {
     const a = `”${esc(it.as_written)}”`, ch = it.choices ? it.choices[it.chosen || 0] : null, u = unitS(it.unit);
     const more = live && has && ch && it.choices.length > 1;
     const swapBtn = more ? `<button type="button" class="sm" data-act="swapopen" data-i="${i}">${esc(S.open.swap === i ? L.swap_hide : L.swap)}</button>` : "";
+    /* a kind with no Finnish word shows one product of it, said as an example: the tap picks the kind */
+    const kindBtns = () => `<div class="acts">${(it.kinds || []).map(k => { const say = lang === "fi" ? (k.fi || k.example_fi || k.kind) : k.kind, lab = lang === "fi" && !k.fi && k.example_fi ? L.eg(k.example_fi) : say; return has && live ? `<button type="button" class="sm" data-act="kind" data-i="${i}" data-kind="${esc(k.kind)}">${esc(lab)}</button>` : `<button type="button" class="sm" data-say="${esc((it.quantity ? num(it.quantity) + " " + u + " " : "") + say)}">${esc(lab)}</button>`; }).join("")}</div>`;
+    /* what cannot come gets the nearest kinds of Valio Aimo's own range that can, as buttons */
+    const near = it.near && (it.kinds || []).length && live ? `<br>${esc(it.status === "not_on_day" ? L.near(dayS(c.day)) : L.near_any)}${kindBtns()}` : "";
+    const offName = !it.named_off ? "" : it.named_off.name ? L.named_any(esc(it.named_off.name)) : esc(lang === "fi" ? it.named_off.title_fi || it.named_off.title : it.named_off.title);
     const alts = more && S.open.swap === i ? `<div class="alts">${it.choices.map((x, k) => `<button type="button" class="sm" data-act="swap" data-i="${i}" data-k="${k}" aria-current="${k === (it.chosen || 0)}"${k === (it.chosen || 0) ? " disabled" : ""}>${choiceLabel(S, it, x)}</button>`).join("")}</div>` : "";
+    const one = ch && ch.lines.length === 1 ? ch.lines[0] : null, packs = one ? Number(one.units ?? one.quantity) : 0;
+    if (one && it.status === "ok" && it.unit === "pcs" && packs > 0 && ch.covers > it.quantity + 1e-6 && ch.covers / packs > 1) out.push(nt(`${a}: ${esc(L.pack_more(num(ch.covers / packs), num(packs), num(ch.covers)))}`));
+    if (it.gap && ch) out.push(nt(L.gap_in(a, esc(ch.lines.map(l => lang === "fi" ? l.title_fi || l.title : l.title).join(" + ")))));
     if (it.status === "replaced" && ch) {
       const s = ch.substitute, first = ch.lines[0], rest = ch.lines.find(l => l.for) || ch.lines[1] || {};
       out.push(nt(`<b>${esc(L.short)}</b> ${esc(lang === "fi" ? first.title_fi : first.title)}, ${num(first.covers)} / ${num(it.quantity)} ${u}.<br><b>${esc(L.subst)}</b> ${esc(lang === "fi" ? s.title_fi : s.title)}, ${num(rest.covers)} ${u} · ${esc(L.tier[s.tier] || s.tier)} · ${esc(s.contract_price ? L.contract : L.list)}${s.price_delta_pct != null ? " · " + esc(L.per(s.price_delta_pct, unitS(s.per))) : ""}<br><span class="mu">${esc(L.why(s))}</span>${swapBtn ? `<div class="acts">${swapBtn}</div>` : ""}${alts}`));
     }
     else if (it.status === "short" && ch) out.push(nt(`${a}: ${esc(L.short_only(num(ch.covers), num(it.quantity), u))}${swapBtn ? `<div class="acts">${swapBtn}</div>` : ""}${alts}`));
-    else if (it.status === "which_kind") out.push(nt(`${esc(L.which(a.replace(/&[a-z#0-9]+;/g, m => ({ "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'" }[m] || m))))}<div class="acts">${(it.kinds || []).map(k => { const lab = lang === "fi" ? (k.fi || k.example_fi || k.kind) : k.kind; return has && live ? `<button type="button" class="sm" data-act="kind" data-i="${i}" data-kind="${esc(k.kind)}">${esc(lab)}</button>` : `<button type="button" class="sm" data-say="${esc((it.quantity ? num(it.quantity) + " " + u + " " : "") + lab)}">${esc(lab)}</button>`; }).join("")}</div>`));
+    else if (!live && !ch && (it.status === "which_kind" || it.status === "ask_amount")) out.push(nt(L.left_out(a)));
+    else if (it.status === "which_kind") out.push(nt(`${esc(L.which(a.replace(/&[a-z#0-9]+;/g, m => ({ "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'" }[m] || m))))}${kindBtns()}`));
     else if (it.status === "ask_amount" && it.usual_amount) {
       const ua = it.usual_amount, q = num(ua.quantity), uu = unitS(ua.unit), nm = lang === "fi" ? ua.title_fi || ua.title : ua.title;
       out.push(nt(`${L.amount_usual(a, q, uu, esc(nm))}<div class="acts">${has && live ? `<button type="button" class="sm" data-act="usual" data-i="${i}">${esc(L.usual_btn(q, uu))}</button>` : `<button type="button" class="sm" data-again="${esc(ua.id)}" data-title="${esc(nm)}" data-asked="1">${esc(L.usual_btn(q, uu))}</button>`}</div>`));
     }
     else if (it.status === "ask_amount") out.push(nt(L.amount(a)));
-    else if (it.status === "not_on_day") out.push(nt(`${L.not_day(a, esc(dayS(c.day)))}${it.available_on && live && has ? `<div class="acts"><button type="button" class="sm" data-act="day" data-date="${esc(it.available_on)}">${esc(L.move(dayS(it.available_on)))}</button></div>` : it.available_on ? ` ${esc(L.can_day(dayS(it.available_on)))}` : ""}`));
-    else if (it.status === "not_found") out.push(nt(it.no_fit ? L.no_fit(a, esc((c.stated || []).map(k => L.excl[k] || k).join(", "))) : L.none(a)));
+    else if (it.status === "not_on_day") out.push(nt(`${it.named_off ? L.named_off_day(a, offName, esc(dayS(c.day))) : L.not_day(a, esc(dayS(c.day)))}${it.strict ? esc(L.strict_tail) : ""}${it.available_on && live && has ? `<div class="acts"><button type="button" class="sm" data-act="day" data-date="${esc(it.available_on)}">${esc(L.move(dayS(it.available_on)))}</button></div>` : it.available_on ? ` ${esc(L.can_day(dayS(it.available_on)))}` : ""}${near}`));
+    else if (it.status === "not_found") out.push(nt((it.no_fit ? L.no_fit(a, esc((c.stated || []).map(k => L.excl[k] || k).join(", "))) : it.named_none ? L.named_none(a, `”${esc(it.named_none)}”`) : it.never && it.named_off ? L.named_off_never(a, offName) : it.never ? L.never(a) : it.too_much ? L.too_much(a, num(it.too_much)) : L.none(a)) + (it.strict ? esc(L.strict_tail) : "") + near));
     else if (ch) {
+      if (it.named_off && live) out.push(nt((it.named_off.never ? (x => L.named_off_gone(a, offName, x)) : (x => L.named_off(a, offName, esc(dayS(c.day)), x)))(ch.lines.map(l => `${num(l.units)} × ${esc(lang === "fi" ? l.title_fi : l.title)}`).join(" + ")) + (swapBtn ? `<div class="acts">${swapBtn}</div>` : "")));
       if (it.named_miss && live) out.push(nt(L.named_miss(a, `”${esc(it.named_miss)}”`, ch.lines.map(l => `${num(l.units)} × ${esc(lang === "fi" ? l.title_fi : l.title)}`).join(" + ")) + (swapBtn && !(it.usual && !c.same_as_last_week) ? `<div class="acts">${swapBtn}</div>` : "")));
+      const whole = it.unit === "pcs" && ch.lines.length === 1 && Number(it.quantity) % 1 && Number(ch.lines[0].units) === Math.ceil(Number(it.quantity));
+      if (whole && live) out.push(nt(L.rounded(a, num(it.quantity), num(ch.lines[0].units), u)));  // half a pack is not sold: the card says the amount was rounded up
+      // one pack that holds clearly more than was asked ("0,3 l" in a 1 l carton): the card says the cart has the pack
+      const over = it.unit !== "pcs" && ch.lines.length === 1 && Number(ch.lines[0].units) === 1 && Number(it.quantity) > 0 && Number(ch.covers) >= 1.25 * Number(it.quantity);
+      if (over && live && !it.usual) out.push(nt(L.pack(a, num(it.quantity), num(ch.covers), u)));
       if (it.usual && !c.same_as_last_week) out.push(nt(L.usual(a, num(it.quantity), u) + (swapBtn ? `<div class="acts">${swapBtn}</div>` : "") + alts, "info"));
       else if (more && S.open.swap === i) out.push(nt(`${a}${alts}`, "info"));
     }
@@ -745,9 +801,10 @@ function rowsHtml(S) {
   const itemOf = id => c ? (c.items || []).findIndex(it => !it.dropped && it.choices && it.choices[it.chosen || 0].lines.some(l => l.id === id) && it.choices.length > 1) : -1;
   return `<ul class="rows">${S.d.line_items.map(l => {
     const w = l.wholesale || {}, sf = w.substitutes_for, i = itemOf(l.item.id);
+    const us = live && c && (c.items || []).some(it => !it.dropped && !it.usual && it.choices && it.choices[it.chosen || 0].label === "usual_product" && it.choices[it.chosen || 0].lines.some(x => x.id === l.item.id));
     const pc = (S.x.pieces || {})[l.item.id];
     return `<li><b>${esc(num(w.units))} ${esc(unitS((l.item.quantity_unit || {}).display_text))} × ${esc(nameOf(S, l.item.id, l.item.title))}${pc ? ` (${esc(num(Math.round(w.units * pc)))} ${esc(unitS("pcs"))})` : ""}</b><span class="a">${eur(amount(l.totals, "subtotal"))}</span>`
-      + (sf || w.contract_price || i >= 0 || und.has(String(l.item.id)) ? `<span class="s">${[sf ? `${esc(L.subst)} ${esc(L.for_(nameOf(S, sf.for, sf.for_title)))}` : "", w.contract_price ? esc(L.contract) : "", und.has(String(l.item.id)) ? esc(L.no_decl) : "", live && i >= 0 && !sf ? `<button type="button" class="lnkbtn" style="min-height:24px;font-size:var(--t1)" data-act="swapopen" data-i="${i}">${esc(L.swap)}</button>` : ""].filter(Boolean).join(" · ")}</span>` : "") + `</li>`;
+      + (sf || w.contract_price || i >= 0 || us || und.has(String(l.item.id)) ? `<span class="s">${[sf ? `${esc(L.subst)} ${esc(L.for_(nameOf(S, sf.for, sf.for_title)))}` : "", w.contract_price ? esc(L.contract) : "", us ? esc(L.usual_tag) : "", und.has(String(l.item.id)) ? esc(L.no_decl) : "", live && i >= 0 && !sf ? `<button type="button" class="lnkbtn" style="min-height:24px;font-size:var(--t1)" data-act="swapopen" data-i="${i}">${esc(L.swap)}</button>` : ""].filter(Boolean).join(" · ")}</span>` : "") + `</li>`;
   }).join("")}</ul>`;
 }
 function checksHtml(S) {
@@ -773,20 +830,38 @@ function render(S) {
   S.el.className = "cart" + (done ? " done" : off ? " off" : "");
   S.el.dataset.cid = d.id;
   const c = S.x.cart, solo = c && (c.items || []).filter(it => !it.dropped && it.choices);
+  const openQ = c ? (c.items || []).filter(it => !it.dropped && !it.choices) : [];  // asked for and not in the cart: said once more right at the button
+  const lessQ = c ? (c.items || []).filter(it => !it.dropped && it.choices && it.status === "short") : [];  // in the cart, but less of it than asked
+  const subC = amount(d.totals, "subtotal") || 0, overB = c && c.budget && subC > Math.round(c.budget * 100) ? subC - Math.round(c.budget * 100) : 0;
+  const blockedWhy = ((c && c.blocked) || []).map(b => { const n = lang === "fi" ? b.title_fi || b.title : b.title; return b.code === "insufficient_stock" && b.can != null ? L.blocked_stock(n, num(b.can), num(b.asked), unitS(b.unit)) : L.blocked_line(n); });
+  // Every line where the cart is not what was asked is named once more right at the button: another product, part of it replaced, more because of the pack.
+  const nmL = l => lang === "fi" ? l.title_fi || l.title : l.title;
+  const otherQ = !c ? [] : (c.items || []).filter(it => !it.dropped && it.choices).flatMap(it => {
+    const ch = it.choices[it.chosen || 0], a = `”${it.as_written || it.query}”`, one = ch.lines.length === 1 ? ch.lines[0] : null, packs = one ? Number(one.units ?? one.quantity) : 0;
+    if (it.status === "replaced" && ch.substitute) return [L.d_part(a, nmL(ch.substitute))];
+    if (it.gap || it.named_miss || it.named_off) return [L.d_other(a, ch.lines.map(nmL).join(" + "))];
+    const more = it.status === "ok" && !it.usual && Number(it.quantity) > 0 && (it.unit === "pcs" ? one && packs > 0 && ch.covers > it.quantity + 1e-6 && ch.covers / packs > 1 : Number(ch.covers) >= 1.1 * Number(it.quantity));
+    if (more) return [L.d_more(a, num(ch.covers), unitS(it.unit))];
+    return [];
+  }).concat(c.menu && (c.menu.replaced || []).length ? [L.d_menu(c.menu.replaced.length)] : []);
   let cheaper = "";
   if (esc_ && solo && solo.length === 1) {  // one product, over the limit: say which choice would need no approver
-    const it = solo[0], i = c.items.indexOf(it), k = it.choices.findIndex((x, j) => j !== (it.chosen || 0) && x.decision === "agent_may_order" && (x.covers_pct ?? 100) >= 99.5);
-    if (k >= 0) cheaper = `<p style="margin:10px 0 6px">${esc(L.cheaper(it.choices[k].lines.map(l => lang === "fi" ? l.title_fi : l.title).join(" + "), eur(it.choices[k].total)))}</p><button type="button" class="sm" data-act="swap" data-i="${i}" data-k="${k}">${esc(L.swap)}</button>`;
+    const it = solo[0], i = c.items.indexOf(it), k = it.choices.findIndex((x, j) => j !== (it.chosen || 0) && x.decision === "agent_may_order" && (x.covers_pct ?? 100) >= 100);
+    if (k >= 0) cheaper = (it.choices[it.chosen || 0].label === "usual_product" ? `<p style="margin:10px 0 0">${esc(L.usual_why)}</p>` : "") + `<p style="margin:10px 0 6px">${esc(L.cheaper(it.choices[k].lines.map(l => lang === "fi" ? l.title_fi : l.title).join(" + "), eur(it.choices[k].total)))}</p><button type="button" class="sm" data-act="swap" data-i="${i}" data-k="${k}">${esc(L.swap)}</button>`;
   }
   S.el.innerHTML = `<div class="hd"><b>${esc(done ? `${L.placed} ${o.label || ""}` : off ? (S.x.cart && S.x.cart.replaced ? L.replaced : L.canceled) : stopped ? L.stopped : L.built)}</b><span>${esc(L.lines(n))}</span></div>`
     + (w.intent ? `<p class="ask">”${esc(w.intent)}”</p>` : "")
     + (S.made && n >= 3 && !done && !off && !String(w.intent || "").includes(" / ") ? `<p class="made">${esc(S.x.cart && S.x.cart.menu && S.x.cart.menu.photo_reused ? L.made_again(n) : L.made(n, Math.max(1, Math.round(S.made.ms / 1000)), S.made.img))}</p>` : "")
     + (off ? "" : itemNotes(S))
-    + (stopped ? nt(esc([L.deny_h].concat([...new Set(((w.policy || {}).rules || []).filter(r => r.outcome === "deny").map(r => L.deny_why[r.id] || L.deny_why[r.id[0]] || L.deny_why.other))]).join(" ") || L.deny), "bad") : "") + (expired ? nt(esc(L.expired)) : "")
+    + (stopped ? nt(esc((ws => ws.length ? [L.deny_h].concat(ws).join(" ") : L.deny)([...new Set(((w.policy || {}).rules || []).filter(r => r.outcome === "deny").map(r => L.deny_why[r.id] || L.deny_why[r.id[0]] || L.deny_why.other))].concat(blockedWhy))), "bad") : "") + (expired ? nt(esc(L.expired)) : "")
     + `<dl class="sum"><dt>${esc(L.day)}</dt><dd>${esc(dayS(w.delivery_date))}</dd><dt>${esc(L.ex)}</dt><dd>${eur(amount(d.totals, "subtotal"))}</dd><dt class="tot">${esc(L.inc)}</dt><dd class="tot">${eur(amount(d.totals, "total"))}</dd></dl>`
     + (lateGate ? `<div class="acts" style="margin:10px 0 4px"><button type="button" class="sm" data-act="lateok">${esc(L.late_ok(dayS(w.delivery_date)))}</button></div>` : "")
     + (esc_ && !lateGate ? `<div class="appr"><div><b>${esc(L.need)}</b>${whyApproval(S).map(s => `<p>${esc(s)}</p>`).join("")}<p class="mu">${esc(L.need_how)}</p></div><div class="qr">${S.x.qr || ""}</div><div class="rest">${navigator.share ? `<button type="button" class="sm" data-act="share">${esc(L.share)}</button>` : ""}<button type="button" class="sm" data-act="copy">${esc(L.copy)}</button>${hello && hello.review ? `<button type="button" class="lnkbtn alone" data-act="demoappr">${esc(L.alone)}</button>` : ""}${cheaper}</div></div>` : "")
     + (ap && ap.decision === "approved" && !off ? `<div class="okline">✓ ${esc(L.approved(ap.by || ""))}${ap.demo ? ` <span class="demo">${esc(L.demo_appr)}</span>` : ""}</div>` : ap && ap.decision === "rejected" ? `<div class="nt bad">${esc(L.rejected(ap.by || ""))}</div>` : "")
+    + ((ready || esc_) && !lateGate && openQ.length ? nt(esc(L.open_q(openQ.length, openQ.map(x => `”${x.as_written || x.query}”`).join(", "))), "bad") : "")
+    + ((ready || esc_) && !lateGate && lessQ.length ? nt(esc(L.less_q(lessQ.map(x => `”${x.as_written || x.query}” ${num(x.choices[x.chosen || 0].covers)} / ${num(x.quantity)} ${unitS(x.unit)}`).join(", "))), "bad") : "")
+    + ((ready || esc_) && !lateGate && otherQ.length ? nt(esc(`${L.diff_h} ${otherQ.join("; ")}.`)) : "")
+    + ((ready || esc_) && !lateGate && overB ? nt(esc(L.over_budget(eur(Math.round(c.budget * 100)), eur(subC), eur(overB))), "bad") : "")
     + (needTick && !lateGate ? `<label class="tick"><input type="checkbox" data-act="labels"${S.open.labels ? " checked" : ""}><span>${esc(L.labels(blankN))}</span></label>` : "")
     + (lateGate ? "" : ready || expired ? `<button type="button" class="cta" data-act="confirm"${needTick && !S.open.labels ? " disabled" : ""}>${esc(L.confirm)}</button>` : esc_ ? `<button type="button" class="cta" disabled>${esc(L.confirm)} · ${esc(L.waiting)}</button>` : done && (o.permalink_url || S.x.order_url) ? `<a class="cta" href="${esc(o.permalink_url || S.x.order_url)}" target="_blank" rel="noopener">${esc(L.record)}</a>` : "")
     + `<div class="folds"><button type="button" class="lnkbtn" data-act="rows">${esc(S.open.rows ? L.rows_hide : L.rows(n))}</button><button type="button" class="lnkbtn" data-act="checks">${esc(S.open.checks ? L.checks_hide : L.checks)}</button>${ready || esc_ ? `<button type="button" class="lnkbtn" data-act="cancel">${esc(L.cancel)}</button>` : ""}</div>`

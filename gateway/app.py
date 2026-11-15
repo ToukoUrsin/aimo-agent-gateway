@@ -160,13 +160,63 @@ def profile():
 
 
 # ------------------------------------------------------------------- catalog
-@app.post("/catalog/search", tags=["catalog"], summary="Search products with live price, stock and product facts")
+# The request bodies as OpenAPI reads them: the fields the gateway takes, which are required, and one example each that runs as it stands
+# (with a mandate: "Authorization: Bearer <mandate>"). Unknown fields are ignored, never refused.
+_STR_LIST = lambda text: {"type": "array", "items": {"type": "string"}, "description": text}
+_FILTERS = {"type": "object", "description": "Hard requirements. Every product offered meets all of them; they are checked in code, not by the model.", "properties": {
+    "claims": _STR_LIST("For example lactose_free, gluten_free, vegan (or GS1 codes such as FREE_FROM:LACTOSE)."),
+    "exclude_allergens": _STR_LIST("Allergens no offered product may declare, by name (milk, gluten, nuts, egg, fish, soy) or GS1 code. A product with no allergen declaration is never offered as checked."),
+    "labels": _STR_LIST("Certificates and labels, for example organic."), "categories": _STR_LIST("Valio Aimo category codes."), "origin": _STR_LIST("ISO country codes, for example FI.")}}
+_NEED = {"type": "object", "required": ["quantity", "unit"], "properties": {"quantity": {"type": "number", "exclusiveMinimum": 0, "description": "How much is needed."},
+                                                                             "unit": {"type": "string", "description": "L, KG, or pcs for things counted in pieces (600 eggs is 600 pcs)."}}}
+_DAY = {"type": "string", "format": "date", "description": "Delivery date, YYYY-MM-DD. Left out: the first possible delivery day."}
+_LINE = {"type": "object", "required": ["item", "quantity"], "properties": {
+    "item": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string", "description": "Valio Aimo product id."}}},
+    "quantity": {"type": "integer", "description": "As the plan's option gives it in line_items[].quantity (sales units scaled by the product's decimals). Pass it back unchanged."},
+    "wholesale": {"type": "object", "properties": {"substitutes_for": {"type": "string", "description": "The product id this line replaces, when it is a substitute."}}},
+    "requirements": {"type": "object", "description": "Requirements that hold for this line only: claims, exclude_allergens, labels."}}}
+_CHECKOUT = {"line_items": {"type": "array", "items": _LINE}, "wholesale": {"type": "object", "properties": {
+    "delivery_date": _DAY, "requirements": {"type": "object", "description": "For the whole order: claims, exclude_allergens, labels. Enforced on every line by the rule engine."},
+    "intent": {"type": "string", "description": "The buyer's request in their own words. Kept in the order record."}, "rationale": {"type": "string", "description": "Why these lines. A human approver reads it."},
+    "purchase_order": {"type": "string"}}}}
+_CHECKOUT_EX = {"line_items": [{"item": {"id": "463380"}, "quantity": 40}], "wholesale": {"delivery_date": "2026-11-17", "intent": "40 litraa Arla Cafè maitoa tiistaiksi", "rationale": "The product named, in full."}}
+
+
+def _body(props: dict, required: list, example: dict, answer: dict | None = None) -> dict:
+    out = {"requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object", "properties": props, "required": required, "additionalProperties": True}, "example": example}}}}
+    if answer:
+        out["responses"] = {"200": {"description": "Signed by the gateway (proof.jws, checked against the key in /.well-known/ucp).", "content": {"application/json": {"schema": answer}}}}
+    return out
+
+
+_PLAN_ANSWER = {"type": "object", "properties": {
+    "options": {"type": "array", "description": "Ranked, ready to order. Empty when nothing can be offered; messages and not_offered say why.", "items": {"type": "object", "properties": {
+        "label": {"type": "string", "description": "as_requested, usual_product, lowest_price, most_reliable, finnish_origin, bigger_pack, split_with_substitute, partial_only or combined."},
+        "tradeoff": {"type": "string", "description": "One sentence on what this option gives and costs."}, "covers": {"type": "number"}, "covers_pct": {"type": "number"},
+        "total_ex_vat": {"type": "integer", "description": "Euro cents, VAT 0 %."},
+        "authority": {"type": "object", "properties": {"decision": {"type": "string", "enum": ["agent_may_order", "needs_human_approval", "not_allowed", "invalid"]}, "reasons": {"type": "array", "items": {"type": "string"}}}},
+        "line_items": {"type": "array", "description": "Send these as they are to POST /checkout-sessions.", "items": {"type": "object", "properties": {
+            "item": {"type": "object", "properties": {"id": {"type": "string"}, "title": {"type": "string"}}}, "quantity": {"type": "integer"}, "units": {"type": "number"}, "unit": {"type": "string"},
+            "covers": {"type": "number"}, "unit_price": {"type": "integer"}, "line_total_ex_vat": {"type": "integer"}}}},
+        "substitute": {"type": "object", "description": "Present when part of the need is covered by a replacement from Valio Aimo's own range: its tier (best, better, good) and the reason."}}}},
+    "kinds_to_choose": {"type": "array", "items": {"type": "object"}, "description": "When the query does not say which kind is meant and the account has no history that settles it."},
+    "not_offered": {"type": "array", "items": {"type": "object"}, "description": "Products of the kind that were left out, counted by reason (cutoff_passed, out_of_stock, not_deliverable ...)."},
+    "named_product": {"type": "object", "description": "When preferred_product was a name: the product(s) of the range that carry it, and whether any can come."},
+    "messages": {"type": "array", "items": {"type": "object"}}, "proof": {"type": "object", "description": "Detached JWS (ES256) over the canonical answer."}}}
+
+
+@app.post("/catalog/search", tags=["catalog"], summary="Search products with live price, stock and product facts",
+          openapi_extra=_body({"query": {"type": "string", "description": "Product words in Finnish, Swedish or English."}, "filters": _FILTERS,
+                               "pagination": {"type": "object", "properties": {"limit": {"type": "integer", "minimum": 1, "maximum": 25, "default": 10}}},
+                               "wholesale": {"type": "object", "properties": {"delivery_date": _DAY, "need": _NEED}}},
+                              ["query"], {"query": "laktoositon maito", "filters": {"claims": ["lactose_free"]}, "pagination": {"limit": 5}, "wholesale": {"delivery_date": "2026-11-16"}}))
 def catalog_search(request: Request, body: dict = Body(...)):
     p, tr = who(request)
     return g.search(body, p, tr)
 
 
-@app.post("/catalog/lookup", tags=["catalog"], summary="Look up products by id or GTIN")
+@app.post("/catalog/lookup", tags=["catalog"], summary="Look up products by id or GTIN",
+          openapi_extra=_body({"ids": _STR_LIST("Valio Aimo product ids or GTINs."), "delivery_date": _DAY}, ["ids"], {"ids": ["463380"], "delivery_date": "2026-11-16"}))
 def catalog_lookup(request: Request, body: dict = Body(...)):
     p, tr = who(request)
     ids = body.get("ids") or body.get("product_ids") or body.get("gtins") or []
@@ -177,7 +227,10 @@ def catalog_lookup(request: Request, body: dict = Body(...)):
     return g.lookup([str(i) for i in ids], g._asked_day(body), p, tr)
 
 
-@app.post("/sourcing/plan", tags=["wholesale extension"], summary="Turn a need (quantity, date, requirements) into ranked, ready-to-order options")
+@app.post("/sourcing/plan", tags=["wholesale extension"], summary="Turn a need (quantity, date, requirements) into ranked, ready-to-order options",
+          openapi_extra=_body({"query": {"type": "string", "description": "One kind of product by its plain name: 'lactose-free milk', 'minced beef', 'eggs'."}, "need": _NEED, "delivery_date": _DAY,
+                               "preferred_product": {"type": "string", "description": "A product id, or the brand or product name as the buyer said it, when a specific product is wanted."}, "filters": _FILTERS},
+                              ["query", "need"], {"query": "lactose-free milk", "need": {"quantity": 1000, "unit": "L"}, "delivery_date": "2026-11-16"}, _PLAN_ANSWER))
 def sourcing_plan(request: Request, body: dict = Body(...)):
     p, tr = who(request)
     return g.plan(body, p, tr)
@@ -190,7 +243,8 @@ def sourcing_usual(request: Request, query: str = ""):
 
 
 # ------------------------------------------------------------------ checkout
-@app.post("/checkout-sessions", tags=["checkout"], summary="Create a checkout: validated lines, guardrail decision, signed offer with held price and stock", status_code=201)
+@app.post("/checkout-sessions", tags=["checkout"], summary="Create a checkout: validated lines, guardrail decision, signed offer with held price and stock", status_code=201,
+          openapi_extra=_body(_CHECKOUT, ["line_items"], _CHECKOUT_EX))
 def checkout_create(request: Request, body: dict = Body(...)):
     p, tr = who(request)
     c = g.create_checkout(body, p, tr)
@@ -206,13 +260,15 @@ def checkout_get(cid: str, request: Request):
     return g.get_checkout(cid, member(request)[0])
 
 
-@app.put("/checkout-sessions/{cid}", tags=["checkout"], summary="Replace a checkout's lines and get a fresh signed offer")
+@app.put("/checkout-sessions/{cid}", tags=["checkout"], summary="Replace a checkout's lines and get a fresh signed offer", openapi_extra=_body(_CHECKOUT, ["line_items"], _CHECKOUT_EX))
 def checkout_update(cid: str, request: Request, body: dict = Body(...)):
     p, tr = member(request)
     return g.update_checkout(cid, body, p, tr)
 
 
-@app.post("/checkout-sessions/{cid}/complete", tags=["checkout"], summary="Place the order (needs status ready_for_complete and the agent's signature over the offer)")
+@app.post("/checkout-sessions/{cid}/complete", tags=["checkout"], summary="Place the order (needs status ready_for_complete and the agent's signature over the offer)",
+          openapi_extra={"requestBody": {"content": {"application/json": {"schema": {"type": "object", "additionalProperties": True, "properties": {"ap2": {"type": "object", "properties": {
+              "checkout_mandate": {"type": "string", "description": "The agent's own signature (compact JWS, ES256) over the offer it accepts, made with the key its mandate names. Without it, or over other terms, the order is refused."}}}}}}}}})
 def checkout_complete(cid: str, request: Request, body: dict = Body(default={})):
     return g.complete_checkout(cid, body, who(request)[0])
 

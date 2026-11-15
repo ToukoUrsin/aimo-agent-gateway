@@ -141,9 +141,9 @@ const T = {
     so: (t, a, b, s) => `${t}: ${a} → ${b} joka viikko ${s} alkaen.`, soNow: "Nyt ei tilata mitään.", soAlso: "Muuttaa myös vakiotilausta: ",
     name: "Nimesi", namePh: "esim. Maija Korhonen, ravintolapäällikkö", note: "Lisää viesti (valinnainen)", notePh: "esim. OK vain tällä viikolla",
     honest: "Prototyyppi ei tarkista, kuka hyväksyjä on: hyväksyjän laitteeksi tulee ensimmäinen laite, joka hyväksyy eri selaimessa kuin tilaaja, ja nimen hän kirjoittaa itse. Minun Aimossa hyväksyjä olisi kirjautunut käyttäjä, jolla on hyväksymisoikeus.",
-    ownH: "Et voi hyväksyä omaa tilaustasi.", ownP: "Lähetä tämä linkki hyväksyjälle tai näytä QR-koodi hänelle. Hän hyväksyy omalla laitteellaan. Yksin? Yksityinen ikkuna käy toisesta laitteesta.",
+    ownH: "Et voi hyväksyä omaa tilaustasi.", ownP: "Lähetä tämä linkki hyväksyjälle tai näytä QR-koodi hänelle. Hän hyväksyy omalla laitteellaan.",
     ownDemo: "Kokeiletko yksin yhdellä laitteella? Avaa hyväksyjän näkymä (demo)", demoName: "Demo-hyväksyjä", backShop: "Palaa ostoskoriin",
-    demoNote: "<b>Demo.</b> Katsot hyväksyjän näkymää samassa selaimessa, jossa tilaus tehtiin. Tilaukseen tallentuu, että tämä oli demohyväksyntä. Oikea hyväksyntä tulee toiselta laitteelta, joka allekirjoittaa sen: avaa linkki toisella laitteella tai yksityisessä ikkunassa.",
+    demoNote: "<b>Demo.</b> Katsot hyväksyjän näkymää samassa selaimessa, jossa tilaus tehtiin. Tilaukseen tallentuu, että tämä oli demohyväksyntä. Oikea hyväksyntä tulee hyväksyjän omalta laitteelta, joka allekirjoittaa sen.",
     hintDemo: "Tilauksen tietoihin tallentuu, että tämä oli demohyväksyntä.", demoDone: "Tallennettu demohyväksyntänä: annettu samassa selaimessa, jossa tilaus tehtiin.", honestH: "Miten tämä toimisi Minun Aimossa",
     copy: "Kopioi linkki", copied: "Linkki kopioitu", copyFail: "Kopioi linkki osoiteriviltä",
     ownSmall: "Prototyyppi tunnistaa tilaajan selaimesta. Minun Aimossa hyväksyjä tunnistetaan kirjautumisesta.",
@@ -195,9 +195,9 @@ const T = {
     so: (t, a, b, s) => `${t}: ${a} → ${b} every week from ${s}.`, soNow: "Nothing is ordered now.", soAlso: "It also changes the standing order: ",
     name: "Your name", namePh: "e.g. Maija Korhonen, F&B manager", note: "Add a note (optional)", notePh: "e.g. OK for this week only",
     honest: "The prototype does not check who the approver is: the first device that approves in a different browser from the asker becomes the approver's device, and they type their own name. In Minun Aimo the approver would be a signed-in user with the right to approve.",
-    ownH: "You cannot approve your own order.", ownP: "Send this link to the approver or show them the QR code. They approve on their own device. Alone? A private window counts as another device.",
+    ownH: "You cannot approve your own order.", ownP: "Send this link to the approver or show them the QR code. They approve on their own device.",
     ownDemo: "Trying this alone on one device? Open the approver's view (demo)", demoName: "Demo approver", backShop: "Back to the cart",
-    demoNote: "<b>Demo.</b> You see the approver's view in the same browser that asked for the order. The order's record will say this was a demo approval. A real approval comes from another device, which signs it: open the link on another device or in a private window.",
+    demoNote: "<b>Demo.</b> You see the approver's view in the same browser that asked for the order. The order's record will say this was a demo approval. A real approval comes from the approver's own device, which signs it.",
     hintDemo: "The order record will say this was a demo approval.", demoDone: "Kept as a demo approval: given in the same browser that asked for the order.", honestH: "How this would work in Minun Aimo",
     copy: "Copy link", copied: "Link copied", copyFail: "Copy the link from the address bar",
     ownSmall: "The prototype recognises who asked by their browser. In Minun Aimo the approver is recognised by their sign-in.",
@@ -612,7 +612,7 @@ function view(c) {
   if ($("#try")) $("#try").onclick = tryLink;
   if ($("#copy")) $("#copy").onclick = copyLink;
   // Back to the cart: this tab was opened from the shop, so it closes; if the browser keeps it, the shop opens here with the same conversation.
-  if ($("#backshop")) $("#backshop").onclick = () => { try { window.close(); } catch (e) {} setTimeout(() => { location.href = "/shop"; }, 300); };
+  if ($("#backshop")) $("#backshop").onclick = () => { try { window.close(); } catch (e) {} setTimeout(() => { location.href = DEMO ? "/shop?demo=1" : "/shop"; }, 300); };
   if (open) gate();
 }
 async function copyLink() {
@@ -727,7 +727,7 @@ async function decide(approve) {
 // ---- Language: the same switch and the same stored choice as the shop
 function paint() {
   document.documentElement.lang = lang;
-  document.title = t("title") + " · Valio Aimo";
+  document.title = t("title") + (fi() ? " · prototyyppi" : " · prototype");
   $("#proto").textContent = t("proto");
   $("#net").textContent = t("net");
   if ($("#loading")) $("#loading").textContent = t("loading");

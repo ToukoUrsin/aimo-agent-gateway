@@ -29,7 +29,7 @@ from pathlib import Path
 import httpx
 from fastapi import APIRouter, Body, Request, Response
 
-from .catalog import ALLERGENS, UNITS, allergen_hits, allergens_unchecked, declares_allergens, fold, named_hits, widen_allergens
+from .catalog import ALLERGENS, UNITS, allergen_hits, allergens_unchecked, declares_allergens, fold, kind, named_hits, widen_allergens
 from .config import DATA as DATA_DIR, STAGE, TZ, WEB, order_url
 from . import passkey
 from .service import REASONS, GatewayError, iso, nice_day
@@ -413,6 +413,20 @@ def _recipe(raw, per: int = 1, left: list | None = None) -> list[dict]:
     return out
 
 
+# A model's guess at a whole dried spice is easily a pack too many: a bay leaf weighs a fifth of a gram and a pot takes a few. Its amount per
+# portion is cut to what the kitchen's own recipe cards use. A person's own recipe is never touched.
+SPICE_MAX = ((re.compile(r"bay lea(?:f|ves)|laakerinleh|saffron|sahrami|nutmeg|muskot|star anise|tahtianis"), 0.05),
+             (re.compile(r"allspice|peppercorn|maustepippur|(?<!garlic )cloves?\b|neilik|juniper|kataja|cardamom|kardemumm|cinnamon stick|kanelitan"), 0.2))
+
+
+def _spices(recipe: list[dict]) -> list[dict]:
+    for r in recipe:
+        top = next((m for rx, m in SPICE_MAX if rx.search(fold(r["item"]))), None) if r["unit"] == "g" else None
+        if top and r["amount"] > top:
+            r["amount"] = top
+    return recipe
+
+
 # Words a menu prints as section headings. A reading sometimes returns them as notes; a heading is never a dietary note.
 HEADINGS = {"starter", "starters", "main", "mains", "main course", "main courses", "dessert", "desserts", "appetizer", "appetizers", "first course", "second course", "side", "sides", "side dishes",
             "drinks", "beverages", "coffee", "breakfast", "lunch", "dinner", "supper", "buffet", "menu", "notes", "note", "dietary notes", "allergens", "allergy notes",
@@ -467,7 +481,7 @@ def normalize(raw: dict, source: str) -> dict:
         own = [{**r, "waste_pct": 0} for r in _recipe(x.get("recipe"), per, left)] if source == "agent" and per and 1 <= per <= MAX_GUESTS else []
         if own:
             card = None
-        recipe = own or ([] if card else _recipe(x.get("recipe")))
+        recipe = own or ([] if card else _spices(_recipe(x.get("recipe"))))
         notes = x.get("notes") if isinstance(x.get("notes"), list) else [x["notes"]] if x.get("notes") else []
         skip = [str(n).strip()[:140] for n in (x.get("skip") if isinstance(x.get("skip"), list) else []) if str(n).strip()][:6]
         dishes.append({"name": name, "as_written": written, "card": card, "portions": _int(x.get("portions")), "days": _int(x.get("days")) or 1,
@@ -560,12 +574,12 @@ def fill_recipes(reading: dict, redo: dict | None = None) -> list[dict]:
         if not x:
             continue
         if redo is not None:  # a second answer replaces the first only when it has what was missing
-            new = _recipe(x.get("recipe"))
+            new = _spices(_recipe(x.get("recipe")))
             if new and len(missing_named(d["name"], d["as_written"], new)) < len(missing_named(d["name"], d["as_written"], d["recipe"])):
                 d["recipe"], d["source"] = new, "model"
             continue
         d["food"] = x.get("food") is not False
-        d["recipe"], d["source"] = (_recipe(x.get("recipe")), "model") if d["food"] else ([], None)
+        d["recipe"], d["source"] = (_spices(_recipe(x.get("recipe"))), "model") if d["food"] else ([], None)
     return [{**u, "step": "check named ingredients" if redo is not None else "propose recipes"}]
 
 
@@ -806,6 +820,7 @@ STAPLE = re.compile(r"\b(?:salt|sugar|flour|starch|yeast|oil|vinegar|bouillon|st
 STAPLE_SHARE = 1 / 3  # of the smallest pack
 RANGE_NOTE = "Every product and price here is Valio Aimo's answer for your account. Nothing comes from outside Valio Aimo."
 FAR = 1.5             # a pack is far bigger than the need when it holds this many times the need
+MANY = 24             # more sales units than this of one ingredient is a great many small packs
 _NEUTRAL = set("fresh organic luomu class kpl pkt ltk pss bag box sack fin finland suomi hollanti espanja italia ranska saksa puola kiina netherlands holland spain italy france germany poland china tuore pakaste frozen approx".split())
 # Words that make a product another thing than the ingredient in its name: lime curd is not lime, red wine vinegar is not red wine.
 _FORMS = set("soup casserole pudding sauce syrup topping bar sorbet curd juice spread pie cake cheesecake pizza salad sandwich panini marmalade jam puree pure vinegar flavour flavor flavoured flavored spice seasoning "
@@ -816,6 +831,8 @@ _FORMS = set("soup casserole pudding sauce syrup topping bar sorbet curd juice s
 SOLD_AS = {"karelian pasty": ("rice pastry", "riisipiirakka"), "karelian pie": ("rice pastry", "riisipiirakka"), "karjalanpiirakka": ("rice pastry", "riisipiirakka"),
            # In a Finnish kitchen paprika is the vegetable, and the wholesaler lists it as capsicum. The spice is "paprika powder".
            **{k: ("capsicum", "paprika") for k in ("paprika", "bell pepper", "sweet pepper", "capsicum")},
+           # The wholesaler's big frozen packs of the Finnish berry are listed as bilberry; a recipe says blueberry for both.
+           **{k: ("bilberry", "mustikka") for k in ("blueberry", "frozen blueberry", "mustikat", "pakastemustikka")},
            **{f"{c} bell pepper": (f"capsicum {c}", f"paprika {f}") for c, f in (("red", "punainen"), ("green", "vihrea"), ("yellow", "keltainen"))}}
 SNACK_CATS = ("21990", "21993", "21120")  # crisps, snacks and salted biscuits
 _SPECIES = set("lamb pork beef veal chicken broiler turkey duck goose reindeer elk moose venison horse salmon trout tuna cod herring pike perch shrimp prawn crab ham bacon".split())
@@ -1282,6 +1299,35 @@ class Planner:
             for dm in group:
                 if dm.get("sized") in (None, dm["cands"][0]) or self.covers(dm["sized"], unit, need) <= self.covers(dm["cands"][0], unit, need) + 1e-6:
                     dm.pop("sized", None)
+        # An ingredient that is not on the kitchen's own list has no usual product to keep. When the first one found would come in a great many
+        # small packs (121 punnets of blueberries for a kiisseli), the bigger pack of the same ingredient is ordered instead: only where Valio Aimo
+        # has enough of it, it is not far more than the menu needs, and it costs at most a half more.
+        for (item, first), group in by_product().items():
+            unit, need = group[0]["unit"], sum(dm["need"] for dm in group)
+            packs = lambda pid: self.covers(pid, unit, need) / self.content(pid, unit)
+            cost = lambda pid: (self.live[pid].get("price") or 0) * packs(pid)
+            if group[0]["known"] or packs(first) <= MANY:
+                continue
+            same = lambda pid: kind(g.cat.get(pid)) == kind(g.cat.get(first))
+            every = list(dict.fromkeys(common(group) + [pid for dm in group for pid in dm["cands"]]))  # found for any group of portions, and passing every group's checks
+            opts = [pid for pid in every if pid != first and self.content(pid, unit) and same(pid) and packs(pid) * 4 <= packs(first) and self.cap(pid) >= packs(pid) - 1e-6
+                    and self.covers(pid, unit, need) <= FAR * need and cost(pid) <= 1.5 * cost(first)
+                    and all(pid in dm["cands"] or self.why_not(pid, unit, dm["cons"], order_ex, dm["sib"]) is None for dm in group)]
+            if opts:
+                best = min(opts, key=lambda pid: (cost(pid), packs(pid)))
+                for dm in group:
+                    dm["cands"], dm["bulk"] = [best] + [c for c in dm["cands"] if c != best], (first, round(packs(first)))
+                    dm.pop("sized", None)
+        # 3d. A menu planned again (more guests, a dish taken off): the product the cook already saw on the earlier cart stays, where it passes
+        # the same checks for every portion and Valio Aimo has enough of it. A better-fitting pack is no reason to change a product unasked.
+        keep = set(rd.get("keep") or [])
+        for (item, pid), group in by_product().items() if keep else ():
+            unit, need = group[0]["unit"], sum(dm["need"] for dm in group)
+            had = pid if pid in keep else next((k for k in common(group) if k in keep and self.cap(k) * self.content(k, unit) >= need - 1e-6), None)
+            if had and had != pid:
+                for dm in group:
+                    dm["cands"] = [had] + [c for c in dm["cands"] if c != had]
+                    dm.pop("sized", None)
         for (item, pid), group in by_product().items():
             least = least_of(group, sum(dm["need"] for dm in group))[1]
             for dm in group:
@@ -1299,11 +1345,12 @@ class Planner:
                 if was:
                     was["_need"] += dm["need"]
                     was["amount"] = qty(was["_need"], dm["unit"])
+                    was["_why"] |= set(dm["cons"]["why"])
                 elif not dm["pool"]:
-                    opened.append({"kind": "not_in_range", "dish": dm["dish"], "item": dm["item"], "amount": amount, "_gap": (dm["dish_i"], dm["item"]), "_need": dm["need"],
+                    opened.append({"kind": "not_in_range", "dish": dm["dish"], "item": dm["item"], "amount": amount, "_gap": (dm["dish_i"], dm["item"]), "_need": dm["need"], "_unit": dm["unit"], "_why": set(dm["cons"]["why"]),
                                    "text": f"{dm['item'].capitalize()} for {dm['dish']}: not in Valio Aimo's range. Not ordered."})
                 else:
-                    opened.append({"kind": "no_fit", "dish": dm["dish"], "item": dm["item"], "amount": amount, "_gap": (dm["dish_i"], dm["item"]), "_need": dm["need"],
+                    opened.append({"kind": "no_fit", "dish": dm["dish"], "item": dm["item"], "amount": amount, "_gap": (dm["dish_i"], dm["item"]), "_need": dm["need"], "_unit": dm["unit"], "_why": set(dm["cons"]["why"]),
                                    "text": f"{dm['item'].capitalize()} for {dm['dish']}: no product passes the checks, so it is not ordered. " + " ".join(f"{t['title']}: {t['why']}." for t in tried[:3])})
                 continue
             usual = dm["cands"][0]
@@ -1345,7 +1392,8 @@ class Planner:
                     opened.append({"kind": "short", "dish": dm["dish"], "item": dm["item"], "role": dm["role"], "amount": qty(missing, dm["unit"]), "_short": (dm["dish_i"], dm["item"], usual), "_need": missing,
                                    "text": f"{who.capitalize()}: {qty(missing, dm['unit'])} is not covered. {have} {none} The line is kept short and a person decides."})
 
-        opened = [{k: v for k, v in o.items() if not k.startswith("_")} for o in opened]
+        # an ingredient nobody could get keeps its amount as a number and the dietary rules its portions are under: the shop asks the range for it once more as a line of its own
+        opened = [{**{k: v for k, v in o.items() if not k.startswith("_")}, **({"need": round(o["_need"], 1), "unit": o["_unit"], "rules": sorted(o["_why"])} if o.get("_gap") and o.get("_unit") else {})} for o in opened]
         # 5. one line per product, rounded up to the pack size and the order step
         lines, by = [], {}
         for dm, pid, units, usual, why in alloc:
@@ -1391,9 +1439,11 @@ class Planner:
             much = not short and got >= FAR * need_amt and got - need_amt >= 1
             sized = next((p[0]["sized"] for p in parts if p[0].get("sized") and p[0]["sized"] != pid), None)
             shared = any(p[0].get("shared") for p in parts) and len({tuple(p[0]["cons"]["why"]) for p in parts}) > 1
+            bulk = next((p[0]["bulk"] for p in parts if p[0].get("bulk") and p[0]["bulk"][0] != pid), None)
             pack_text = (f"Needs {qty(need_amt, unit)} {'with the waste allowance' if any(p[0].get('waste') for p in parts) else 'as the recipe gives it'}. One {label} holds {qty(c, unit)}" + (f", sold in steps of {s:g}" if s != 1 else "") + f": {units:,.10g} {many(label, units)} = {qty(got, unit)}."
                          + (f" {qty(got - need_amt, unit)} is left over" + ("; nothing smaller is sold for this ingredient." if got <= least + 1e-6 else ".") if much else "")
                          + (f" The kitchen's usual pack ({g.cat.get(sized)['title']}, {qty(self.pack(sized, unit), unit)}) is far more than this menu needs, so this smaller one is ordered." if sized else "")
+                         + (f" {g.cat.get(bulk[0])['title']} would have come in {bulk[1]} packs, so this bigger pack of the same ingredient is ordered." if bulk else "")
                          + (" One product is ordered for the portions with a dietary rule and for the rest, because one pack leaves less over than two." if shared else "")
                          + (f" The recipe gives {qty(sum(p[0]['ready'] for p in parts if p[0].get('ready')), 'ml')} ready to use; the need is counted as concentrate ({next(p[0]['yield'] for p in parts if p[0].get('yield'))})." if any(p[0].get("yield") for p in parts) else ""))
             lp = f.get("list_price")
@@ -1531,6 +1581,7 @@ def plan_menu_order(g, req: dict, principal, trace=None) -> dict:
         if any(not d["card"] and not d["recipe"] for d in rd["dishes"]):
             _spend("agent:" + principal["customer"], 20)
             calls = complete(rd, only_new=True)
+    rd["keep"] = [str(x) for x in req.get("keep_products") or [] if isinstance(x, (str, int))][:120]  # the products of the cart this plan replaces
     plan = build_plan(g, rd, principal)
     plan["usage"] = cost(calls)
     if req.get("image") and reused:

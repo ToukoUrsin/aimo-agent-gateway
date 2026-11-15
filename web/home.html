@@ -226,7 +226,7 @@ const SLOTS = [
         body: `<div><div class="ord-top"><span class="lbl">Order ${esc(o.label)}</span><span class="tot">${eur(total)}</span></div>
           <div class="ord-sub">${esc(w.buyer.name)} · ${ev.approval ? `approved by ${esc(ev.approval.by)}` : "placed by the agent alone"} · ${esc(day(w.delivery_date))}</div>
           <div class="ord-lines">${o.line_items.slice(0, 2).map(l => `<div><span>${esc(l.item.title)}</span><span>${(l.wholesale.units ?? l.quantity).toLocaleString("en-IE")} ${esc(unitWord(l.item.quantity_unit.display_text))}</span></div>`).join("")}${o.line_items.length > 2 ? `<div><span class="muted">${n(o.line_items.length - 2)} more lines</span><span></span></div>` : ""}</div></div>
-          <div id="cks" aria-label="Signature checks">${["Valio Aimo signed this confirmation", "The buying company signed the agent's mandate", "The agent accepted the offer", "Both signed exactly the same terms", ev.approval ? `${ev.approval.by} approved it` : "No person was needed", ...(ev.approval && ev.approval.device ? ["The approval was signed on the approver's own device"] : []), "The audit ledger has not been edited"].map(t => `<div class="ck pending">${markHtml(null)}<span class="t">${esc(t)}</span></div>`).join("")}</div>`,
+          <div id="cks" aria-label="Signature checks">${["The gateway signed this confirmation", "The buying company signed the agent's mandate", "The agent accepted the offer", "Both signed exactly the same terms", ev.approval ? `${ev.approval.by} approved it` : "No person was needed", ...(ev.approval && ev.approval.device ? ["The approval was signed on the approver's own device"] : []), "The audit ledger has not been edited"].map(t => `<div class="ck pending">${markHtml(null)}<span class="t">${esc(t)}</span></div>`).join("")}</div>`,
         foot: `<span id="ckfoot">Checking signatures in your browser</span><span class="mono">${esc((o.proof.jws || "").slice(-10))}</span>`,
         after: async () => {
           if (!crypto.subtle) { $("#ckfoot").textContent = "Signature checks need a secure (https) page."; return; }
@@ -285,7 +285,7 @@ const EMPTY = {
   body: `<div class="example"><span class="ex-tag">Example</span><div class="ex-body lb" style="padding:0"><div><div class="ord-top"><span class="lbl">Order VA-AG-000000-0001</span><span class="tot">€708.24</span></div>
     <div class="ord-sub">A hotel kitchen · placed by the agent alone</div>
     <div class="ord-lines"><div><span>Lactose-free semi skimmed milk 1 l</span><span>400 pcs</span></div></div></div><div id="cks">
-    ${["Valio Aimo signed this confirmation", "The buying company signed the agent's mandate", "The agent accepted the offer", "Both signed exactly the same terms", "No person was needed", "The audit ledger has not been edited"].map(t => `<div class="ck">${markHtml(true)}<span class="t">${esc(t)}</span></div>`).join("")}</div></div></div>`,
+    ${["The gateway signed this confirmation", "The buying company signed the agent's mandate", "The agent accepted the offer", "Both signed exactly the same terms", "No person was needed", "The audit ledger has not been edited"].map(t => `<div class="ck">${markHtml(true)}<span class="t">${esc(t)}</span></div>`).join("")}</div></div></div>`,
   foot: `<span>The first real order shows here, with its signatures checked in your browser.</span>`,
 };
 let shownKey = null;

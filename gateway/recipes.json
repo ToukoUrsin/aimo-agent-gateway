@@ -64,11 +64,17 @@
   },
   "parmesan": {
    "unit": "g",
-   "prefer": ["469440", "476080", "474912"]
+   "prefer": ["469440", "476080", "474912"],
+   "milk_free": "vegan cheese"
   },
   "grated cheese": {
    "unit": "g",
-   "prefer": ["476753", "474912", "466302"]
+   "prefer": ["476753", "474912", "466302"],
+   "milk_free": "vegan cheese"
+  },
+  "vegan cheese": {
+   "unit": "g",
+   "prefer": ["469323", "466711", "467699", "468748"]
   },
   "cheese slices": {
    "unit": "g",

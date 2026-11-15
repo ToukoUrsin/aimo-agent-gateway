@@ -379,7 +379,7 @@ function readingCard() {
       const who = (d.only ? `, only for “${esc(d.only)}”` : "") + ((d.skip || []).length ? `, not for ${d.skip.map(x => "“" + esc(x) + "”").join(" and ")}` : "");
       const tag = !d.food ? '<span class="pill deny">not food</span>' : d.card ? '<span class="pill">kitchen\'s card</span>' : d.source === "agent" ? '<span class="pill escalate">agent\'s recipe, check it</span>' : '<span class="pill escalate">model\'s recipe, check it</span>';
       return `<div class="dish"><div><b>${esc(d.name)}</b>${d.notes.length ? ` <span class="n">${d.notes.map(esc).join(", ")}</span>` : ""}</div><div>${tag}</div>
-        <div class="sub">${n(p)} portions${d.days > 1 ? ` (${d.days} days)` : ""}${who}${!d.card && d.recipe.length ? ". Per portion: " + d.recipe.map(x => `${esc(x.item)} ${x.amount} ${x.unit} (${esc(x.role)})`).join(", ") : (src[i] && src[i].card ? `. ${src[i].ingredients} ingredients on the card` : "")}</div>
+        <div class="sub">${n(p)} portions${d.days > 1 ? ` (${d.days} days)` : ""}${d.portions && rd.guests && d.portions !== rd.guests ? `, this dish's own number on the menu (the menu is for ${n(rd.guests)})` : ""}${who}${!d.card && d.recipe.length ? ". Per portion: " + d.recipe.map(x => `${esc(x.item)} ${x.amount} ${x.unit} (${esc(x.role)})`).join(", ") : (src[i] && src[i].card ? `. ${src[i].ingredients} ingredients on the card` : "")}</div>
         ${fl[i] ? `<div class="flag">${esc(fl[i])}</div>` : ""}</div>`; }).join("")}</div>
     ${rd.notes.length ? `<p class="note">Notes on the page: ${rd.notes.map(x => "“" + esc(x) + "”").join(", ")}</p>` : ""}</section>`;
 }

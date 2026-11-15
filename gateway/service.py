@@ -17,7 +17,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 
 from . import policy
 from .aimo import Aimo, AimoError, facts, parse_ts
-from .catalog import ALLERGENS, UNITS, Catalog, declares_allergens, fold, kind, pieces
+from .catalog import ALLERGENS, UNITS, Catalog, case_count, declares_allergens, fold, kind, pieces
 from .config import CURRENCY, DEMO_CUSTOMER, EXT, FREEZE_NOW, HOLD_MINUTES, PUBLIC_URL, STAGE, TZ, UCP_VERSION, order_url
 from .signing import Key, b64d, digest, jwt_encode, jwt_peek, jwt_verify, now, public_jwk, sign_detached
 from .store import Store
@@ -74,6 +74,8 @@ def _need_key(unit: str) -> str | None:
         return "kg"
     if u in ("pcs", "pc", "piece", "pieces", "kpl", "each", "egg", "eggs", "portion", "portions"):
         return "pcs"
+    if u in ("bottle", "bottles", "can", "cans"):  # counted by the bottle: a case of twelve holds twelve of them
+        return "inner"
     return None
 
 
@@ -422,6 +424,8 @@ class Gateway:
     def _content(self, d, f, key) -> float | None:
         if key == "pcs":   # 600 eggs are 60 boxes of ten, not 600 boxes
             return float(pieces(d) or 1)
+        if key == "inner":
+            return float(pieces(d) or case_count(d) or 1)
         if key is None:
             return 1.0
         if d["content"].get(key):
@@ -610,6 +614,39 @@ class Gateway:
         out.sort(key=lambda x: (order[x["tier"]], not x["contract_price"], abs(x["price_delta_pct"] or 0)))  # within a rank, what this account has a contract price for comes first
         return out[:limit]
 
+    def near_kinds(self, query: str, need: dict, day: str, principal, filters: dict | None = None, limit: int = 4) -> list[dict]:
+        """Nothing of the kind asked for can come: the nearest kinds in Valio Aimo's own range that can come that day, for the kitchen to pick from.
+        A near kind shares a word with the one asked for and sits on the same shelf (smoked ham for Christmas ham, pork neck for pork shoulder).
+        One availability request covers all of them; nothing is put on a cart from here."""
+        _, f, _, picked = self.cat.pick(query, filters or {})
+        asked = picked["kinds"]
+        if not asked or not principal or not principal.get("ok"):
+            return []
+        own = frozenset().union(*(self.cat.kind_stems.get(k, frozenset()) for k in asked))
+        shelf = {d["category"] for k in asked for d in self.cat.by_kind.get(k, [])}
+        cand = {}
+        for k, st in self.cat.kind_stems.items():
+            if k in asked or not st & own:
+                continue
+            ds = [d for d in self.cat.by_kind.get(k, []) if self.cat.matches(d, f)]
+            # on the same shelf, or two words of the kind in common on the shelf next to it ("brown sauce powder" for "brown sauce base")
+            if ds and (2 * sum(d["category"] in shelf for d in ds) >= len(ds) or (len(st & own) >= 2 and 2 * sum(str(d["category"])[:3] in {str(x)[:3] for x in shelf} for d in ds) >= len(ds))):
+                cand[k] = ds[:20]
+        near = lambda k: -len(self.cat.kind_stems.get(k, frozenset()) & own)  # "brown sauce powder" is nearer "brown sauce base" than "red wine sauce" is
+        cand = dict(sorted(cand.items(), key=lambda kv: (near(kv[0]), -len(kv[1]), kv[0]))[:8])
+        ids = [d["id"] for ds in cand.values() for d in ds]
+        if not ids:
+            return []
+        live, out = self._live(ids, day, principal), []
+        for k, ds in cand.items():
+            ok = [d for d in ds if live[d["id"]]["orderable"] and "price" in live[d["id"]] and (self._fit(d, live[d["id"]], need) or {}).get("covers_pct", 0) >= 100]
+            if ok:
+                out.append({"kind": k, "products": len(ok), "example": {"id": ok[0]["id"], "title": ok[0]["title"]}})
+        out.sort(key=lambda x: (near(x["kind"]), -x["products"]))
+        self._logp(principal, None, "plan", f"Nothing that is {' / '.join(asked)} can come on {nice_day(day)}. Nearest kinds in Valio Aimo's own range that can: " + (", ".join(f"{x['kind']} ({x['products']})" for x in out[:limit]) or "none") + ".",
+                   {"asked": asked, "near": [x["kind"] for x in out[:limit]]})
+        return out[:limit]
+
     # ----------------------------------------------------------------- plan
     def plan(self, req: dict, principal=None, trace=None) -> dict:
         """Turn a need ('1,000 L by Monday') into ranked, ready-to-order options, with the policy outcome of each."""
@@ -621,7 +658,9 @@ class Gateway:
         key = _need_key(need.get("unit", ""))
         reqs = {"claims": self.cat.canon_claims((req.get("filters") or {}).get("claims")), "exclude_allergens": self.cat.canon_allergens((req.get("filters") or {}).get("exclude_allergens")),
                 "labels": self.cat.canon_labels((req.get("filters") or {}).get("labels"))}
-        query = req.get("query", "")
+        query = req.get("query") or need.get("query") or need.get("product") or need.get("item") or ""  # the product wanted, also when a client put it inside "need"
+        if not isinstance(query, str) or not query.strip():
+            raise GatewayError(400, "missing_query", 'Say which product is needed in "query", for example {"query": "lactose-free milk", "need": {"quantity": 1000, "unit": "L"}, "delivery_date": "2026-11-16"}.')
         pref = self.cat.get(req.get("preferred_product")) if req.get("preferred_product") else None
         named = str(req.get("preferred_product")).strip() if req.get("preferred_product") and not pref else ""  # a brand or product name instead of an id
         hist = self._history(principal)
@@ -657,13 +696,20 @@ class Gateway:
         elif not picked["kinds"]:
             notes.append(f"Nothing in Valio Aimo's range is called '{query}'. Try the plain name of the product.")
         docs.sort(key=lambda d: d["id"] not in hist)   # what the account has ordered before is always priced
+        named_ids = []  # the products of the range that carry the name the request gave
         if named:
             # "Arla Pro" for whipping cream: the product of this kind whose name carries every word of the name that the request itself does not.
             words = lambda t: set(re.findall(r"[a-z0-9]+", fold(t)))
-            want = words(named) - words(query)
+            want = words(named) - words(query) or words(named)  # "Nutella" asked for as "Nutella": the name is the whole request
             hits = [d for d in docs if want and want <= words(d.get("_text") or d["title"])]
+            if not hits and want and docs:
+                # The range may file the named product under a neighbouring kind ("Arla Cafè milk" is a coffee milk): the product named is the one
+                # asked for. Only on the same shelf and with a word of the kind in common, so "Fazer milk" never finds milk chocolate.
+                shelf, own, qw = {d["category"] for d in docs}, frozenset().union(*(self.cat.kind_stems.get(k, frozenset()) for k in picked["kinds"])), words(query)
+                wide = [d for d in self.cat.docs if want <= d["_w"] and d["category"] in shelf and self.cat.kind_stems.get(kind(d), frozenset()) & own and self.cat.matches(d, f)]
+                hits = sorted(wide, key=lambda d: -len(qw & d["_w"]))[:1]
             if hits:
-                pref = hits[0]
+                pref, named_ids = hits[0], [d["id"] for d in hits[:60]]
             else:
                 notes.append(f"Valio Aimo's range has no {names or 'product'} called '{named}' that meets this request, so the options are the nearest products that do.")
         if pref and pref["id"] not in [d["id"] for d in docs]:
@@ -694,7 +740,7 @@ class Gateway:
             d, fx, fit = c
             return {"item": {"id": d["id"], "title": d["title"]}, "quantity": round(units * 10 ** d["scale"]), "units": units, "unit": UNITS.get(d["unit"], (0, d["unit"]))[1],
                     "covers": round(units * fit["content_per_unit"], 2), "unit_price": fx["price"], "line_total_ex_vat": round(fx["price"] * units),
-                    **({"pieces_per_unit": int(fit["content_per_unit"])} if key == "pcs" and fit["content_per_unit"] > 1 else {}),
+                    **({"pieces_per_unit": int(fit["content_per_unit"])} if key in ("pcs", "inner") and fit["content_per_unit"] > 1 else {}),
                     **({"wholesale": {"substitutes_for": sub_for}} if sub_for else {})}
 
         options = []
@@ -709,7 +755,7 @@ class Gateway:
             options.append({"_sig": sig, "label": label, "tradeoff": tradeoff, "covers": round(covered, 2), "covers_pct": round(min(100, 100 * covered / need["quantity"]), 1) if need.get("quantity") else None,
                             "total_ex_vat": total, "authority": pre, "line_items": lines})
 
-        pref_label, pref_text = "as_requested", "Exactly the product asked for"
+        pref_label, pref_text, pref_off = "as_requested", "Exactly the product asked for", None
         if not pref:
             usual = sorted([c for c in cands if c[0]["id"] in hist], key=lambda c: -hist[c[0]["id"]]["orders"])
             if usual:
@@ -741,6 +787,7 @@ class Gateway:
                 add("partial_only", [line(c, c[2]["units_can_be_supplied"])], f"We can supply {c[2]['covers_quantity']:g} of your {need['quantity']:g} {need['unit']} of {pref['title']}; {rest:g} {need['unit']} is short.")
             else:
                 why = REASONS.get(live.get(pref["id"], {}).get("reason", ""), "it is not orderable")
+                pref_off = {"id": pref["id"], "title": pref["title"], "reason": live.get(pref["id"], {}).get("reason") or "not_orderable"}
                 notes.append(f"The preferred product {pref['title']} cannot be ordered for {nice_day(day)}: {why}.")
         if full:
             add("lowest_price", [line(full[0], full[0][2]["units_needed"])], "Cheapest product that meets every requirement and covers the full quantity on the requested date.")
@@ -773,7 +820,7 @@ class Gateway:
                 if diffs:
                     o["differs_from_usual"] = diffs
         used = {l["item"]["id"] for o in options for l in o["line_items"]}
-        others = [{"id": c[0]["id"], "title": c[0]["title"], "price_per_" + {"pcs": "piece"}.get(key, key or "unit"): round(c[1]["price"] / c[2]["content_per_unit"]), "units_needed": c[2]["units_needed"],
+        others = [{"id": c[0]["id"], "title": c[0]["title"], "price_per_" + {"pcs": "piece", "inner": "piece"}.get(key, key or "unit"): round(c[1]["price"] / c[2]["content_per_unit"]), "units_needed": c[2]["units_needed"],
                    "covers_pct": c[2]["covers_pct"], "total_ex_vat": c[2].get("line_total_ex_vat"), "ordered_before": c[0]["id"] in hist, "delivery_reliability": c[0].get("reliability")}
                   for c in cands if c[0]["id"] not in used][:8]
         for o in options:
@@ -784,6 +831,12 @@ class Gateway:
                 "range_note": "Every product, price and substitute in this answer is from Valio Aimo's own range, as Valio Aimo's systems answer for this account. Nothing comes from outside Valio Aimo."}
         if other_kinds:
             resp["other_kinds"] = [{"kind": k, "products": len(v), "example": {"id": v[0]["id"], "title": v[0]["title"]}} for k, v in list(other_kinds.items())[:8]]
+        if pref_off:  # the product asked for cannot be ordered for this day, and why
+            resp["preferred_off"] = pref_off
+        if named_ids:  # the name in the request is these products, whether or not they can come
+            seen = [live[i] for i in named_ids if i in live]
+            resp["named_product"] = {"id": named_ids[0], "title": self.cat.get(named_ids[0])["title"], "ids": named_ids, "orderable": any(x.get("orderable") for x in seen),
+                                     "gone": bool(seen) and all(x.get("reason") in ("not_deliverable", "sales_block", "product_recalled") for x in seen)}
         if any(fx.get("stale") for fx in live.values()):
             resp["data_stale"] = True
         if not options:
@@ -1342,10 +1395,10 @@ class Gateway:
             h["orders"] += 1
         self.store.put("history:" + w["customer"], hist)
         self.agent_note(principal, "order")
-        # Who, if anyone, said yes: an approver, and in the shop chat the signed-in person who pressed the button. Only an order nobody touched says so.
+        # Who, if anyone, said yes: an approver, and in the shop chat the person in the shop who pressed the button. Only an order nobody touched says so.
         ap, in_shop = w.get("approval") or {}, str(w.get("agent") or "").endswith("/shop-assistant")
         who = ", ".join(x for x in [(f"approved by {ap.get('by')}" + (" (a demo approval, in the browser that asked)" if ap.get("demo") else "")) if ap else None,
-                                    "confirmed by the signed-in person in the shop" if in_shop else None] if x) or "no human involved"
+                                    "confirmed in the shop by the person who asked" if in_shop else None] if x) or "no human involved"
         self.store.log(c["_internal"].get("trace"), w["agent"], "order", f"Order {o['label']} placed: {policy.eur(subtotal)} ex VAT, delivery {nice_day(w['delivery_date'])}, {who}. Signed by the agent and by Valio Aimo.",
                        {"order_id": oid, "label": o["label"], "subtotal": subtotal, "evidence": {"mandate_id": w["mandate_id"], "offer_digest": c["_internal"]["digest"], "agent_signed": bool(proof), "approval": bool(w.get("approval"))}}, cid=c["id"])
         if w.get("amends"):

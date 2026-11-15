@@ -252,7 +252,7 @@ async function orderChecks(o, audit, profile, led, genesis) {
   const seller = profile.keys.find(x => x.kid === kidOfJws(o.proof.jws));
 
   const c1 = await verifyDetached(without(o, "proof"), o.proof.jws, seller);
-  out.push([c1, "Valio Aimo signed this confirmation", c1 ? `Every field below is covered by Valio Aimo's signature. Key ${seller.kid.slice(0, 16)}… published at /.well-known/ucp.` : "The document does not match Valio Aimo's signature. It was changed after signing."]);
+  out.push([c1, "The gateway signed this confirmation", c1 ? `Every field below is covered by the gateway's signature (this prototype's key; in production Valio Aimo's own). Key ${seller.kid.slice(0, 16)}… published at /.well-known/ucp.` : "The document does not match the gateway's signature. It was changed after signing."]);
 
   const m = await verifyJwt(ev.mandate, audit.keys.buyer);
   out.push([!!m, "The buying company signed the agent's mandate", m ? `Mandate ${m.jti} from ${m.iss}: up to ${eur(m.mandate.budget.max_per_order)} per order without a person. ` + ((ev.mandate_key || {}).held_by === "buyer" ? "Signed with a key the buyer registered itself; this server holds the public half only and could not have signed it." : "Checked against the key the buyer registered at onboarding, which this server keeps for demo accounts.") : "The mandate's signature does not match the buyer's registered key."]);
@@ -281,7 +281,7 @@ async function orderChecks(o, audit, profile, led, genesis) {
       const c5b = typeof PK !== "undefined" && await PK.verify(dv, ev.approval);
       out.push([c5b, "The approval was signed on the approver's own device", c5b ? `A passkey on ${dv.device} (key ${dv.thumbprint}) signed this order's digest, the decision, the name and the note${dv.user_verified ? ", after the device checked the person by fingerprint, face or screen lock" : ""}. Nobody without that device can make this signature: not the agent, not Valio Aimo, not this server. What it does not prove is who holds that device: in this prototype the first device that approves for an account becomes its approver and the name is typed, so a second browser of the asker's own would pass. In production the approver signs in with their own Minun Aimo account and role before a device is enrolled.` : "The device signature does not match this approval."]);
     }
-  } else if (/\/shop-assistant$/.test(String(o.wholesale.placed_by || ""))) out.push([true, "No second person was needed", "The ledger records that the signed-in person confirmed this cart in the shop. Every rule passed, so no approver was asked."]);
+  } else if (/\/shop-assistant$/.test(String(o.wholesale.placed_by || ""))) out.push([true, "No second person was needed", "The ledger records that the person who asked confirmed this cart in the shop. Every rule passed, so no approver was asked."]);
   else out.push([true, "No person was needed", "Every guardrail passed, so the mandate alone authorised this order."]);
 
   const chain = await verifyChain(led, genesis);

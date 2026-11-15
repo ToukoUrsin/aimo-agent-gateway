@@ -196,6 +196,10 @@ def main():
     r = web.post(f"/api/approve/{full['id']}", json={"approve": True, "approver": "Demo-hyväksyjä", "k": k, "demo": True})
     check(r.status_code == 403, f"a shop opened without the review link has no demo approval: the asker's own yes is refused ({r.status_code})")
     check(web.get("/api/shop/hello", params={"lang": "fi", "demo": "1"}).json().get("review") is True, "the review link (/shop?demo=1) switches review mode on for this account")
+    check(web.get("/api/shop/hello", params={"lang": "fi"}).json().get("review") is False, "review mode follows the link: the shop opened without it is the plain shop again")
+    r = web.post(f"/api/approve/{full['id']}", json={"approve": True, "approver": "Demo-hyväksyjä", "k": k, "demo": True})
+    check(r.status_code == 403, f"and the demo yes is refused again ({r.status_code})")
+    web.get("/api/shop/hello", params={"lang": "fi", "demo": "1"})
     r = web.post(f"/api/approve/{full['id']}", json={"approve": True, "approver": "Demo-hyväksyjä", "k": k, "demo": True})
     check(r.status_code == 200 and "Demo approval" in (r.json()["wholesale"]["approval"].get("demo") or ""), "alone on one device: the demo view's yes goes through and is kept as a demo approval")
     had = {o["id"] for o in placed(web)["orders"]}

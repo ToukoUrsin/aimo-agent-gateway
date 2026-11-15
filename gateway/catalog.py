@@ -185,6 +185,12 @@ def pieces(d) -> int | None:
     return d["_pieces"]
 
 
+def case_count(d) -> int | None:
+    """How many bottles or cans a case holds when the product's name leads or ends with the count: "12 x Freixenet ... 0,2 L bottle", "24x Bonaqua", "... 0,33l x24"."""
+    m = re.match(r"\s*(\d{1,3})\s*x\s*[^\d\s]", d["title"], re.I) or re.search(r"\bx\s*(\d{1,3})\s*$", d["title"], re.I)
+    return int(m.group(1)) if m and int(m.group(1)) > 1 else None
+
+
 _SIZE = {"g": ("kg", 0.001), "kg": ("kg", 1), "ml": ("l", 0.001), "cl": ("l", 0.01), "dl": ("l", 0.1), "l": ("l", 1), "ltr": ("l", 1)}
 
 
@@ -335,6 +341,8 @@ def build() -> int:
 
 _SKIMMED = re.compile(r"(?<!semi )(?<!semi-)\bskimmed\b|\bfat[- ]free\b|\bnon[- ]?fat\b|\brasvaton")
 _ONE_PCT = re.compile(r"\b1 ?%|ykkos")
+_WHOLE = re.compile(r"\bwhole\b|\bfull[- ]fat\b|taysmai|helmjolk")
+_SEMI = re.compile(r"\bsemi[- ]?skimmed\b|\blow[- ]fat\b|kevytmai|lattmjolk")
 
 class Catalog:
     def __init__(self):
@@ -436,6 +444,9 @@ class Catalog:
                     choices = {kk: self.by_kind[kk] for kk, _ in vote.most_common(6)}
         if _SKIMMED.search(q):  # a named variety means that variety: "skimmed" is not "semi skimmed", "fat free" is not "lactose free, low fat"
             docs = [d for d in docs if _SKIMMED.search(d["_text"]) and not _ONE_PCT.search(d["_text"])] or docs
+        for variety in (_WHOLE, _SEMI):  # "täysmaito" is whole milk, not the semi-skimmed the account usually buys
+            if variety.search(fold(q)):
+                docs = [d for d in docs if variety.search(d["_text"])] or docs
         first = {d["id"]: n for n, d in enumerate(text_docs)}
         docs.sort(key=lambda d: first.get(d["id"], 999))
         other = {}

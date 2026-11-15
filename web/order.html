@@ -62,9 +62,10 @@ details.tech>.in{display:flex;flex-direction:column;gap:var(--s4);margin-top:var
 // Opened from the shop: the first paint is in the shop's language too, before the order has arrived.
 // The shop's language: its stored choice, else the browser's own language (Finnish anywhere in its list is Finnish).
 const SL = (() => { let s = null; try { s = localStorage.getItem("shop.lang"); } catch (e) {} return s === "fi" || s === "en" ? s : (navigator.languages && navigator.languages.length ? [...navigator.languages] : [navigator.language || ""]).some(x => /^fi\b/i.test(x)) ? "fi" : "en"; })();
+const SHOP = (() => { try { return localStorage.getItem("shop.review") === "1" ? "/shop?demo=1" : "/shop"; } catch (e) { return "/shop"; } })();  // back to the shop as it was opened: the review link stays the review link
 const ST = {
   fi: { loc: "fi-FI", h0: "Tilaus", w0: "Haetaan tilausvahvistusta…", banner: "Prototyyppi Valio Aimon haastedatalla, ei Valio Aimon järjestelmä.", eyebrow: "Verkkokauppa · tilausvahvistus · prototyyppi", order: "Tilaus",
-    appr: "hyväksynyt: ", demo: " (demohyväksyntä samassa selaimessa)", conf: "vahvistettu verkkokaupassa", repl: (n) => `Korvaava tuote: korvaa tuotteen ${n}`, units: { piece: "kpl", case: "ltk" }, pcs: "kpl",
+    appr: "hyväksynyt: ", demo: " (demohyväksyntä samassa selaimessa)", conf: "vahvistettu verkkokaupassa", repl: (n) => `Korvaava tuote: korvaa tuotteen ${n}`, units: { piece: "kpl", kg: "kg", case: "ltk", pack: "pkt", bag: "ps", box: "ltk", jar: "prk", bottle: "plo", sack: "säkki", carton: "tlk", roll: "rll" }, pcs: "kpl",
     goods: "Ostokset (alv 0 %)", vat: "Alv", total: "Yhteensä (sis. alv)", day: "Toimituspäivä", cust: "Asiakas", custno: "asiakasnumero", said: "Pyyntösi", pay: "Maksu", payv: "Lasku nykyisillä maksuehdoillasi.",
     checking: "Tarkistetaan allekirjoituksia selaimessasi…", okv: n => `Tilausta ei ole muutettu vahvistuksen jälkeen. ${n} tarkistusta tehtiin juuri tässä selaimessa.`, badv: "Tilauksen tiedot eivät täsmää allekirjoitukseen. Ota yhteyttä asiakaspalveluun.",
     back: "Takaisin verkkokauppaan", fold: "Näytä tarkistukset (tekninen tallenne, englanniksi)", site: "← Verkkokauppa" },
@@ -85,7 +86,7 @@ let order, audit, profile, ledger, tamper = { price: false, ledger: false };
 
 function tampered() {
   const o = JSON.parse(JSON.stringify(order)), led = JSON.parse(JSON.stringify(ledger.events));
-  if (tamper.price) o.line_items[0].item.price -= 1;
+  if (tamper.price) { const l = o.line_items[0], n = Math.max(1, Math.round(l.wholesale.units ?? l.quantity.total ?? l.quantity)); l.item.price -= 1; for (const t of l.totals || []) t.amount -= n; for (const t of o.totals || []) if (t.type === "subtotal" || t.type === "total") t.amount -= n; }  // a forger lowers the sums with the price: the offer both sides signed then no longer matches either
   // Edit an entry this reader can see (other customers' entries carry no text to edit).
   const mine = led.filter(e => !e.withheld && typeof e.text === "string");
   if (tamper.ledger && mine.length > 2) mine[Math.floor(mine.length / 2)].text += " (edited)";
@@ -201,7 +202,7 @@ function shopHead(o, res, done) {
       ${!res ? "" : !done ? `<div class="fok" style="background:var(--soft);color:var(--muted)"><span class="spin"></span><span>${ST.checking}</span></div>`
         : ok ? `<div class="fok">${markHtml(true)}<span>${ST.okv(res.length)}</span></div>`
         : `<div class="fok bad">${markHtml(false)}<span>${ST.badv}</span></div>`}
-      <div style="margin-top:var(--s4)"><a class="btn" href="/shop">${ST.back}</a></div></div>`;
+      <div style="margin-top:var(--s4)"><a class="btn" href="${SHOP}">${ST.back}</a></div></div>`;
 }
 
 let lastRes = null;
@@ -218,7 +219,7 @@ async function render() {
   const ares = crypto.subtle ? await Promise.all(after.issues.map(i => afterChecks(o, i))) : null;
   const first = lastRes === null, calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
   let h = `<div class="ohead"><div class="eyebrowless">Valio Aimo agent gateway · order confirmation</div><h1>Order ${esc(o.label)}</h1>
-    <div class="pills"><span class="pill" title="${esc(w.placed_by)}">placed by agent ${esc(String(w.placed_by||"").replace(/^agent:/,""))}</span>${ev.approval ? `<span class="pill escalate">approved by ${esc(ev.approval.by)}${ev.approval.demo ? " (demo approval in the asker's own browser)" : ""}</span>` : isShop(o) ? '<span class="pill pass">confirmed in the shop by the signed-in person</span>' : '<span class="pill pass">no person involved</span>'}<span class="pill">${esc(when(w.placed_at))}</span>${st && st.status === "cancelled" ? '<span class="pill deny">cancelled after the order</span>' : st && st.amendments.length ? '<span class="pill escalate">changed after the order</span>' : ""}</div>
+    <div class="pills"><span class="pill" title="${esc(w.placed_by)}">placed by agent ${esc(String(w.placed_by||"").replace(/^agent:/,""))}</span>${ev.approval ? `<span class="pill escalate">approved by ${esc(ev.approval.by)}${ev.approval.demo ? " (demo approval in the asker's own browser)" : ""}</span>` : isShop(o) ? '<span class="pill pass">confirmed in the shop by the person who asked</span>' : '<span class="pill pass">no person involved</span>'}<span class="pill">${esc(when(w.placed_at))}</span>${st && st.status === "cancelled" ? '<span class="pill deny">cancelled after the order</span>' : st && st.amendments.length ? '<span class="pill escalate">changed after the order</span>' : ""}</div>
     ${after.amends ? `<div style="margin-top:var(--s3)">Replaces goods on <a href="${esc(after.amends.url || after.amends.permalink_url ? orderLink(after.amends) : "/orders/" + after.amends.order_id)}">order ${esc(after.amends.order_label)}</a> after a ${esc((KIND[after.amends.kind] || "").toLowerCase())}: ${esc(after.amends.title)}.</div>` : ""}</div>`;
   h += `<div class="card evi"><h3>Evidence, checked in your browser</h3><div id="verdict">${verdict(res, !first || calm)}</div><div id="checks">` +
     (res ? res.map((r, i) => checkRow(r, first && !calm ? "pending" : lastRes && lastRes[i] && lastRes[i][0] !== r[0] ? (r[0] ? "ok changed" : "bad changed") : r[0] ? "ok" : "bad")).join("") : "") + `</div>
@@ -273,7 +274,7 @@ const keyed = u => KQ && u && !/[?&]k=/.test(u) ? u + KQ : u;
   if (isShop(order)) {  // opened from the shop: the shop's language and words, and the way back to it
     document.title = ST.order + " " + order.label; document.documentElement.lang = SL;
     $(".banner").textContent = ST.banner;
-    $("#site").innerHTML = `<a class="backshop" href="/shop">${ST.site}</a>`;
+    $("#site").innerHTML = `<a class="backshop" href="${SHOP}">${ST.site}</a>`;
     const f = document.getElementById("sitefoot"); if (f) f.remove();
     const nm = (await api(`/orders/${oid}/names${KQ}`).catch(() => null)) || {}; namesFi = nm.fi || {}; piecesOf = nm.pieces || {};
   }
