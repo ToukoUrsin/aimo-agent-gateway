@@ -1,0 +1,211 @@
+{
+ "capturedAt": "2026-11-15T05:10:01.492396Z",
+ "base": "https://trusted-trade-agents.fly.dev",
+ "calls": [
+  {
+   "name": "allowed",
+   "method": "POST",
+   "path": "/checkout-sessions",
+   "request": {
+    "line_items": [
+     {
+      "item": {
+       "id": "463380"
+      },
+      "quantity": 100
+     }
+    ],
+    "wholesale": {
+     "delivery_date": "2026-11-16",
+     "intent": "100 litres of lactose-free milk for Monday"
+    }
+   },
+   "http": 201,
+   "id": "chk_1c9f0a3d8fab",
+   "status": "ready_for_complete",
+   "title": "Arla Cafè milk 1 L UHT lactose free",
+   "quantity": 100,
+   "totals": [
+    {
+     "type": "subtotal",
+     "amount": 26500
+    },
+    {
+     "type": "tax",
+     "display_text": "VAT 13.5 %",
+     "amount": 3578
+    },
+    {
+     "type": "total",
+     "amount": 30078
+    }
+   ],
+   "messages": [],
+   "decision": "auto",
+   "rules": [
+    {
+     "id": "M1",
+     "title": "Valid mandate",
+     "outcome": "pass",
+     "detail": "Mandate mnd_1598a6f760a5 signed by Sandbox Kitchen 9044, valid until 16 Nov 2026."
+    },
+    {
+     "id": "W1",
+     "title": "Agent ordering enabled by Valio Aimo",
+     "outcome": "pass",
+     "detail": "Agent ordering is on for this account."
+    },
+    {
+     "id": "T1",
+     "title": "Assistant without a signing key",
+     "outcome": "pass",
+     "detail": "No signing key, and €265.00 is within the €500.00 Valio Aimo allows such assistants alone."
+    },
+    {
+     "id": "B1",
+     "title": "Spend limit per order",
+     "outcome": "pass",
+     "detail": "€265.00 ex VAT is within the €1,500.00 limit."
+    },
+    {
+     "id": "B2",
+     "title": "Spend limit per week",
+     "outcome": "pass",
+     "detail": "€265.00 of €6,000.00 used this week including this order."
+    },
+    {
+     "id": "N1",
+     "title": "First-time products",
+     "outcome": "pass",
+     "detail": "Every product has been ordered on this account before or is an allowed substitute."
+    },
+    {
+     "id": "Q1",
+     "title": "Unusual quantity",
+     "outcome": "pass",
+     "detail": "No line is more than 3x the usual order."
+    }
+   ],
+   "jws": "eyJhbGciOiJFUzI1NiIsImtpZCI6IkNDeVFtVnpFWE5kdVNUTkNaZzl1WU1RU2thRm1sOVR1T2VqUXY4ZmhrbzAifQ..vc_fNOCL4m4tbYcSF4Xrh9k9AYzaTV8IM6C0O_1EmilNhuuW3IRKCGz1HS_EvfwWzqQnPF5yxTG1Gy9Jo-DNJA",
+   "hold": {
+    "price_and_stock_held_until": "2026-11-15T07:30:01+02:00"
+   },
+   "buyer": "Sandbox Kitchen 9044",
+   "agent": "agent:sandbox-5c5852cc/own-client"
+  },
+  {
+   "name": "refused",
+   "method": "POST",
+   "path": "/checkout-sessions",
+   "request": {
+    "line_items": [
+     {
+      "item": {
+       "id": "468224"
+      },
+      "quantity": 2
+     }
+    ],
+    "wholesale": {
+     "delivery_date": "2026-11-16",
+     "intent": "2 tubs of Nutella 3 kg for the breakfast buffet",
+     "requirements": {
+      "exclude_allergens": [
+       "nuts"
+      ]
+     }
+    }
+   },
+   "http": 201,
+   "id": "chk_cddce5406a29",
+   "status": "incomplete",
+   "title": "Nutella Hazelnut-cocoa spread 3000g",
+   "quantity": 2,
+   "totals": [
+    {
+     "type": "subtotal",
+     "amount": 6540
+    },
+    {
+     "type": "tax",
+     "display_text": "VAT 13.5 %",
+     "amount": 883
+    },
+    {
+     "type": "total",
+     "amount": 7423
+    }
+   ],
+   "messages": [
+    {
+     "type": "error",
+     "code": "policy_denied",
+     "severity": "recoverable",
+     "content": "Allergen exclusions: Nutella Hazelnut-cocoa spread 3000g contains hazelnut, which is excluded.",
+     "path": "$.line_items[0]"
+    },
+    {
+     "type": "error",
+     "code": "approval_required",
+     "severity": "requires_buyer_review",
+     "content": "First-time products: Never ordered on this account before: Nutella Hazelnut-cocoa spread 3000g. A person must decide."
+    }
+   ],
+   "decision": "deny",
+   "rules": [
+    {
+     "id": "M1",
+     "title": "Valid mandate",
+     "outcome": "pass",
+     "detail": "Mandate mnd_1598a6f760a5 signed by Sandbox Kitchen 9044, valid until 16 Nov 2026."
+    },
+    {
+     "id": "W1",
+     "title": "Agent ordering enabled by Valio Aimo",
+     "outcome": "pass",
+     "detail": "Agent ordering is on for this account."
+    },
+    {
+     "id": "T1",
+     "title": "Assistant without a signing key",
+     "outcome": "pass",
+     "detail": "No signing key, and €65.40 is within the €500.00 Valio Aimo allows such assistants alone."
+    },
+    {
+     "id": "B1",
+     "title": "Spend limit per order",
+     "outcome": "pass",
+     "detail": "€65.40 ex VAT is within the €1,500.00 limit."
+    },
+    {
+     "id": "B2",
+     "title": "Spend limit per week",
+     "outcome": "pass",
+     "detail": "€65.40 of €6,000.00 used this week including this order."
+    },
+    {
+     "id": "A1",
+     "title": "Allergen exclusions",
+     "outcome": "deny",
+     "detail": "Nutella Hazelnut-cocoa spread 3000g contains hazelnut, which is excluded."
+    },
+    {
+     "id": "N1",
+     "title": "First-time products",
+     "outcome": "escalate",
+     "detail": "Never ordered on this account before: Nutella Hazelnut-cocoa spread 3000g. A person must decide."
+    },
+    {
+     "id": "Q1",
+     "title": "Unusual quantity",
+     "outcome": "pass",
+     "detail": "This product was never ordered on this account before, so there is no usual quantity to compare with; rule N1 asks a person about first-time products."
+    }
+   ],
+   "jws": "eyJhbGciOiJFUzI1NiIsImtpZCI6IkNDeVFtVnpFWE5kdVNUTkNaZzl1WU1RU2thRm1sOVR1T2VqUXY4ZmhrbzAifQ..dc-Wm9fQPo7Hhu6_WvaPvqj6A8wzgSe2tqcmxTf0KzNUNFp1FrdvkACingI5pK_54at-grQ_eG4ddqpX6aYRfA",
+   "hold": null,
+   "buyer": "Sandbox Kitchen 9044",
+   "agent": "agent:sandbox-5c5852cc/own-client"
+  }
+ ]
+}

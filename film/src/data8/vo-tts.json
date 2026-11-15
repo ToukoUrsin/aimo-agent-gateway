@@ -1,0 +1,391 @@
+{
+ "voice": "kokoro af_heart x1.06, tempo 1.06 (local)",
+ "music": "audio/music2.mp3",
+ "used": {
+  "guests": 180,
+  "dishes": 5,
+  "lines": 26,
+  "seconds": 3,
+  "short": {
+   "have": 48,
+   "want": 60,
+   "replacement": "Korvaava tuote: Valio kuohukerma 1 l laktoositon, luomu, 12 l · vastaavuus: parempi · sopimushinta · −25 %/l",
+   "contract": true,
+   "picked": "Vain saatavilla oleva määrä: 48 l\n276,96 €"
+  },
+  "approval": {
+   "order": "1 560,00",
+   "max": "1 500,00",
+   "over": 60,
+   "order_no": "VA-AG-261114-0323",
+   "approver": "✓ Hyväksynyt: Maija Korhonen, ravintolapäällikkö"
+  },
+  "rush": {
+   "kitchens": 60,
+   "wanted": "1,472",
+   "had": "698"
+  },
+  "proof": {
+   "orders": "140",
+   "models": 5,
+   "runs": "190",
+   "first": 4
+  }
+ },
+ "lines": {
+  "g1": {
+   "id": "g1",
+   "text": "Kitchens are starting to let software do their ordering. This is the door we built for Valio Aimo to put in front of it.",
+   "file": "audio/v8-g1-1fn8i6d.wav",
+   "dur": 6.05424,
+   "words": [
+    {
+     "w": "Kitchens are starting to let software do their ordering.",
+     "s": 0,
+     "e": 2.508
+    },
+    {
+     "w": "This is the door we built for Valio Aimo to put in front of it.",
+     "s": 2.809,
+     "e": 6.053
+    }
+   ]
+  },
+  "g2": {
+   "id": "g2",
+   "text": "A kitchen's own software asks for 100 litres of milk. It passes all seven rules, so it can order on its own.",
+   "file": "audio/v8-g2-mf8ygh.wav",
+   "dur": 6.156009,
+   "words": [
+    {
+     "w": "A kitchen's own software asks for 100 litres of milk.",
+     "s": 0,
+     "e": 2.992
+    },
+    {
+     "w": "It passes all seven rules, so it can order on its own.",
+     "s": 3.294,
+     "e": 6.147
+    }
+   ]
+  },
+  "g3": {
+   "id": "g3",
+   "text": "Then Nutella, for a nut-free kitchen. Refused, by code, not by an AI.",
+   "file": "audio/v8-g3-g7onb6.wav",
+   "dur": 4.082993,
+   "words": [
+    {
+     "w": "Then Nutella, for a nut-free kitchen.",
+     "s": 0,
+     "e": 1.852
+    },
+    {
+     "w": "Refused, by code, not by an AI.",
+     "s": 2.154,
+     "e": 4.076
+    }
+   ]
+  },
+  "k1": {
+   "id": "k1",
+   "text": "The cook comes through the same door. One message in the web shop's chat, a wedding for 180, and the cart has 26 lines in 3 seconds.",
+   "file": "audio/v8-k1-720km7.wav",
+   "dur": 7.856259,
+   "words": [
+    {
+     "w": "The cook comes through the same door.",
+     "s": 0,
+     "e": 1.489
+    },
+    {
+     "w": "One message in the web shop's chat,",
+     "s": 1.791,
+     "e": 3.43
+    },
+    {
+     "w": "a wedding for 180,",
+     "s": 3.581,
+     "e": 5.186
+    },
+    {
+     "w": "and the cart has 26 lines in 3 seconds.",
+     "s": 5.337,
+     "e": 7.843
+    }
+   ]
+  },
+  "k2": {
+   "id": "k2",
+   "text": "When cream runs short, the rest comes from Valio Aimo's own range, and the card says why.",
+   "file": "audio/v8-k2-1stzjrj.wav",
+   "dur": 4.66449,
+   "words": [
+    {
+     "w": "When cream runs short,",
+     "s": 0,
+     "e": 1.035
+    },
+    {
+     "w": "the rest comes from Valio Aimo's own range,",
+     "s": 1.186,
+     "e": 3.405
+    },
+    {
+     "w": "and the card says why.",
+     "s": 3.556,
+     "e": 4.65
+    }
+   ]
+  },
+  "c1": {
+   "id": "c1",
+   "text": "1,000 litres of milk is €60 over what this account can order on its own. So it stops.",
+   "file": "audio/v8-c1-17y13j.wav",
+   "dur": 5.703311,
+   "words": [
+    {
+     "w": "1,000 litres of milk is €60 over what this account can order on its own.",
+     "s": 0,
+     "e": 4.587
+    },
+    {
+     "w": "So it stops.",
+     "s": 4.889,
+     "e": 5.686
+    }
+   ]
+  },
+  "c2": {
+   "id": "c2",
+   "text": "The cook can't approve their own order.",
+   "file": "audio/v8-c2-1b7a2zq.wav",
+   "dur": 1.717664,
+   "words": [
+    {
+     "w": "The cook can't approve their own order.",
+     "s": 0,
+     "e": 1.702
+    }
+   ]
+  },
+  "c3": {
+   "id": "c3",
+   "text": "Someone else says yes, on their own phone.",
+   "file": "audio/v8-c3-d9nkri.wav",
+   "dur": 1.882109,
+   "words": [
+    {
+     "w": "Someone else says yes, on their own phone.",
+     "s": 0,
+     "e": 1.877
+    }
+   ]
+  },
+  "c4": {
+   "id": "c4",
+   "text": "Only then does it go through.",
+   "file": "audio/v8-c4-1pnda2z.wav",
+   "dur": 1.319161,
+   "words": [
+    {
+     "w": "Only then does it go through.",
+     "s": 0,
+     "e": 1.304
+    }
+   ]
+  },
+  "d1": {
+   "id": "d1",
+   "text": "Now Valio Aimo's side. For each customer, they'd set what outside software can see and do.",
+   "file": "audio/v8-d1-1jd4vd5.wav",
+   "dur": 4.945102,
+   "words": [
+    {
+     "w": "Now Valio Aimo's side.",
+     "s": 0,
+     "e": 1.248
+    },
+    {
+     "w": "For each customer, they'd set what outside software can see and do.",
+     "s": 1.55,
+     "e": 4.961
+    }
+   ]
+  },
+  "d2": {
+   "id": "d2",
+   "text": "Pause ordering, and the next order is refused. Looking things up still works.",
+   "file": "audio/v8-d2-d5kvqr.wav",
+   "dur": 4.189501,
+   "words": [
+    {
+     "w": "Pause ordering,",
+     "s": 0,
+     "e": 0.807
+    },
+    {
+     "w": "and the next order is refused.",
+     "s": 0.958,
+     "e": 2.519
+    },
+    {
+     "w": "Looking things up still works.",
+     "s": 2.821,
+     "e": 4.179
+    }
+   ]
+  },
+  "t1": {
+   "id": "t1",
+   "text": "A Monday rush, replayed. 60 kitchens order at once.",
+   "file": "audio/v8-t1-8aaxsl.wav",
+   "dur": 3.161859,
+   "words": [
+    {
+     "w": "A Monday rush, replayed.",
+     "s": 0,
+     "e": 1.239
+    },
+    {
+     "w": "60 kitchens order at once.",
+     "s": 1.541,
+     "e": 3.162
+    }
+   ]
+  },
+  "t2": {
+   "id": "t2",
+   "text": "Together they want almost 1,500 litres of the same milk, and there are 698. Each gets its contract share, and no litre is promised twice.",
+   "file": "audio/v8-t2-1t78kmt.wav",
+   "dur": 9.416531,
+   "words": [
+    {
+     "w": "Together they want almost 1,500 litres of the same milk,",
+     "s": 0,
+     "e": 4.014
+    },
+    {
+     "w": "and there are 698.",
+     "s": 4.165,
+     "e": 5.965
+    },
+    {
+     "w": "Each gets its contract share,",
+     "s": 6.267,
+     "e": 7.608
+    },
+    {
+     "w": "and no litre is promised twice.",
+     "s": 7.758,
+     "e": 9.398
+    }
+   ]
+  },
+  "p1": {
+   "id": "p1",
+   "text": "We tried to break it first. On the first full run, 4 orders got through.",
+   "file": "audio/v8-p1-p50vry.wav",
+   "dur": 3.822358,
+   "words": [
+    {
+     "w": "We tried to break it first.",
+     "s": 0,
+     "e": 1.217
+    },
+    {
+     "w": "On the first full run, 4 orders got through.",
+     "s": 1.519,
+     "e": 3.816
+    }
+   ]
+  },
+  "p1b": {
+   "id": "p1b",
+   "text": "Nutella, for a buyer who said no nuts. The bug was in our own allergen rule.",
+   "file": "audio/v8-p1b-jm66km.wav",
+   "dur": 4.210612,
+   "words": [
+    {
+     "w": "Nutella, for a buyer who said no nuts.",
+     "s": 0,
+     "e": 2.111
+    },
+    {
+     "w": "The bug was in our own allergen rule.",
+     "s": 2.413,
+     "e": 4.195
+    }
+   ]
+  },
+  "p2": {
+   "id": "p2",
+   "text": "We fixed it and ran 190 more, on 5 AI models. None broke a rule.",
+   "file": "audio/v8-p2-mdvr27.wav",
+   "dur": 5.273583,
+   "words": [
+    {
+     "w": "We fixed it and ran 190 more,",
+     "s": 0,
+     "e": 2.285
+    },
+    {
+     "w": "on 5 AI models.",
+     "s": 2.436,
+     "e": 4.042
+    },
+    {
+     "w": "None broke a rule.",
+     "s": 4.344,
+     "e": 5.262
+    }
+   ]
+  },
+  "f1": {
+   "id": "f1",
+   "text": "Not checked yet: no cook has used it, and it runs on the challenge data, not Valio Aimo's systems.",
+   "file": "audio/v8-f1-438qar.wav",
+   "dur": 5.326871,
+   "words": [
+    {
+     "w": "Not checked yet: no cook has used it,",
+     "s": 0,
+     "e": 1.966
+    },
+    {
+     "w": "and it runs on the challenge data,",
+     "s": 2.117,
+     "e": 3.661
+    },
+    {
+     "w": "not Valio Aimo's systems.",
+     "s": 3.812,
+     "e": 5.313
+    }
+   ]
+  },
+  "f2": {
+   "id": "f2",
+   "text": "That's Aimo Agent Gateway. One door for the cook and for any agent, with rules Valio Aimo would set.",
+   "file": "audio/v8-f2-h13m8z.wav",
+   "dur": 5.664036,
+   "words": [
+    {
+     "w": "That's Aimo Agent Gateway.",
+     "s": 0,
+     "e": 1.378
+    },
+    {
+     "w": "One door for the cook and for any agent,",
+     "s": 1.68,
+     "e": 3.709
+    },
+    {
+     "w": "with rules Valio Aimo would set.",
+     "s": 3.86,
+     "e": 5.65
+    }
+   ]
+  }
+ }
+}

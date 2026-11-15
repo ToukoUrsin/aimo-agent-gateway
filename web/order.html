@@ -67,12 +67,18 @@ const ST = {
   fi: { loc: "fi-FI", h0: "Tilaus", w0: "Haetaan tilausvahvistusta…", banner: "Prototyyppi Valio Aimon haastedatalla, ei Valio Aimon järjestelmä.", eyebrow: "Verkkokauppa · tilausvahvistus · prototyyppi", order: "Tilaus",
     appr: "hyväksynyt: ", demo: " (demohyväksyntä samassa selaimessa)", conf: "vahvistettu verkkokaupassa", repl: (n) => `Korvaava tuote: korvaa tuotteen ${n}`, units: { piece: "kpl", kg: "kg", case: "ltk", pack: "pkt", bag: "ps", box: "ltk", jar: "prk", bottle: "plo", sack: "säkki", carton: "tlk", roll: "rll" }, pcs: "kpl",
     goods: "Ostokset (alv 0 %)", vat: "Alv", total: "Yhteensä (sis. alv)", day: "Toimituspäivä", cust: "Asiakas", custno: "asiakasnumero", said: "Pyyntösi", pay: "Maksu", payv: "Lasku nykyisillä maksuehdoillasi.",
-    checking: "Tarkistetaan allekirjoituksia selaimessasi…", okv: n => `Tilausta ei ole muutettu vahvistuksen jälkeen. ${n} tarkistusta tehtiin juuri tässä selaimessa.`, badv: "Tilauksen tiedot eivät täsmää allekirjoitukseen. Ota yhteyttä asiakaspalveluun.",
+    checking: "Tarkistetaan allekirjoituksia selaimessasi…", okv: n => `Tilausta ei ole muutettu vahvistuksen jälkeen. ${n} tarkistusta tehtiin juuri tässä selaimessa.`,
+    cancelled: "Peruttu", canc: c => `Tämä tilaus on peruttu, eikä sitä toimiteta.${c ? ` Hyvitys ${c} (alv 0 %).` : ""} Peruutus on tilaukseen tehty allekirjoitettu muutos: alla on tilaus sellaisena kuin se vahvistettiin.`,
+    chg: n => `Tilaukseen on vahvistuksen jälkeen tehty ${n} allekirjoitettu ${n > 1 ? "muutosta" : "muutos"}. Alla on tilaus sellaisena kuin se vahvistettiin; muutokset näkyvät tarkistuksissa.`,
+    okv2: n => `Vahvistusta ei ole muokattu sen allekirjoittamisen jälkeen: jokainen muutos on oma allekirjoitettu merkintänsä. ${n} tarkistusta tehtiin juuri tässä selaimessa.`, badv: "Tilauksen tiedot eivät täsmää allekirjoitukseen. Ota yhteyttä asiakaspalveluun.",
     back: "Takaisin verkkokauppaan", fold: "Näytä tarkistukset (tekninen tallenne, englanniksi)", site: "← Verkkokauppa" },
   en: { loc: "en-GB", h0: "Order", w0: "Fetching the order confirmation…", banner: "A prototype on Valio Aimo's challenge data. Not a Valio Aimo system.", eyebrow: "Web shop · order confirmation · prototype", order: "Order",
     appr: "approved by ", demo: " (demo approval in the same browser)", conf: "confirmed in the web shop", repl: (n) => `Replacement: replaces ${n}`, units: { piece: "pcs", case: "cases" }, pcs: "pcs",
     goods: "Goods (ex VAT)", vat: "VAT", total: "Total (incl. VAT)", day: "Delivery day", cust: "Customer", custno: "customer number", said: "Your request", pay: "Payment", payv: "Invoice on your current payment terms.",
-    checking: "Checking the signatures in your browser…", okv: n => `The order has not been changed since it was confirmed. ${n} checks were run just now in this browser.`, badv: "The order does not match its signature. Contact customer service.",
+    checking: "Checking the signatures in your browser…", okv: n => `The order has not been changed since it was confirmed. ${n} checks were run just now in this browser.`,
+    cancelled: "Cancelled", canc: c => `This order is cancelled and will not be delivered.${c ? ` Credit ${c} (ex VAT).` : ""} The cancellation is a signed change to the order: below is the order as it was confirmed.`,
+    chg: n => `${n} signed change${n > 1 ? "s were" : " was"} made to this order after it was confirmed. Below is the order as it was confirmed; the changes are under the checks.`,
+    okv2: n => `The confirmation has not been edited since it was signed: every change is a signed entry of its own. ${n} checks were run just now in this browser.`, badv: "The order does not match its signature. Contact customer service.",
     back: "Back to the web shop", fold: "Show the checks (technical record)", site: "← Web shop" },
 }[SL];
 // Opened from the shop: the first paint is in the shop's language too, before the order has arrived.
@@ -186,13 +192,14 @@ const eurFi = c => SL === "fi" ? (c / 100).toLocaleString("fi-FI", { minimumFrac
 const dayFi = d => d ? new Date(d + "T12:00:00").toLocaleDateString(ST.loc, SL === "fi" ? { weekday: "short", day: "numeric", month: "numeric" } : { weekday: "short", day: "numeric", month: "short" }) : "";
 const whenFi = iso => iso ? new Date(iso).toLocaleString(ST.loc, { day: "numeric", month: SL === "fi" ? "numeric" : "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: TZ }) : "";
 let namesFi = {}, piecesOf = {};
-function shopHead(o, res, done) {
+function shopHead(o, res, done, st) {
   const w = o.wholesale, ev = w.evidence, amt = t => (o.totals.find(x => x.type === t) || {}).amount, tax = o.totals.find(x => x.type === "tax");
   const unit = l => (ST.units[l.item.quantity_unit.display_text] || l.item.quantity_unit.display_text), nm = (id, t) => SL === "fi" ? namesFi[id] || t : t;
   const pct = tax && /([\d.,]+)\s*%/.exec(tax.display_text || ""), ok = res && res.every(r => r[0]);
+  const nch = st && st.amendments ? st.amendments.length : 0, gone = !!st && st.status === "cancelled";  // what was signed after the confirmation: said here, in the cook's language
   return `<div class="ohead"><div class="eyebrowless">${ST.eyebrow}</div><h1>${ST.order} ${esc(o.label)}</h1>
-    <div class="pills"><span class="pill pass">${ev.approval ? ST.appr + esc(ev.approval.by) + (ev.approval.demo ? ST.demo : "") : ST.conf}</span><span class="pill">${esc(whenFi(w.placed_at))}</span></div></div>
-    <div class="card"><h3>${ST.order}</h3>` + o.line_items.map(l => { const sub = l.wholesale.substitutes_for; return `<div class="frow"><div><b>${esc(nm(l.item.id, l.item.title))}</b>
+    <div class="pills"><span class="pill pass">${ev.approval ? ST.appr + esc(ev.approval.by) + (ev.approval.demo ? ST.demo : "") : ST.conf}</span><span class="pill">${esc(whenFi(w.placed_at))}</span>${gone ? `<span class="pill deny">${ST.cancelled}</span>` : ""}</div></div>
+    <div class="card"><h3>${ST.order}</h3>${gone ? `<div class="fok bad" style="margin:0 0 var(--s4)"><span>${esc(ST.canc(st.credit_ex_vat ? eurFi(st.credit_ex_vat) : ""))}</span></div>` : nch ? `<div class="fok" style="margin:0 0 var(--s4);background:var(--soft);color:inherit"><span>${esc(ST.chg(nch))}</span></div>` : ""}` + o.line_items.map(l => { const sub = l.wholesale.substitutes_for; return `<div class="frow"><div><b>${esc(nm(l.item.id, l.item.title))}</b>
       ${sub ? `<div class="sub">${esc(ST.repl(nm(sub.for, sub.for_title)))}</div>` : ""}<div class="muted">${(l.wholesale.units ?? l.quantity.total ?? l.quantity).toLocaleString(ST.loc)} ${esc(unit(l))} × ${eurFi(l.item.price)}${piecesOf[l.item.id] ? ` (${Math.round((l.wholesale.units ?? l.quantity.total ?? l.quantity) * piecesOf[l.item.id]).toLocaleString(ST.loc)} ${ST.pcs})` : ""}</div></div><div class="num">${eurFi(l.totals[0].amount)}</div></div>`; }).join("") + `
       <table class="totals" style="margin-top:6px"><tr><td class="muted">${ST.goods}</td><td class="num">${eurFi(amt("subtotal"))}</td></tr>
         ${tax ? `<tr><td class="muted">${ST.vat}${pct ? " " + (SL === "fi" ? pct[1].replace(".", ",") + " %" : pct[1] + "%") : ""}</td><td class="num">${eurFi(tax.amount)}</td></tr>` : ""}
@@ -200,16 +207,16 @@ function shopHead(o, res, done) {
       <dl class="kv" style="margin-top:var(--s4)"><dt>${ST.day}</dt><dd>${esc(dayFi(w.delivery_date))}</dd><dt>${ST.cust}</dt><dd>${esc(w.buyer.name)} · ${ST.custno} ${esc(w.customer)}</dd>
         ${w.intent ? `<dt>${ST.said}</dt><dd>”${esc(w.intent)}”</dd>` : ""}<dt>${ST.pay}</dt><dd>${ST.payv}</dd></dl>
       ${!res ? "" : !done ? `<div class="fok" style="background:var(--soft);color:var(--muted)"><span class="spin"></span><span>${ST.checking}</span></div>`
-        : ok ? `<div class="fok">${markHtml(true)}<span>${ST.okv(res.length)}</span></div>`
+        : ok ? `<div class="fok">${markHtml(true)}<span>${(nch ? ST.okv2 : ST.okv)(res.length)}</span></div>`
         : `<div class="fok bad">${markHtml(false)}<span>${ST.badv}</span></div>`}
       <div style="margin-top:var(--s4)"><a class="btn" href="${SHOP}">${ST.back}</a></div></div>`;
 }
 
 let lastRes = null;
 const checkRow = (r, state) => `<div class="check ${state}">${state === "pending" ? markHtml(null) : markHtml(r[0])}<div><b>${esc(r[1])}</b><div class="d">${state === "pending" ? "Checking" : esc(r[2])}</div></div></div>`;
-const verdict = (res, done) => !res ? '<div class="verdict">Signature checks need a secure (https) page.</div>'
+const verdict = (res, done, st) => !res ? '<div class="verdict">Signature checks need a secure (https) page.</div>'
   : !done ? `<div class="verdict"><span class="spin"></span><span>Checking ${res.length} signatures and the ledger with your browser's own crypto</span></div>`
-  : res.every(r => r[0]) ? `<div class="verdict ok">${markHtml(true)}<span><b>All ${res.length} checks pass.</b> Nobody has changed this order since it was signed.</span></div>`
+  : res.every(r => r[0]) ? `<div class="verdict ok">${markHtml(true)}<span><b>All ${res.length} checks pass.</b> ${st && st.amendments && st.amendments.length ? `Nobody has edited the confirmation since it was signed. ${st.amendments.length} signed change${st.amendments.length > 1 ? "s" : ""} came after it${st.status === "cancelled" ? ", and the order is now cancelled" : ""}: see After the order.` : "Nobody has changed this order since it was signed."}</span></div>`
   : `<div class="verdict bad">${markHtml(false)}<span><b>${res.filter(r => !r[0]).length} of ${res.length} checks fail.</b> Something here was changed after it was signed.</span></div>`;
 
 async function render() {
@@ -221,7 +228,7 @@ async function render() {
   let h = `<div class="ohead"><div class="eyebrowless">Valio Aimo agent gateway · order confirmation</div><h1>Order ${esc(o.label)}</h1>
     <div class="pills"><span class="pill" title="${esc(w.placed_by)}">placed by agent ${esc(String(w.placed_by||"").replace(/^agent:/,""))}</span>${ev.approval ? `<span class="pill escalate">approved by ${esc(ev.approval.by)}${ev.approval.demo ? " (demo approval in the asker's own browser)" : ""}</span>` : isShop(o) ? '<span class="pill pass">confirmed in the shop by the person who asked</span>' : '<span class="pill pass">no person involved</span>'}<span class="pill">${esc(when(w.placed_at))}</span>${st && st.status === "cancelled" ? '<span class="pill deny">cancelled after the order</span>' : st && st.amendments.length ? '<span class="pill escalate">changed after the order</span>' : ""}</div>
     ${after.amends ? `<div style="margin-top:var(--s3)">Replaces goods on <a href="${esc(after.amends.url || after.amends.permalink_url ? orderLink(after.amends) : "/orders/" + after.amends.order_id)}">order ${esc(after.amends.order_label)}</a> after a ${esc((KIND[after.amends.kind] || "").toLowerCase())}: ${esc(after.amends.title)}.</div>` : ""}</div>`;
-  h += `<div class="card evi"><h3>Evidence, checked in your browser</h3><div id="verdict">${verdict(res, !first || calm)}</div><div id="checks">` +
+  h += `<div class="card evi"><h3>Evidence, checked in your browser</h3><div id="verdict">${verdict(res, !first || calm, st)}</div><div id="checks">` +
     (res ? res.map((r, i) => checkRow(r, first && !calm ? "pending" : lastRes && lastRes[i] && lastRes[i][0] !== r[0] ? (r[0] ? "ok changed" : "bad changed") : r[0] ? "ok" : "bad")).join("") : "") + `</div>
     <div class="cheat"><span class="muted" style="font-size:var(--t2)">Try to cheat:</span>
       <button class="btn small" id="t1" aria-pressed="${tamper.price}">${tamper.price ? "Undo price change" : "Lower a price by 1 cent"}</button><button class="btn small" id="t2" aria-pressed="${tamper.ledger}">${tamper.ledger ? "Undo ledger edit" : "Edit an audit entry"}</button></div>
@@ -241,7 +248,7 @@ async function render() {
     <details style="margin-top:var(--s3)"><summary>Signed order (JSON)</summary><pre>${esc(JSON.stringify(o, null, 1))}</pre></details>
     <p class="small-note" id="ppnote">The XML is shaped to Peppol BIS Ordering 3 so the order can enter the same EDI flow as any other. Checking it against the published rules…</p></div>`;
   const shop = isShop(o), open = !!($("#main details.tech") || {}).open;
-  $("#main").innerHTML = shop ? `<div id="shophead">${shopHead(o, res, !first || calm)}</div><details class="tech"${open ? " open" : ""}><summary>${ST.fold}</summary><div class="in">${h}</div></details>` : h;
+  $("#main").innerHTML = shop ? `<div id="shophead">${shopHead(o, res, !first || calm, st)}</div><details class="tech"${open ? " open" : ""}><summary>${ST.fold}</summary><div class="in">${h}</div></details>` : h;
   // one statement about the Peppol document everywhere: what the validator said for this order, and that it was not sent
   if (!render.pp) render.pp = fetch(keyed(`/orders/${o.id}/peppol/check`)).then(r => r.ok ? r.json() : null).catch(() => null);
   render.pp.then(v => {
@@ -258,8 +265,8 @@ async function render() {
     const rows = document.querySelectorAll("#checks .check");
     for (const [i, r] of res.entries()) { await new Promise(ok => setTimeout(ok, i ? 260 : 380)); rows[i].outerHTML = checkRow(r, (r[0] ? "ok" : "bad") + " landed"); }
     await new Promise(ok => setTimeout(ok, 200));
-    $("#verdict").innerHTML = verdict(res, true);
-    if (shop) $("#shophead").innerHTML = shopHead(o, res, true);
+    $("#verdict").innerHTML = verdict(res, true, st);
+    if (shop) $("#shophead").innerHTML = shopHead(o, res, true, st);
   }
   lastRes = res || [];
 }
