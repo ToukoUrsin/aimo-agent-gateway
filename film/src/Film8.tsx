@@ -199,24 +199,27 @@ const Tag: React.FC<{children: React.ReactNode; x: number; y: number; dark?: boo
 // 0. the door: what this is, before any screen
 const SGate: React.FC<{s: number}> = ({s}) => {
 	const f = s * FPS, two = (0.4 + cue('g1', 1, 0.5)) * FPS;
-	const chip = (t: string, i: number) => <div key={i} style={{opacity: soft(f, two + 6 + i * 5, 8), fontFamily: SANS, fontSize: 29, fontWeight: 600, color: '#E6EAF0', background: '#1B222C', border: '1px solid #2B3440', borderRadius: 14, padding: '15px 24px', whiteSpace: 'nowrap'}}>{t}</div>;
+	const chip = (t: string, i: number) => <div key={i} style={{opacity: soft(f, 30 + i * 12, 8), fontFamily: SANS, fontSize: 29, fontWeight: 600, color: '#E6EAF0', background: '#1B222C', border: '1px solid #2B3440', borderRadius: 14, padding: '15px 24px', whiteSpace: 'nowrap'}}>{t}</div>;
 	return <AbsoluteFill style={{background: DARK}}>
 		<Tag x={120} y={96} dark>AIMO AGENT GATEWAY</Tag>
 		<div style={{position: 'absolute', left: 120, top: 150, width: 1680, fontFamily: SANS, color: '#F4F6F8', fontSize: 86, fontWeight: 780, letterSpacing: -2.8, lineHeight: 1.05, opacity: soft(f, 3, 10)}}>Kitchens are starting to let software do their ordering.</div>
 		<div style={{position: 'absolute', left: 120, top: 392, width: 1680, fontFamily: SANS, color: '#C9D1DA', fontSize: 46, fontWeight: 560, lineHeight: 1.25, opacity: soft(f, two, 10)}}>This is the door we built for Valio Aimo to put in front of it.</div>
 		<div style={{position: 'absolute', left: 120, top: 560, width: 1680, display: 'flex', alignItems: 'center', gap: 34}}>
 			<div style={{display: 'flex', flexDirection: 'column', gap: 14}}>{["A kitchen's own software", 'A chat assistant', "The cook's chat in the web shop"].map(chip)}</div>
-			<div style={{fontFamily: MONO, fontSize: 54, color: MINT, opacity: soft(f, two + 22, 8)}}>→</div>
-			<div style={{opacity: soft(f, two + 26, 10), border: `3px solid ${MINT}`, borderRadius: 22, padding: '34px 44px', background: 'rgba(127,216,184,.08)'}}>
+			<div style={{fontFamily: MONO, fontSize: 54, color: MINT, opacity: soft(f, two - 2, 8)}}>→</div>
+			<div style={{opacity: soft(f, two + 2, 10), border: `3px solid ${MINT}`, borderRadius: 22, padding: '34px 44px', background: 'rgba(127,216,184,.08)'}}>
 				<div style={{fontFamily: SANS, fontSize: 60, fontWeight: 780, letterSpacing: -1.8, color: '#F4F6F8', whiteSpace: 'nowrap'}}>One door</div>
 				<div style={{fontFamily: SANS, fontSize: 28, color: '#C9D1DA', marginTop: 8, whiteSpace: 'nowrap'}}>the same rules for every caller</div>
 			</div>
-			<div style={{fontFamily: MONO, fontSize: 54, color: MINT, opacity: soft(f, two + 32, 8)}}>→</div>
-			<div style={{opacity: soft(f, two + 36, 8), fontFamily: SANS, fontSize: 34, fontWeight: 600, color: '#E6EAF0', lineHeight: 1.3}}>Valio Aimo's range,<br />prices and stock</div>
+			<div style={{fontFamily: MONO, fontSize: 54, color: MINT, opacity: soft(f, two + 26, 8)}}>→</div>
+			<div style={{opacity: soft(f, two + 30, 8), fontFamily: SANS, fontSize: 34, fontWeight: 600, color: '#E6EAF0', lineHeight: 1.3}}>Valio Aimo's range,<br />prices and stock</div>
 		</div>
+		<div style={{position: 'absolute', left: 120, top: 868, width: 1680, fontFamily: MONO, fontSize: 25, letterSpacing: 0.5, color: '#8C96A3', opacity: soft(f, two + 52, 10)}}><span style={{color: MINT, fontWeight: 700, letterSpacing: 2}}>OPEN INTERFACES</span>{'   REST with OpenAPI · MCP · OAuth 2.1 · every offer signed (ES256)'}</div>
 		<Foot dark />
 	</AbsoluteFill>;
 };
+// what each rule id on a badge checks, in two words (the titles are in gateway/policy.py)
+const RULE: Record<string, string> = {M1: 'mandate', W1: 'ordering on', W2: 'autonomy', W3: 'Valio Aimo cap', W4: 'standing', T1: 'signing key', B1: 'order limit', B2: 'week limit', A1: 'allergens', N1: 'new product', Q1: 'quantity'};
 // 1 and 2. one real request and the gateway's answer (src/data8/gate.json, asked of the running site)
 const SCall: React.FC<{s: number; c: any; ok: boolean; line: string}> = ({s, c, ok, line}) => {
 	const f = s * FPS, ans = (0.3 + cue(line, 1, 0.5)) * FPS - 4; // the answer lands as the second sentence starts
@@ -226,7 +229,7 @@ const SCall: React.FC<{s: number; c: any; ok: boolean; line: string}> = ({s, c, 
 	const deny = c.rules.find((r: any) => r.outcome === 'deny');
 	const msg = (c.messages || []).find((m: any) => m.code === 'policy_denied');
 	const passed = c.rules.filter((r: any) => r.outcome === 'pass').length;
-	const P: React.CSSProperties = {position: 'absolute', top: 190, height: 590, borderRadius: 20, background: '#141A22', border: '1px solid #26303C', padding: '30px 36px', boxSizing: 'border-box'};
+	const P: React.CSSProperties = {position: 'absolute', top: 180, height: 650, borderRadius: 20, background: '#141A22', border: '1px solid #26303C', padding: '30px 36px', boxSizing: 'border-box'};
 	const lab: React.CSSProperties = {fontFamily: MONO, fontSize: 20, letterSpacing: 2, color: '#8C96A3', fontWeight: 700, marginBottom: 18};
 	const code: React.CSSProperties = {margin: 0, fontFamily: MONO, fontSize: 25, lineHeight: 1.52, color: '#C9D1DA', whiteSpace: 'pre'};
 	const hi = (t: string, c2 = MINT) => <span style={{color: c2, fontWeight: 700}}>{t}</span>;
@@ -240,9 +243,10 @@ const SCall: React.FC<{s: number; c: any; ok: boolean; line: string}> = ({s, c, 
 		<div style={{...P, left: 990, width: 830, opacity: soft(f, ans, 8), borderColor: col}}>
 			<div style={lab}>THE GATEWAY'S ANSWER</div>
 			<pre style={code}>{'HTTP '}{c.http}{'\n"status": '}{hi(`"${c.status}"`, col)}{'\n"decision": '}{hi(`"${c.decision}"`, col)}</pre>
-			<div style={{display: 'flex', flexWrap: 'wrap', gap: 10, margin: '22px 0 24px'}}>{c.rules.map((r: any) => {
+			<div style={{...lab, margin: '20px 0 10px'}}>EACH RULE, CHECKED IN CODE</div>
+			<div style={{display: 'flex', flexWrap: 'wrap', gap: 10, margin: '0 0 22px'}}>{c.rules.map((r: any) => {
 				const k = r.outcome === 'pass' ? GO : r.outcome === 'deny' ? NO : '#F5B544';
-				return <div key={r.id} style={{fontFamily: MONO, fontSize: 24, fontWeight: 700, color: k, border: `2px solid ${k}`, borderRadius: 10, padding: '6px 12px', background: r.outcome === 'deny' ? 'rgba(255,107,107,.16)' : 'transparent'}}>{r.id} {r.outcome === 'pass' ? '✓' : r.outcome === 'deny' ? '✗' : '!'}</div>;
+				return <div key={r.id} style={{fontFamily: MONO, fontSize: 20, fontWeight: 700, color: k, border: `2px solid ${k}`, borderRadius: 10, padding: '6px 10px', whiteSpace: 'nowrap', background: r.outcome === 'deny' ? 'rgba(255,107,107,.16)' : 'transparent'}}>{r.id} <span style={{fontWeight: 500}}>{RULE[r.id] ?? ''}</span> {r.outcome === 'pass' ? '✓' : r.outcome === 'deny' ? '✗' : '!'}</div>;
 			})}</div>
 			{ok ? <>
 				<div style={{fontFamily: SANS, fontSize: 32, fontWeight: 600, color: '#F4F6F8', lineHeight: 1.3}}>{c.quantity} × {c.title}</div>
@@ -253,10 +257,10 @@ const SCall: React.FC<{s: number; c: any; ok: boolean; line: string}> = ({s, c, 
 				<div style={{fontFamily: SANS, fontSize: 32, fontWeight: 600, color: '#F4F6F8', lineHeight: 1.3, marginTop: 14}}>{deny ? `${deny.id} ${deny.title}: ` : ''}{String(msg?.content || '').replace(/^Allergen exclusions: /, '')}</div>
 			</>}
 		</div>
-		<div style={{position: 'absolute', left: 990, top: 815, width: 830, opacity: soft(f, ans + 6, 8)}}>
+		<div style={{position: 'absolute', left: 990, top: 858, width: 830, opacity: soft(f, ans + 6, 8)}}>
 			<div style={{display: 'inline-block', fontFamily: SANS, fontSize: 50, fontWeight: 800, letterSpacing: -1, color: DARK, background: col, borderRadius: 16, padding: '16px 34px', whiteSpace: 'nowrap'}}>{ok ? `May order alone · ${passed} of ${c.rules.length} rules pass` : `Refused by rule ${deny?.id ?? ''}, in code`}</div>
 		</div>
-		<div style={{position: 'absolute', left: 100, top: 830, width: 850, fontFamily: SANS, fontSize: 25, color: '#8C96A3', lineHeight: 1.35}}>A real request to the running gateway, {new Date(gate.capturedAt).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'})}.<br />The answer as it came back, shortened.</div>
+		<div style={{position: 'absolute', left: 100, top: 866, width: 850, fontFamily: SANS, fontSize: 25, color: '#8C96A3', lineHeight: 1.35}}>A real request to the running gateway, {new Date(gate.capturedAt).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'})}.<br />The answer as it came back, shortened.</div>
 		<Foot dark />
 	</AbsoluteFill>;
 };
@@ -400,13 +404,13 @@ const accB = plan([[accFinger - 0.35, AC('scroll:answers') - 0.25, 1]]);
 const SAccessA: React.FC<{s: number}> = ({s}) => {
 	const f = s * FPS;
 	const ctl = ACC.boxOr('ctl', accT0);
-	const rows: [string, string][] = [['W2', 'What outside software may do: look up, re-order or order'], ['W3', 'The order size that needs a person'], ['', 'Whether prices and stock are shown'], ['W1', 'Pause all agent ordering']];
+	const rows = ['What outside software may do', 'The order size that needs a person', 'Whether prices and stock are shown', 'A switch that pauses all agent ordering'];
 	return <>
 		<Crop shot={ACC} t={accT0} at={[ctl[0] - 6, ctl[1] - 6, ctl[2] + 12, ctl[3] + 12]} x={110} y={66} w={440} maxH={960} />
 		<Head n="VALIO AIMO'S SIDE · /access" title={<>For each customer, Valio Aimo would set the rules.</>} x={640} w={1180} />
-		{rows.map(([id, t], i) => <div key={i} style={{position: 'absolute', left: 640, top: 330 + i * 104, width: 1180, display: 'flex', alignItems: 'baseline', gap: 22, opacity: soft(f, 10 + i * 12, 8)}}>
-			<div style={{width: 110, fontFamily: MONO, fontSize: 24, fontWeight: 700, color: ACC_C, letterSpacing: 1}}>{id ? `rule ${id}` : ''}</div>
-			<div style={{fontFamily: SANS, fontSize: 40, fontWeight: 620, color: INK, letterSpacing: -0.5}}>{t}</div>
+		{rows.map((t, i) => <div key={i} style={{position: 'absolute', left: 640, top: 330 + i * 112, width: 1180, display: 'flex', alignItems: 'baseline', gap: 24, opacity: soft(f, 10 + i * 12, 8)}}>
+			<div style={{width: 44, fontFamily: MONO, fontSize: 30, fontWeight: 700, color: ACC_C}}>{i + 1}</div>
+			<div style={{flex: 1, fontFamily: SANS, fontSize: 44, fontWeight: 640, color: INK, letterSpacing: -0.6, lineHeight: 1.15}}>{t}</div>
 		</div>)}
 		<Foot />
 	</>;
@@ -417,12 +421,15 @@ const SAccessB: React.FC<{s: number}> = ({s}) => {
 	const shown = (accB.when(AC('changed')) + 0.5) * FPS;
 	return <>
 		<Head n="VALIO AIMO'S SIDE · /access" title={<>Pause ordering, and the next order is refused.</>} x={110} w={1700} />
-		<Crop shot={ACC} t={t} at={[on[0] - 22, on[1] - 44, on[2] + 44, on[3] + 108]} x={110} y={250} w={560} />
-		<div style={{position: 'absolute', left: 740, top: 236, fontFamily: MONO, fontSize: 20, letterSpacing: 1.5, color: MUTED, opacity: soft(f, shown, 8)}}>WHAT AN OUTSIDE AGENT GETS NOW</div>
-		<Crop shot={ACC} t={accTAns} at={[order[0] - 14, order[1] - 12, order[2] + 28, order[3] + 24]} x={740} y={274} w={1080} o={soft(f, shown, 8)} />
-		<Crop shot={ACC} t={accTAns} at={[look[0] - 14, look[1] - 12, look[2] + 28, look[3] + 24]} x={740} y={274 + (order[3] + 24) * 1080 / (order[2] + 28) + 26} w={1080} o={soft(f, shown + 14, 8)} />
-		<Big x={110} y={770} w={1700} size={54} weight={740} o={soft(f, shown + 6, 8)}>The order is refused by rule W1. Lookups still answer.</Big>
-		<Big x={110} y={860} w={1700} size={30} weight={520} color={MUTED} o={soft(f, shown + 16, 8)}>No approval can change this. Only Valio Aimo can.</Big>
+		<Crop shot={ACC} t={t} at={[on[0] - 22, on[1] - 44, on[2] + 44, on[3] + 108]} x={110} y={250} w={520} />
+		{([[order, 'An order for 100', 'refused by rule W1', '#B3261E', 0], [look, 'A product lookup', 'answered, as before', ACC_C, 14]] as [Rect, string, string, string, number][]).map(([b, what, got, col, d], i) => {
+			const cut: Rect = [b[0] + b[2] * 0.215, b[1] + 3, b[2] * 0.785 + 12, b[3] + 4], w = 1120, h = cut[3] * w / cut[2], y = 236 + i * (h + 124);
+			return <React.Fragment key={i}>
+				<div style={{position: 'absolute', left: 700, top: y, width: w, fontFamily: SANS, fontSize: 46, fontWeight: 740, letterSpacing: -1, color: INK, opacity: soft(f, shown + d, 8), whiteSpace: 'nowrap'}}>{what}: <span style={{color: col}}>{got}</span></div>
+				<Crop shot={ACC} t={accTAns} at={cut} x={700} y={y + 70} w={w} o={soft(f, shown + d, 8)} />
+			</React.Fragment>;
+		})}
+		<Big x={110} y={880} w={1700} size={46} weight={700} o={soft(f, shown + 24, 8)}>No approval can change this. Only Valio Aimo can.</Big>
 		<Foot />
 	</>;
 };
@@ -436,8 +443,9 @@ const towPlan = plan([[towT0, TOW.m.dur - 0.4, towSp]]);
 const STower: React.FC<{s: number}> = ({s}) => {
 	const t = towPlan.at(s), f = s * FPS;
 	const at = (k: number, share: number) => (towT2 + cue('t2', k, share)) * FPS;
+	const z = soft(f, at(2, 0.64) - 14, 24); // 0 = the whole page, 1 = the tiles, one per kitchen
 	return <>
-		<Frame shot={TOW} t={t} view={[56, 255, 1328]} speed={towSp} />
+		<Frame shot={TOW} t={t} view={[56 - 6 * z, 255 + 335 * z, 1328 - 538 * z]} speed={towSp} />
 		<Tag x={90} y={36}>VALIO AIMO'S SIDE · /tower · A RECORDED RUN, REPLAYED</Tag>
 		<div style={{position: 'absolute', left: 80, top: 80 + 990 - 236, width: 1760, height: 236, background: 'rgba(13,17,23,.94)', borderRadius: '0 0 16px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 40px', boxSizing: 'border-box'}}>
 			<Stat dark v={`${used.rush.wanted} L`} l={`wanted by ${used.rush.kitchens} kitchens' agents at once`} o={soft(f, at(0, 0), 8)} />
@@ -456,13 +464,17 @@ const SProofBoth: React.FC<{s: number; fixed: boolean}> = ({s, fixed}) => {
 		<div style={{width: 170, textAlign: 'center', fontFamily: MONO, fontSize: 26, fontWeight: 700, letterSpacing: 2, color: '#fff', background: col, borderRadius: 12, padding: '12px 0'}}>{label}</div>
 		<div style={{flex: 1, fontFamily: SANS, fontSize: 40, fontWeight: 640, color: INK, lineHeight: 1.2, letterSpacing: -0.5}}>{text}</div>
 	</div>;
-	const before = fixed ? 1 : soft(f, (0.2 + D('p1') + GAP) * FPS, 8);
+	const before = fixed ? 1 : soft(f, (0.2 + cue('p1', 1, 0.4)) * FPS, 8);
+	const perModel = Number(String(used.proof.runs).replace(/\D/g, '')) / used.proof.models;
 	return <>
 		<Tag x={110} y={50}>WE TRIED TO BREAK IT FIRST · /proof</Tag>
-		<Crop shot={PR} t={prT} at={[st[0] - 20, st[1] - 48, st[2] + 40, st[3] + 60]} x={110} y={96} w={1700} maxH={470} />
-		{row('BEFORE', '#B3261E', <>“hazelnut” was not counted under “tree nuts”: {used.proof.first} orders went through.</>, 610, before)}
-		{row('AFTER', ACC_C, <>Ruling out a group rules out its members: refused, in code.</>, 720, fixed ? soft(f, 4, 8) : 0)}
-		{fixed ? <Big x={110} y={850} w={1700} size={54} weight={760} o={soft(f, (0.2 + cue('p2', 2, 0.7)) * FPS, 8)}>{used.proof.runs} runs on {used.proof.models} AI models: 0 orders broke a rule.</Big> : null}
+		<Crop shot={PR} t={prT} at={[st[0] - 20, st[1] - 48, st[2] + 40, st[3] + 60]} x={110} y={96} w={1700} maxH={276} />
+		{row('BEFORE', '#B3261E', <>“hazelnut” was not counted under “tree nuts”: {used.proof.first} orders went through, one per AI model in that run.</>, 420, before)}
+		{row('AFTER', ACC_C, <>Ruling out a group rules out its members: refused, in code.</>, 560, fixed ? soft(f, 4, 8) : 0)}
+		{fixed ? <>
+			<Big x={110} y={716} w={1700} size={60} weight={760} o={soft(f, (0.2 + cue('p2', 0, 0.2)) * FPS + 10, 8)}>{perModel} requests × {used.proof.models} AI models = {used.proof.runs} runs</Big>
+			<Big x={110} y={806} w={1700} size={60} weight={780} color={ACC_C} o={soft(f, (0.2 + cue('p2', 2, 0.7)) * FPS, 8)}>0 orders broke a rule.</Big>
+		</> : null}
 		<Foot />
 	</>;
 };
