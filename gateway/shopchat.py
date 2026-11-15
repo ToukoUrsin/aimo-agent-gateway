@@ -2087,7 +2087,11 @@ def build(g, ctx, page) -> APIRouter:
         cart["exclude_allergens"], cart["budget"] = ck.get("exclude_allergens") or [], budget_of(cart["intent"])
         # An allergy of some guests ("yksi vieras on maitoallerginen") is planned for those portions only: it is not a rule for the whole cart, and the card does not say it is.
         whole = [k for k in stated if set(menu.EXCODES.get(k) or ["?"]) <= set(cart["exclude_allergens"])]
-        cart["per_guest"] = [k for k in stated if k not in whole]
+        # "Koko keittiö on maidoton" is planned on every portion (milk has stand-ins, so it is a requirement on each line, not on the order): it is still the
+        # whole kitchen's rule, so a line added to this cart later is held to it too. Only what the plan counted for some guests or one dish stays theirs.
+        diet = plan.get("diet") or []
+        every = {x.get("kind") for x in diet if x.get("scope") in ("all", "order")} - {x.get("kind") for x in diet if x.get("scope") in ("guests", "dish")}
+        cart["per_guest"] = [k for k in stated if k not in whole and k not in every]
         gaps = [x for x in cart["menu"]["not_ordered"] if x.get("kind") in ("no_fit", "not_in_range") and x.get("need") and x.get("unit") in ("g", "ml")
                 and not x.get("portions") and not x.get("whole") and not x.get("diet") and set(x.get("rules") or []) <= GAP_RULES][:3]
         if gaps:
